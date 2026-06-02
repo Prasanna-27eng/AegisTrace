@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select, or_
 from models import Case, EvidenceArtifact, TimelineEvent, IOCCorrelation, AuditLog
 from database import get_session
-from groq import Groq
+from ai_router import call_ai, call_ai_json
 
 router = APIRouter(prefix="/api/cases", tags=["cases"])
 
@@ -156,52 +156,33 @@ async def generate_ai(case_id: int, session: Session = Depends(get_session)):
     if not case:
         raise HTTPException(404, "Case not found")
 
-    groq_key = os.getenv("GROQ_API_KEY")
-    if not groq_key:
-        raise HTTPException(503, "GROQ_API_KEY not configured")
-
-    client = Groq(api_key=groq_key)
-
-    iocs = json.loads(case.iocs or "[]")
+    iocs  = json.loads(case.iocs or "[]")
     mitre = json.loads(case.mitre_techniques or "[]")
 
-    prompt = f"""You are a senior SOC analyst. Analyse this security incident and produce structured output.
+    prompt = f"""Analyse this security incident and produce structured output.
 
-Case: {case.case_number}
-Title: {case.title}
-Severity: {case.severity}
-Type: {case.incident_type}
+Case: {case.case_number} | Title: {case.title}
+Severity: {case.severity} | Type: {case.incident_type}
 Affected Systems: {case.affected_systems}
-Description: {case.description}
-Findings: {case.findings}
-Commands Run: {case.commands_run[:2000] if case.commands_run else 'None'}
+Description: {case.description[:800]}
+Findings: {case.findings[:800]}
+Commands Run: {(case.commands_run or '')[:1500]}
 IOCs: {json.dumps(iocs[:10])}
 MITRE Techniques: {json.dumps(mitre)}
 
-Respond ONLY with valid JSON in this exact structure:
+Respond ONLY with valid JSON:
 {{
   "executive_summary": "2-3 sentences for non-technical leadership",
-  "technical_summary": "Detailed technical analysis for analysts, 4-6 sentences",
+  "technical_summary": "4-6 sentences technical analysis for analysts",
   "severity_score": <integer 0-100>,
   "severity_reasoning": "Why this score was assigned",
   "mitre_techniques": [{{"id": "T####", "name": "...", "tactic": "..."}}],
   "recommended_actions": ["action 1", "action 2", "action 3"]
 }}"""
 
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.3,
-        max_tokens=1500,
-    )
-
-    raw = response.choices[0].message.content.strip()
-    try:
-        start = raw.find("{")
-        end = raw.rfind("}") + 1
-        result = json.loads(raw[start:end])
-    except Exception:
-        result = {"executive_summary": raw, "technical_summary": "", "severity_score": 50, "severity_reasoning": "", "mitre_techniques": [], "recommended_actions": []}
+    result = call_ai_json("analysis", prompt, temperature=0.25, max_tokens=1500)
+    if result.get("parse_error"):
+        result = {"executive_summary": result.get("raw", ""), "technical_summary": "", "severity_score": 50, "severity_reasoning": "", "mitre_techniques": [], "recommended_actions": []}
 
     case.ai_executive_summary = result.get("executive_summary", "")
     case.ai_technical_summary = result.get("technical_summary", "")
@@ -225,39 +206,20 @@ async def case_chat(case_id: int, data: dict, session: Session = Depends(get_ses
     if not case:
         raise HTTPException(404, "Case not found")
 
-    groq_key = os.getenv("GROQ_API_KEY")
-    if not groq_key:
-        raise HTTPException(503, "GROQ_API_KEY not configured")
-
     user_message = data.get("message", "")
     history = data.get("history", [])
 
-    client = Groq(api_key=groq_key)
-    system = f"""You are AegisTrace AI, a SOC analyst assistant scoped to case {case.case_number}.
-Answer ONLY based on the case evidence provided. Cite evidence when possible. Never make up facts.
-Do not write to the case without analyst approval.
-
-Case Evidence:
-Title: {case.title}
+    case_context = f"""Case {case.case_number}: {case.title}
 Severity: {case.severity} | Type: {case.incident_type}
-Description: {case.description[:1000]}
-Findings: {case.findings[:1000]}
-IOCs: {case.iocs[:500]}
+Description: {case.description[:800]}
+Findings: {case.findings[:800]}
+IOCs: {case.iocs[:400]}
 MITRE: {case.mitre_techniques[:300]}
-Commands Run: {case.commands_run[:800]}"""
+Commands: {(case.commands_run or '')[:600]}"""
 
-    messages = [{"role": "system", "content": system}]
-    for h in history[-6:]:
-        messages.append({"role": h["role"], "content": h["content"]})
-    messages.append({"role": "user", "content": user_message})
-
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=messages,
-        temperature=0.4,
-        max_tokens=800,
-    )
-    return {"reply": response.choices[0].message.content.strip()}
+    prompt = f"Case context:\n{case_context}\n\nAnalyst question: {user_message}"
+    reply = call_ai("chat", prompt, temperature=0.35, max_tokens=700, history=history[-6:])
+    return {"reply": reply}
 
 
 # ── SHARE / PUBLIC ───────────────────────────────────────────────────────────

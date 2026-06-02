@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from models import EmailAnalysisRecord, AuditLog
 from database import get_session
-from groq import Groq
+from ai_router import call_ai_json
 
 router = APIRouter(prefix="/api/email", tags=["email"])
 
@@ -88,12 +88,10 @@ async def analyse_email(data: dict, session: Session = Depends(get_session)):
     hops = parse_received_chain(raw_headers)
     iocs = extract_iocs_from_text(full_text)
 
-    # AI analysis
+    # AI analysis — uses classification model (mixtral) for best phishing detection
     ai_verdict = "Suspicious"
     ai_analysis = ""
-    groq_key = os.getenv("GROQ_API_KEY")
-    if groq_key:
-        client = Groq(api_key=groq_key)
+    try:
         prompt = f"""Analyse this email for security threats. Respond ONLY with valid JSON.
 
 From: {from_field}
@@ -115,20 +113,11 @@ JSON format:
   "urgency_detected": true/false,
   "brand_abuse": true/false
 }}"""
-        try:
-            resp = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.2, max_tokens=800,
-            )
-            raw_resp = resp.choices[0].message.content.strip()
-            start = raw_resp.find("{")
-            end = raw_resp.rfind("}") + 1
-            parsed = json.loads(raw_resp[start:end])
-            ai_verdict = parsed.get("verdict", "Suspicious")
-            ai_analysis = json.dumps(parsed)
-        except Exception:
-            ai_analysis = json.dumps({"verdict": "Suspicious", "confidence": 50, "analysis": "AI analysis unavailable"})
+        parsed = call_ai_json("classification", prompt, temperature=0.2, max_tokens=800)
+        ai_verdict = parsed.get("verdict", "Suspicious")
+        ai_analysis = json.dumps(parsed)
+    except Exception:
+        ai_analysis = json.dumps({"verdict": "Suspicious", "confidence": 50, "analysis": "AI analysis unavailable"})
 
     record = EmailAnalysisRecord(
         raw_headers=raw_headers,

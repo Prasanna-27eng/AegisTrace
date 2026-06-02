@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Github, Linkedin, Mail, Phone, ArrowRight, Award, BookOpen, Briefcase, Code } from 'lucide-react';
 import Logo from '../components/Logo';
-import ParticleCanvas from '../components/ParticleCanvas';
+import WireframeBackground from '../components/WireframeBackground';
 import api from '../api/client';
 
 const SKILLS = [
@@ -99,7 +99,7 @@ export default function Portfolio() {
 
       {/* Hero */}
       <section style={{ paddingTop: 100, paddingBottom: 60, textAlign: 'center', position: 'relative', overflow: 'hidden', background: 'linear-gradient(180deg, #0F1018 0%, #07080F 100%)' }}>
-        <ParticleCanvas opacity={0.15} />
+        <WireframeBackground opacity={0.7} />
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 700, margin: '0 auto', padding: '0 24px' }}>
           <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(192,57,43,0.12)', border: '2px solid rgba(192,57,43,0.35)', margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem', fontWeight: 700, color: '#C0392B' }}>PK</div>
           <h1 style={{ fontSize: '2.2rem', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 8 }}>Prasanna Kumar Surendran</h1>

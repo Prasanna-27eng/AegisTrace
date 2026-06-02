@@ -84,6 +84,20 @@ def require_admin(user: User = Depends(get_current_user)) -> User:
 
 
 # ── Ensure admin exists on startup ───────────────────────────────────────────
+def _upsert_password_hash(session, user_id: int, pin: str):
+    """Store or refresh a password hash in the audit log."""
+    pin_hash = hash_password(pin)
+    log = AuditLog(
+        action="password_set",
+        entity_type="user_pw",
+        entity_id=str(user_id),
+        new_value=pin_hash,
+    )
+    session.add(log)
+    session.commit()
+    return pin_hash
+
+
 def ensure_admin(engine):
     from sqlmodel import Session as S
     admin_email = "prasanna80564@gmail.com"
@@ -91,34 +105,30 @@ def ensure_admin(engine):
     with S(engine) as session:
         existing = session.exec(select(User).where(User.email == admin_email)).first()
         if not existing:
-            admin = User(
-                email=admin_email,
-                name="Prasanna Kumar",
-                role="admin",
-                is_active=True,
-                # Store hashed PIN as password
-            )
+            admin = User(email=admin_email, name="Prasanna Kumar", role="admin", is_active=True)
             session.add(admin)
             session.commit()
             session.refresh(admin)
-            # Store hashed pin in a simple way via audit log metadata
-            pin_hash = hash_password(admin_pin)
-            log = AuditLog(action="admin_created", entity_type="user",
-                           entity_id=str(admin.id), new_value=pin_hash)
-            session.add(log)
-            session.commit()
-            print(f"[auth] Admin account created: {admin_email} / PIN: {admin_pin}")
+            _upsert_password_hash(session, admin.id, admin_pin)
+            print(f"[auth] Admin created: {admin_email}")
+        else:
+            # Always refresh hash on startup so ADMIN_PIN env var changes take effect
+            _upsert_password_hash(session, existing.id, admin_pin)
+            print(f"[auth] Admin password synced: {admin_email}")
 
 
 def get_user_pin_hash(user_id: int, session: Session) -> Optional[str]:
-    """Retrieve stored password hash from audit log (used for admin) or user metadata."""
-    log = session.exec(
+    """Retrieve latest stored password hash from audit log."""
+    # Use chained .where() calls — compatible with all SQLModel versions
+    logs = session.exec(
         select(AuditLog)
-        .where(AuditLog.entity_type == "user", AuditLog.entity_id == str(user_id))
+        .where(AuditLog.entity_type == "user_pw")
+        .where(AuditLog.entity_id == str(user_id))
         .order_by(AuditLog.timestamp.desc())
-    ).first()
-    if log and log.new_value and len(log.new_value) == 64:
-        return log.new_value
+    ).all()
+    for log in logs:
+        if log.new_value and len(log.new_value) == 64:
+            return log.new_value
     return None
 
 
@@ -187,12 +197,7 @@ def create_user(data: dict, admin: User = Depends(require_admin), session: Sessi
     session.add(user)
     session.commit()
     session.refresh(user)
-
-    pw_hash = hash_password(password)
-    log = AuditLog(action="user_created", entity_type="user",
-                   entity_id=str(user.id), new_value=pw_hash)
-    session.add(log)
-    session.commit()
+    _upsert_password_hash(session, user.id, password)
     return {"id": user.id, "email": user.email, "name": user.name, "role": user.role}
 
 
@@ -209,10 +214,7 @@ def update_user(user_id: int, data: dict, admin: User = Depends(require_admin),
     if "is_active" in data:
         user.is_active = bool(data["is_active"])
     if "password" in data and data["password"]:
-        pw_hash = hash_password(data["password"].strip())
-        log = AuditLog(action="password_changed", entity_type="user",
-                       entity_id=str(user.id), new_value=pw_hash)
-        session.add(log)
+        _upsert_password_hash(session, user.id, data["password"].strip())
     session.add(user)
     session.commit()
     session.refresh(user)
@@ -244,9 +246,5 @@ def change_password(data: dict, current_user: User = Depends(get_current_user),
     stored_hash = get_user_pin_hash(current_user.id, session)
     if not stored_hash or not hmac.compare_digest(hash_password(old_pw), stored_hash):
         raise HTTPException(401, "Current password is incorrect")
-    new_hash = hash_password(new_pw)
-    log = AuditLog(action="password_changed", entity_type="user",
-                   entity_id=str(current_user.id), new_value=new_hash)
-    session.add(log)
-    session.commit()
+    _upsert_password_hash(session, current_user.id, new_pw)
     return {"ok": True, "message": "Password changed successfully"}

@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import create_db_and_tables, engine
 from seed import seed_demo_data
 from routers.auth import ensure_admin, router as auth_router
+from ai_router import call_ai_json, call_ai
 from routers.cases import router as cases_router
 from routers.vt import router as vt_router
 from routers.email_router import router as email_router
@@ -45,6 +46,29 @@ app.include_router(portfolio_router)
 @app.get("/api/health")
 def health():
     return {"status": "ok", "service": "AegisTrace", "version": "1.0.0"}
+
+
+@app.post("/api/public/demo-analyse")
+async def public_demo_analyse(data: dict):
+    """Public AI demo — no auth required. Accepts IOC or raw text, returns threat assessment."""
+    text = (data.get("input") or "").strip()
+    if not text or len(text) > 500:
+        from fastapi import HTTPException
+        raise HTTPException(400, "Input required (max 500 chars)")
+    prompt = f"""Analyse this for cybersecurity threats: {text}
+
+Respond ONLY with valid JSON:
+{{
+  "verdict": "Malicious|Suspicious|Clean|Unknown",
+  "risk_level": "Critical|High|Medium|Low|Clean|Unknown",
+  "confidence": <0-100>,
+  "type": "IP Address|Domain|URL|File Hash|Email|Text Sample|Unknown",
+  "summary": "1-2 sentence plain-English assessment",
+  "indicators": ["key indicator 1", "key indicator 2"],
+  "recommendation": "What should an analyst do next?"
+}}"""
+    result = call_ai_json("demo", prompt, temperature=0.2, max_tokens=400)
+    return result
 
 
 # Serve React frontend

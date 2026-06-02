@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from models import ToolRun, AuditLog
 from database import get_session
-from groq import Groq
+from ai_router import call_ai_json
 
 router = APIRouter(prefix="/api/terminal", tags=["terminal"])
 
@@ -24,13 +24,8 @@ async def analyse_terminal(data: dict, session: Session = Depends(get_session)):
     if not output:
         raise HTTPException(400, "Output required")
 
-    ai_parsed = {}
-    groq_key = os.getenv("GROQ_API_KEY")
-    if groq_key:
-        client = Groq(api_key=groq_key)
-        prompt = f"""You are a SOC analyst parsing tool output. Extract structured threat intelligence.
-
-Tool: {tool_name}
+    # Use extraction model (gemma2-9b-it) — fastest for structured parsing
+    prompt = f"""Tool: {tool_name}
 Command: {command}
 Output:
 {output[:3000]}
@@ -44,19 +39,10 @@ Respond ONLY with valid JSON:
   "summary": "2-3 sentence summary of what this output reveals",
   "recommended_actions": ["action 1", "action 2"]
 }}"""
-        try:
-            resp = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.2, max_tokens=1000,
-            )
-            raw = resp.choices[0].message.content.strip()
-            start = raw.find("{")
-            end = raw.rfind("}") + 1
-            ai_parsed = json.loads(raw[start:end])
-        except Exception as e:
-            ai_parsed = {"key_findings": [], "iocs_found": [], "severity_indicators": [],
-                         "mitre_techniques": [], "summary": f"Parse error: {e}", "recommended_actions": []}
+    ai_parsed = call_ai_json("extraction", prompt, temperature=0.15, max_tokens=900)
+    if ai_parsed.get("parse_error"):
+        ai_parsed = {"key_findings": [], "iocs_found": [], "severity_indicators": [],
+                     "mitre_techniques": [], "summary": "AI parsing unavailable", "recommended_actions": []}
 
     run = ToolRun(
         case_id=case_id,

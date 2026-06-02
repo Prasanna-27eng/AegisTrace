@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Shield, AlertCircle } from 'lucide-react';
 import Logo from '../components/Logo';
-import ParticleCanvas from '../components/ParticleCanvas';
+import WireframeBackground from '../components/WireframeBackground';
 import api from '../api/client';
 import useStore from '../store/useStore';
 
@@ -33,7 +33,7 @@ export default function Login() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#07080F', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-      <ParticleCanvas opacity={0.2} />
+      <WireframeBackground opacity={0.85} />
 
       <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 420, padding: '0 20px' }}>
         {/* Header */}
@@ -107,11 +107,6 @@ export default function Login() {
             </button>
           </form>
 
-          <div style={{ marginTop: 20, padding: '12px', background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.15)', borderRadius: 6 }}>
-            <div style={{ fontSize: '0.7rem', color: '#71717A', fontFamily: 'JetBrains Mono', marginBottom: 4 }}>// default admin credentials</div>
-            <div style={{ fontSize: '0.72rem', color: '#A78BFA', fontFamily: 'JetBrains Mono' }}>prasanna80564@gmail.com</div>
-            <div style={{ fontSize: '0.72rem', color: '#71717A', fontFamily: 'JetBrains Mono' }}>password: aegis2025</div>
-          </div>
         </div>
 
         <div style={{ textAlign: 'center', marginTop: 20 }}>
