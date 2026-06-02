@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: aegistrace
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: frankfurt
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:////var/data/aegistrace.db
+      - key: GROQ_API_KEY
+        sync: false
+      - key: VIRUSTOTAL_API_KEY
+        sync: false
+      - key: ADMIN_PIN
+        value: aegis2025
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PUBLIC_URL
+        sync: false
+    disk:
+      name: aegistrace-data
+      mountPath: /var/data
+      sizeGB: 1
+    healthCheckPath: /api/health
+    autoDeploy: true
