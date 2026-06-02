@@ -8,6 +8,60 @@ def gen_uuid():
     return str(uuid.uuid4())
 
 
+# ── Endpoint Agent ────────────────────────────────────────────────────────────
+class Endpoint(SQLModel, table=True):
+    """Represents a remote machine running the AegisTrace agent."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    hostname: str = Field(index=True)
+    os_type: str = Field(default="unknown")     # windows / linux / mac / unknown
+    ip_address: str = Field(default="")
+    agent_version: str = Field(default="1.0")
+    last_seen: datetime = Field(default_factory=datetime.utcnow)
+    total_batches: int = Field(default=0)
+    threat_score_avg: float = Field(default=0.0)
+    is_active: bool = Field(default=True)
+    tags: Optional[str] = Field(default="[]", sa_column=Column(Text))  # JSON list
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class LogBatch(SQLModel, table=True):
+    """A batch of log lines shipped from an endpoint agent."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    endpoint_id: int = Field(foreign_key="endpoint.id", index=True)
+    log_file: str = Field(default="")          # /var/log/auth.log, Windows Security, etc.
+    log_type: str = Field(default="generic")   # syslog / windows_event / apache / generic
+    raw_content: str = Field(default="", sa_column=Column(Text))
+    line_count: int = Field(default=0)
+    ai_verdict: str = Field(default="")        # Clean / Suspicious / Malicious / Unknown
+    ai_summary: str = Field(default="", sa_column=Column(Text))
+    ai_findings: str = Field(default="", sa_column=Column(Text))
+    extracted_iocs: Optional[str] = Field(default="[]", sa_column=Column(Text))
+    mitre_techniques: Optional[str] = Field(default="[]", sa_column=Column(Text))
+    threat_score: int = Field(default=0)       # 0–100
+    case_id: Optional[int] = Field(default=None, foreign_key="case.id")
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# ── Log Investigation ─────────────────────────────────────────────────────────
+class LogAnalysis(SQLModel, table=True):
+    """A manually pasted/uploaded log investigation."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    case_id: Optional[int] = Field(default=None, foreign_key="case.id")
+    log_type: str = Field(default="generic")
+    raw_content: str = Field(default="", sa_column=Column(Text))
+    parsed_entries: Optional[str] = Field(default="[]", sa_column=Column(Text))
+    extracted_iocs: Optional[str] = Field(default="[]", sa_column=Column(Text))
+    ai_verdict: str = Field(default="")
+    ai_summary: str = Field(default="", sa_column=Column(Text))
+    ai_findings: str = Field(default="", sa_column=Column(Text))
+    mitre_techniques: Optional[str] = Field(default="[]", sa_column=Column(Text))
+    threat_score: int = Field(default=0)
+    total_entries: int = Field(default=0)
+    suspicious_entries: int = Field(default=0)
+    source_label: str = Field(default="Manual paste")
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 # ── Organisation (stub for future multi-tenancy) ─────────────────────────────
 class Organisation(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

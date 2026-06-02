@@ -96,4 +96,7 @@ def run_migrations(engine):
                 session.commit()
                 print(f"[migration] Reset {len(demo_cases)} demo case(s)")
 
+    # ── 6. Endpoint + LogBatch + LogAnalysis tables (created by create_all, just verify) ──
+    # SQLModel's create_all handles new tables automatically on startup.
+    # These are new models added in v2.1 — no ALTER needed, just creation.
     print("[migration] All migrations complete.")

@@ -8,16 +8,19 @@ import PublicGallery    from './pages/PublicGallery';
 import PublicCaseDetail from './pages/PublicCaseDetail';
 import Login            from './pages/Login';
 
-import AppShell    from './pages/app/AppShell';
-import Dashboard   from './pages/app/Dashboard';
-import CaseList    from './pages/app/CaseList';
-import CaseDetail  from './pages/app/CaseDetail/index';
-import VTLookup    from './pages/app/VTLookup';
-import EmailAnalysis from './pages/app/EmailAnalysis';
-import MalwareTools from './pages/app/MalwareTools';
-import ToolsHub    from './pages/app/ToolsHub';
-import Admin       from './pages/app/Admin';
-import ThreatHunt  from './pages/app/ThreatHunt';
+import AppShell         from './pages/app/AppShell';
+import Dashboard        from './pages/app/Dashboard';
+import CaseList         from './pages/app/CaseList';
+import CaseDetail       from './pages/app/CaseDetail/index';
+import VTLookup         from './pages/app/VTLookup';
+import EmailAnalysis    from './pages/app/EmailAnalysis';
+import MalwareTools     from './pages/app/MalwareTools';
+import ToolsHub         from './pages/app/ToolsHub';
+import Admin            from './pages/app/Admin';
+import ThreatHunt       from './pages/app/ThreatHunt';
+import AuditLog         from './pages/app/AuditLog';
+import Endpoints        from './pages/app/Endpoints';
+import LogInvestigation from './pages/app/LogInvestigation';
 
 export default function App() {
   return (
@@ -38,6 +41,9 @@ export default function App() {
           <Route path="cases"       element={<CaseList />} />
           <Route path="cases/:id"   element={<CaseDetail />} />
           <Route path="hunt"        element={<ThreatHunt />} />
+          <Route path="endpoints"   element={<Endpoints />} />
+          <Route path="logs"        element={<LogInvestigation />} />
+          <Route path="audit"       element={<AuditLog />} />
           <Route path="vt-lookup"   element={<VTLookup />} />
           <Route path="email"       element={<EmailAnalysis />} />
           <Route path="malware"     element={<MalwareTools />} />

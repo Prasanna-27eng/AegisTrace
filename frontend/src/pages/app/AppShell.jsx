@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { Navigate, Outlet, useNavigate, NavLink } from 'react-router-dom';
-import { Search, Menu, LayoutDashboard, FolderOpen, Crosshair, Shield, Settings } from 'lucide-react';
+import { Search, Menu, LayoutDashboard, FolderOpen, Crosshair, Monitor, Settings } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import useStore from '../../store/useStore';
 
 /* Mobile bottom nav — 5 key destinations */
 const MOBILE_NAV = [
-  { to: '/app/dashboard', Icon: LayoutDashboard, label: 'Home'  },
-  { to: '/app/cases',     Icon: FolderOpen,      label: 'Cases' },
-  { to: '/app/hunt',      Icon: Crosshair,       label: 'Hunt'  },
-  { to: '/app/vt-lookup', Icon: Shield,           label: 'VT'   },
-  { to: '/app/admin',     Icon: Settings,        label: 'Admin' },
+  { to: '/app/dashboard', Icon: LayoutDashboard, label: 'Home'      },
+  { to: '/app/cases',     Icon: FolderOpen,      label: 'Cases'     },
+  { to: '/app/hunt',      Icon: Crosshair,       label: 'Hunt'      },
+  { to: '/app/endpoints', Icon: Monitor,         label: 'Endpoints' },
+  { to: '/app/admin',     Icon: Settings,        label: 'Admin'     },
 ];
 
 export default function AppShell() {

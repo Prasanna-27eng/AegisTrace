@@ -21,6 +21,9 @@ from routers.public import router as public_router
 from routers.portfolio import router as portfolio_router
 from routers.webhooks import router as webhooks_router
 from routers.hunt import router as hunt_router
+from routers.audit import router as audit_router
+from routers.ingest import router as ingest_router
+from routers.enrichment import router as enrichment_router
 from ai_router import call_ai_json
 
 app = FastAPI(
@@ -50,7 +53,8 @@ app.add_middleware(
 # ── Routers ───────────────────────────────────────────────────────────────────
 for r in [auth_router, cases_router, vt_router, email_router, ioc_router,
           malware_router, terminal_router, reports_router, public_router,
-          portfolio_router, webhooks_router, hunt_router]:
+          portfolio_router, webhooks_router, hunt_router, audit_router,
+          ingest_router, enrichment_router]:
     app.include_router(r)
 
 

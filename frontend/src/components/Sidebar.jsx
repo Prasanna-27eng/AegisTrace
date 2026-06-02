@@ -3,21 +3,39 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, Shield, Bug, Mail,
   Wrench, Globe, Settings, LogOut, ChevronLeft, ChevronRight,
-  Crosshair
+  Crosshair, ScrollText, Monitor, FileSearch
 } from 'lucide-react';
 import Logo from './Logo';
 import useStore from '../store/useStore';
 
-const NAV = [
-  { to: '/app/dashboard', label: 'Dashboard',      Icon: LayoutDashboard },
-  { to: '/app/cases',     label: 'Cases',           Icon: FolderOpen },
-  { to: '/app/hunt',      label: 'Threat Hunt',     Icon: Crosshair },
-  { to: '/app/vt-lookup', label: 'VT Lookup',       Icon: Shield },
-  { to: '/app/malware',   label: 'Malware Tools',   Icon: Bug },
-  { to: '/app/email',     label: 'Email Analysis',  Icon: Mail },
-  { to: '/app/tools',     label: 'Tools Hub',       Icon: Wrench },
-  { to: '/app/public',    label: 'Public View',     Icon: Globe },
-  { to: '/app/admin',     label: 'Admin',           Icon: Settings },
+const NAV_GROUPS = [
+  {
+    label: 'Investigation',
+    items: [
+      { to: '/app/dashboard',  label: 'Dashboard',         Icon: LayoutDashboard },
+      { to: '/app/cases',      label: 'Cases',             Icon: FolderOpen },
+      { to: '/app/hunt',       label: 'Threat Hunt',       Icon: Crosshair },
+      { to: '/app/endpoints',  label: 'Endpoints',         Icon: Monitor },
+      { to: '/app/logs',       label: 'Log Investigation', Icon: FileSearch },
+    ],
+  },
+  {
+    label: 'Intelligence',
+    items: [
+      { to: '/app/vt-lookup',  label: 'VT Lookup',         Icon: Shield },
+      { to: '/app/email',      label: 'Email Analysis',    Icon: Mail },
+      { to: '/app/malware',    label: 'Malware Tools',     Icon: Bug },
+      { to: '/app/tools',      label: 'Tools Hub',         Icon: Wrench },
+    ],
+  },
+  {
+    label: 'System',
+    items: [
+      { to: '/app/audit',      label: 'Audit Log',         Icon: ScrollText },
+      { to: '/app/public',     label: 'Public View',       Icon: Globe },
+      { to: '/app/admin',      label: 'Admin',             Icon: Settings },
+    ],
+  },
 ];
 
 export default function Sidebar({ collapsed, setCollapsed }) {
@@ -26,7 +44,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
   return (
     <aside style={{
-      width: collapsed ? 56 : 200,
+      width: collapsed ? 56 : 204,
       background: '#0F1018',
       borderRight: '1px solid rgba(255,255,255,0.07)',
       display: 'flex', flexDirection: 'column',
@@ -39,44 +57,52 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         display: 'flex', alignItems: 'center',
         justifyContent: collapsed ? 'center' : 'space-between',
         borderBottom: '1px solid rgba(255,255,255,0.07)',
-        marginBottom: 8,
+        marginBottom: 4, flexShrink: 0,
       }}>
-        {collapsed
-          ? <Logo size={22} showText={false} />
-          : <Logo size={22} showText />
-        }
-        <button onClick={() => setCollapsed(!collapsed)} style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer', padding: 4 }} title={collapsed ? 'Expand' : 'Collapse'}>
+        {collapsed ? <Logo size={22} showText={false} /> : <Logo size={22} showText />}
+        <button onClick={() => setCollapsed(!collapsed)}
+          style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer', padding: 4 }}
+          title={collapsed ? 'Expand' : 'Collapse'}>
           {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
       </div>
 
-      {/* Nav */}
-      <nav style={{ flex: 1, padding: '0 6px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {NAV.map(({ to, label, Icon }) => (
-          <NavLink key={to} to={to}
-            className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
-            title={collapsed ? label : ''}
-            style={collapsed ? { justifyContent: 'center', padding: '8px 0' } : {}}>
-            <Icon size={16} style={{ flexShrink: 0 }} />
-            {!collapsed && <span>{label}</span>}
-          </NavLink>
+      {/* Nav groups */}
+      <nav style={{ flex: 1, padding: '0 6px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto', overflowX: 'hidden' }}>
+        {NAV_GROUPS.map(group => (
+          <div key={group.label}>
+            {!collapsed && (
+              <div style={{ fontSize: '0.58rem', fontWeight: 600, color: 'rgba(113,113,122,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '10px 12px 4px', fontFamily: 'JetBrains Mono' }}>
+                {group.label}
+              </div>
+            )}
+            {group.items.map(({ to, label, Icon }) => (
+              <NavLink key={to} to={to}
+                className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
+                title={collapsed ? label : ''}
+                style={collapsed ? { justifyContent: 'center', padding: '8px 0' } : {}}>
+                <Icon size={15} style={{ flexShrink: 0 }} />
+                {!collapsed && <span style={{ fontSize: '0.8rem' }}>{label}</span>}
+              </NavLink>
+            ))}
+          </div>
         ))}
       </nav>
 
       {/* User + logout */}
-      <div style={{ padding: '8px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+      <div style={{ padding: '8px', borderTop: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
         {!collapsed && user && (
-          <div style={{ padding: '8px 12px', marginBottom: 4 }}>
-            <div style={{ fontSize: '0.75rem', color: '#F0F0F8', fontWeight: 500 }}>{user.name}</div>
-            <div style={{ fontSize: '0.65rem', color: '#71717A', fontFamily: 'JetBrains Mono', marginTop: 2 }}>{user.role}</div>
+          <div style={{ padding: '6px 10px', marginBottom: 3 }}>
+            <div style={{ fontSize: '0.73rem', color: '#F0F0F8', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</div>
+            <div style={{ fontSize: '0.62rem', color: '#71717A', fontFamily: 'JetBrains Mono', marginTop: 1 }}>{user.role}</div>
           </div>
         )}
         <button onClick={() => { logout(); navigate('/'); }}
           className="sidebar-item"
           style={collapsed ? { justifyContent: 'center', padding: '8px 0', width: '100%' } : { width: '100%' }}
           title="Logout">
-          <LogOut size={16} style={{ flexShrink: 0 }} />
-          {!collapsed && <span>Logout</span>}
+          <LogOut size={15} style={{ flexShrink: 0 }} />
+          {!collapsed && <span style={{ fontSize: '0.8rem' }}>Logout</span>}
         </button>
       </div>
     </aside>
