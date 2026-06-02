@@ -7,6 +7,7 @@ from models import Case, TimelineEvent
 from database import get_session
 from routers.auth import get_current_user
 from models import User
+from ai_router import call_ai, call_ai_json
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 
@@ -14,11 +15,64 @@ router = APIRouter(prefix="/api/reports", tags=["reports"])
 def severity_color_rgb(severity: str):
     return {
         "critical": (192, 57, 43),
-        "high": (234, 179, 8),
-        "medium": (167, 139, 250),
-        "low": (34, 197, 94),
-        "info": (113, 113, 122),
+        "high":     (234, 179, 8),
+        "medium":   (167, 139, 250),
+        "low":      (34, 197, 94),
+        "info":     (113, 113, 122),
     }.get(severity, (113, 113, 122))
+
+
+def ai_enrich_case(case: Case) -> dict:
+    """
+    Use AI to generate detailed narrative sections if not already present.
+    Returns a dict with enriched text fields.
+    """
+    iocs  = json.loads(case.iocs or "[]")
+    mitre = json.loads(case.mitre_techniques or "[]")
+
+    # If we already have AI summaries, just enhance them for the report
+    existing_exec = case.ai_executive_summary or ""
+    existing_tech = case.ai_technical_summary or ""
+
+    prompt = f"""You are a senior SOC analyst writing a formal incident report.
+Generate detailed, professional narrative sections for the following case.
+
+Case: {case.case_number} — {case.title}
+Severity: {case.severity.upper()} | Type: {case.incident_type}
+Affected Systems: {case.affected_systems}
+Analyst: {case.analyst_name} | Customer: {case.customer_name}
+Description: {case.description[:600]}
+Findings: {case.findings[:800]}
+Commands Run: {(case.commands_run or '')[:600]}
+IOCs ({len(iocs)}): {json.dumps(iocs[:8])}
+MITRE Techniques: {json.dumps(mitre)}
+Existing Summary: {existing_exec[:300]}
+
+Generate a comprehensive, well-written incident report. Respond ONLY with valid JSON:
+{{
+  "executive_summary": "3-4 professional sentences for senior management and legal. Include business impact, attack vector, and outcome.",
+  "technical_narrative": "4-6 detailed technical paragraphs covering: initial detection, attack analysis, threat actor TTPs, evidence collected, containment actions, and forensic findings.",
+  "attack_timeline_summary": "2-3 sentences summarising the chronological attack progression.",
+  "impact_assessment": "Paragraph assessing: data loss, financial impact, service disruption, reputational risk, regulatory implications.",
+  "threat_actor_profile": "2-3 sentences on threat actor sophistication, likely motivation, and attribution confidence.",
+  "remediation_summary": "3-4 specific, actionable remediation steps taken or recommended.",
+  "lessons_learned": "2-3 specific operational improvements identified from this incident.",
+  "risk_rating": "Overall risk rating with justification (Critical/High/Medium/Low and why)"
+}}"""
+
+    result = call_ai_json("report", prompt, temperature=0.3, max_tokens=2000)
+    if result.get("parse_error"):
+        return {
+            "executive_summary": existing_exec or case.description,
+            "technical_narrative": existing_tech or case.findings,
+            "attack_timeline_summary": "",
+            "impact_assessment": "",
+            "threat_actor_profile": "",
+            "remediation_summary": case.recommendations or "",
+            "lessons_learned": "",
+            "risk_rating": f"{case.severity.upper()} — Score: {case.ai_severity_score or 'N/A'}/100",
+        }
+    return result
 
 
 @router.get("/{case_id}/pdf")
@@ -37,6 +91,9 @@ def download_pdf(case_id: int, session: Session = Depends(get_session)):
     except ImportError:
         raise HTTPException(503, "reportlab not installed")
 
+    # Generate AI-enriched report content
+    ai = ai_enrich_case(case)
+
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4,
                             rightMargin=2*cm, leftMargin=2*cm,
@@ -46,57 +103,87 @@ def download_pdf(case_id: int, session: Session = Depends(get_session)):
     accent = colors.Color(r/255, g/255, b/255)
     dark   = colors.Color(0.04, 0.03, 0.06)
     gray   = colors.Color(0.44, 0.44, 0.45)
+    lgray  = colors.Color(0.97, 0.97, 0.98)
 
-    styles = getSampleStyleSheet()
-    title_style = ParagraphStyle("title", fontName="Helvetica-Bold", fontSize=18, textColor=dark, spaceAfter=4)
-    h2_style    = ParagraphStyle("h2",    fontName="Helvetica-Bold", fontSize=12, textColor=accent, spaceBefore=12, spaceAfter=4)
-    body_style  = ParagraphStyle("body",  fontName="Helvetica",      fontSize=9,  textColor=gray,  spaceAfter=4, leading=14)
-    label_style = ParagraphStyle("label", fontName="Helvetica-Bold", fontSize=8,  textColor=dark)
-    mono_style  = ParagraphStyle("mono",  fontName="Courier",        fontSize=8,  textColor=gray,  spaceAfter=4, leading=12)
+    def S(name, **kw):
+        base = dict(fontName="Helvetica", fontSize=9, textColor=gray, spaceAfter=4, leading=14)
+        base.update(kw)
+        return ParagraphStyle(name, **base)
+
+    title_style = S("title", fontName="Helvetica-Bold", fontSize=16, textColor=dark, spaceAfter=4)
+    h2_style    = S("h2",    fontName="Helvetica-Bold", fontSize=11, textColor=accent, spaceBefore=14, spaceAfter=4)
+    body_style  = S("body")
+    mono_style  = S("mono",  fontName="Courier", fontSize=8, leading=12)
+    note_style  = S("note",  fontName="Helvetica-Oblique", fontSize=8, textColor=gray)
+
+    def clean(text):
+        return (text or "").replace("\n", "<br/>").replace("**", "").replace("##", "").replace("#", "")
 
     story = []
 
-    # Header
-    story.append(Paragraph("AEGISTRACE", ParagraphStyle("brand", fontName="Helvetica-Bold", fontSize=8, textColor=accent, spaceAfter=2)))
+    # ── Cover ─────────────────────────────────────────────────────────────────
+    story.append(Paragraph("AEGISTRACE SOC PLATFORM", S("brand", fontName="Helvetica-Bold", fontSize=8, textColor=accent, spaceAfter=2)))
+    story.append(Paragraph("INCIDENT INVESTIGATION REPORT", S("rep", fontName="Helvetica-Bold", fontSize=10, textColor=dark, spaceAfter=6)))
     story.append(Paragraph(case.title, title_style))
-    story.append(Paragraph(f"Case: {case.case_number} &nbsp;&nbsp; Severity: {case.severity.upper()} &nbsp;&nbsp; Status: {case.status.upper()}", body_style))
-    story.append(HRFlowable(width="100%", thickness=1, color=accent, spaceAfter=12))
+    story.append(HRFlowable(width="100%", thickness=1.5, color=accent, spaceAfter=10))
 
-    # Case Details Table
-    story.append(Paragraph("Case Details", h2_style))
     detail_data = [
-        ["Analyst", case.analyst_name, "Customer", case.customer_name],
-        ["Type", case.incident_type, "Classification", case.classification],
-        ["Affected Systems", case.affected_systems, "Created", case.created_at.strftime("%Y-%m-%d %H:%M UTC")],
+        ["Case Number",     case.case_number,    "Severity",        case.severity.upper()],
+        ["Status",          case.status.replace("_"," ").upper(), "Incident Type", case.incident_type.replace("_"," ").title()],
+        ["Analyst",         case.analyst_name,   "Customer",        case.customer_name or "—"],
+        ["Classification",  case.classification, "Affected Systems",case.affected_systems or "—"],
+        ["Report Date",     datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"), "Case Opened", case.created_at.strftime("%Y-%m-%d %H:%M UTC")],
     ]
-    t = Table(detail_data, colWidths=[3*cm, 6*cm, 3*cm, 5*cm])
-    t.setStyle(TableStyle([
-        ("FONTNAME", (0,0), (-1,-1), "Helvetica"),
-        ("FONTSIZE", (0,0), (-1,-1), 8),
-        ("FONTNAME", (0,0), (0,-1), "Helvetica-Bold"),
-        ("FONTNAME", (2,0), (2,-1), "Helvetica-Bold"),
-        ("BACKGROUND", (0,0), (-1,-1), colors.Color(0.95, 0.95, 0.96)),
-        ("GRID", (0,0), (-1,-1), 0.5, colors.Color(0.8, 0.8, 0.82)),
-        ("ROWBACKGROUNDS", (0,0), (-1,-1), [colors.Color(0.97,0.97,0.98), colors.white]),
-        ("PADDING", (0,0), (-1,-1), 6),
+    dt = Table(detail_data, colWidths=[3.5*cm, 5.5*cm, 3.5*cm, 5*cm])
+    dt.setStyle(TableStyle([
+        ("FONTNAME",  (0,0), (0,-1), "Helvetica-Bold"),
+        ("FONTNAME",  (2,0), (2,-1), "Helvetica-Bold"),
+        ("FONTNAME",  (1,0), (1,-1), "Helvetica"),
+        ("FONTNAME",  (3,0), (3,-1), "Helvetica"),
+        ("FONTSIZE",  (0,0), (-1,-1), 8),
+        ("ROWBACKGROUNDS", (0,0), (-1,-1), [lgray, colors.white]),
+        ("GRID",      (0,0), (-1,-1), 0.5, colors.Color(0.85,0.85,0.86)),
+        ("PADDING",   (0,0), (-1,-1), 6),
     ]))
-    story.append(t)
-    story.append(Spacer(1, 0.3*cm))
+    story.append(dt)
+    story.append(Spacer(1, 0.4*cm))
 
-    # Description
-    if case.description:
-        story.append(Paragraph("Description", h2_style))
-        story.append(Paragraph(case.description.replace("\n", "<br/>"), body_style))
+    # ── AI Executive Summary ──────────────────────────────────────────────────
+    if ai.get("executive_summary"):
+        story.append(Paragraph("Executive Summary", h2_style))
+        story.append(Paragraph(clean(ai["executive_summary"]), body_style))
 
-    # AI Executive Summary
-    if case.ai_executive_summary:
-        story.append(Paragraph("Executive Summary (AI)", h2_style))
-        story.append(Paragraph(case.ai_executive_summary.replace("\n", "<br/>"), body_style))
+    # ── Risk Rating ───────────────────────────────────────────────────────────
+    if ai.get("risk_rating"):
+        story.append(Paragraph("Risk Rating", h2_style))
+        story.append(Paragraph(clean(ai["risk_rating"]), body_style))
+        if case.ai_severity_score:
+            story.append(Paragraph(f"AI Severity Score: {case.ai_severity_score}/100  |  {case.ai_severity_reasoning or ''}", note_style))
 
-    # Findings
+    # ── Attack Timeline Summary ───────────────────────────────────────────────
+    if ai.get("attack_timeline_summary"):
+        story.append(Paragraph("Attack Timeline Summary", h2_style))
+        story.append(Paragraph(clean(ai["attack_timeline_summary"]), body_style))
+
+    # ── Technical Narrative ───────────────────────────────────────────────────
+    if ai.get("technical_narrative"):
+        story.append(Paragraph("Technical Analysis", h2_style))
+        story.append(Paragraph(clean(ai["technical_narrative"]), body_style))
+
+    # ── Threat Actor Profile ──────────────────────────────────────────────────
+    if ai.get("threat_actor_profile"):
+        story.append(Paragraph("Threat Actor Profile", h2_style))
+        story.append(Paragraph(clean(ai["threat_actor_profile"]), body_style))
+
+    # ── Impact Assessment ─────────────────────────────────────────────────────
+    if ai.get("impact_assessment"):
+        story.append(Paragraph("Impact Assessment", h2_style))
+        story.append(Paragraph(clean(ai["impact_assessment"]), body_style))
+
+    # ── Analyst Findings (raw) ────────────────────────────────────────────────
     if case.findings:
-        story.append(Paragraph("Findings", h2_style))
-        story.append(Paragraph(case.findings.replace("\n", "<br/>").replace("**", ""), body_style))
+        story.append(Paragraph("Analyst Findings", h2_style))
+        story.append(Paragraph(clean(case.findings), body_style))
 
     # IOCs
     try:
@@ -149,28 +236,77 @@ def download_pdf(case_id: int, session: Session = Depends(get_session)):
     except Exception:
         pass
 
-    # Recommendations
-    if case.recommendations:
+    # ── Remediation ───────────────────────────────────────────────────────────
+    if ai.get("remediation_summary"):
+        story.append(Paragraph("Remediation Actions", h2_style))
+        story.append(Paragraph(clean(ai["remediation_summary"]), body_style))
+    elif case.recommendations:
         story.append(Paragraph("Recommendations", h2_style))
-        story.append(Paragraph(case.recommendations.replace("\n", "<br/>").replace("**", ""), body_style))
+        story.append(Paragraph(clean(case.recommendations), body_style))
 
-    # Commands
+    # ── Lessons Learned ───────────────────────────────────────────────────────
+    if ai.get("lessons_learned"):
+        story.append(Paragraph("Lessons Learned", h2_style))
+        story.append(Paragraph(clean(ai["lessons_learned"]), body_style))
+
+    # ── Closure Notes ─────────────────────────────────────────────────────────
+    try:
+        closure = json.loads(case.closure_notes or "{}")
+        if closure:
+            story.append(Paragraph("Case Closure", h2_style))
+            if closure.get("final_findings"):
+                story.append(Paragraph(f"<b>Final Findings:</b> {closure['final_findings']}", body_style))
+            story.append(Paragraph(f"<b>Closed by:</b> {closure.get('closed_by','—')}  |  <b>Closed at:</b> {closure.get('closed_at','—')}", note_style))
+    except Exception:
+        pass
+
+    # ── Commands Run ──────────────────────────────────────────────────────────
     if case.commands_run:
-        story.append(Paragraph("Commands Run", h2_style))
-        for line in case.commands_run.split("\n")[:30]:
+        story.append(Paragraph("Commands &amp; Tool Output", h2_style))
+        for line in case.commands_run.split("\n")[:40]:
             story.append(Paragraph(line or "&nbsp;", mono_style))
 
-    # Footer
-    story.append(Spacer(1, 0.5*cm))
+    # ── Timeline ──────────────────────────────────────────────────────────────
+    tl_events = session.exec(
+        select(TimelineEvent)
+        .where(TimelineEvent.case_id == case_id)
+        .order_by(TimelineEvent.timestamp)
+    ).all()
+    if tl_events:
+        story.append(Paragraph("Investigation Timeline", h2_style))
+        tl_data = [["Timestamp", "Type", "Description"]]
+        for ev in tl_events:
+            tl_data.append([
+                ev.timestamp.strftime("%Y-%m-%d %H:%M"),
+                ev.event_type.upper(),
+                (ev.description or "")[:80],
+            ])
+        tlt = Table(tl_data, colWidths=[3.5*cm, 2.5*cm, 11.5*cm])
+        tlt.setStyle(TableStyle([
+            ("FONTNAME",  (0,0), (-1,0), "Helvetica-Bold"),
+            ("FONTSIZE",  (0,0), (-1,-1), 7.5),
+            ("BACKGROUND",(0,0), (-1,0), dark),
+            ("TEXTCOLOR", (0,0), (-1,0), colors.white),
+            ("ROWBACKGROUNDS", (0,1), (-1,-1), [lgray, colors.white]),
+            ("GRID",      (0,0), (-1,-1), 0.5, colors.Color(0.85,0.85,0.86)),
+            ("PADDING",   (0,0), (-1,-1), 4),
+            ("FONTNAME",  (0,1), (0,-1), "Courier"),
+        ]))
+        story.append(tlt)
+
+    # ── Footer ────────────────────────────────────────────────────────────────
+    story.append(Spacer(1, 0.6*cm))
     story.append(HRFlowable(width="100%", thickness=0.5, color=gray))
     story.append(Paragraph(
-        f"Generated by AegisTrace &nbsp;·&nbsp; {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')} &nbsp;·&nbsp; CONFIDENTIAL",
-        ParagraphStyle("footer", fontName="Helvetica", fontSize=7, textColor=gray, alignment=TA_CENTER)
+        f"Generated by AegisTrace SOC Platform &nbsp;·&nbsp; "
+        f"{datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')} &nbsp;·&nbsp; "
+        f"AI-Assisted Analysis (Groq llama-3.3-70b) &nbsp;·&nbsp; CONFIDENTIAL",
+        S("footer", fontName="Helvetica", fontSize=7, textColor=gray, alignment=TA_CENTER)
     ))
 
     doc.build(story)
     buffer.seek(0)
-    filename = f"aegistrace_{case.case_number}.pdf"
+    filename = f"AegisTrace_Report_{case.case_number}.pdf"
     return StreamingResponse(buffer, media_type="application/pdf",
                              headers={"Content-Disposition": f'attachment; filename="{filename}"'})
 

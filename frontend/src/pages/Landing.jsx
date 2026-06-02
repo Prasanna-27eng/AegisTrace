@@ -319,6 +319,22 @@ export default function Landing() {
         .cta-box svg{transition:transform 0.2s}
         .feature-card{background:rgba(240,240,248,0.02);border:1px solid rgba(240,240,248,0.07);border-radius:8px;padding:20px 22px;transition:border-color 0.2s,background 0.2s;cursor:default}
         .feature-card:hover{border-color:rgba(192,57,43,0.3);background:rgba(192,57,43,0.03)}
+        /* ── Mobile ── */
+        @media(max-width:767px){
+          .lp-nav-links{display:none!important}
+          .lp-rails{display:none!important}
+          .lp-hero{bottom:100px!important;left:20px!important;right:20px!important;max-width:100%!important}
+          .lp-section{padding:48px 20px!important}
+          .lp-grid-4{grid-template-columns:1fr 1fr!important}
+          .lp-grid-auto{grid-template-columns:1fr!important}
+          .lp-how{grid-template-columns:1fr 1fr!important}
+          .lp-footer{flex-direction:column!important;gap:12px!important;align-items:flex-start!important}
+          .lp-cta-row{flex-direction:column!important;gap:20px!important}
+        }
+        @media(max-width:480px){
+          .lp-grid-4{grid-template-columns:1fr!important}
+          .lp-how{grid-template-columns:1fr!important}
+        }
       `}</style>
 
       {/* ── HERO (full viewport tunnel) ── */}
@@ -328,7 +344,7 @@ export default function Landing() {
         {/* Top nav */}
         <header className="fade-1" style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 48px', borderBottom: '1px solid rgba(240,240,248,0.06)' }}>
           <Logo size={24} showText />
-          <nav data-testid="primary-nav" style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
+          <nav data-testid="primary-nav" className="lp-nav-links" style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
             <a href="#features" className="nav-link" onClick={e => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({behavior:'smooth'}); }}>Features</a>
             <a href="#demo" className="nav-link" onClick={e => { e.preventDefault(); document.getElementById('demo')?.scrollIntoView({behavior:'smooth'}); }}>Live Demo</a>
             <a href="#how" className="nav-link" onClick={e => { e.preventDefault(); document.getElementById('how')?.scrollIntoView({behavior:'smooth'}); }}>How It Works</a>
@@ -345,21 +361,21 @@ export default function Landing() {
         </header>
 
         {/* Left rail */}
-        <div className="fade-2" style={{ position: 'absolute', left: 20, top: '50%', transform: 'translateY(-50%)', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+        <div className="fade-2 lp-rails" style={{ position: 'absolute', left: 20, top: '50%', transform: 'translateY(-50%)', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
           <span style={{ writingMode: 'vertical-rl', fontSize: 10, color: 'rgba(240,240,248,0.3)', letterSpacing: '0.15em', textTransform: 'uppercase', ...monoStyle }}>Transmission № 01</span>
           <div style={{ width: 1, height: 48, background: 'rgba(192,57,43,0.3)' }} />
           <span style={{ writingMode: 'vertical-rl', fontSize: 10, color: 'rgba(240,240,248,0.25)', letterSpacing: '0.12em', ...monoStyle }}>SOC · Intel · Trace</span>
         </div>
 
         {/* Right rail */}
-        <div className="fade-2" style={{ position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
+        <div className="fade-2 lp-rails" style={{ position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
           <span style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', fontSize: 10, color: 'rgba(240,240,248,0.3)', letterSpacing: '0.12em', ...monoStyle }}>Vanishing pt.</span>
           <div style={{ width: 1, height: 36, background: 'rgba(192,57,43,0.3)' }} />
           <span data-testid="coord-readout" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', fontSize: 10, color: 'rgba(192,57,43,0.5)', letterSpacing: '0.1em', ...monoStyle }}>x{coord.x} · y{coord.y}</span>
         </div>
 
         {/* Hero copy — bottom left */}
-        <div className="fade-4" style={{ position: 'absolute', bottom: 80, left: 48, zIndex: 10, maxWidth: 820 }}>
+        <div className="fade-4 lp-hero" style={{ position: 'absolute', bottom: 80, left: 48, zIndex: 10, maxWidth: 820 }}>
           <div style={{ fontSize: 10, letterSpacing: '0.45em', textTransform: 'uppercase', color: '#C0392B', ...monoStyle, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ border: '1px solid rgba(192,57,43,0.4)', width: 12, height: 12, display: 'inline-block' }} />
             Professional SOC Investigation Platform
@@ -393,7 +409,7 @@ export default function Landing() {
 
       {/* ── STATS BAR ── */}
       <section style={{ background: '#0F1018', borderTop: '1px solid rgba(240,240,248,0.06)', borderBottom: '1px solid rgba(240,240,248,0.06)' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)' }}>
+        <div className="lp-grid-4" style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)' }}>
           {[
             { val: stats.total_cases,    label: 'Cases Handled',      color: '#F0F0F8' },
             { val: stats.total_iocs,     label: 'IOCs Tracked',       color: '#C0392B' },
@@ -409,7 +425,7 @@ export default function Landing() {
       </section>
 
       {/* ── AI LIVE DEMO ── */}
-      <section id="demo" style={{ padding: '80px 48px', background: '#07080F' }}>
+      <section id="demo" className="lp-section" style={{ padding: '80px 48px', background: '#07080F' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ marginBottom: 40, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
             <div>
@@ -425,13 +441,13 @@ export default function Landing() {
       </section>
 
       {/* ── FEATURES ── */}
-      <section id="features" style={{ padding: '80px 48px', background: '#0F1018', borderTop: '1px solid rgba(240,240,248,0.05)' }}>
+      <section id="features" className="lp-section" style={{ padding: '80px 48px', background: '#0F1018', borderTop: '1px solid rgba(240,240,248,0.05)' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ marginBottom: 48 }}>
             <div style={{ fontSize: 10, color: '#C0392B', letterSpacing: '0.2em', textTransform: 'uppercase', ...monoStyle, marginBottom: 10 }}>◇ Platform Capabilities</div>
             <h2 style={{ fontFamily: 'Instrument Serif, serif', fontSize: 'clamp(2rem, 4vw, 3.2rem)', fontWeight: 400, color: '#F0F0F8', letterSpacing: '-0.02em' }}>Everything a SOC analyst needs.<br /><span style={{ color: 'rgba(240,240,248,0.35)' }}>Nothing you don't.</span></h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 14 }}>
+          <div className="lp-grid-auto" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 14 }}>
             {FEATURES.map(({ Icon, title, desc, color }) => (
               <div key={title} className="feature-card">
                 <Icon size={20} style={{ color, marginBottom: 14 }} />
@@ -444,13 +460,13 @@ export default function Landing() {
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section id="how" style={{ padding: '80px 48px', background: '#07080F', borderTop: '1px solid rgba(240,240,248,0.05)' }}>
+      <section id="how" className="lp-section" style={{ padding: '80px 48px', background: '#07080F', borderTop: '1px solid rgba(240,240,248,0.05)' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ marginBottom: 48 }}>
             <div style={{ fontSize: 10, color: '#C0392B', letterSpacing: '0.2em', textTransform: 'uppercase', ...monoStyle, marginBottom: 10 }}>◇ Workflow</div>
             <h2 style={{ fontFamily: 'Instrument Serif, serif', fontSize: 'clamp(2rem, 4vw, 3.2rem)', fontWeight: 400, letterSpacing: '-0.02em' }}>Four steps.<br /><span style={{ color: '#C0392B', fontStyle: 'italic' }}>One investigation.</span></h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 32 }}>
+          <div className="lp-how" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 32 }}>
             {HOW_IT_WORKS.map(({ n, title, desc }) => (
               <div key={n}>
                 <div style={{ fontSize: '3.5rem', fontWeight: 700, color: 'rgba(192,57,43,0.12)', ...monoStyle, lineHeight: 1, marginBottom: 14 }}>{n}</div>
