@@ -1,6 +1,6 @@
 # AegisTrace — Full Context Prompt
 > Paste this entire document into a new conversation to resume exactly where we left off.
-> Last updated: June 2026 — Session 4
+> Last updated: June 2026 — Session 5
 
 ---
 
@@ -119,6 +119,44 @@ WebhookConfig   — name, url, events (JSON), secret, is_active, last_fired_at, 
 
 ---
 
+## SECURITY AUDIT — SESSION 5 (Full findings)
+
+### Vulnerabilities Fixed
+
+| # | Vulnerability | Severity | Fix Applied |
+|---|---|---|---|
+| 1 | **Weak default JWT secret** `"aegistrace-secret-change-me-2025"` | 🔴 Critical | Added startup warning printed to logs if default is still in use. Set `JWT_SECRET` env var in Render. |
+| 2 | **Weak default ADMIN_PIN** `"aegis2025"` | 🔴 Critical | Added startup warning. Set `ADMIN_PIN` env var in Render. |
+| 3 | **Ingest endpoint accepted raw ADMIN_PIN as valid key** | 🔴 Critical | Removed the plain-PIN fallback. Now only accepts the SHA-256 derived ingest key. Uses `hmac.compare_digest` to prevent timing attacks. |
+| 4 | **No security headers** — no X-Frame-Options, X-Content-Type-Options, CSP | 🟠 High | Added `SecurityHeadersMiddleware` to `main.py` — sets X-Frame-Options: DENY, X-Content-Type-Options: nosniff, X-XSS-Protection, Referrer-Policy, Permissions-Policy, Cache-Control: no-store on all /api/ routes. |
+| 5 | **No login brute-force protection** | 🟠 High | Added in-memory rate limiter on `POST /api/auth/login`: 10 attempts/min per IP → HTTP 429. |
+| 6 | **python-jose 3.3.0 — known CVEs, never used** | 🟠 High | Removed from requirements.txt entirely. App uses its own HMAC-based JWT. |
+| 7 | **passlib 1.7.4 — installed but never imported** | 🟡 Medium | Removed from requirements.txt. Dead dependency. |
+| 8 | **python-multipart 0.0.9 — ReDoS vulnerability** | 🟡 Medium | Updated to 0.0.20 in requirements.txt. |
+| 9 | **Report downloads used unauthenticated `<a href>` links** | 🟠 High | Fixed in Session 4 — Axios blob downloads with Bearer token. |
+
+### Vulnerabilities Remaining (not yet fixed — need future work)
+
+| # | Issue | Severity | Notes |
+|---|---|---|---|
+| 1 | **JWT token in localStorage** (XSS risk) | 🟡 Medium | Standard SPA pattern. No XSS vectors found (no `dangerouslySetInnerHTML`). Mitigation: move to httpOnly cookie. Low priority since no XSS found. |
+| 2 | **SHA-256 password hashing** (not bcrypt) | 🟠 High | `hash_password()` uses `hashlib.sha256(pw + SECRET)`. Should use bcrypt/argon2. `passlib[bcrypt]` was in requirements but never used. Fix: replace `hash_password()` with bcrypt and migrate existing hashes. **Priority: HIGH for next session.** |
+| 3 | **No rate limiting on VT/email/enrichment endpoints** | 🟡 Medium | Only `/api/public/demo-analyse` is rate-limited. VT lookups could burn API quota. Add per-user rate limiting. |
+| 4 | **CORS allows localhost:3000 always** | 🔵 Info | Fine for dev. Would need `ENVIRONMENT` env var check to strip in production. |
+| 5 | **No 2FA/TOTP** | 🟡 Medium | See Priority 6A in roadmap. `pyotp` library needed. |
+| 6 | **JWT has no server-side invalidation** | 🟡 Medium | Tokens valid 7 days even if user deactivated. Would need token blocklist (Redis or DB table). |
+
+### Security Checks That PASSED ✅
+- No `subprocess`, `exec()`, `eval()`, `os.system()` — no command injection possible
+- No `dangerouslySetInnerHTML` in React — no XSS via frontend
+- No raw SQL string concatenation — parameterized queries via SQLModel throughout
+- Terminal endpoint is analysis-only (paste output, never executes commands)
+- Public `/api/public/*` endpoints only expose `is_public=True` cases
+- Ingest content capped at 500KB per batch
+- `hmac.compare_digest()` used for constant-time comparisons throughout
+
+---
+
 ## BUGS FIXED — SESSION 4
 
 | # | Bug | Severity | Fix Applied |
@@ -149,6 +187,31 @@ WebhookConfig   — name, url, events (JSON), secret, is_active, last_fired_at, 
 ---
 
 ## FULL IMPROVEMENT ROADMAP
+
+### PRIORITY 0 — Security fixes (build FIRST, before anything else)
+
+**0A. Upgrade password hashing to bcrypt** (~1h)
+- Current: `hashlib.sha256(pw + SECRET)` — fast hash, vulnerable to brute-force
+- Fix: `pip install bcrypt` (or use `passlib[bcrypt]`). Replace `hash_password()` in `auth.py`
+- Add migration: on first login, if stored hash is 64 chars (SHA-256), re-hash with bcrypt and update
+- This is a one-time transparent migration — users won't notice
+- bcrypt is the industry standard: slow by design, salted automatically
+
+**0B. JWT token → httpOnly cookie** (~2h, optional but recommended)
+- Currently stored in `localStorage` — accessible to any JS on the page
+- Move to `httpOnly` cookie: set `Set-Cookie: at_token=...; HttpOnly; Secure; SameSite=Strict`
+- Remove `localStorage.getItem('at_token')` from client.js and useStore.js
+- Requires backend to set cookie on login and clear on logout
+- Eliminates token theft via XSS entirely
+
+**0C. Set these env vars in Render dashboard NOW:**
+```
+JWT_SECRET  = <generate with: python3 -c "import secrets; print(secrets.token_hex(32))">
+ADMIN_PIN   = <choose a strong passphrase>
+INGEST_API_KEY = <generate with same command above>
+```
+
+---
 
 ### PRIORITY 1 — Quick wins (build next session, mostly frontend)
 

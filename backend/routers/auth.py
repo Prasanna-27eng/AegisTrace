@@ -5,13 +5,18 @@ Passwords stored in User.hashed_password (SHA-256 + secret).
 JWT tokens — 7-day expiry, pure Python (no extra deps).
 Admin: prasanna80564@gmail.com / ADMIN_PIN env var (default: aegis2025)
 """
-import os, json, hashlib, hmac, base64
+import os, json, hashlib, hmac, base64, time
 from datetime import datetime
+from collections import defaultdict
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Header, Request
 from sqlmodel import Session, select
 from models import User, AuditLog
 from database import get_session
+
+# ── Login brute-force protection ──────────────────────────────────────────────
+_login_attempts: dict = defaultdict(list)
+LOGIN_RATE_LIMIT = 10   # max attempts per minute per IP
 
 SECRET = os.getenv("JWT_SECRET", "aegistrace-secret-change-me-2025")
 TTL    = 60 * 60 * 24 * 7   # 7 days
@@ -106,7 +111,15 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 @router.post("/login")
-def login(data: dict, session: Session = Depends(get_session)):
+def login(data: dict, request: Request, session: Session = Depends(get_session)):
+    # Brute-force protection: max 10 attempts/min per IP
+    ip  = getattr(request.client, "host", "unknown")
+    now = time.time()
+    _login_attempts[ip] = [t for t in _login_attempts[ip] if now - t < 60]
+    if len(_login_attempts[ip]) >= LOGIN_RATE_LIMIT:
+        raise HTTPException(429, "Too many login attempts. Try again in a minute.")
+    _login_attempts[ip].append(now)
+
     email    = (data.get("email") or "").strip().lower()
     password = (data.get("password") or "").strip()
     if not email or not password:

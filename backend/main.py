@@ -1,10 +1,11 @@
 import os, time
 from pathlib import Path
 from collections import defaultdict
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from database import create_db_and_tables, engine
 from migration import run_migrations
@@ -49,6 +50,25 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ── Security Headers Middleware ───────────────────────────────────────────────
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        if request.url.path.startswith("/api/"):
+            response.headers["Cache-Control"] = "no-store"
+        return response
+
+app.add_middleware(SecurityHeadersMiddleware)
+
+# ── Login Brute-Force Rate Limiter ────────────────────────────────────────────
+_login_attempts: dict = defaultdict(list)   # ip → [timestamps]
+LOGIN_RATE_LIMIT = 10    # max attempts per minute per IP
 
 # ── Routers ───────────────────────────────────────────────────────────────────
 for r in [auth_router, cases_router, vt_router, email_router, ioc_router,
@@ -134,3 +154,8 @@ async def startup():
     ensure_admin(engine)     # sync admin password from ADMIN_PIN env var
     print("[AegisTrace v2.0] Server ready.")
     print(f"[AegisTrace] Allowed origins: {ALLOWED_ORIGINS}")
+    # ── Security warnings for weak defaults ──────────────────────────────────
+    if os.getenv("JWT_SECRET", "") in ("", "aegistrace-secret-change-me-2025"):
+        print("[SECURITY WARNING] JWT_SECRET is using the default value. Set a strong random secret in environment variables!")
+    if os.getenv("ADMIN_PIN", "") in ("", "aegis2025"):
+        print("[SECURITY WARNING] ADMIN_PIN is using the default value 'aegis2025'. Change it in environment variables!")

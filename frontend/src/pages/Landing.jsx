@@ -1,8 +1,11 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowUpRight, Github, Linkedin, ExternalLink, Shield, Brain, Mail, Bug, GitMerge, Wrench, FolderSearch, ChevronRight, Loader2 } from 'lucide-react';
+import { ArrowUpRight, Github, Linkedin, ExternalLink, Shield, Brain, Mail, Bug, GitMerge, Wrench, FolderSearch, ChevronRight, Loader2, Monitor, Activity, Globe, Terminal, Bell } from 'lucide-react';
 import Logo from '../components/Logo';
 import api from '../api/client';
+
+// Opens the app in a new tab
+const openApp = () => window.open('/app/login', '_blank', 'noopener,noreferrer');
 
 /* ─── Tunnel canvas ───────────────────────────────────────────────────────── */
 function TunnelCanvas() {
@@ -250,7 +253,7 @@ function AIDemo() {
 
 /* ─── Ticker ──────────────────────────────────────────────────────────────── */
 function Ticker() {
-  const items = '◇ Threat Intelligence Active · Cases Managed Live · IOC Correlation Engine · ◇ AI-Powered Analysis · MITRE ATT&CK Mapping · Email Forensics · VirusTotal v3 · ◇ SPF · DKIM · DMARC Analysis · Groq LLM Integration · ◇ Free. Open. Deployable. · Incident Response Platform · ◇ SOC-Grade Tooling · YARA Rule Generator · ◇ Zero Paid Dependencies · Built by Prasanna Kumar · ';
+  const items = '◇ Endpoint Agent · Log Investigation · IOC Correlation · ◇ AI Case Analysis · MITRE ATT&CK Mapping · Email Forensics · ◇ VirusTotal v3 · Shodan · MalwareBazaar · URLhaus · ThreatFox · GreyNoise · ◇ DORA Compliance Reports · Webhook Alerting · ◇ YARA Rule Generator · SPF · DKIM · DMARC · ◇ Campaign Detection · Threat Hunting · ◇ Auth-Protected Reports · Playbook Persistence · ◇ Free. Open. Deployable. · Built by Prasanna Kumar · ';
   return (
     <div data-testid="bottom-ticker" style={{ position: 'absolute', bottom: 0, left: 0, right: 0, borderTop: '1px solid rgba(240,240,248,0.06)', overflow: 'hidden', whiteSpace: 'nowrap', padding: '10px 0' }}>
       <style>{`@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}`}</style>
@@ -262,21 +265,25 @@ function Ticker() {
 }
 
 const FEATURES = [
-  { Icon: FolderSearch, title: 'Case Management',  desc: 'Full incident lifecycle — open, investigate, correlate, close. With evidence scoring, shift handoffs, and 10-tab deep-dive views.', color: '#C0392B' },
-  { Icon: Shield,       title: 'VT Threat Intel',  desc: 'VirusTotal v3 integration. Single lookups, bulk IOC scanning, and auto-save history. Every result tied back to a case.', color: '#A78BFA' },
-  { Icon: Brain,        title: 'Multi-Model AI',   desc: 'Groq LLM routing — llama-3.3-70b for case analysis, mixtral-8x7b for phishing classification, gemma2-9b for fast extraction.', color: '#EAB308' },
-  { Icon: Mail,         title: 'Email Forensics',  desc: 'Header parsing, SPF/DKIM/DMARC, routing hop analysis, phishing verdict with confidence scoring and MITRE mapping.', color: '#22C55E' },
-  { Icon: Bug,          title: 'Malware Tools',    desc: 'Base64, URL encode/decode, hash generator, YARA rule generation, defang/refang — all in one hub.', color: '#C0392B' },
-  { Icon: GitMerge,     title: 'IOC Correlation',  desc: 'Cross-case correlation engine. Detects campaign patterns, shared infrastructure, and MITRE technique overlap.', color: '#A78BFA' },
-  { Icon: Wrench,       title: 'Tools Hub',        desc: 'WHOIS, DNS, IP geo, cert transparency, urlscan.io, AlienVault OTX — free public intel, all integrated.', color: '#EAB308' },
-  { Icon: FolderSearch, title: 'Public Case Library', desc: 'Publish closed cases as polished read-only rundowns. Share investigations as case studies with PDF export.', color: '#22C55E' },
+  { Icon: FolderSearch, title: 'Case Management',       desc: 'Full incident lifecycle — open, investigate, correlate, close. 10-tab deep-dive: IOCs, timeline, playbook, AI analysis, evidence. Playbook progress persists across sessions.', color: '#C0392B' },
+  { Icon: Shield,       title: 'VT + 7-Source Intel',   desc: 'VirusTotal v3 plus Shodan, MalwareBazaar, URLhaus, ThreatFox, GreyNoise, and IPInfo — all queried in parallel. Every result saved to history and correlated across cases.', color: '#A78BFA' },
+  { Icon: Brain,        title: 'Multi-Model AI',        desc: 'Groq LLM routing — llama-3.3-70b for case analysis and reports, mixtral-8x7b for phishing classification, gemma2-9b for fast IOC extraction.', color: '#EAB308' },
+  { Icon: Mail,         title: 'Email Forensics',       desc: 'Full header parsing, SPF/DKIM/DMARC validation, routing hop extraction, AI phishing verdict with confidence scoring and MITRE ATT&CK mapping.', color: '#22C55E' },
+  { Icon: Monitor,      title: 'Endpoint Agent',        desc: 'Silent Python agent for Windows/Linux/Mac. Ships auth logs, process snapshots, and network connections every 5 minutes. Auto-creates cases when threat score exceeds threshold.', color: '#C0392B' },
+  { Icon: Terminal,     title: 'Log Investigation',     desc: 'Paste any raw log — syslog, Windows Event, Apache, CloudTrail. AI auto-detects format, extracts IOCs, maps MITRE techniques, pushes results to a case.', color: '#A78BFA' },
+  { Icon: GitMerge,     title: 'IOC Correlation',       desc: 'Cross-case correlation engine. When the same IOC appears in multiple cases, a campaign alert fires. Detects shared infrastructure and MITRE technique overlap.', color: '#EAB308' },
+  { Icon: Activity,     title: 'Threat Hunting',        desc: 'IOC frequency heatmap, MITRE ATT&CK visualisation, campaign detection, and cross-case search. Spot patterns across your entire investigation history.', color: '#22C55E' },
+  { Icon: Bug,          title: 'Malware Tools',         desc: 'Base64 and URL encode/decode, hash generator (MD5/SHA1/SHA256/SHA512), defang/refang, and AI-powered YARA rule generation — all in one hub.', color: '#C0392B' },
+  { Icon: Globe,        title: 'DORA Compliance',       desc: 'One-click Article 19 Major ICT Incident Report PDF. Maps the 5 DORA pillars to case data. Built for EU financial services firms. Export as PDF or DOCX.', color: '#A78BFA' },
+  { Icon: Bell,         title: 'Webhook Alerting',      desc: 'HTTP POST webhooks fire on case events: new critical case, status change, malicious IOC, case closed. Slack-compatible format with HMAC-SHA256 signing.', color: '#EAB308' },
+  { Icon: FolderSearch, title: 'Public Case Library',   desc: 'Toggle any case public or private per-case. Published cases appear as polished read-only rundowns. PDF export. Share investigations as case studies.', color: '#22C55E' },
 ];
 
 const HOW_IT_WORKS = [
-  { n: '01', title: 'Create a Case',      desc: 'Open a new investigation, set severity and type, assign analyst.' },
-  { n: '02', title: 'Add Evidence',       desc: 'Import emails, terminal output, VT results — each becomes a scored artifact.' },
-  { n: '03', title: 'Enrich with AI',     desc: 'AI auto-analyses evidence, suggests MITRE techniques, scores severity with reasoning.' },
-  { n: '04', title: 'Correlate & Close',  desc: 'Cross-case IOC correlation, closure checklist enforcement, report generation.' },
+  { n: '01', title: 'Deploy the Agent',    desc: 'Drop aegistrace_agent.py on any machine. Configure your URL and ingest key. Logs start arriving within 5 minutes — no other setup.' },
+  { n: '02', title: 'Investigate',         desc: 'Open a case. Import emails, paste terminal output, run VT lookups. AI scores each artifact and maps it to MITRE ATT&CK automatically.' },
+  { n: '03', title: 'Correlate',           desc: 'The IOC correlation engine links cases sharing the same infrastructure. When an IOC appears in 3+ cases, a campaign alert fires.' },
+  { n: '04', title: 'Report & Close',      desc: 'AI writes the executive summary and technical analysis. Generate PDF, DOCX, or DORA Article 19 report. Closure checklist enforced before case is sealed.' },
 ];
 
 /* ─── Main component ──────────────────────────────────────────────────────── */
@@ -355,7 +362,7 @@ export default function Landing() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#C0392B', animation: 'pulse-dot 1.8s ease-in-out infinite' }} />
             <Clock />
-            <button onClick={() => navigate('/app/login')} style={{ background: '#C0392B', color: 'white', border: 'none', borderRadius: 6, padding: '8px 18px', fontSize: 11, fontWeight: 600, cursor: 'pointer', ...monoStyle, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            <button onClick={openApp} style={{ background: '#C0392B', color: 'white', border: 'none', borderRadius: 6, padding: '8px 18px', fontSize: 11, fontWeight: 600, cursor: 'pointer', ...monoStyle, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
               Launch App
             </button>
           </div>
@@ -389,12 +396,12 @@ export default function Landing() {
 
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 48, flexWrap: 'wrap' }}>
             <p style={{ maxWidth: 420, fontSize: 13, color: 'rgba(240,240,248,0.5)', lineHeight: 1.75, ...monoStyle, fontWeight: 300 }}>
-              A production-grade SOC platform built for analysts who demand evidence, speed, and accountability. Multi-AI investigation, IOC correlation, email forensics — all free to deploy.
+              A production-grade SOC platform with endpoint agent, multi-AI investigation, IOC correlation across 7 threat intel sources, email forensics, DORA compliance reporting, and webhook alerting. Free to deploy. Zero paid dependencies.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
               <span style={{ fontSize: 10, color: 'rgba(240,240,248,0.35)', letterSpacing: '0.2em', textTransform: 'uppercase', ...monoStyle }}>Enter the platform</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <button data-testid="cta-enter" onClick={() => navigate('/app/login')} className="cta-box">
+                <button data-testid="cta-enter" onClick={openApp} className="cta-box">
                   <ArrowUpRight size={20} color="#F0F0F8" />
                 </button>
                 <button onClick={() => navigate('/portfolio')} style={{ fontSize: 11, color: 'rgba(240,240,248,0.4)', background: 'none', border: 'none', cursor: 'pointer', ...monoStyle, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
@@ -412,10 +419,10 @@ export default function Landing() {
       <section style={{ background: '#0F1018', borderTop: '1px solid rgba(240,240,248,0.06)', borderBottom: '1px solid rgba(240,240,248,0.06)' }}>
         <div className="lp-grid-4" style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)' }}>
           {[
-            { val: stats.total_cases,    label: 'Cases Handled',      color: '#F0F0F8' },
-            { val: stats.total_iocs,     label: 'IOCs Tracked',       color: '#C0392B' },
+            { val: stats.total_cases,    label: 'Cases Investigated',  color: '#F0F0F8' },
+            { val: stats.total_iocs,     label: 'IOCs Correlated',     color: '#C0392B' },
             { val: stats.critical_cases, label: 'Critical Incidents',  color: '#EAB308' },
-            { val: stats.vt_lookups,     label: 'VT Lookups',         color: '#A78BFA' },
+            { val: stats.vt_lookups,     label: 'VT Lookups Run',      color: '#A78BFA' },
           ].map(({ val, label, color }, i) => (
             <div key={label} style={{ padding: '28px 24px', textAlign: 'center', borderRight: i < 3 ? '1px solid rgba(240,240,248,0.06)' : 'none' }}>
               <div style={{ fontSize: '2.2rem', fontWeight: 700, color, ...monoStyle }}>{(val || 0).toLocaleString()}</div>
@@ -513,7 +520,7 @@ export default function Landing() {
               </h2>
             </div>
             <div style={{ display: 'flex', gap: 12 }}>
-              <button onClick={() => navigate('/app/login')} style={{ background: '#C0392B', color: '#fff', border: 'none', borderRadius: 6, padding: '12px 28px', fontSize: 12, fontWeight: 600, cursor: 'pointer', ...monoStyle, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              <button onClick={openApp} style={{ background: '#C0392B', color: '#fff', border: 'none', borderRadius: 6, padding: '12px 28px', fontSize: 12, fontWeight: 600, cursor: 'pointer', ...monoStyle, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                 Launch App →
               </button>
               <button onClick={() => navigate('/public')} style={{ background: 'transparent', color: 'rgba(240,240,248,0.6)', border: '1px solid rgba(240,240,248,0.15)', borderRadius: 6, padding: '12px 24px', fontSize: 12, cursor: 'pointer', ...monoStyle, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
@@ -533,7 +540,7 @@ export default function Landing() {
                 <Linkedin size={13} /> LinkedIn
               </a>
             </div>
-            <div style={{ fontSize: 10, color: 'rgba(240,240,248,0.2)', ...monoStyle, letterSpacing: '0.06em' }}>React · FastAPI · Groq · VirusTotal · SQLite · Docker</div>
+            <div style={{ fontSize: 10, color: 'rgba(240,240,248,0.2)', ...monoStyle, letterSpacing: '0.06em' }}>React · FastAPI · Groq · VirusTotal · Shodan · SQLite · Docker · Render</div>
           </div>
         </div>
       </section>

@@ -5,7 +5,7 @@ Receives log batches from remote endpoint agents.
 Auth: X-AegisTrace-Key header (set INGEST_API_KEY env var).
 If not set, defaults to sha256 of ADMIN_PIN so no extra config needed.
 """
-import os, json, hashlib
+import os, json, hashlib, hmac
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Header, Request
 from sqlmodel import Session, select, func
@@ -32,7 +32,7 @@ def _verify_key(x_aegistrace_key: Optional[str] = Header(None)):
     if not x_aegistrace_key:
         raise HTTPException(401, "X-AegisTrace-Key header required")
     expected = _get_ingest_key()
-    if not (x_aegistrace_key == expected or x_aegistrace_key == os.getenv("ADMIN_PIN","aegis2025")):
+    if not hmac.compare_digest(x_aegistrace_key, expected):
         raise HTTPException(401, "Invalid ingest key")
 
 
