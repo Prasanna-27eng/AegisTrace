@@ -40,6 +40,19 @@ def correlate_iocs(session: Session, case_id: int, iocs_raw: str):
                 existing.case_count = len(ids)
                 existing.last_seen = datetime.utcnow()
                 session.add(existing)
+                # Fire malicious_ioc webhook when IOC reaches campaign threshold (3+ cases)
+                if existing.case_count >= 3:
+                    try:
+                        from routers.webhooks import fire_event
+                        fire_event("malicious_ioc", {
+                            "ioc": val,
+                            "ioc_type": itype,
+                            "verdict": "campaign_ioc",
+                            "case_count": existing.case_count,
+                            "source": "ioc_correlation",
+                        })
+                    except Exception:
+                        pass
         else:
             session.add(IOCCorrelation(
                 ioc=val, ioc_type=itype,
@@ -55,6 +68,8 @@ def list_cases(
     status: Optional[str] = Query(None),
     incident_type: Optional[str] = Query(None),
     sort: str = Query("newest"),
+    limit: Optional[int] = Query(None),
+    offset: int = Query(0),
     session: Session = Depends(get_session),
 ):
     query = select(Case)
@@ -73,10 +88,18 @@ def list_cases(
             Case.findings.contains(q),
             Case.description.contains(q),
         ))
-    cases = session.exec(query.order_by(Case.created_at.desc())).all()
+    if sort != "severity":
+        query = query.order_by(Case.created_at.desc())
+        if offset:
+            query = query.offset(offset)
+        if limit:
+            query = query.limit(limit)
+    cases = session.exec(query).all()
     if sort == "severity":
         order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
         cases.sort(key=lambda c: order.get(c.severity, 5))
+        if offset or limit:
+            cases = cases[offset:offset + limit] if limit else cases[offset:]
     return cases
 
 
@@ -134,6 +157,7 @@ def update_case(
         "ai_executive_summary", "ai_technical_summary",
         "ai_severity_score", "ai_severity_reasoning",
         "vt_results", "closure_notes", "tools_output", "email_analysis",
+        "playbook_state",
     ]
     old_status = case.status
     for k, v in data.items():

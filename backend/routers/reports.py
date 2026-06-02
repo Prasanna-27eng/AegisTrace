@@ -76,7 +76,8 @@ Generate a comprehensive, well-written incident report. Respond ONLY with valid 
 
 
 @router.get("/{case_id}/pdf")
-def download_pdf(case_id: int, session: Session = Depends(get_session)):
+def download_pdf(case_id: int, session: Session = Depends(get_session),
+                 user: User = Depends(get_current_user)):
     case = session.get(Case, case_id)
     if not case:
         raise HTTPException(404)
@@ -312,7 +313,8 @@ def download_pdf(case_id: int, session: Session = Depends(get_session)):
 
 
 @router.get("/{case_id}/docx")
-def download_docx(case_id: int, session: Session = Depends(get_session)):
+def download_docx(case_id: int, session: Session = Depends(get_session),
+                  user: User = Depends(get_current_user)):
     case = session.get(Case, case_id)
     if not case:
         raise HTTPException(404)
@@ -381,7 +383,8 @@ def download_docx(case_id: int, session: Session = Depends(get_session)):
 
 # ── DORA Compliance Report ────────────────────────────────────────────────────
 @router.get("/{case_id}/dora")
-def download_dora(case_id: int, session: Session = Depends(get_session)):
+def download_dora(case_id: int, session: Session = Depends(get_session),
+                  user: User = Depends(get_current_user)):
     """
     Generate a DORA Article 19 Major ICT-related Incident Report.
     Maps the 5 DORA pillars to AegisTrace case data.

@@ -121,6 +121,22 @@ async def lookup(data: dict, session: Session = Depends(get_session)):
     session.add(log)
     session.commit()
     session.refresh(record)
+
+    # Fire malicious_ioc webhook (was registered but never called — bug fix)
+    if result["verdict"] == "malicious":
+        try:
+            from routers.webhooks import fire_event
+            fire_event("malicious_ioc", {
+                "ioc": ioc,
+                "ioc_type": result.get("ioc_type", ""),
+                "verdict": "malicious",
+                "malicious_count": result.get("malicious_count", 0),
+                "total_engines": result.get("total_engines", 0),
+                "source": "virustotal",
+            })
+        except Exception:
+            pass
+
     return {"id": record.id, **result}
 
 

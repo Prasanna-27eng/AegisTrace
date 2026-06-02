@@ -16,6 +16,7 @@ export default function AIChatTab({ caseId, caseData }) {
 
   const send = async () => {
     const msg = input.trim();
+  if (!caseData) return null;
     if (!msg || loading) return;
     setInput('');
     const updated = [...messages, { role: 'user', content: msg }];

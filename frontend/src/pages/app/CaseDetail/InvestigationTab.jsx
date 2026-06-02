@@ -12,6 +12,7 @@ export default function InvestigationTab({ caseData, updateCase, caseId }) {
   const [newEv, setNewEv] = useState({ artifact_type: 'manual', source_module: '', raw_input: '', normalized_output: '', verdict: '', evidence_score: 'hypothesis', confidence: 50, ai_analysis: '' });
 
   useEffect(() => {
+  if (!caseData) return null;
     if (caseId && caseId !== 'new') {
       api.get(`/api/cases/${caseId}/evidence`).then(r => setEvidence(r.data)).catch(() => {});
     }

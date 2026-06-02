@@ -28,6 +28,7 @@ export default function AIAnalysisTab({ caseData, updateCase, caseId, reload }) 
   const mitre = (() => { try { return JSON.parse(caseData?.mitre_techniques || '[]'); } catch { return []; } })();
 
   const severityColor = (score) => {
+  if (!caseData) return null;
     if (!score) return '#71717A';
     if (score >= 80) return '#EF4444';
     if (score >= 60) return '#EAB308';

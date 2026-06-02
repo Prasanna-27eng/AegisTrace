@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Plus, Search, Globe, FileText, Share2, Trash2, ChevronDown, Lock } from 'lucide-react';
+import { Plus, Search, Globe, FileText, Share2, Trash2, ChevronDown, Lock, Download } from 'lucide-react';
 import { SeverityBadge, StatusBadge } from '../../components/SeverityBadge';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
@@ -60,6 +60,16 @@ export default function CaseList() {
     e.stopPropagation();
     navigator.clipboard.writeText(`${window.location.origin}/public/${token}`);
     addToast('Share link copied!', 'success');
+  };
+
+  const handleDownloadPdf = async (e, caseId, caseNumber) => {
+    e.stopPropagation();
+    try {
+      const res = await api.get(`/api/reports/${caseId}/pdf`, { responseType: 'blob' });
+      const href = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const a = document.createElement('a'); a.href = href; a.download = `${caseNumber}-report.pdf`; a.click();
+      URL.revokeObjectURL(href);
+    } catch { addToast('Download failed', 'error'); }
   };
 
   const handleTogglePublic = async (e, caseId) => {
@@ -179,16 +189,14 @@ export default function CaseList() {
                 >
                   <Share2 size={12} />
                 </button>
-                <a
-                  href={`/api/reports/${c.id}/pdf`}
-                  target="_blank"
-                  rel="noreferrer"
+                <button
                   className="btn-ghost"
-                  style={{ padding: '4px 8px', textDecoration: 'none' }}
+                  style={{ padding: '4px 8px' }}
+                  onClick={e => handleDownloadPdf(e, c.id, c.case_number)}
                   title="Download PDF"
                 >
                   <FileText size={12} />
-                </a>
+                </button>
                 <button
                   className="btn-ghost"
                   style={{ padding: '4px 8px', color: '#EF4444' }}

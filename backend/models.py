@@ -113,6 +113,7 @@ class Case(SQLModel, table=True):
     share_token: str = Field(default_factory=gen_uuid, unique=True, index=True)
     closure_notes: Optional[str] = Field(default=None, sa_column=Column(Text))
     shift_handoff: str = Field(default="", sa_column=Column(Text))
+    playbook_state: Optional[str] = Field(default="{}", sa_column=Column(Text))  # JSON {taskId: bool}
     org_id: int = Field(default=1)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)

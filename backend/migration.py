@@ -64,7 +64,16 @@ def run_migrations(engine):
                 conn.commit()
             print("[migration] Added org_id to case table")
 
-    # ── 5. Reset and re-seed demo data ────────────────────────────────────────
+    # ── 5. Add playbook_state to case ────────────────────────────────────────
+    if "case" in existing_tables:
+        case_cols = [c["name"] for c in inspector.get_columns("case")]
+        if "playbook_state" not in case_cols:
+            with engine.connect() as conn:
+                conn.execute(text('ALTER TABLE "case" ADD COLUMN playbook_state TEXT DEFAULT \'{}\''))
+                conn.commit()
+            print("[migration] Added playbook_state to case table")
+
+    # ── 6. Reset and re-seed demo data ────────────────────────────────────────
     # Only resets rows with case_number starting with "SOC-DEMO-"
     if "case" in existing_tables:
         from sqlmodel import Session, select
@@ -96,7 +105,7 @@ def run_migrations(engine):
                 session.commit()
                 print(f"[migration] Reset {len(demo_cases)} demo case(s)")
 
-    # ── 6. Endpoint + LogBatch + LogAnalysis tables (created by create_all, just verify) ──
+    # ── 7. Endpoint + LogBatch + LogAnalysis tables (created by create_all, just verify) ──
     # SQLModel's create_all handles new tables automatically on startup.
     # These are new models added in v2.1 — no ALTER needed, just creation.
     print("[migration] All migrations complete.")

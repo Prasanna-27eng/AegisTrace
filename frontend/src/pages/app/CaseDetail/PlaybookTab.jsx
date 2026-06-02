@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { CheckSquare, Square } from 'lucide-react';
 
 const PLAYBOOKS = {
@@ -52,12 +52,23 @@ const PLAYBOOKS = {
   ],
 };
 
-export default function PlaybookTab({ caseData }) {
+export default function PlaybookTab({ caseData, updateCase }) {
   const incidentType = caseData?.incident_type || 'default';
   const playbook = PLAYBOOKS[incidentType] || PLAYBOOKS.default;
-  const [checked, setChecked] = useState({});
 
-  const toggle = (id) => setChecked(p => ({ ...p, [id]: !p[id] }));
+  // Load saved state from case, fall back to empty
+  const [checked, setChecked] = useState(() => {
+    try { return JSON.parse(caseData?.playbook_state || '{}'); } catch { return {}; }
+  });
+
+  // Persist state to case via autosave whenever it changes
+  const toggle = useCallback((id) => {
+    setChecked(prev => {
+      const next = { ...prev, [id]: !prev[id] };
+      updateCase && updateCase({ playbook_state: JSON.stringify(next) });
+      return next;
+    });
+  }, [updateCase]);
   const completed = Object.values(checked).filter(Boolean).length;
   const progress = Math.round((completed / playbook.length) * 100);
 

@@ -15,6 +15,7 @@ export default function TerminalTab({ caseData, caseId, updateCase }) {
   const [history, setHistory] = useState([]);
 
   useEffect(() => {
+  if (!caseData) return null;
     if (caseId && caseId !== 'new') {
       api.get(`/api/terminal/history?case_id=${caseId}`).then(r => setHistory(r.data)).catch(() => {});
     }

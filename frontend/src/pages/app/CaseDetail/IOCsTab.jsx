@@ -15,6 +15,7 @@ export default function IOCsTab({ caseData, updateCase, caseId }) {
   const iocs = (() => { try { return JSON.parse(caseData?.iocs || '[]'); } catch { return []; } })();
 
   const addIOC = () => {
+  if (!caseData) return null;
     if (!newIOC.ioc.trim()) return;
     const updated = [...iocs, { ...newIOC, ioc: newIOC.ioc.trim() }];
     updateCase({ iocs: JSON.stringify(updated) });

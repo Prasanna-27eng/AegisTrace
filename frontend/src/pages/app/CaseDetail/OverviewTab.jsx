@@ -8,9 +8,9 @@ const STATUSES   = ['open','in_progress','pending_closure','closed'];
 const TYPES      = ['phishing','malware','ransomware','bec','insider_threat','data_breach','dos_ddos','unauthorized_access','vulnerability','other'];
 
 export default function OverviewTab({ caseData, updateCase, caseId, reload }) {
-  const { addToast } = useStore();
+  const { addToast, user } = useStore();
   const [showClose, setShowClose] = useState(false);
-  const [closure, setClosure] = useState({ final_findings: '', remediation_steps: '', lessons_learned: '', evidence_complete: false, closed_by: 'Prasanna Kumar' });
+  const [closure, setClosure] = useState({ final_findings: '', remediation_steps: '', lessons_learned: '', evidence_complete: false });
 
   if (!caseData) return null;
 
@@ -18,7 +18,7 @@ export default function OverviewTab({ caseData, updateCase, caseId, reload }) {
 
   const handleClose = async () => {
     try {
-      await api.post(`/api/cases/${caseId}/close`, { ...closure, closed_by: 'Prasanna Kumar' });
+      await api.post(`/api/cases/${caseId}/close`, { ...closure, closed_by: user?.name || caseData.analyst_name || 'Analyst' });
       addToast('Case closed successfully', 'success');
       reload();
       setShowClose(false);
