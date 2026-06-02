@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Plus, Search, Globe, FileText, Share2, Trash2, ChevronDown } from 'lucide-react';
+import { Plus, Search, Globe, FileText, Share2, Trash2, ChevronDown, Lock } from 'lucide-react';
 import { SeverityBadge, StatusBadge } from '../../components/SeverityBadge';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
@@ -60,6 +60,15 @@ export default function CaseList() {
     e.stopPropagation();
     navigator.clipboard.writeText(`${window.location.origin}/public/${token}`);
     addToast('Share link copied!', 'success');
+  };
+
+  const handleTogglePublic = async (e, caseId) => {
+    e.stopPropagation();
+    try {
+      const res = await api.post(`/api/cases/${caseId}/share`);
+      setCases(prev => prev.map(c => c.id === caseId ? { ...c, is_public: res.data.is_public } : c));
+      addToast(res.data.is_public ? 'Case is now public' : 'Case is now private', 'success');
+    } catch { addToast('Failed to change visibility', 'error'); }
   };
 
   return (
@@ -154,6 +163,14 @@ export default function CaseList() {
 
               {/* Actions */}
               <div style={{ display: 'flex', gap: 4, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+                <button
+                  className="btn-ghost"
+                  style={{ padding: '4px 8px', color: c.is_public ? '#22C55E' : '#71717A', borderColor: c.is_public ? 'rgba(34,197,94,0.3)' : undefined }}
+                  onClick={e => handleTogglePublic(e, c.id)}
+                  title={c.is_public ? 'Public — click to make private' : 'Private — click to make public'}
+                >
+                  {c.is_public ? <Globe size={12} /> : <Lock size={12} />}
+                </button>
                 <button
                   className="btn-ghost"
                   style={{ padding: '4px 8px' }}
