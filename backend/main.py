@@ -1,14 +1,15 @@
-import os
+import os, time
 from pathlib import Path
-from fastapi import FastAPI
+from collections import defaultdict
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from database import create_db_and_tables, engine
+from migration import run_migrations
 from seed import seed_demo_data
 from routers.auth import ensure_admin, router as auth_router
-from ai_router import call_ai_json, call_ai
 from routers.cases import router as cases_router
 from routers.vt import router as vt_router
 from routers.email_router import router as email_router
@@ -18,43 +19,71 @@ from routers.terminal import router as terminal_router
 from routers.reports import router as reports_router
 from routers.public import router as public_router
 from routers.portfolio import router as portfolio_router
+from routers.webhooks import router as webhooks_router
+from routers.hunt import router as hunt_router
+from ai_router import call_ai_json
 
-app = FastAPI(title="AegisTrace API", version="1.0.0", docs_url="/api/docs", redoc_url="/api/redoc")
+app = FastAPI(
+    title="AegisTrace API",
+    version="2.0.0",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+)
 
-# CORS — allow frontend dev server
+# ── CORS ─────────────────────────────────────────────────────────────────────
+PUBLIC_URL = os.getenv("PUBLIC_URL", "https://aegistrace-7qvn.onrender.com")
+ALLOWED_ORIGINS = list({
+    "http://localhost:3000",
+    "http://localhost:8000",
+    PUBLIC_URL,
+    PUBLIC_URL.rstrip("/"),
+})
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include all routers
-app.include_router(auth_router)
-app.include_router(cases_router)
-app.include_router(vt_router)
-app.include_router(email_router)
-app.include_router(ioc_router)
-app.include_router(malware_router)
-app.include_router(terminal_router)
-app.include_router(reports_router)
-app.include_router(public_router)
-app.include_router(portfolio_router)
+# ── Routers ───────────────────────────────────────────────────────────────────
+for r in [auth_router, cases_router, vt_router, email_router, ioc_router,
+          malware_router, terminal_router, reports_router, public_router,
+          portfolio_router, webhooks_router, hunt_router]:
+    app.include_router(r)
 
 
+# ── Health ────────────────────────────────────────────────────────────────────
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "service": "AegisTrace", "version": "1.0.0"}
+    return {
+        "status": "ok",
+        "service": "AegisTrace",
+        "version": "2.0.0",
+        "groq": bool(os.getenv("GROQ_API_KEY")),
+        "vt": bool(os.getenv("VIRUSTOTAL_API_KEY")),
+    }
 
+
+# ── Public AI Demo (rate-limited) ─────────────────────────────────────────────
+_demo_calls: dict = defaultdict(list)   # ip → [timestamps]
+DEMO_RATE_LIMIT = 10                    # requests per minute per IP
 
 @app.post("/api/public/demo-analyse")
-async def public_demo_analyse(data: dict):
-    """Public AI demo — no auth required. Accepts IOC or raw text, returns threat assessment."""
+async def public_demo_analyse(request: Request, data: dict):
+    ip = request.client.host or "unknown"
+    now = time.time()
+    window = [t for t in _demo_calls[ip] if now - t < 60]
+    if len(window) >= DEMO_RATE_LIMIT:
+        raise HTTPException(429, f"Rate limit: {DEMO_RATE_LIMIT} requests/minute")
+    window.append(now)
+    _demo_calls[ip] = window
+
     text = (data.get("input") or "").strip()
     if not text or len(text) > 500:
-        from fastapi import HTTPException
         raise HTTPException(400, "Input required (max 500 chars)")
+
     prompt = f"""Analyse this for cybersecurity threats: {text}
 
 Respond ONLY with valid JSON:
@@ -71,27 +100,33 @@ Respond ONLY with valid JSON:
     return result
 
 
-# Serve React frontend
+# ── Serve React SPA ───────────────────────────────────────────────────────────
 STATIC_DIR = Path(__file__).parent / "static"
 
 if STATIC_DIR.exists():
-    app.mount("/static", StaticFiles(directory=str(STATIC_DIR / "static")), name="static-assets")
+    # Serve /static/* assets
+    assets_dir = STATIC_DIR / "static"
+    if assets_dir.exists():
+        app.mount("/static", StaticFiles(directory=str(assets_dir)), name="assets")
 
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
         index = STATIC_DIR / "index.html"
         if index.exists():
             return FileResponse(str(index))
-        return {"error": "Frontend not built"}
+        return {"error": "Frontend not built yet"}
 else:
     @app.get("/")
     def root():
-        return {"message": "AegisTrace API running. Frontend not yet built.", "docs": "/api/docs"}
+        return {"message": "AegisTrace v2.0 API", "docs": "/api/docs"}
 
 
+# ── Startup ───────────────────────────────────────────────────────────────────
 @app.on_event("startup")
 async def startup():
-    create_db_and_tables()
-    seed_demo_data(engine)
-    ensure_admin(engine)
-    print("[AegisTrace] Server ready.")
+    create_db_and_tables()   # create any NEW tables (never destroys existing)
+    run_migrations(engine)   # safe column-level migrations
+    seed_demo_data(engine)   # idempotent — skips if demo cases already exist
+    ensure_admin(engine)     # sync admin password from ADMIN_PIN env var
+    print("[AegisTrace v2.0] Server ready.")
+    print(f"[AegisTrace] Allowed origins: {ALLOWED_ORIGINS}")

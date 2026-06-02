@@ -2,9 +2,11 @@ import json, io, os
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
-from sqlmodel import Session
-from models import Case
+from sqlmodel import Session, select
+from models import Case, TimelineEvent
 from database import get_session
+from routers.auth import get_current_user
+from models import User
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 
@@ -238,4 +240,194 @@ def download_docx(case_id: int, session: Session = Depends(get_session)):
     filename = f"aegistrace_{case.case_number}.docx"
     return StreamingResponse(buffer,
                              media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                             headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+
+# ── DORA Compliance Report ────────────────────────────────────────────────────
+@router.get("/{case_id}/dora")
+def download_dora(case_id: int, session: Session = Depends(get_session)):
+    """
+    Generate a DORA Article 19 Major ICT-related Incident Report.
+    Maps the 5 DORA pillars to AegisTrace case data.
+    """
+    case = session.get(Case, case_id)
+    if not case:
+        raise HTTPException(404)
+
+    try:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib.styles import ParagraphStyle
+        from reportlab.lib.units import cm
+        from reportlab.lib import colors
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+        from reportlab.lib.enums import TA_CENTER
+    except ImportError:
+        raise HTTPException(503, "reportlab not installed")
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4,
+                            rightMargin=2.2*cm, leftMargin=2.2*cm,
+                            topMargin=2*cm, bottomMargin=2*cm)
+
+    dark   = colors.Color(0.04, 0.03, 0.06)
+    red    = colors.Color(0.75, 0.22, 0.17)
+    gray   = colors.Color(0.44, 0.44, 0.45)
+    light  = colors.Color(0.97, 0.97, 0.98)
+
+    def S(name, **kw):
+        base = {"fontName": "Helvetica", "fontSize": 9, "textColor": gray, "spaceAfter": 4, "leading": 14}
+        base.update(kw)
+        return ParagraphStyle(name, **base)
+
+    h1   = S("h1", fontName="Helvetica-Bold", fontSize=14, textColor=dark, spaceAfter=6)
+    h2   = S("h2", fontName="Helvetica-Bold", fontSize=11, textColor=red, spaceBefore=16, spaceAfter=4)
+    body = S("body")
+    mono = S("mono", fontName="Courier", fontSize=8, textColor=gray, leading=12)
+    note = S("note", fontSize=8, textColor=gray, fontName="Helvetica-Oblique")
+
+    # Parse data
+    closure = {}
+    try:
+        closure = json.loads(case.closure_notes or "{}")
+    except Exception:
+        pass
+    iocs = []
+    try:
+        iocs = json.loads(case.iocs or "[]")
+    except Exception:
+        pass
+    mitre = []
+    try:
+        mitre = json.loads(case.mitre_techniques or "[]")
+    except Exception:
+        pass
+
+    # Timeline from DB
+    timeline = session.exec(
+        select(TimelineEvent)
+        .where(TimelineEvent.case_id == case_id)
+        .order_by(TimelineEvent.timestamp)
+    ).all()
+
+    first_detected = timeline[0].timestamp.strftime("%Y-%m-%d %H:%M UTC") if timeline else case.created_at.strftime("%Y-%m-%d %H:%M UTC")
+    last_event     = timeline[-1].timestamp.strftime("%Y-%m-%d %H:%M UTC") if timeline else "Ongoing"
+
+    story = []
+
+    # EU / DORA Header
+    story.append(Paragraph("EUROPEAN UNION — DIGITAL OPERATIONAL RESILIENCE ACT (DORA)", S("eu", fontName="Helvetica-Bold", fontSize=8, textColor=gray, spaceAfter=2)))
+    story.append(Paragraph("MAJOR ICT-RELATED INCIDENT REPORT — Article 19(1)", h1))
+    story.append(HRFlowable(width="100%", thickness=1.5, color=red, spaceAfter=10))
+
+    story.append(Paragraph("REPORT IDENTIFICATION", h2))
+    id_data = [
+        ["Report Reference", case.case_number],
+        ["Incident Title",   case.title],
+        ["Classification",   case.classification.upper()],
+        ["Report Date",      datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")],
+        ["Entity Name",      case.customer_name or "—"],
+        ["Prepared By",      case.analyst_name or "—"],
+    ]
+    t = Table(id_data, colWidths=[5.5*cm, 11*cm])
+    t.setStyle(TableStyle([
+        ("FONTNAME", (0,0), (0,-1), "Helvetica-Bold"),
+        ("FONTSIZE", (0,0), (-1,-1), 8),
+        ("ROWBACKGROUNDS", (0,0), (-1,-1), [light, colors.white]),
+        ("GRID", (0,0), (-1,-1), 0.5, colors.Color(0.85,0.85,0.86)),
+        ("PADDING", (0,0), (-1,-1), 5),
+    ]))
+    story.append(t)
+
+    # Pillar 1 — ICT Risk Management
+    story.append(Paragraph("PILLAR 1 — ICT RISK MANAGEMENT", h2))
+    story.append(Paragraph(f"<b>Incident Type:</b> {case.incident_type.replace('_',' ').title()}", body))
+    story.append(Paragraph(f"<b>Severity Classification:</b> {case.severity.upper()}", body))
+    story.append(Paragraph(f"<b>Affected Systems / Services:</b> {case.affected_systems or 'Not specified'}", body))
+    story.append(Paragraph(f"<b>Description:</b>", body))
+    story.append(Paragraph(case.description or "—", body))
+
+    # Pillar 2 — Incident Detection
+    story.append(Paragraph("PILLAR 2 — INCIDENT DETECTION & CLASSIFICATION", h2))
+    story.append(Paragraph(f"<b>Initial Detection:</b> {first_detected}", body))
+    story.append(Paragraph(f"<b>Detection Method:</b> {timeline[0].description if timeline else 'Manual detection'}", body))
+    story.append(Paragraph(f"<b>AI Severity Score:</b> {case.ai_severity_score or 'Not assessed'}/100", body))
+    if case.ai_severity_reasoning:
+        story.append(Paragraph(f"<b>Severity Reasoning:</b> {case.ai_severity_reasoning}", body))
+
+    # Pillar 3 — Incident Reporting
+    story.append(Paragraph("PILLAR 3 — INCIDENT REPORTING & NOTIFICATION", h2))
+    story.append(Paragraph(f"<b>Case Opened:</b> {case.created_at.strftime('%Y-%m-%d %H:%M UTC')}", body))
+    story.append(Paragraph(f"<b>Last Updated:</b> {case.updated_at.strftime('%Y-%m-%d %H:%M UTC')}", body))
+    story.append(Paragraph(f"<b>Current Status:</b> {case.status.replace('_',' ').upper()}", body))
+
+    if mitre:
+        story.append(Paragraph("<b>MITRE ATT&amp;CK Techniques Identified:</b>", body))
+        m_data = [["Technique ID", "Name", "Tactic"]] + [[m.get("id",""), m.get("name",""), m.get("tactic","")] for m in mitre]
+        mt = Table(m_data, colWidths=[3*cm, 9*cm, 4.5*cm])
+        mt.setStyle(TableStyle([
+            ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
+            ("FONTSIZE", (0,0), (-1,-1), 8),
+            ("BACKGROUND", (0,0), (-1,0), dark),
+            ("TEXTCOLOR", (0,0), (-1,0), colors.white),
+            ("ROWBACKGROUNDS", (0,1), (-1,-1), [light, colors.white]),
+            ("GRID", (0,0), (-1,-1), 0.5, colors.Color(0.85,0.85,0.86)),
+            ("PADDING", (0,0), (-1,-1), 4),
+            ("FONTNAME", (0,1), (0,-1), "Courier"),
+        ]))
+        story.append(mt)
+
+    # Pillar 4 — Resilience Testing (IOC evidence)
+    story.append(Paragraph("PILLAR 4 — DIGITAL OPERATIONAL RESILIENCE TESTING", h2))
+    story.append(Paragraph(f"<b>Indicators of Compromise ({len(iocs)}):</b>", body))
+    if iocs:
+        ioc_data = [["IOC Value", "Type", "Verdict"]] + [
+            [i.get("ioc","")[:55], i.get("type",""), i.get("verdict","—")] for i in iocs[:20]
+        ]
+        it = Table(ioc_data, colWidths=[9.5*cm, 2.5*cm, 4.5*cm])
+        it.setStyle(TableStyle([
+            ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
+            ("FONTSIZE", (0,0), (-1,-1), 8),
+            ("BACKGROUND", (0,0), (-1,0), dark),
+            ("TEXTCOLOR", (0,0), (-1,0), colors.white),
+            ("ROWBACKGROUNDS", (0,1), (-1,-1), [light, colors.white]),
+            ("GRID", (0,0), (-1,-1), 0.5, colors.Color(0.85,0.85,0.86)),
+            ("PADDING", (0,0), (-1,-1), 4),
+            ("FONTNAME", (0,1), (0,-1), "Courier"),
+        ]))
+        story.append(it)
+
+    # Pillar 5 — ICT Third-Party Risk / Recovery
+    story.append(Paragraph("PILLAR 5 — RECOVERY & LESSONS LEARNED", h2))
+    if closure:
+        story.append(Paragraph(f"<b>Final Findings:</b>", body))
+        story.append(Paragraph(closure.get("final_findings", "—"), body))
+        story.append(Paragraph(f"<b>Remediation Steps Taken:</b>", body))
+        story.append(Paragraph(closure.get("remediation_steps", "—"), body))
+        story.append(Paragraph(f"<b>Lessons Learned:</b>", body))
+        story.append(Paragraph(closure.get("lessons_learned", "—"), body))
+        story.append(Paragraph(f"<b>Case Closed By:</b> {closure.get('closed_by','—')}  |  <b>Closed At:</b> {closure.get('closed_at','—')}", body))
+    else:
+        story.append(Paragraph("Case not yet closed. Closure notes pending.", note))
+
+    if case.recommendations:
+        story.append(Paragraph("<b>Recommendations:</b>", body))
+        story.append(Paragraph(case.recommendations.replace("\n","<br/>").replace("**",""), body))
+
+    # Executive Summary
+    if case.ai_executive_summary:
+        story.append(Paragraph("AI-ASSISTED EXECUTIVE SUMMARY", h2))
+        story.append(Paragraph(case.ai_executive_summary, body))
+
+    # Footer
+    story.append(Spacer(1, 0.5*cm))
+    story.append(HRFlowable(width="100%", thickness=0.5, color=gray))
+    story.append(Paragraph(
+        f"Generated by AegisTrace SOC Platform · {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')} · DORA Article 19 Format · CONFIDENTIAL",
+        S("footer", fontName="Helvetica", fontSize=7, textColor=gray, alignment=TA_CENTER)
+    ))
+
+    doc.build(story)
+    buffer.seek(0)
+    filename = f"DORA_{case.case_number}.pdf"
+    return StreamingResponse(buffer, media_type="application/pdf",
                              headers={"Content-Disposition": f'attachment; filename="{filename}"'})

@@ -1,26 +1,22 @@
 import json
-import os
 from datetime import datetime
-from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlmodel import Session, select, or_
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from sqlmodel import Session, select, func, or_
 from models import Case, EvidenceArtifact, TimelineEvent, IOCCorrelation, AuditLog
 from database import get_session
 from ai_router import call_ai, call_ai_json
+from routers.auth import get_current_user, _audit
+from models import User
 
 router = APIRouter(prefix="/api/cases", tags=["cases"])
 
 
-def audit(session: Session, action: str, entity_type: str, entity_id: str, new_value: str = ""):
-    log = AuditLog(action=action, entity_type=entity_type, entity_id=entity_id, new_value=new_value)
-    session.add(log)
-
-
 def next_case_number(session: Session) -> str:
-    cases = session.exec(select(Case).order_by(Case.id.desc())).all()
-    year = datetime.utcnow().year
-    num = len(cases) + 1
-    return f"SOC-{year}-{num:04d}"
+    """Use MAX(id) to avoid duplicates on deletion."""
+    result = session.exec(select(func.max(Case.id))).one()
+    next_id = (result or 0) + 1
+    return f"SOC-{datetime.utcnow().year}-{next_id:04d}"
 
 
 def correlate_iocs(session: Session, case_id: int, iocs_raw: str):
@@ -29,11 +25,13 @@ def correlate_iocs(session: Session, case_id: int, iocs_raw: str):
     except Exception:
         return
     for item in iocs:
-        ioc_val = item.get("ioc", "")
-        ioc_type = item.get("type", "")
-        if not ioc_val:
+        val = item.get("ioc", "")
+        itype = item.get("type", "")
+        if not val:
             continue
-        existing = session.exec(select(IOCCorrelation).where(IOCCorrelation.ioc == ioc_val)).first()
+        existing = session.exec(
+            select(IOCCorrelation).where(IOCCorrelation.ioc == val)
+        ).first()
         if existing:
             ids = json.loads(existing.case_ids or "[]")
             if case_id not in ids:
@@ -43,12 +41,13 @@ def correlate_iocs(session: Session, case_id: int, iocs_raw: str):
                 existing.last_seen = datetime.utcnow()
                 session.add(existing)
         else:
-            corr = IOCCorrelation(ioc=ioc_val, ioc_type=ioc_type,
-                                  case_ids=json.dumps([case_id]), case_count=1)
-            session.add(corr)
+            session.add(IOCCorrelation(
+                ioc=val, ioc_type=itype,
+                case_ids=json.dumps([case_id]), case_count=1
+            ))
 
 
-# ── LIST / CREATE ───────────────────────────────────────────────────────────
+# ── LIST / CREATE ─────────────────────────────────────────────────────────────
 @router.get("")
 def list_cases(
     q: Optional[str] = Query(None),
@@ -72,25 +71,28 @@ def list_cases(
             Case.analyst_name.contains(q),
             Case.customer_name.contains(q),
             Case.findings.contains(q),
+            Case.description.contains(q),
         ))
+    cases = session.exec(query.order_by(Case.created_at.desc())).all()
     if sort == "severity":
         order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
-        cases = session.exec(query).all()
         cases.sort(key=lambda c: order.get(c.severity, 5))
-        return cases
-    query = query.order_by(Case.created_at.desc())
-    return session.exec(query).all()
+    return cases
 
 
 @router.post("")
-def create_case(data: dict, session: Session = Depends(get_session)):
+def create_case(
+    data: dict,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
     case = Case(
         case_number=next_case_number(session),
         title=data.get("title", "Untitled Case"),
         severity=data.get("severity", "medium"),
         status="open",
         incident_type=data.get("incident_type", ""),
-        analyst_name=data.get("analyst_name", ""),
+        analyst_name=data.get("analyst_name", user.name),
         customer_name=data.get("customer_name", ""),
         affected_systems=data.get("affected_systems", ""),
         classification=data.get("classification", "internal"),
@@ -99,12 +101,13 @@ def create_case(data: dict, session: Session = Depends(get_session)):
     session.add(case)
     session.commit()
     session.refresh(case)
-    audit(session, "case_created", "case", str(case.id), case.title)
+    _audit(session, "case_created", "case", str(case.id),
+           user.id, user.email, case.title)
     session.commit()
     return case
 
 
-# ── GET / UPDATE / DELETE ───────────────────────────────────────────────────
+# ── GET / UPDATE / DELETE ─────────────────────────────────────────────────────
 @router.get("/{case_id}")
 def get_case(case_id: int, session: Session = Depends(get_session)):
     case = session.get(Case, case_id)
@@ -114,44 +117,75 @@ def get_case(case_id: int, session: Session = Depends(get_session)):
 
 
 @router.patch("/{case_id}")
-def update_case(case_id: int, data: dict, session: Session = Depends(get_session)):
+def update_case(
+    case_id: int,
+    data: dict,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
     case = session.get(Case, case_id)
     if not case:
         raise HTTPException(404, "Case not found")
-    allowed = ["title", "severity", "status", "incident_type", "affected_systems",
-               "analyst_name", "customer_name", "classification", "description",
-               "commands_run", "findings", "recommendations", "iocs", "timeline_events",
-               "mitre_techniques", "is_public", "shift_handoff", "ai_executive_summary",
-               "ai_technical_summary", "ai_severity_score", "ai_severity_reasoning",
-               "vt_results", "closure_notes", "tools_output"]
+    allowed = [
+        "title", "severity", "status", "incident_type", "affected_systems",
+        "analyst_name", "customer_name", "classification", "description",
+        "commands_run", "findings", "recommendations", "iocs",
+        "mitre_techniques", "is_public", "shift_handoff",
+        "ai_executive_summary", "ai_technical_summary",
+        "ai_severity_score", "ai_severity_reasoning",
+        "vt_results", "closure_notes", "tools_output", "email_analysis",
+    ]
+    old_status = case.status
     for k, v in data.items():
         if k in allowed:
             setattr(case, k, v if not isinstance(v, (dict, list)) else json.dumps(v))
     case.updated_at = datetime.utcnow()
     if "iocs" in data:
         correlate_iocs(session, case_id, case.iocs)
+    # Log status changes explicitly
+    if "status" in data and data["status"] != old_status:
+        _audit(session, "status_changed", "case", str(case.id),
+               user.id, user.email, f"{old_status} → {data['status']}")
     session.add(case)
     session.commit()
     session.refresh(case)
-    audit(session, "case_updated", "case", str(case.id))
-    session.commit()
+    # Fire webhooks async (import here to avoid circular)
+    try:
+        from routers.webhooks import fire_event
+        fire_event("case_status_changed", {
+            "case_number": case.case_number,
+            "title": case.title,
+            "severity": case.severity,
+            "status": case.status,
+        })
+    except Exception:
+        pass
     return case
 
 
 @router.delete("/{case_id}")
-def delete_case(case_id: int, session: Session = Depends(get_session)):
+def delete_case(
+    case_id: int,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
     case = session.get(Case, case_id)
     if not case:
         raise HTTPException(404, "Case not found")
-    audit(session, "case_deleted", "case", str(case.id), case.title)
+    _audit(session, "case_deleted", "case", str(case.id),
+           user.id, user.email, case.title)
     session.delete(case)
     session.commit()
     return {"ok": True}
 
 
-# ── GENERATE AI ─────────────────────────────────────────────────────────────
+# ── GENERATE AI ───────────────────────────────────────────────────────────────
 @router.post("/{case_id}/generate-ai")
-async def generate_ai(case_id: int, session: Session = Depends(get_session)):
+async def generate_ai(
+    case_id: int,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
     case = session.get(Case, case_id)
     if not case:
         raise HTTPException(404, "Case not found")
@@ -159,124 +193,139 @@ async def generate_ai(case_id: int, session: Session = Depends(get_session)):
     iocs  = json.loads(case.iocs or "[]")
     mitre = json.loads(case.mitre_techniques or "[]")
 
-    prompt = f"""Analyse this security incident and produce structured output.
-
-Case: {case.case_number} | Title: {case.title}
+    prompt = f"""Analyse this security incident:
+Case: {case.case_number} — {case.title}
 Severity: {case.severity} | Type: {case.incident_type}
-Affected Systems: {case.affected_systems}
+Affected: {case.affected_systems}
 Description: {case.description[:800]}
 Findings: {case.findings[:800]}
-Commands Run: {(case.commands_run or '')[:1500]}
-IOCs: {json.dumps(iocs[:10])}
-MITRE Techniques: {json.dumps(mitre)}
+Commands: {(case.commands_run or '')[:1200]}
+IOCs ({len(iocs)}): {json.dumps(iocs[:10])}
+MITRE: {json.dumps(mitre)}
 
 Respond ONLY with valid JSON:
 {{
   "executive_summary": "2-3 sentences for non-technical leadership",
-  "technical_summary": "4-6 sentences technical analysis for analysts",
-  "severity_score": <integer 0-100>,
-  "severity_reasoning": "Why this score was assigned",
-  "mitre_techniques": [{{"id": "T####", "name": "...", "tactic": "..."}}],
-  "recommended_actions": ["action 1", "action 2", "action 3"]
+  "technical_summary": "4-6 sentences technical analysis",
+  "severity_score": <0-100>,
+  "severity_reasoning": "why this score",
+  "mitre_techniques": [{{"id":"T####","name":"...","tactic":"..."}}],
+  "recommended_actions": ["action 1","action 2","action 3"]
 }}"""
 
     result = call_ai_json("analysis", prompt, temperature=0.25, max_tokens=1500)
     if result.get("parse_error"):
-        result = {"executive_summary": result.get("raw", ""), "technical_summary": "", "severity_score": 50, "severity_reasoning": "", "mitre_techniques": [], "recommended_actions": []}
+        result = {"executive_summary": result.get("raw",""), "technical_summary": "",
+                  "severity_score": 50, "severity_reasoning": "",
+                  "mitre_techniques": [], "recommended_actions": []}
 
     case.ai_executive_summary = result.get("executive_summary", "")
     case.ai_technical_summary = result.get("technical_summary", "")
-    case.ai_severity_score = result.get("severity_score", 50)
-    case.ai_severity_reasoning = result.get("severity_reasoning", "")
+    case.ai_severity_score    = result.get("severity_score", 50)
+    case.ai_severity_reasoning= result.get("severity_reasoning", "")
     if result.get("mitre_techniques"):
         case.mitre_techniques = json.dumps(result["mitre_techniques"])
     case.updated_at = datetime.utcnow()
     session.add(case)
+    _audit(session, "ai_generated", "case", str(case.id), user.id, user.email)
     session.commit()
     session.refresh(case)
-    audit(session, "ai_generated", "case", str(case.id))
-    session.commit()
     return case
 
 
-# ── AI CHAT ─────────────────────────────────────────────────────────────────
+# ── AI CHAT ───────────────────────────────────────────────────────────────────
 @router.post("/{case_id}/chat")
 async def case_chat(case_id: int, data: dict, session: Session = Depends(get_session)):
     case = session.get(Case, case_id)
     if not case:
         raise HTTPException(404, "Case not found")
-
-    user_message = data.get("message", "")
     history = data.get("history", [])
-
-    case_context = f"""Case {case.case_number}: {case.title}
+    context = f"""Case {case.case_number}: {case.title}
 Severity: {case.severity} | Type: {case.incident_type}
-Description: {case.description[:800]}
-Findings: {case.findings[:800]}
-IOCs: {case.iocs[:400]}
-MITRE: {case.mitre_techniques[:300]}
-Commands: {(case.commands_run or '')[:600]}"""
-
-    prompt = f"Case context:\n{case_context}\n\nAnalyst question: {user_message}"
-    reply = call_ai("chat", prompt, temperature=0.35, max_tokens=700, history=history[-6:])
+Description: {case.description[:600]}
+Findings: {case.findings[:600]}
+IOCs: {case.iocs[:300]}
+MITRE: {case.mitre_techniques[:200]}
+Commands: {(case.commands_run or '')[:500]}"""
+    prompt = f"Context:\n{context}\n\nAnalyst: {data.get('message','')}"
+    reply = call_ai("chat", prompt, temperature=0.35, max_tokens=700,
+                    history=history[-6:])
     return {"reply": reply}
 
 
-# ── SHARE / PUBLIC ───────────────────────────────────────────────────────────
+# ── SHARE / CLOSE ─────────────────────────────────────────────────────────────
 @router.post("/{case_id}/share")
-def toggle_share(case_id: int, session: Session = Depends(get_session)):
+def toggle_share(
+    case_id: int,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
     case = session.get(Case, case_id)
     if not case:
-        raise HTTPException(404, "Case not found")
-    case.is_public = not case.is_public
+        raise HTTPException(404)
+    case.is_public  = not case.is_public
     case.updated_at = datetime.utcnow()
     session.add(case)
-    session.commit()
-    session.refresh(case)
-    audit(session, "share_toggled", "case", str(case.id), str(case.is_public))
+    _audit(session, "share_toggled", "case", str(case.id),
+           user.id, user.email, str(case.is_public))
     session.commit()
     return {"is_public": case.is_public, "share_token": case.share_token}
 
 
-# ── CLOSE ────────────────────────────────────────────────────────────────────
 @router.post("/{case_id}/close")
-def close_case(case_id: int, data: dict, session: Session = Depends(get_session)):
+def close_case(
+    case_id: int,
+    data: dict,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
     case = session.get(Case, case_id)
     if not case:
-        raise HTTPException(404, "Case not found")
-
-    required = ["final_findings", "remediation_steps", "lessons_learned"]
-    for field in required:
+        raise HTTPException(404)
+    for field in ["final_findings", "remediation_steps", "lessons_learned"]:
         if not data.get(field):
             raise HTTPException(400, f"Missing required closure field: {field}")
-
-    closure = {
-        "final_findings": data["final_findings"],
+    case.closure_notes = json.dumps({
+        "final_findings":    data["final_findings"],
         "remediation_steps": data["remediation_steps"],
-        "lessons_learned": data["lessons_learned"],
+        "lessons_learned":   data["lessons_learned"],
         "evidence_complete": data.get("evidence_complete", False),
-        "closed_by": data.get("closed_by", "analyst"),
-        "closed_at": datetime.utcnow().isoformat(),
-    }
-    case.closure_notes = json.dumps(closure)
-    case.status = "closed"
+        "closed_by":         user.name,
+        "closed_at":         datetime.utcnow().isoformat(),
+    })
+    case.status     = "closed"
     case.updated_at = datetime.utcnow()
     session.add(case)
+    _audit(session, "case_closed", "case", str(case.id), user.id, user.email)
     session.commit()
     session.refresh(case)
-    audit(session, "case_closed", "case", str(case.id))
-    session.commit()
+    try:
+        from routers.webhooks import fire_event
+        fire_event("case_closed", {
+            "case_number": case.case_number,
+            "title": case.title,
+            "severity": case.severity,
+            "closed_by": user.name,
+        })
+    except Exception:
+        pass
     return case
 
 
-# ── EVIDENCE ─────────────────────────────────────────────────────────────────
+# ── EVIDENCE ──────────────────────────────────────────────────────────────────
 @router.get("/{case_id}/evidence")
 def list_evidence(case_id: int, session: Session = Depends(get_session)):
-    return session.exec(select(EvidenceArtifact).where(EvidenceArtifact.case_id == case_id)).all()
+    return session.exec(
+        select(EvidenceArtifact).where(EvidenceArtifact.case_id == case_id)
+    ).all()
 
 
 @router.post("/{case_id}/evidence")
-def add_evidence(case_id: int, data: dict, session: Session = Depends(get_session)):
+def add_evidence(
+    case_id: int, data: dict,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
     ev = EvidenceArtifact(
         case_id=case_id,
         artifact_type=data.get("artifact_type", "manual"),
@@ -290,13 +339,18 @@ def add_evidence(case_id: int, data: dict, session: Session = Depends(get_sessio
         evidence_score=data.get("evidence_score", "hypothesis"),
     )
     session.add(ev)
+    _audit(session, "evidence_added", "evidence", str(case_id), user.id, user.email)
     session.commit()
     session.refresh(ev)
     return ev
 
 
 @router.patch("/{case_id}/evidence/{ev_id}")
-def update_evidence(case_id: int, ev_id: int, data: dict, session: Session = Depends(get_session)):
+def update_evidence(
+    case_id: int, ev_id: int, data: dict,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
     ev = session.get(EvidenceArtifact, ev_id)
     if not ev:
         raise HTTPException(404)
@@ -310,27 +364,29 @@ def update_evidence(case_id: int, ev_id: int, data: dict, session: Session = Dep
     return ev
 
 
-# ── TIMELINE ─────────────────────────────────────────────────────────────────
+# ── TIMELINE ──────────────────────────────────────────────────────────────────
 @router.get("/{case_id}/timeline")
 def list_timeline(case_id: int, session: Session = Depends(get_session)):
     return session.exec(
-        select(TimelineEvent).where(TimelineEvent.case_id == case_id).order_by(TimelineEvent.timestamp)
+        select(TimelineEvent)
+        .where(TimelineEvent.case_id == case_id)
+        .order_by(TimelineEvent.timestamp)
     ).all()
 
 
 @router.post("/{case_id}/timeline")
-def add_timeline_event(case_id: int, data: dict, session: Session = Depends(get_session)):
+def add_timeline(
+    case_id: int, data: dict,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
     ts = data.get("timestamp")
-    if ts:
-        try:
-            ts = datetime.fromisoformat(ts.replace("Z", "+00:00"))
-        except Exception:
-            ts = datetime.utcnow()
-    else:
+    try:
+        ts = datetime.fromisoformat((ts or "").replace("Z", "+00:00"))
+    except Exception:
         ts = datetime.utcnow()
     ev = TimelineEvent(
-        case_id=case_id,
-        timestamp=ts,
+        case_id=case_id, timestamp=ts,
         event_type=data.get("event_type", "action"),
         description=data.get("description", ""),
     )
@@ -340,7 +396,106 @@ def add_timeline_event(case_id: int, data: dict, session: Session = Depends(get_
     return ev
 
 
-# ── IOC CORRELATION ──────────────────────────────────────────────────────────
+# ── SIEM / ALERT IMPORT ───────────────────────────────────────────────────────
+@router.post("/import-alert")
+def import_alert(
+    data: dict,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """
+    Import a security alert from an external SIEM (Sentinel, Splunk, generic JSON).
+    Creates a new case automatically. Supports CEF fields and Sentinel schema.
+    """
+    # Normalise from different SIEM formats
+    source = data.get("source", "generic").lower()
+
+    if source == "sentinel":
+        title       = data.get("AlertDisplayName") or data.get("title", "SIEM Alert")
+        severity_raw= (data.get("Severity") or data.get("severity", "medium")).lower()
+        description = data.get("Description") or data.get("description", "")
+        ioc_list    = data.get("Entities", [])
+        system      = data.get("CompromisedEntity") or data.get("affected_systems", "")
+    elif source == "splunk":
+        title       = data.get("search_name") or data.get("title", "Splunk Alert")
+        severity_raw= (data.get("urgency") or data.get("severity", "medium")).lower()
+        description = data.get("message") or data.get("description", "")
+        ioc_list    = []
+        system      = data.get("host") or data.get("affected_systems", "")
+    else:
+        title       = data.get("title", "Imported Alert")
+        severity_raw= (data.get("severity", "medium")).lower()
+        description = data.get("description", "")
+        ioc_list    = data.get("iocs", [])
+        system      = data.get("affected_systems", "")
+
+    # Map severity
+    sev_map = {
+        "critical": "critical", "high": "high", "medium": "medium",
+        "low": "low", "informational": "info", "info": "info",
+        "3": "low", "4": "medium", "5": "high", "8": "critical",
+    }
+    severity = sev_map.get(severity_raw, "medium")
+
+    # Build IOC list
+    normalised_iocs = []
+    for item in ioc_list:
+        if isinstance(item, dict):
+            ioc_val  = item.get("Address") or item.get("HostName") or item.get("ioc", "")
+            ioc_type = item.get("Type", "ip").lower()
+            if ioc_val:
+                normalised_iocs.append({"ioc": ioc_val, "type": ioc_type})
+        elif isinstance(item, str):
+            normalised_iocs.append({"ioc": item, "type": "unknown"})
+
+    case = Case(
+        case_number=next_case_number(session),
+        title=title,
+        severity=severity,
+        status="open",
+        incident_type=data.get("incident_type", "siem_alert"),
+        analyst_name=user.name,
+        customer_name=data.get("customer_name", ""),
+        affected_systems=system,
+        description=description,
+        iocs=json.dumps(normalised_iocs),
+    )
+    session.add(case)
+    session.commit()
+    session.refresh(case)
+
+    if normalised_iocs:
+        correlate_iocs(session, case.id, case.iocs)
+
+    # Auto timeline entry
+    session.add(TimelineEvent(
+        case_id=case.id,
+        event_type="detection",
+        description=f"Alert imported from {source.upper()}: {title}",
+    ))
+
+    _audit(session, "alert_imported", "case", str(case.id),
+           user.id, user.email, f"Source: {source}")
+    session.commit()
+
+    # Fire critical webhook if needed
+    if severity == "critical":
+        try:
+            from routers.webhooks import fire_event
+            fire_event("critical_case", {
+                "case_number": case.case_number,
+                "title": case.title, "source": source,
+            })
+        except Exception:
+            pass
+
+    return case
+
+
+# ── IOC CORRELATION ───────────────────────────────────────────────────────────
 @router.get("/correlate/all")
 def correlate_all(session: Session = Depends(get_session)):
-    return session.exec(select(IOCCorrelation).where(IOCCorrelation.case_count > 1)).all()
+    return session.exec(
+        select(IOCCorrelation).where(IOCCorrelation.case_count > 1)
+        .order_by(IOCCorrelation.case_count.desc())
+    ).all()
