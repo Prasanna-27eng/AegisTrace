@@ -350,6 +350,7 @@ export default function Landing() {
             <a href="#how" className="nav-link" onClick={e => { e.preventDefault(); document.getElementById('how')?.scrollIntoView({behavior:'smooth'}); }}>How It Works</a>
             <a href="/portfolio" className="nav-link">Portfolio</a>
             <a href="/public" className="nav-link">Case Library</a>
+            <a href="/agent-setup" className="nav-link">Agent Setup</a>
           </nav>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#C0392B', animation: 'pulse-dot 1.8s ease-in-out infinite' }} />

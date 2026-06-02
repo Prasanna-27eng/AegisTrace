@@ -6,6 +6,7 @@ import Landing          from './pages/Landing';
 import Portfolio        from './pages/Portfolio';
 import PublicGallery    from './pages/PublicGallery';
 import PublicCaseDetail from './pages/PublicCaseDetail';
+import AgentSetup       from './pages/AgentSetup';
 import Login            from './pages/Login';
 
 import AppShell         from './pages/app/AppShell';
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/portfolio"     element={<Portfolio />} />
         <Route path="/public"        element={<PublicGallery />} />
         <Route path="/public/:token" element={<PublicCaseDetail />} />
+        <Route path="/agent-setup"   element={<AgentSetup />} />
         <Route path="/app/login"     element={<Login />} />
 
         {/* Protected app */}
