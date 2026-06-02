@@ -1,23 +1,57 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Plus, Search, Globe, FileText, Share2, Trash2, ChevronDown, Lock, Download } from 'lucide-react';
+import { Plus, Search, Globe, FileText, Share2, Trash2, Lock, Clock, AlertTriangle, FolderOpen } from 'lucide-react';
 import { SeverityBadge, StatusBadge } from '../../components/SeverityBadge';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
+
+function caseAge(dateStr) {
+  const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
+  if (diff < 3600) return `${Math.round(diff / 60)}m`;
+  if (diff < 86400) return `${Math.round(diff / 3600)}h`;
+  return `${Math.round(diff / 86400)}d`;
+}
+
+function ageColor(dateStr, severity) {
+  const hrs = (Date.now() - new Date(dateStr).getTime()) / 3600000;
+  const limit = { critical: 4, high: 8, medium: 48, low: 168 }[severity] || 48;
+  if (hrs > limit) return '#EF4444';
+  if (hrs > limit * 0.8) return '#EAB308';
+  return '#71717A';
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
+  if (diff < 60)    return `${Math.round(diff)}s ago`;
+  if (diff < 3600)  return `${Math.round(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.round(diff / 3600)}h ago`;
+  return `${Math.round(diff / 86400)}d ago`;
+}
+
+const QUICK_FILTERS = [
+  { label: 'All',              status: '',                severity: '' },
+  { label: 'Open',             status: 'open',            severity: '' },
+  { label: 'In Progress',      status: 'in_progress',     severity: '' },
+  { label: 'Pending Closure',  status: 'pending_closure', severity: '' },
+  { label: 'Critical',         status: '',                severity: 'critical' },
+  { label: 'Closed',           status: 'closed',          severity: '' },
+];
 
 export default function CaseList() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { addToast, user } = useStore();
 
-  const [cases, setCases]     = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [q, setQ]             = useState(searchParams.get('q') || '');
-  const [severity, setSeverity] = useState('');
-  const [status, setStatus]   = useState('');
-  const [sort, setSort]       = useState('newest');
+  const [cases, setCases]       = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [q, setQ]               = useState(searchParams.get('q') || '');
+  const [severity, setSeverity] = useState(searchParams.get('severity') || '');
+  const [status, setStatus]     = useState(searchParams.get('status') || '');
+  const [sort, setSort]         = useState('newest');
+  const [activeChip, setActiveChip] = useState(0);
 
-  const fetchCases = () => {
+  const fetchCases = useCallback(() => {
     setLoading(true);
     const p = new URLSearchParams();
     if (q)        p.set('q', q);
@@ -27,19 +61,21 @@ export default function CaseList() {
     api.get(`/api/cases?${p}`)
       .then(r => { setCases(r.data); setLoading(false); })
       .catch(() => setLoading(false));
-  };
+  }, [q, severity, status, sort]);
 
   useEffect(() => { fetchCases(); }, [severity, status, sort]);
+
+  const applyChip = (idx, f) => {
+    setActiveChip(idx);
+    setSeverity(f.severity);
+    setStatus(f.status);
+  };
 
   const handleSearch = (e) => { if (e.key === 'Enter') fetchCases(); };
 
   const handleNewCase = async () => {
     try {
-      const res = await api.post('/api/cases', {
-        title: 'New Investigation',
-        severity: 'medium',
-        analyst_name: user?.name || 'Analyst',
-      });
+      const res = await api.post('/api/cases', { title: 'New Investigation', severity: 'medium', analyst_name: user?.name || 'Analyst' });
       navigate(`/app/cases/${res.data.id}`);
     } catch { addToast('Failed to create case', 'error'); }
   };
@@ -51,9 +87,7 @@ export default function CaseList() {
       await api.delete(`/api/cases/${caseId}`);
       setCases(prev => prev.filter(c => c.id !== caseId));
       addToast('Case deleted', 'success');
-    } catch (err) {
-      addToast(err.response?.data?.detail || 'Delete failed', 'error');
-    }
+    } catch (err) { addToast(err.response?.data?.detail || 'Delete failed', 'error'); }
   };
 
   const handleShare = (e, token) => {
@@ -81,45 +115,59 @@ export default function CaseList() {
     } catch { addToast('Failed to change visibility', 'error'); }
   };
 
+  // Stats for header
+  const open      = cases.filter(c => c.status === 'open').length;
+  const critical  = cases.filter(c => c.severity === 'critical' && c.status !== 'closed').length;
+  const pending   = cases.filter(c => c.status === 'pending_closure').length;
+
   return (
-    <div style={{ padding: '24px 28px' }}>
+    <div style={{ padding: '20px 24px' }}>
+
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
         <div>
-          <h1 style={{ fontSize: '1.3rem', fontWeight: 600 }}>Cases</h1>
-          <div style={{ fontSize: '0.72rem', color: '#71717A', marginTop: 2 }}>
-            {cases.length} case{cases.length !== 1 ? 's' : ''}
+          <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Cases</h1>
+          <div style={{ display: 'flex', gap: 12, marginTop: 4, fontSize: '0.7rem', fontFamily: 'JetBrains Mono' }}>
+            <span style={{ color: '#71717A' }}>{cases.length} total</span>
+            {open > 0 && <span style={{ color: '#EF4444' }}>{open} open</span>}
+            {critical > 0 && <span style={{ color: '#C0392B' }}>{critical} critical</span>}
+            {pending > 0 && <span style={{ color: '#EAB308' }}>{pending} pending</span>}
           </div>
         </div>
-        <button className="btn-accent" onClick={handleNewCase}>
-          <Plus size={14} /> New Case
+        <button className="btn-accent" onClick={handleNewCase} style={{ fontSize: '0.8rem' }}>
+          <Plus size={13} /> New Case
         </button>
       </div>
 
-      {/* Filters */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-        <div style={{ position: 'relative', flex: '1 1 180px' }}>
+      {/* Quick filter chips */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+        {QUICK_FILTERS.map((f, idx) => (
+          <button
+            key={f.label}
+            onClick={() => applyChip(idx, f)}
+            style={{
+              padding: '4px 12px', borderRadius: 20, fontSize: '0.72rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: activeChip === idx ? 600 : 400, transition: 'all 0.15s',
+              background: activeChip === idx ? '#C0392B' : 'rgba(255,255,255,0.04)',
+              color: activeChip === idx ? '#fff' : '#71717A',
+              border: activeChip === idx ? '1px solid #C0392B' : '1px solid rgba(255,255,255,0.08)',
+            }}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Search + filters row */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', flex: '1 1 200px' }}>
           <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#71717A' }} />
-          <input
-            className="at-input"
-            placeholder="Search cases…"
-            value={q}
-            onChange={e => setQ(e.target.value)}
-            onKeyDown={handleSearch}
-            style={{ paddingLeft: 30, fontSize: '0.8rem' }}
-          />
+          <input className="at-input" placeholder="Search title, case number, analyst, findings…" value={q}
+            onChange={e => setQ(e.target.value)} onKeyDown={handleSearch}
+            style={{ paddingLeft: 30, fontSize: '0.8rem' }} />
         </div>
-        <select className="at-select" value={severity} onChange={e => setSeverity(e.target.value)} style={{ flex: '0 1 130px' }}>
+        <select className="at-select" value={severity} onChange={e => { setSeverity(e.target.value); setActiveChip(-1); }} style={{ flex: '0 1 130px' }}>
           <option value="">All Severities</option>
-          {['critical','high','medium','low','info'].map(s => (
-            <option key={s} value={s}>{s.charAt(0).toUpperCase()+s.slice(1)}</option>
-          ))}
-        </select>
-        <select className="at-select" value={status} onChange={e => setStatus(e.target.value)} style={{ flex: '0 1 150px' }}>
-          <option value="">All Statuses</option>
-          {['open','in_progress','pending_closure','closed'].map(s => (
-            <option key={s} value={s}>{s.replace(/_/g,' ')}</option>
-          ))}
+          {['critical','high','medium','low','info'].map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase()+s.slice(1)}</option>)}
         </select>
         <select className="at-select" value={sort} onChange={e => setSort(e.target.value)} style={{ flex: '0 1 130px' }}>
           <option value="newest">Newest First</option>
@@ -129,85 +177,110 @@ export default function CaseList() {
 
       {/* List */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 60, color: '#71717A' }}>Loading…</div>
+        <div style={{ textAlign: 'center', padding: 60, color: '#71717A', fontSize: '0.82rem' }}>Loading cases…</div>
       ) : cases.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 60, color: '#71717A' }}>
-          <div style={{ marginBottom: 12 }}>No cases found.</div>
-          <button className="btn-accent" onClick={handleNewCase}><Plus size={14} /> Create First Case</button>
+        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <FolderOpen size={36} style={{ color: 'rgba(192,57,43,0.2)', margin: '0 auto 14px', display: 'block' }} />
+          <div style={{ fontWeight: 600, fontSize: '0.92rem', marginBottom: 8 }}>
+            {q || severity || status ? 'No cases match your filters' : 'No cases yet'}
+          </div>
+          <div style={{ fontSize: '0.78rem', color: '#71717A', marginBottom: 16, maxWidth: 340, margin: '0 auto 16px' }}>
+            {q || severity || status
+              ? 'Try adjusting your filters or clearing the search.'
+              : 'Create your first investigation case to start building your SOC queue.'}
+          </div>
+          {(q || severity || status) ? (
+            <button className="btn-ghost" onClick={() => { setQ(''); setSeverity(''); setStatus(''); setActiveChip(0); }} style={{ fontSize: '0.8rem' }}>
+              Clear filters
+            </button>
+          ) : (
+            <button className="btn-accent" onClick={handleNewCase} style={{ fontSize: '0.8rem' }}>
+              <Plus size={13} /> Create First Case
+            </button>
+          )}
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {cases.map(c => (
-            <div
-              key={c.id}
-              className="at-card"
-              style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', transition: 'border-color 0.15s', position: 'relative' }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(192,57,43,0.3)'}
-              onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'}
-              onClick={() => navigate(`/app/cases/${c.id}`)}
-            >
-              {/* Critical pulse bar */}
-              {c.severity === 'critical' && (
-                <div className="critical-pulse" style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '8px 0 0 8px', background: '#C0392B' }} />
-              )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {cases.map(c => {
+            const age     = caseAge(c.created_at);
+            const aColor  = ageColor(c.created_at, c.severity);
+            const updated = timeAgo(c.updated_at);
+            const isSlaBreached = (() => {
+              const hrs = (Date.now() - new Date(c.created_at).getTime()) / 3600000;
+              const limit = { critical:4, high:8, medium:48, low:168 }[c.severity] || 48;
+              return c.status !== 'closed' && hrs > limit;
+            })();
 
-              {/* Case info */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3, flexWrap: 'wrap' }}>
-                  <span style={{ fontWeight: 600, fontSize: '0.86rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</span>
-                  {c.is_public && <Globe size={11} style={{ color: '#22C55E', flexShrink: 0 }} title="Public" />}
+            return (
+              <div
+                key={c.id}
+                className="at-card"
+                style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', transition: 'border-color 0.15s', position: 'relative', overflow: 'hidden' }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(192,57,43,0.3)'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = isSlaBreached ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.07)'}
+                onClick={() => navigate(`/app/cases/${c.id}`)}
+                style={{
+                  padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer',
+                  background: '#16171F', border: `1px solid ${isSlaBreached ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.07)'}`,
+                  borderRadius: 8, transition: 'border-color 0.15s', position: 'relative', overflow: 'hidden'
+                }}
+              >
+                {/* Severity left bar */}
+                {c.severity === 'critical' && (
+                  <div className="critical-pulse" style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '8px 0 0 8px', background: '#C0392B' }} />
+                )}
+                {isSlaBreached && c.severity !== 'critical' && (
+                  <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '8px 0 0 8px', background: '#EF4444', opacity: 0.6 }} />
+                )}
+
+                {/* Case info */}
+                <div style={{ flex: 1, minWidth: 0, paddingLeft: (c.severity === 'critical' || isSlaBreached) ? 6 : 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                    <span style={{ fontWeight: 600, fontSize: '0.84rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</span>
+                    {c.is_public && <Globe size={10} style={{ color: '#22C55E', flexShrink: 0 }} title="Public" />}
+                    {isSlaBreached && <span title="SLA breach"><AlertTriangle size={11} style={{ color: '#EF4444', flexShrink: 0 }} /></span>}
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, fontSize: '0.67rem', color: '#71717A', fontFamily: 'JetBrains Mono', flexWrap: 'wrap' }}>
+                    <span>{c.case_number}</span>
+                    {c.analyst_name && <span>· {c.analyst_name}</span>}
+                    {c.incident_type && <span style={{ textTransform: 'capitalize' }}>· {c.incident_type.replace(/_/g,' ')}</span>}
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: 10, fontSize: '0.7rem', color: '#71717A', flexWrap: 'wrap' }}>
-                  <span style={{ fontFamily: 'JetBrains Mono' }}>{c.case_number}</span>
-                  {c.analyst_name && <span>{c.analyst_name}</span>}
-                  {c.incident_type && <span style={{ textTransform: 'capitalize' }}>{c.incident_type.replace(/_/g,' ')}</span>}
-                  <span>{new Date(c.created_at).toLocaleDateString('en-IE')}</span>
+
+                {/* Age + updated */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, flexShrink: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.67rem', color: aColor, fontFamily: 'JetBrains Mono' }}>
+                    <Clock size={10} />
+                    <span>{age}</span>
+                  </div>
+                  <div style={{ fontSize: '0.62rem', color: '#71717A', fontFamily: 'JetBrains Mono' }}>{updated}</div>
+                </div>
+
+                {/* Badges */}
+                <div style={{ display: 'flex', gap: 5, alignItems: 'center', flexShrink: 0 }}>
+                  <SeverityBadge severity={c.severity} />
+                  <StatusBadge status={c.status} />
+                </div>
+
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: 3, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+                  <button className="btn-ghost" style={{ padding: '3px 7px', color: c.is_public ? '#22C55E' : '#71717A' }}
+                    onClick={e => handleTogglePublic(e, c.id)} title={c.is_public ? 'Public' : 'Private'}>
+                    {c.is_public ? <Globe size={11} /> : <Lock size={11} />}
+                  </button>
+                  <button className="btn-ghost" style={{ padding: '3px 7px' }} onClick={e => handleShare(e, c.share_token)} title="Copy share link">
+                    <Share2 size={11} />
+                  </button>
+                  <button className="btn-ghost" style={{ padding: '3px 7px' }} onClick={e => handleDownloadPdf(e, c.id, c.case_number)} title="Download PDF">
+                    <FileText size={11} />
+                  </button>
+                  <button className="btn-ghost" style={{ padding: '3px 7px', color: '#EF4444' }} onClick={e => handleDelete(e, c.id, c.case_number)} title="Delete">
+                    <Trash2 size={11} />
+                  </button>
                 </div>
               </div>
-
-              {/* Badges */}
-              <div style={{ display: 'flex', gap: 5, alignItems: 'center', flexShrink: 0 }}>
-                <SeverityBadge severity={c.severity} />
-                <StatusBadge status={c.status} />
-              </div>
-
-              {/* Actions */}
-              <div style={{ display: 'flex', gap: 4, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-                <button
-                  className="btn-ghost"
-                  style={{ padding: '4px 8px', color: c.is_public ? '#22C55E' : '#71717A', borderColor: c.is_public ? 'rgba(34,197,94,0.3)' : undefined }}
-                  onClick={e => handleTogglePublic(e, c.id)}
-                  title={c.is_public ? 'Public — click to make private' : 'Private — click to make public'}
-                >
-                  {c.is_public ? <Globe size={12} /> : <Lock size={12} />}
-                </button>
-                <button
-                  className="btn-ghost"
-                  style={{ padding: '4px 8px' }}
-                  onClick={e => handleShare(e, c.share_token)}
-                  title="Copy share link"
-                >
-                  <Share2 size={12} />
-                </button>
-                <button
-                  className="btn-ghost"
-                  style={{ padding: '4px 8px' }}
-                  onClick={e => handleDownloadPdf(e, c.id, c.case_number)}
-                  title="Download PDF"
-                >
-                  <FileText size={12} />
-                </button>
-                <button
-                  className="btn-ghost"
-                  style={{ padding: '4px 8px', color: '#EF4444' }}
-                  onClick={e => handleDelete(e, c.id, c.case_number)}
-                  title="Delete case"
-                >
-                  <Trash2 size={12} />
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
