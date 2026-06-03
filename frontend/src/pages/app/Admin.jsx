@@ -2,16 +2,17 @@ import React, { useState, useEffect } from 'react';
 import {
   Users, Webhook, ScrollText, Activity, Plus, Trash2,
   Edit, X, Shield, Key, CheckCircle, XCircle, Globe,
-  AlertTriangle, RefreshCw, Loader2
+  AlertTriangle, RefreshCw, Loader2, Mail
 } from 'lucide-react';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 
 const TABS = [
-  { id: 'users',    label: 'Users',       Icon: Users },
-  { id: 'webhooks', label: 'Webhooks',    Icon: Webhook },
-  { id: 'audit',    label: 'Audit Log',   Icon: ScrollText },
-  { id: 'system',   label: 'System',      Icon: Activity },
+  { id: 'users',     label: 'Users',            Icon: Users },
+  { id: 'webhooks',  label: 'Webhooks',          Icon: Webhook },
+  { id: 'schedules', label: 'Report Schedules',  Icon: Mail },
+  { id: 'audit',     label: 'Audit Log',         Icon: ScrollText },
+  { id: 'system',    label: 'System',            Icon: Activity },
 ];
 
 const ROLE_COLOR = { admin: '#C0392B', analyst: '#A78BFA', viewer: '#71717A' };
@@ -458,6 +459,140 @@ function SystemTab({ addToast }) {
 }
 
 
+// ── Report Schedules Tab ──────────────────────────────────────────────────────
+function SchedulesTab({ addToast }) {
+  const [schedules, setSchedules] = useState([]);
+  const [emailConfig, setEmailConfig] = useState(null);
+  const [form, setForm] = useState({ name:'', recipient_emails:'', schedule_type:'weekly', schedule_day:0, schedule_hour:8, report_type:'digest' });
+  const load = () => {
+    api.get('/api/report-schedules').then(r => setSchedules(r.data)).catch(() => {});
+    api.get('/api/report-schedules/email-config').then(r => setEmailConfig(r.data)).catch(() => {});
+  };
+  useEffect(() => { load(); }, []);
+
+  const handleCreate = async () => {
+    const emails = form.recipient_emails.split(',').map(e => e.trim()).filter(Boolean);
+    if (!form.name || !emails.length) { addToast('Name and at least one email required','error'); return; }
+    try {
+      await api.post('/api/report-schedules', { ...form, recipient_emails: emails });
+      addToast('Schedule created','success'); load();
+      setForm({ name:'', recipient_emails:'', schedule_type:'weekly', schedule_day:0, schedule_hour:8, report_type:'digest' });
+    } catch(e) { addToast(e.response?.data?.detail || 'Error','error'); }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this schedule?')) return;
+    await api.delete(`/api/report-schedules/${id}`);
+    addToast('Deleted','success'); load();
+  };
+
+  const handleSendNow = async (id) => {
+    try {
+      await api.post(`/api/report-schedules/${id}/send-now`);
+      addToast('Report queued for delivery','success');
+    } catch(e) { addToast('Send failed','error'); }
+  };
+
+  const handleToggle = async (sched) => {
+    await api.patch(`/api/report-schedules/${sched.id}`, { is_active: !sched.is_active });
+    addToast(sched.is_active ? 'Schedule paused' : 'Schedule activated','success'); load();
+  };
+
+  const inp = { background:'#0F1018', border:'1px solid rgba(255,255,255,0.1)', borderRadius:5, color:'#F0F0F8', fontSize:'0.78rem', padding:'6px 10px' };
+  const sel = { ...inp, cursor:'pointer' };
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:16, maxWidth:720 }}>
+      {/* Email config status */}
+      {emailConfig && (
+        <div style={{ padding:'10px 14px', borderRadius:7, background: emailConfig.configured ? 'rgba(34,197,94,0.06)' : 'rgba(234,179,8,0.06)', border:`1px solid ${emailConfig.configured ? 'rgba(34,197,94,0.2)' : 'rgba(234,179,8,0.2)'}`, fontSize:'0.75rem' }}>
+          {emailConfig.configured ? (
+            <span style={{ color:'#22C55E' }}>✓ Email configured via {emailConfig.sendgrid ? 'SendGrid' : `SMTP (${emailConfig.smtp_host})`} — from {emailConfig.smtp_from}</span>
+          ) : (
+            <span style={{ color:'#EAB308' }}>⚠ No email transport configured. Add SENDGRID_API_KEY or SMTP_* variables to .env to enable delivery.</span>
+          )}
+        </div>
+      )}
+
+      {/* Create form */}
+      <div className="at-card" style={{ padding:'14px 16px' }}>
+        <div className="section-label">New Schedule</div>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+          <input style={inp} placeholder="Schedule name" value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))} />
+          <input style={inp} placeholder="Emails (comma separated)" value={form.recipient_emails} onChange={e => setForm(f => ({...f, recipient_emails: e.target.value}))} />
+          <select style={sel} value={form.schedule_type} onChange={e => setForm(f => ({...f, schedule_type: e.target.value}))}>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+          <select style={sel} value={form.report_type} onChange={e => setForm(f => ({...f, report_type: e.target.value}))}>
+            <option value="digest">Full Digest (all open cases)</option>
+            <option value="critical_only">Critical Cases Only</option>
+            <option value="open_cases">Open Cases Only</option>
+          </select>
+          <div style={{ display:'flex', gap:6, alignItems:'center' }}>
+            <span style={{ fontSize:'0.72rem', color:'#71717A' }}>
+              {form.schedule_type === 'weekly' ? 'Day of week:' : form.schedule_type === 'monthly' ? 'Day of month:' : ''}
+            </span>
+            {form.schedule_type === 'weekly' && (
+              <select style={{...sel, flex:1}} value={form.schedule_day} onChange={e => setForm(f => ({...f, schedule_day: parseInt(e.target.value)}))}>
+                {['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map((d,i) => <option key={i} value={i}>{d}</option>)}
+              </select>
+            )}
+            {form.schedule_type === 'monthly' && (
+              <input type="number" min="1" max="28" style={{...inp, width:60}} value={form.schedule_day} onChange={e => setForm(f => ({...f, schedule_day: parseInt(e.target.value)}))} />
+            )}
+          </div>
+          <div style={{ display:'flex', gap:6, alignItems:'center' }}>
+            <span style={{ fontSize:'0.72rem', color:'#71717A' }}>Send at (UTC):</span>
+            <input type="number" min="0" max="23" style={{...inp, width:60}} value={form.schedule_hour} onChange={e => setForm(f => ({...f, schedule_hour: parseInt(e.target.value)}))} />
+            <span style={{ fontSize:'0.72rem', color:'#71717A' }}>:00 UTC</span>
+          </div>
+        </div>
+        <button className="btn-accent" onClick={handleCreate} style={{ marginTop:10, fontSize:'0.78rem' }}>
+          <Plus size={13} /> Create Schedule
+        </button>
+      </div>
+
+      {/* Existing schedules */}
+      {schedules.length === 0 ? (
+        <div className="at-card" style={{ padding:32, textAlign:'center', color:'#71717A', fontSize:'0.82rem' }}>
+          No report schedules yet. Create one to receive automated PDF digests.
+        </div>
+      ) : (
+        schedules.map(s => {
+          const emails = JSON.parse(s.recipient_emails || '[]');
+          return (
+            <div key={s.id} className="at-card" style={{ padding:'12px 16px', opacity: s.is_active ? 1 : 0.55 }}>
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:6 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                  <span style={{ fontWeight:600, fontSize:'0.84rem' }}>{s.name}</span>
+                  <span style={{ fontSize:'0.65rem', fontFamily:'JetBrains Mono', padding:'2px 6px', borderRadius:3, background:s.is_active?'rgba(34,197,94,0.12)':'rgba(113,113,122,0.12)', color:s.is_active?'#22C55E':'#71717A' }}>
+                    {s.is_active ? 'ACTIVE' : 'PAUSED'}
+                  </span>
+                </div>
+                <div style={{ display:'flex', gap:5 }}>
+                  <button onClick={() => handleSendNow(s.id)} className="btn-ghost" style={{ fontSize:'0.72rem', padding:'4px 8px' }}>Send now</button>
+                  <button onClick={() => handleToggle(s)} className="btn-ghost" style={{ fontSize:'0.72rem', padding:'4px 8px' }}>{s.is_active ? 'Pause' : 'Resume'}</button>
+                  <button onClick={() => handleDelete(s.id)} style={{ background:'none', border:'none', color:'#EF4444', cursor:'pointer', padding:'4px 6px' }}><Trash2 size={13}/></button>
+                </div>
+              </div>
+              <div style={{ fontSize:'0.7rem', color:'#71717A', display:'flex', gap:14, flexWrap:'wrap' }}>
+                <span>📬 {emails.join(', ')}</span>
+                <span>🗓 {s.schedule_type} · {s.report_type.replace('_',' ')}</span>
+                <span>🕐 {s.schedule_hour}:00 UTC</span>
+                {s.next_run_at && <span style={{ color:'#A78BFA' }}>Next: {new Date(s.next_run_at).toLocaleString()}</span>}
+                {s.last_sent_at && <span>Last sent: {new Date(s.last_sent_at).toLocaleString()}</span>}
+              </div>
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+}
+
+
 // ── Main Admin Page ───────────────────────────────────────────────────────────
 export default function Admin() {
   const { addToast, user } = useStore();
@@ -483,10 +618,11 @@ export default function Admin() {
         ))}
       </div>
 
-      {tab === 'users'    && <UsersTab user={user} addToast={addToast}/>}
-      {tab === 'webhooks' && <WebhooksTab addToast={addToast}/>}
-      {tab === 'audit'    && <AuditTab/>}
-      {tab === 'system'   && <SystemTab addToast={addToast}/>}
+      {tab === 'users'     && <UsersTab user={user} addToast={addToast}/>}
+      {tab === 'webhooks'  && <WebhooksTab addToast={addToast}/>}
+      {tab === 'schedules' && <SchedulesTab addToast={addToast}/>}
+      {tab === 'audit'     && <AuditTab/>}
+      {tab === 'system'    && <SystemTab addToast={addToast}/>}
     </div>
   );
 }

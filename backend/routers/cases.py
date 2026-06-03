@@ -71,8 +71,9 @@ def list_cases(
     limit: Optional[int] = Query(None),
     offset: int = Query(0),
     session: Session = Depends(get_session),
+    _user: User = Depends(get_current_user),
 ):
-    query = select(Case)
+    query = select(Case).where(Case.org_id == _user.org_id)
     if severity:
         query = query.where(Case.severity == severity)
     if status:
@@ -120,6 +121,7 @@ def create_case(
         affected_systems=data.get("affected_systems", ""),
         classification=data.get("classification", "internal"),
         description=data.get("description", ""),
+        org_id=user.org_id,
     )
     session.add(case)
     session.commit()
@@ -132,9 +134,10 @@ def create_case(
 
 # ── GET / UPDATE / DELETE ─────────────────────────────────────────────────────
 @router.get("/{case_id}")
-def get_case(case_id: int, session: Session = Depends(get_session)):
+def get_case(case_id: int, session: Session = Depends(get_session),
+             _user: User = Depends(get_current_user)):
     case = session.get(Case, case_id)
-    if not case:
+    if not case or case.org_id != _user.org_id:
         raise HTTPException(404, "Case not found")
     return case
 
@@ -147,7 +150,7 @@ def update_case(
     session: Session = Depends(get_session),
 ):
     case = session.get(Case, case_id)
-    if not case:
+    if not case or case.org_id != user.org_id:
         raise HTTPException(404, "Case not found")
     allowed = [
         "title", "severity", "status", "incident_type", "affected_systems",
@@ -173,17 +176,19 @@ def update_case(
     session.add(case)
     session.commit()
     session.refresh(case)
-    # Fire webhooks async (import here to avoid circular)
-    try:
-        from routers.webhooks import fire_event
-        fire_event("case_status_changed", {
-            "case_number": case.case_number,
-            "title": case.title,
-            "severity": case.severity,
-            "status": case.status,
-        })
-    except Exception:
-        pass
+    # Fire webhook ONLY when status actually changed
+    if "status" in data and data["status"] != old_status:
+        try:
+            from routers.webhooks import fire_event
+            fire_event("case_status_changed", {
+                "case_number": case.case_number,
+                "title": case.title,
+                "severity": case.severity,
+                "status": case.status,
+                "old_status": old_status,
+            })
+        except Exception:
+            pass
     return case
 
 
@@ -193,8 +198,10 @@ def delete_case(
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
+    if user.role not in ("admin", "analyst"):
+        raise HTTPException(403, "Analysts and admins only")
     case = session.get(Case, case_id)
-    if not case:
+    if not case or case.org_id != user.org_id:
         raise HTTPException(404, "Case not found")
     _audit(session, "case_deleted", "case", str(case.id),
            user.id, user.email, case.title)
@@ -211,7 +218,7 @@ async def generate_ai(
     session: Session = Depends(get_session),
 ):
     case = session.get(Case, case_id)
-    if not case:
+    if not case or case.org_id != user.org_id:
         raise HTTPException(404, "Case not found")
 
     iocs  = json.loads(case.iocs or "[]")
@@ -285,7 +292,7 @@ def toggle_share(
     session: Session = Depends(get_session),
 ):
     case = session.get(Case, case_id)
-    if not case:
+    if not case or case.org_id != user.org_id:
         raise HTTPException(404)
     case.is_public  = not case.is_public
     case.updated_at = datetime.utcnow()
@@ -304,7 +311,7 @@ def close_case(
     session: Session = Depends(get_session),
 ):
     case = session.get(Case, case_id)
-    if not case:
+    if not case or case.org_id != user.org_id:
         raise HTTPException(404)
     for field in ["final_findings", "remediation_steps", "lessons_learned"]:
         if not data.get(field):
@@ -518,7 +525,8 @@ def import_alert(
 
 # ── IOC CORRELATION ───────────────────────────────────────────────────────────
 @router.get("/correlate/all")
-def correlate_all(session: Session = Depends(get_session)):
+def correlate_all(session: Session = Depends(get_session),
+                  _user: User = Depends(get_current_user)):
     return session.exec(
         select(IOCCorrelation).where(IOCCorrelation.case_count > 1)
         .order_by(IOCCorrelation.case_count.desc())

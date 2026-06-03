@@ -1,8 +1,9 @@
 import re, json
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
-from models import IOCCorrelation
+from models import IOCCorrelation, User
 from database import get_session
+from routers.auth import get_current_user
 
 router = APIRouter(prefix="/api/ioc", tags=["ioc"])
 
@@ -23,7 +24,7 @@ DEFANG_MAP = [
 
 
 @router.post("/extract")
-def extract_iocs(data: dict):
+def extract_iocs(data: dict, _user: User = Depends(get_current_user)):
     text = data.get("text", "")
     found = []
     seen = set()
@@ -37,7 +38,8 @@ def extract_iocs(data: dict):
 
 
 @router.get("/correlate/{ioc}")
-def correlate_ioc(ioc: str, session: Session = Depends(get_session)):
+def correlate_ioc(ioc: str, session: Session = Depends(get_session),
+                  _user: User = Depends(get_current_user)):
     record = session.exec(select(IOCCorrelation).where(IOCCorrelation.ioc == ioc)).first()
     if not record:
         return {"ioc": ioc, "found": False, "case_count": 0, "cases": []}
@@ -53,21 +55,22 @@ def correlate_ioc(ioc: str, session: Session = Depends(get_session)):
 
 
 @router.get("/correlations")
-def list_correlations(session: Session = Depends(get_session)):
+def list_correlations(session: Session = Depends(get_session),
+                      _user: User = Depends(get_current_user)):
     return session.exec(
         select(IOCCorrelation).where(IOCCorrelation.case_count > 1).order_by(IOCCorrelation.case_count.desc())
     ).all()
 
 
 @router.post("/defang")
-def defang(data: dict):
+def defang(data: dict, _user: User = Depends(get_current_user)):
     ioc = data.get("ioc", "")
     result = ioc.replace("http://", "hxxp://").replace("https://", "hxxps://").replace(".", "[.]")
     return {"original": ioc, "defanged": result}
 
 
 @router.post("/refang")
-def refang(data: dict):
+def refang(data: dict, _user: User = Depends(get_current_user)):
     ioc = data.get("ioc", "")
     result = ioc.replace("hxxp://", "http://").replace("hxxps://", "https://").replace("[.]", ".")
     return {"original": ioc, "refanged": result}

@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, Shield, Bug, Mail,
   Wrench, Globe, Settings, LogOut, ChevronLeft, ChevronRight,
-  Crosshair, ScrollText, Monitor, FileSearch
+  Crosshair, ScrollText, Monitor, FileSearch, Network, Rss
 } from 'lucide-react';
 import Logo from './Logo';
 import useStore from '../store/useStore';
@@ -23,7 +23,9 @@ const NAV_GROUPS = [
     label: 'Intelligence',
     items: [
       { to: '/app/vt-lookup',  label: 'VT Lookup',         Icon: Shield },
+      { to: '/app/feeds',      label: 'Threat Feeds',      Icon: Rss },
       { to: '/app/email',      label: 'Email Analysis',    Icon: Mail },
+      { to: '/app/pcap',       label: 'PCAP Analysis',     Icon: Network },
       { to: '/app/malware',    label: 'Malware Tools',     Icon: Bug },
       { to: '/app/tools',      label: 'Tools Hub',         Icon: Wrench },
     ],

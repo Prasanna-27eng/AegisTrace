@@ -22,6 +22,9 @@ import ThreatHunt       from './pages/app/ThreatHunt';
 import AuditLog         from './pages/app/AuditLog';
 import Endpoints        from './pages/app/Endpoints';
 import LogInvestigation from './pages/app/LogInvestigation';
+import EDRPage          from './pages/app/EDRPage';
+import PcapAnalysis     from './pages/app/PcapAnalysis';
+import ThreatFeeds      from './pages/app/ThreatFeeds';
 
 export default function App() {
   return (
@@ -52,6 +55,9 @@ export default function App() {
           <Route path="tools"       element={<ToolsHub />} />
           <Route path="public"      element={<Navigate to="/public" replace />} />
           <Route path="admin"       element={<Admin />} />
+          <Route path="edr/:caseId" element={<EDRPage />} />
+          <Route path="pcap"        element={<PcapAnalysis />} />
+          <Route path="feeds"       element={<ThreatFeeds />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

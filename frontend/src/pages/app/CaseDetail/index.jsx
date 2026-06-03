@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Globe, Share2, Download, Save, Loader2 } from 'lucide-react';
 import { SeverityBadge, StatusBadge } from '../../../components/SeverityBadge';
@@ -25,6 +25,7 @@ const TABS = [
   { id: 'ai',           label: 'AI Analysis' },
   { id: 'chat',         label: 'AI Chat' },
   { id: 'report',       label: 'Report' },
+  { id: 'edr',          label: '🛡 EDR', newTab: true },
 ];
 
 export default function CaseDetail() {
@@ -36,7 +37,7 @@ export default function CaseDetail() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('overview');
   const [saving, setSaving] = useState(false);
-  const [debounceTimer, setDebounceTimer] = useState(null);
+  const debounceTimer = useRef(null);
 
   const isNew = id === 'new';
 
@@ -51,20 +52,19 @@ export default function CaseDetail() {
 
   useEffect(() => { loadCase(); }, [loadCase]);
 
-  // Autosave with 2-second debounce
+  // Autosave with 2-second debounce — useRef ensures clearTimeout works reliably
   const autosave = useCallback((updates) => {
     if (isNew) return;
-    clearTimeout(debounceTimer);
+    clearTimeout(debounceTimer.current);
     setAutosaveStatus('saving');
-    const timer = setTimeout(async () => {
+    debounceTimer.current = setTimeout(async () => {
       try {
         await api.patch(`/api/cases/${id}`, updates);
         setAutosaveStatus('saved');
         setTimeout(() => setAutosaveStatus('idle'), 2000);
       } catch { setAutosaveStatus('idle'); }
     }, 2000);
-    setDebounceTimer(timer);
-  }, [id, debounceTimer, isNew]);
+  }, [id, isNew]);
 
   const updateCase = useCallback((updates) => {
     setCaseData(prev => ({ ...prev, ...updates }));
@@ -136,7 +136,18 @@ export default function CaseDetail() {
       {/* Tabs */}
       <div style={{ background: '#0F1018', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', overflowX: 'auto', flexShrink: 0 }}>
         {TABS.map(t => (
-          <button key={t.id} className={`tab-btn ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id)}>
+          <button
+            key={t.id}
+            className={`tab-btn ${tab === t.id ? 'active' : ''}`}
+            title={t.newTab ? 'Opens in a new tab' : undefined}
+            onClick={() => {
+              if (t.newTab) {
+                window.open(`${window.location.origin}/app/edr/${id}`, '_blank', 'noopener,noreferrer');
+              } else {
+                setTab(t.id);
+              }
+            }}
+          >
             {t.label}
           </button>
         ))}

@@ -2,8 +2,9 @@ import os, json, re
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
-from models import VTHistory, AuditLog
+from models import VTHistory, AuditLog, User
 from database import get_session
+from routers.auth import get_current_user
 import httpx
 
 router = APIRouter(prefix="/api/vt", tags=["virustotal"])
@@ -98,7 +99,8 @@ async def do_vt_lookup(ioc: str, key: str) -> dict:
 
 
 @router.post("/lookup")
-async def lookup(data: dict, session: Session = Depends(get_session)):
+async def lookup(data: dict, session: Session = Depends(get_session),
+                 _user: User = Depends(get_current_user)):
     ioc = data.get("ioc", "").strip()
     if not ioc:
         raise HTTPException(400, "IOC required")
@@ -144,7 +146,8 @@ async def lookup(data: dict, session: Session = Depends(get_session)):
 def list_history(
     verdict: str = None,
     q: str = None,
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    _user: User = Depends(get_current_user),
 ):
     query = select(VTHistory).order_by(VTHistory.looked_up_at.desc())
     results = session.exec(query).all()
@@ -156,7 +159,8 @@ def list_history(
 
 
 @router.get("/history/{record_id}")
-def get_history(record_id: int, session: Session = Depends(get_session)):
+def get_history(record_id: int, session: Session = Depends(get_session),
+                _user: User = Depends(get_current_user)):
     r = session.get(VTHistory, record_id)
     if not r:
         raise HTTPException(404)
@@ -164,7 +168,8 @@ def get_history(record_id: int, session: Session = Depends(get_session)):
 
 
 @router.delete("/history/{record_id}")
-def delete_history(record_id: int, session: Session = Depends(get_session)):
+def delete_history(record_id: int, session: Session = Depends(get_session),
+                   _user: User = Depends(get_current_user)):
     r = session.get(VTHistory, record_id)
     if not r:
         raise HTTPException(404)
@@ -174,7 +179,8 @@ def delete_history(record_id: int, session: Session = Depends(get_session)):
 
 
 @router.post("/bulk")
-async def bulk_lookup(data: dict, session: Session = Depends(get_session)):
+async def bulk_lookup(data: dict, session: Session = Depends(get_session),
+                      _user: User = Depends(get_current_user)):
     iocs = data.get("iocs", [])
     if not iocs:
         raise HTTPException(400, "No IOCs provided")

@@ -1,9 +1,10 @@
 import os, json
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
-from models import ToolRun, AuditLog
+from models import ToolRun, AuditLog, User
 from database import get_session
 from ai_router import call_ai_json
+from routers.auth import get_current_user
 
 router = APIRouter(prefix="/api/terminal", tags=["terminal"])
 
@@ -15,7 +16,8 @@ TOOLS = [
 
 
 @router.post("/analyse")
-async def analyse_terminal(data: dict, session: Session = Depends(get_session)):
+async def analyse_terminal(data: dict, session: Session = Depends(get_session),
+                            _user: User = Depends(get_current_user)):
     case_id = data.get("case_id")
     tool_name = data.get("tool_name", "custom")
     command = data.get("command", "")
@@ -60,7 +62,8 @@ Respond ONLY with valid JSON:
 
 
 @router.get("/history")
-def list_runs(case_id: int = None, session: Session = Depends(get_session)):
+def list_runs(case_id: int = None, session: Session = Depends(get_session),
+              _user: User = Depends(get_current_user)):
     query = select(ToolRun).order_by(ToolRun.created_at.desc())
     if case_id:
         query = query.where(ToolRun.case_id == case_id)
@@ -68,5 +71,5 @@ def list_runs(case_id: int = None, session: Session = Depends(get_session)):
 
 
 @router.get("/tools")
-def list_tools():
+def list_tools(_user: User = Depends(get_current_user)):
     return {"tools": TOOLS}

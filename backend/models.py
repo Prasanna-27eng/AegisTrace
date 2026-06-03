@@ -217,6 +217,65 @@ class IOCCorrelation(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+# ── PCAP / Network Traffic Analysis ──────────────────────────────────────────
+class PcapAnalysis(SQLModel, table=True):
+    """A PCAP file upload analysed for network forensics."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    case_id: Optional[int] = Field(default=None, foreign_key="case.id", index=True)
+    filename: str = Field(default="")
+    file_size: int = Field(default=0)            # bytes
+    packet_count: int = Field(default=0)
+    duration_secs: float = Field(default=0.0)
+    protocols: Optional[str] = Field(default="{}", sa_column=Column(Text))    # JSON {proto: count}
+    top_talkers: Optional[str] = Field(default="[]", sa_column=Column(Text))  # JSON [{ip, bytes, pkts}]
+    dns_queries: Optional[str] = Field(default="[]", sa_column=Column(Text))  # JSON list of domains
+    http_hosts: Optional[str] = Field(default="[]", sa_column=Column(Text))
+    extracted_iocs: Optional[str] = Field(default="[]", sa_column=Column(Text))
+    suspicious_flows: Optional[str] = Field(default="[]", sa_column=Column(Text))
+    ai_verdict: str = Field(default="")
+    ai_summary: str = Field(default="", sa_column=Column(Text))
+    ai_findings: Optional[str] = Field(default="[]", sa_column=Column(Text))
+    threat_score: int = Field(default=0)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# ── EDR Action Audit Trail ───────────────────────────────────────────────────
+class EDRAction(SQLModel, table=True):
+    """Every action taken against an endpoint via an EDR integration."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    case_id: Optional[int] = Field(default=None, foreign_key="case.id", index=True)
+    platform: str = Field(default="")          # crowdstrike / sentinelone / carbonblack
+    action: str = Field(default="")            # isolate / un_isolate / list_processes / kill_process / run_command
+    endpoint_id: str = Field(default="")       # platform-specific device/agent ID
+    hostname: str = Field(default="")
+    target: Optional[str] = Field(default=None)  # process PID or command string
+    status: str = Field(default="pending")     # pending / success / failed
+    result: Optional[str] = Field(default=None, sa_column=Column(Text))  # JSON response
+    error: Optional[str] = Field(default=None)
+    analyst_id: Optional[int] = Field(default=None)
+    analyst_email: Optional[str] = Field(default=None)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# ── Report Schedule ──────────────────────────────────────────────────────────
+class ReportSchedule(SQLModel, table=True):
+    """Scheduled automatic PDF report delivery via email."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(default="")
+    recipient_emails: str = Field(default="[]", sa_column=Column(Text))  # JSON list
+    schedule_type: str = Field(default="weekly")  # daily / weekly / monthly
+    schedule_day: Optional[int] = Field(default=1)  # day of week (0=Mon) or day of month
+    schedule_hour: int = Field(default=8)           # 0-23 UTC
+    report_type: str = Field(default="digest")      # digest / open_cases / critical_only
+    include_closed: bool = Field(default=False)
+    org_id: int = Field(default=1)
+    is_active: bool = Field(default=True)
+    last_sent_at: Optional[datetime] = Field(default=None)
+    next_run_at: Optional[datetime] = Field(default=None)
+    created_by: Optional[int] = Field(default=None)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 # ── Webhook Config ────────────────────────────────────────────────────────────
 class WebhookConfig(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Plus, AlertTriangle, Activity, Shield, Mail, BarChart2, ExternalLink,
-  Clock, TrendingUp, CheckCircle, Zap, GitMerge, Eye
+  Clock, TrendingUp, CheckCircle, Zap, GitMerge, Eye, FolderOpen,
+  Lock, Unlock, XCircle, Terminal, Cpu
 } from 'lucide-react';
 import { SeverityBadge, StatusBadge } from '../../components/SeverityBadge';
 import api from '../../api/client';
@@ -84,10 +85,12 @@ function StatTile({ icon: Icon, label, value, sub, subColor, color, onClick }) {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { addToast } = useStore();
-  const [cases, setCases]       = useState([]);
-  const [vtHistory, setVtHistory] = useState([]);
-  const [stats, setStats]       = useState({});
-  const [loading, setLoading]   = useState(true);
+  const [cases, setCases]           = useState([]);
+  const [vtHistory, setVtHistory]   = useState([]);
+  const [stats, setStats]           = useState({});
+  const [loading, setLoading]       = useState(true);
+  const [edrStatus, setEdrStatus]   = useState(null);
+  const [edrRecent, setEdrRecent]   = useState([]);
 
   useEffect(() => {
     Promise.all([
@@ -100,6 +103,10 @@ export default function Dashboard() {
       setStats(statsRes.data);
       setLoading(false);
     }).catch(() => setLoading(false));
+
+    // EDR status + recent actions (non-blocking — EDR may not be configured)
+    api.get('/api/edr/status').then(r => setEdrStatus(r.data)).catch(() => {});
+    api.get('/api/edr/history/recent?limit=6').then(r => setEdrRecent(r.data)).catch(() => {});
   }, []);
 
   const now = Date.now();
@@ -270,6 +277,74 @@ export default function Dashboard() {
                     <span className={`verdict-${v.verdict}`} style={{ fontSize: '0.65rem', fontWeight: 600, fontFamily: 'JetBrains Mono', flexShrink: 0 }}>{v.verdict?.toUpperCase()}</span>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+
+          {/* ── EDR Status Widget ── */}
+          <div className="at-card" style={{ padding: '14px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Shield size={12} style={{ color: '#22C55E' }} />
+                <div className="section-label" style={{ margin: 0 }}>EDR Platforms</div>
+              </div>
+            </div>
+
+            {/* Platform dots */}
+            {edrStatus ? (
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: edrRecent.length ? 10 : 0 }}>
+                {Object.entries(edrStatus.platforms).map(([name, info]) => (
+                  <div key={name} style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    padding: '3px 8px', borderRadius: 4, fontSize: '0.68rem',
+                    background: info.configured ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    opacity: info.configured ? 1 : 0.45,
+                  }}>
+                    <span style={{
+                      width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
+                      background: info.connected ? '#22C55E' : (info.configured ? '#EF4444' : '#71717A'),
+                      boxShadow: info.connected ? '0 0 5px #22C55E44' : 'none',
+                    }} />
+                    <span style={{ fontFamily: 'JetBrains Mono', textTransform: 'uppercase', fontSize: '0.62rem' }}>{name}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ fontSize: '0.72rem', color: '#71717A', marginBottom: 8 }}>Loading EDR status…</div>
+            )}
+
+            {/* Recent EDR Actions */}
+            {edrRecent.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <div style={{ fontSize: '0.62rem', color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>Recent Actions</div>
+                {edrRecent.map(a => {
+                  const ActionIcon = { isolate: Lock, un_isolate: Unlock, kill_process: XCircle, run_command: Terminal, list_processes: Cpu }[a.action] || Shield;
+                  return (
+                    <div
+                      key={a.id}
+                      onClick={() => a.case_id && navigate(`/app/cases/${a.case_id}`)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 7, fontSize: '0.7rem',
+                        padding: '3px 0', cursor: a.case_id ? 'pointer' : 'default',
+                      }}
+                    >
+                      <ActionIcon size={11} style={{ color: a.status === 'success' ? '#22C55E' : a.status === 'failed' ? '#EF4444' : '#EAB308', flexShrink: 0 }} />
+                      <span style={{ fontFamily: 'JetBrains Mono', color: '#71717A', fontSize: '0.62rem', flexShrink: 0, textTransform: 'uppercase' }}>{a.platform}</span>
+                      <span style={{ color: '#F0F0F8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.hostname || a.endpoint_id}</span>
+                      <span style={{ marginLeft: 'auto', color: '#71717A', fontSize: '0.62rem', fontFamily: 'JetBrains Mono', flexShrink: 0 }}>
+                        {a.action.replace('_', ' ')}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {edrStatus && !edrStatus.any_configured && (
+              <div style={{ fontSize: '0.7rem', color: '#71717A', marginTop: 4 }}>
+                No EDR configured.{' '}
+                <span style={{ color: '#A78BFA', cursor: 'pointer' }} onClick={() => navigate('/app/admin')}>Add credentials →</span>
               </div>
             )}
           </div>

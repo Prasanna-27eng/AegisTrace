@@ -2,9 +2,10 @@ import re, json, os
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
-from models import EmailAnalysisRecord, AuditLog
+from models import EmailAnalysisRecord, AuditLog, User
 from database import get_session
 from ai_router import call_ai_json
+from routers.auth import get_current_user
 
 router = APIRouter(prefix="/api/email", tags=["email"])
 
@@ -71,7 +72,8 @@ def extract_field(headers: str, field: str) -> str:
 
 
 @router.post("/analyse")
-async def analyse_email(data: dict, session: Session = Depends(get_session)):
+async def analyse_email(data: dict, session: Session = Depends(get_session),
+                        _user: User = Depends(get_current_user)):
     raw_headers = data.get("headers", "")
     raw_body = data.get("body", "")
     case_id = data.get("case_id")
@@ -142,12 +144,14 @@ JSON format:
 
 
 @router.get("/history")
-def list_history(session: Session = Depends(get_session)):
+def list_history(session: Session = Depends(get_session),
+                 _user: User = Depends(get_current_user)):
     return session.exec(select(EmailAnalysisRecord).order_by(EmailAnalysisRecord.created_at.desc())).all()
 
 
 @router.get("/history/{record_id}")
-def get_history(record_id: int, session: Session = Depends(get_session)):
+def get_history(record_id: int, session: Session = Depends(get_session),
+                _user: User = Depends(get_current_user)):
     r = session.get(EmailAnalysisRecord, record_id)
     if not r:
         raise HTTPException(404)

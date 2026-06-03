@@ -18,6 +18,45 @@ services:
         generateValue: true
       - key: PUBLIC_URL
         sync: false
+
+      # ── EDR Integrations (optional — set in Render dashboard) ────────────
+      - key: CROWDSTRIKE_CLIENT_ID
+        sync: false
+      - key: CROWDSTRIKE_CLIENT_SECRET
+        sync: false
+      - key: CROWDSTRIKE_BASE_URL
+        value: https://api.crowdstrike.com
+      - key: SENTINELONE_BASE_URL
+        sync: false
+      - key: SENTINELONE_API_TOKEN
+        sync: false
+      - key: CARBONBLACK_ORG_KEY
+        sync: false
+      - key: CARBONBLACK_API_ID
+        sync: false
+      - key: CARBONBLACK_API_SECRET
+        sync: false
+      - key: CARBONBLACK_BASE_URL
+        value: https://defense.conferdeploy.net
+
+      # ── Email / Report Scheduling (optional) ─────────────────────────────
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+
+      # ── Optional enrichment ───────────────────────────────────────────────
+      - key: GREYNOISE_API_KEY
+        sync: false
+
     disk:
       name: aegistrace-data
       mountPath: /var/data
