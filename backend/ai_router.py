@@ -3,26 +3,26 @@ AegisTrace Multi-AI Router
 ──────────────────────────
 Routes different SOC tasks to the best free Groq model for that job.
 
-Model selection:
+Model selection (updated June 2026 — Groq deprecations applied):
   llama-3.3-70b-versatile  → deep reasoning, case analysis, chat (best quality)
-  mixtral-8x7b-32768       → classification, phishing verdict, YARA code gen (large context)
-  gemma2-9b-it             → fast IOC extraction, quick JSON parsing (fastest)
-  llama-3.1-8b-instant     → ultra-fast single-field tasks, simple Q&A
+  llama-3.1-70b-versatile  → classification, phishing verdict, YARA code gen
+  llama-3.1-8b-instant     → fast IOC extraction, quick JSON parsing, demo
 """
 
 import os
 from groq import Groq
 
 # ── Model registry ────────────────────────────────────────────────────────────
+# Note: gemma2-9b-it and mixtral-8x7b-32768 were decommissioned by Groq.
 MODELS = {
     "analysis":       "llama-3.3-70b-versatile",   # deep case reasoning
     "chat":           "llama-3.3-70b-versatile",   # case-scoped assistant
-    "classification": "mixtral-8x7b-32768",         # phishing / verdict
-    "extraction":     "gemma2-9b-it",               # fast IOC / JSON extraction
+    "classification": "llama-3.1-70b-versatile",   # phishing / verdict (was mixtral)
+    "extraction":     "llama-3.1-8b-instant",       # fast IOC / JSON extraction (was gemma2)
     "fast":           "llama-3.1-8b-instant",       # quick single-field tasks
-    "code":           "mixtral-8x7b-32768",         # YARA / code generation
+    "code":           "llama-3.1-70b-versatile",   # YARA / code generation (was mixtral)
     "report":         "llama-3.3-70b-versatile",   # narrative report writing
-    "demo":           "gemma2-9b-it",               # public website demo (fast)
+    "demo":           "llama-3.1-8b-instant",       # public website demo (was gemma2)
 }
 
 # ── System prompts ────────────────────────────────────────────────────────────
