@@ -7,7 +7,7 @@ const CAT_COLOR = {
   auth:     '#22C55E',
   case:     '#A78BFA',
   ai:       '#EAB308',
-  evidence: '#6366F1',
+  evidence: '#4DA3FF',
   intel:    '#06B6D4',
   import:   '#F97316',
   admin:    '#EC4899',
@@ -48,7 +48,7 @@ function ActivityChart({ data }) {
         {data.map((d, i) => (
           <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
             <div style={{
-              width: '100%', background: `rgba(99,102,241,${0.3 + (d.count / max) * 0.7})`,
+              width: '100%', background: `rgba(77,163,255,${0.3 + (d.count / max) * 0.7})`,
               borderRadius: '3px 3px 0 0',
               height: `${Math.max(4, (d.count / max) * 56)}px`,
               transition: 'height 0.4s ease',
@@ -70,7 +70,7 @@ function LogRow({ log, isNew }) {
     <div style={{
       display: 'flex', gap: 10, alignItems: 'flex-start',
       padding: '9px 14px',
-      background: isNew ? 'rgba(99,102,241,0.06)' : '#0D1117',
+      background: isNew ? 'rgba(77,163,255,0.06)' : '#0D111C',
       borderRadius: 6,
       borderLeft: `2px solid ${color}`,
       transition: 'background 1s ease',
@@ -195,7 +195,7 @@ export default function AuditLog() {
               </span>
             </div>
             {liveCount > 0 && (
-              <span style={{ fontSize: '0.65rem', color: '#6366F1', fontFamily: 'JetBrains Mono', background: 'rgba(99,102,241,0.1)', padding: '2px 8px', borderRadius: 10 }}>
+              <span style={{ fontSize: '0.65rem', color: '#4DA3FF', fontFamily: 'JetBrains Mono', background: 'rgba(77,163,255,0.1)', padding: '2px 8px', borderRadius: 10 }}>
                 +{liveCount} new
               </span>
             )}
@@ -239,9 +239,9 @@ export default function AuditLog() {
               style={{
                 fontSize: '0.72rem', padding: '5px 12px', borderRadius: 5, cursor: 'pointer',
                 fontFamily: 'JetBrains Mono', border: '1px solid',
-                background: category === cat ? `${CAT_COLOR[cat] || 'rgba(99,102,241,1)'}18` : 'transparent',
-                borderColor: category === cat ? `${CAT_COLOR[cat] || '#6366F1'}50` : 'rgba(255,255,255,0.08)',
-                color: category === cat ? (CAT_COLOR[cat] || '#6366F1') : '#71717A',
+                background: category === cat ? `${CAT_COLOR[cat] || 'rgba(77,163,255,1)'}18` : 'transparent',
+                borderColor: category === cat ? `${CAT_COLOR[cat] || '#4DA3FF'}50` : 'rgba(255,255,255,0.08)',
+                color: category === cat ? (CAT_COLOR[cat] || '#4DA3FF') : '#71717A',
               }}>
               {cat === '' ? 'All' : CAT_LABELS[cat]}
             </button>
@@ -258,7 +258,7 @@ export default function AuditLog() {
       <div style={{ fontSize: '0.72rem', color: '#71717A', marginBottom: 10, fontFamily: 'JetBrains Mono' }}>
         {filteredLogs.length} event{filteredLogs.length !== 1 ? 's' : ''}
         {category ? ` · filtered by ${CAT_LABELS[category]}` : ''}
-        {!paused && <span style={{ color: '#6366F1' }}> · auto-refreshing</span>}
+        {!paused && <span style={{ color: '#4DA3FF' }}> · auto-refreshing</span>}
       </div>
 
       {/* Log list */}

@@ -113,7 +113,7 @@ export default function LogInvestigation() {
       <div style={{ display:'flex', borderBottom:'1px solid rgba(255,255,255,0.07)', marginBottom:20 }}>
         <button className={`tab-btn ${tab==='analyse'?'active':''}`} onClick={() => setTab('analyse')}>Analyse Log</button>
         <button className={`tab-btn ${tab==='history'?'active':''}`} onClick={() => setTab('history')}>
-          History {history.length > 0 && <span style={{ marginLeft:5, background:'rgba(99,102,241,0.15)', color:'#6366F1', borderRadius:10, fontSize:'0.6rem', fontWeight:700, padding:'1px 5px', fontFamily:'JetBrains Mono' }}>{history.length}</span>}
+          History {history.length > 0 && <span style={{ marginLeft:5, background:'rgba(77,163,255,0.15)', color:'#4DA3FF', borderRadius:10, fontSize:'0.6rem', fontWeight:700, padding:'1px 5px', fontFamily:'JetBrains Mono' }}>{history.length}</span>}
         </button>
       </div>
 
@@ -124,10 +124,10 @@ export default function LogInvestigation() {
             {/* Drop zone */}
             <div onDrop={handleDrop} onDragOver={e => e.preventDefault()}
               style={{ border:'2px dashed rgba(255,255,255,0.1)', borderRadius:8, padding:'16px', textAlign:'center', cursor:'pointer', transition:'border-color 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.borderColor='rgba(99,102,241,0.3)'}
+              onMouseEnter={e => e.currentTarget.style.borderColor='rgba(77,163,255,0.3)'}
               onMouseLeave={e => e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'}>
               <Upload size={20} style={{ color:'#71717A', margin:'0 auto 8px' }}/>
-              <div style={{ fontSize:'0.8rem', color:'#71717A', marginBottom:6 }}>Drop a log file or <label style={{ color:'#6366F1', cursor:'pointer' }}>browse<input type="file" accept=".log,.txt,.json,.csv" style={{ display:'none' }} onChange={handleFile}/></label></div>
+              <div style={{ fontSize:'0.8rem', color:'#71717A', marginBottom:6 }}>Drop a log file or <label style={{ color:'#4DA3FF', cursor:'pointer' }}>browse<input type="file" accept=".log,.txt,.json,.csv" style={{ display:'none' }} onChange={handleFile}/></label></div>
               <div style={{ fontSize:'0.68rem', color:'#71717A', fontFamily:'JetBrains Mono' }}>.log .txt .json .csv</div>
             </div>
 
@@ -199,7 +199,7 @@ export default function LogInvestigation() {
                     <div className="section-label">Key Findings</div>
                     {result.key_findings.map((f,i) => (
                       <div key={i} style={{ fontSize:'0.8rem', padding:'4px 0', display:'flex', gap:8, borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
-                        <span style={{ color:'#6366F1', flexShrink:0 }}>→</span><span style={{ color:'#F0F0F8' }}>{f}</span>
+                        <span style={{ color:'#4DA3FF', flexShrink:0 }}>→</span><span style={{ color:'#F0F0F8' }}>{f}</span>
                       </div>
                     ))}
                   </div>
@@ -211,7 +211,7 @@ export default function LogInvestigation() {
                     <div className="section-label">Suspicious Log Lines</div>
                     <div style={{ display:'flex', flexDirection:'column', gap:6, maxHeight:180, overflowY:'auto' }}>
                       {result.suspicious_entries.map((e,i) => (
-                        <div key={i} style={{ background:'#0D1117', borderRadius:5, padding:'7px 10px', borderLeft:`2px solid ${SEVERITY_COLOR[e.severity]||'#71717A'}` }}>
+                        <div key={i} style={{ background:'#0D111C', borderRadius:5, padding:'7px 10px', borderLeft:`2px solid ${SEVERITY_COLOR[e.severity]||'#71717A'}` }}>
                           <code style={{ fontSize:'0.7rem', color:'#B0B0C0', fontFamily:'JetBrains Mono', display:'block', marginBottom:3 }}>{e.line?.slice(0,100)}</code>
                           <div style={{ fontSize:'0.68rem', color:SEVERITY_COLOR[e.severity]||'#71717A' }}>{e.reason}</div>
                         </div>
@@ -274,7 +274,7 @@ export default function LogInvestigation() {
             <div className="at-card" style={{ padding:40, textAlign:'center', color:'#71717A' }}>No log analyses yet.</div>
           ) : history.map(h => (
             <div key={h.id} className="at-card" style={{ padding:'12px 16px', cursor:'pointer', transition:'border-color 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.borderColor='rgba(99,102,241,0.25)'}
+              onMouseEnter={e => e.currentTarget.style.borderColor='rgba(77,163,255,0.25)'}
               onMouseLeave={e => e.currentTarget.style.borderColor='rgba(255,255,255,0.07)'}
               onClick={() => { api.get(`/api/ingest/analyses`); setTab('analyse'); }}>
               <div style={{ display:'flex', alignItems:'center', gap:12 }}>
@@ -288,7 +288,7 @@ export default function LogInvestigation() {
                   <div style={{ fontSize:'0.65rem', color:'#71717A', fontFamily:'JetBrains Mono', marginTop:2 }}>{h.threat_score}/100</div>
                   <div style={{ fontSize:'0.62rem', color:'#71717A', marginTop:2 }}>{new Date(h.created_at).toLocaleDateString()}</div>
                 </div>
-                {h.case_id && <span style={{ fontSize:'0.65rem', background:'rgba(99,102,241,0.1)', border:'1px solid rgba(99,102,241,0.25)', color:'#6366F1', padding:'2px 6px', borderRadius:3, fontFamily:'JetBrains Mono' }}>CASE</span>}
+                {h.case_id && <span style={{ fontSize:'0.65rem', background:'rgba(77,163,255,0.1)', border:'1px solid rgba(77,163,255,0.25)', color:'#4DA3FF', padding:'2px 6px', borderRadius:3, fontFamily:'JetBrains Mono' }}>CASE</span>}
               </div>
             </div>
           ))}

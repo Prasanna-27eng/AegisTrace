@@ -96,7 +96,7 @@ export default function AppShell() {
               <div style={{ fontSize: '0.75rem', fontWeight: 500, color: '#F0F0F8' }}>{user?.name}</div>
               <div style={{ fontSize: '0.62rem', color: '#71717A', fontFamily: 'JetBrains Mono' }}>{user?.role}</div>
             </div>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 600, color: '#60A5FA', flexShrink: 0 }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(77,163,255,0.15)', border: '1px solid rgba(77,163,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 600, color: '#60A5FA', flexShrink: 0 }}>
               {user?.name?.[0] || 'A'}
             </div>
           </div>

@@ -54,8 +54,8 @@ export default function AIChatTab({ caseId, caseData }) {
               maxWidth: '75%',
               padding: '10px 14px',
               borderRadius: msg.role === 'user' ? '12px 12px 4px 12px' : '12px 12px 12px 4px',
-              background: msg.role === 'user' ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${msg.role === 'user' ? 'rgba(99,102,241,0.25)' : 'rgba(255,255,255,0.07)'}`,
+              background: msg.role === 'user' ? 'rgba(77,163,255,0.15)' : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${msg.role === 'user' ? 'rgba(77,163,255,0.25)' : 'rgba(255,255,255,0.07)'}`,
               fontSize: '0.84rem',
               lineHeight: 1.65,
               color: '#F0F0F8',
@@ -69,8 +69,8 @@ export default function AIChatTab({ caseId, caseData }) {
               )}
             </div>
             {msg.role === 'user' && (
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <User size={14} style={{ color: '#6366F1' }} />
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(77,163,255,0.15)', border: '1px solid rgba(77,163,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <User size={14} style={{ color: '#4DA3FF' }} />
               </div>
             )}
           </div>

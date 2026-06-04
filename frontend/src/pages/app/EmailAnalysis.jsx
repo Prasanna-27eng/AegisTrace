@@ -75,9 +75,9 @@ export default function EmailAnalysis() {
               <>
                 {/* AI Verdict */}
                 {aiData.verdict && (
-                  <div className="at-card" style={{ padding: 14, borderLeft: `2px solid ${aiData.verdict === 'Phishing' || aiData.verdict === 'BEC' ? '#6366F1' : aiData.verdict === 'Legitimate' ? '#22C55E' : '#EAB308'}` }}>
+                  <div className="at-card" style={{ padding: 14, borderLeft: `2px solid ${aiData.verdict === 'Phishing' || aiData.verdict === 'BEC' ? '#4DA3FF' : aiData.verdict === 'Legitimate' ? '#22C55E' : '#EAB308'}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                      <div style={{ fontWeight: 700, fontSize: '1.1rem', color: aiData.verdict === 'Phishing' || aiData.verdict === 'BEC' ? '#6366F1' : aiData.verdict === 'Legitimate' ? '#22C55E' : '#EAB308' }}>{aiData.verdict}</div>
+                      <div style={{ fontWeight: 700, fontSize: '1.1rem', color: aiData.verdict === 'Phishing' || aiData.verdict === 'BEC' ? '#4DA3FF' : aiData.verdict === 'Legitimate' ? '#22C55E' : '#EAB308' }}>{aiData.verdict}</div>
                       <span className="ai-badge">AI</span>
                       {aiData.confidence && <span style={{ fontSize: '0.75rem', color: '#71717A' }}>{aiData.confidence}% confidence</span>}
                     </div>
@@ -95,7 +95,7 @@ export default function EmailAnalysis() {
                   <div className="section-label">Authentication</div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, textAlign: 'center' }}>
                     {[['SPF', result.spf_result], ['DKIM', result.dkim_result], ['DMARC', result.dmarc_result]].map(([name, val]) => (
-                      <div key={name} style={{ padding: '10px', background: '#0D1117', borderRadius: 6 }}>
+                      <div key={name} style={{ padding: '10px', background: '#0D111C', borderRadius: 6 }}>
                         <div style={{ fontSize: '0.68rem', color: '#71717A', marginBottom: 4 }}>{name}</div>
                         <div style={{ fontSize: '0.85rem', fontWeight: 700, color: authColor(val), fontFamily: 'JetBrains Mono' }}>{val?.toUpperCase() || 'NONE'}</div>
                       </div>

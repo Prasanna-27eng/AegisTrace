@@ -275,7 +275,7 @@ export default function EDRTab({ caseData }) {
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
             placeholder="Hostname or IP address…"
             style={{
-              flex: 1, padding: '7px 10px', background: '#0D1117',
+              flex: 1, padding: '7px 10px', background: '#0D111C',
               border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6,
               color: '#F0F0F8', fontSize: '0.82rem', fontFamily: 'JetBrains Mono',
             }}
@@ -302,13 +302,13 @@ export default function EDRTab({ caseData }) {
                   display: 'flex', alignItems: 'center', gap: 10,
                   padding: '9px 12px', borderRadius: 6, cursor: 'pointer',
                   background: selected?.endpoint_id === ep.endpoint_id
-                    ? 'rgba(99,102,241,0.08)' : '#0D1117',
+                    ? 'rgba(77,163,255,0.08)' : '#0D111C',
                   border: `1px solid ${selected?.endpoint_id === ep.endpoint_id
-                    ? 'rgba(99,102,241,0.25)' : 'transparent'}`,
+                    ? 'rgba(77,163,255,0.25)' : 'transparent'}`,
                   transition: 'all 0.15s',
                 }}
                 onMouseEnter={e => { if (selected?.endpoint_id !== ep.endpoint_id) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
-                onMouseLeave={e => { if (selected?.endpoint_id !== ep.endpoint_id) e.currentTarget.style.background = '#0D1117'; }}
+                onMouseLeave={e => { if (selected?.endpoint_id !== ep.endpoint_id) e.currentTarget.style.background = '#0D111C'; }}
               >
                 <Cpu size={13} style={{ color: PLATFORM_COLORS[ep.platform] || '#71717A', flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -411,7 +411,7 @@ export default function EDRTab({ caseData }) {
                   onChange={e => setProcFilter(e.target.value)}
                   placeholder="Filter by name or PID…"
                   style={{
-                    padding: '3px 8px', background: '#0D1117',
+                    padding: '3px 8px', background: '#0D111C',
                     border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4,
                     color: '#F0F0F8', fontSize: '0.72rem', fontFamily: 'JetBrains Mono',
                   }}
@@ -420,7 +420,7 @@ export default function EDRTab({ caseData }) {
               <div style={{ maxHeight: 220, overflowY: 'auto', borderRadius: 6, border: '1px solid rgba(255,255,255,0.06)' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.72rem', fontFamily: 'JetBrains Mono' }}>
                   <thead>
-                    <tr style={{ background: '#0D1117', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <tr style={{ background: '#0D111C', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                       {['PID', 'Name', 'User', 'Kill'].map(h => (
                         <th key={h} style={{ padding: '5px 8px', color: '#71717A', textAlign: 'left', fontWeight: 500, fontFamily: 'Inter, sans-serif', fontSize: '0.65rem' }}>{h}</th>
                       ))}
@@ -455,7 +455,7 @@ export default function EDRTab({ caseData }) {
                   onChange={e => setPidInput(e.target.value)}
                   placeholder="Enter PID…"
                   style={{
-                    width: 80, padding: '4px 8px', background: '#0D1117',
+                    width: 80, padding: '4px 8px', background: '#0D111C',
                     border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4,
                     color: '#F0F0F8', fontSize: '0.75rem', fontFamily: 'JetBrains Mono',
                   }}
@@ -492,7 +492,7 @@ export default function EDRTab({ caseData }) {
                 onKeyDown={e => e.key === 'Enter' && handleRunCommand()}
                 placeholder="e.g. netstat -an  or  ps  or  reg query HKLM\\Software…"
                 style={{
-                  flex: 1, padding: '6px 10px', background: '#0D1117',
+                  flex: 1, padding: '6px 10px', background: '#0D111C',
                   border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6,
                   color: '#F0F0F8', fontSize: '0.78rem', fontFamily: 'JetBrains Mono',
                 }}

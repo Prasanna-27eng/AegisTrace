@@ -84,7 +84,7 @@ export default function IOCsTab({ caseData, updateCase, caseId }) {
 
       {/* Add form */}
       {showAdd && (
-        <div className="at-card" style={{ padding: 14, marginBottom: 16, borderColor: 'rgba(99,102,241,0.25)' }}>
+        <div className="at-card" style={{ padding: 14, marginBottom: 16, borderColor: 'rgba(77,163,255,0.25)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
             <div className="section-label" style={{ margin: 0 }}>Add IOC</div>
             <button onClick={() => setShowAdd(false)} style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer' }}><X size={14} /></button>
@@ -131,7 +131,7 @@ export default function IOCsTab({ caseData, updateCase, caseId }) {
                 </div>
               </div>
               {correlations[item.ioc]?.found && correlations[item.ioc].case_count > 1 && (
-                <div style={{ marginTop: 3, marginLeft: 8, padding: '6px 10px', background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: 5, fontSize: '0.72rem', color: '#6366F1' }}>
+                <div style={{ marginTop: 3, marginLeft: 8, padding: '6px 10px', background: 'rgba(77,163,255,0.06)', border: '1px solid rgba(77,163,255,0.15)', borderRadius: 5, fontSize: '0.72rem', color: '#4DA3FF' }}>
                   ⚠ Campaign alert: this IOC appears in {correlations[item.ioc].case_count} cases (IDs: {correlations[item.ioc].case_ids?.join(', ')})
                 </div>
               )}
