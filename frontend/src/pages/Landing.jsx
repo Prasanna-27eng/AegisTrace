@@ -209,16 +209,16 @@ const CERTS = [
 
 const ROADMAP = [
   {
-    phase:'Live — v2.0 → v4.0', status:'live', color:'#22C55E',
-    items:['SOC case management — 13-tab lifecycle, autosave, MITRE mapping','Explainable multi-model AI (Groq) — reasoning chain, evidence, confidence','7-source IOC enrichment + cross-case correlation + campaign detection','ITDR — credential stuffing, impossible travel, new device, privilege escalation','Identity Graph + Pluggable Risk Engine + 3 detectors','Trust Timeline + Provenance Ledger — every AI action audited','Policy Engine — allow/deny per identity type, IP + time restrictions','Terminal Lab — 20+ commands, AI parsing, IOC extraction, save to case','Endpoint agent v2 — Sysmon, process trees, persistence, auth logs','18 hardware forensic tools (WiFi/RF/RFID/HID/Suricata)','Email forensics — SPF/DKIM/DMARC, AI phishing verdict','DORA Article 19 compliance + PCAP analysis + webhook alerting']
+    phase:'Live — v2.0 → v4.1', status:'live', color:'#22C55E',
+    items:['SOC case management — 13-tab lifecycle, autosave, MITRE mapping','Explainable multi-model AI (Groq) — reasoning chain, evidence, confidence','7-source IOC enrichment + cross-case correlation + campaign detection','ITDR — credential stuffing, impossible travel, new device, privilege escalation','Identity Graph + Pluggable Risk Engine + 3 detectors','Trust Timeline + Provenance Ledger — every AI action audited','Policy Engine — allow/deny per identity type, IP + time restrictions','Terminal Lab — 20+ commands, AI parsing, IOC extraction, save to case','Endpoint agent v2 — Sysmon, process trees, persistence, auth logs','18 hardware forensic tools (WiFi/RF/RFID/HID/Suricata)','Email forensics — SPF/DKIM/DMARC, AI phishing verdict','DORA Article 19 compliance + PCAP analysis + webhook alerting','Dashboard analytics — severity breakdown chart + SLA status panel','Investigation templates — 6 pre-built scaffolds (phishing, brute force, malware…)','Report completeness preview — 7-section checklist before export','Public case narrative — story format: Trigger → Investigation → Findings → Outcome']
   },
   {
-    phase:'In Progress — v4.0', status:'building', color:'#EAB308',
-    items:['Analytics page UI — severity trends, SLA breach tracker, MITRE heatmap','Policy management UI — create and manage policies via the app','Investigation templates — 6 scaffold types for common incidents','Report completeness preview — checklist before PDF export','Shadow AI Detection — detect data sent to unauthorized AI services','AI Agent Security — bounded autonomy, human approval workflows']
+    phase:'In Progress — v4.2', status:'building', color:'#EAB308',
+    items:['Shadow AI Detection — detect data sent to unauthorized AI services','AI Agent Security — bounded autonomy, human approval workflows','SOAR Playbooks — automated response sequences per incident type','Control Plane view — live trust, policy, and agent health dashboard']
   },
   {
     phase:'Planned — v5.0', status:'planned', color:'#A78BFA',
-    items:['Agent Supervision Console — supervise AI agents with kill switches','Attacker Path Reconstruction — visual kill-chain across human + machine actors','AI Memory across cases — pattern recognition from investigation history','Control Plane View — live trust, policy, and agent health dashboard','Crypto + Quantum Readiness — certificate inventory, post-quantum flags','Future-narrative reporting — attacker stories for board-level audiences']
+    items:['Agent Supervision Console — supervise AI agents with kill switches','Attacker Path Reconstruction — visual kill-chain across human + machine actors','AI Memory across cases — pattern recognition from investigation history','Crypto + Quantum Readiness — certificate inventory, post-quantum flags','Machine Identity incidents — rogue API keys, service accounts','Future-narrative reporting — board-level attacker stories']
   }
 ];
 
@@ -241,7 +241,7 @@ const PILLARS = [
 /* ─── Bento Feature Grid ─────────────────────────────────────────────────── */
 function BentoFeatures({ mono }) {
   return (
-    <div style={{display:'grid',gridTemplateColumns:'repeat(12,1fr)',gap:12,maxWidth:1200,margin:'0 auto'}}>
+    <div className='bento-grid-inner' style={{display:'grid',gridTemplateColumns:'repeat(12,1fr)',gap:12,maxWidth:1200,margin:'0 auto'}}>
       {/* ITDR — tall card */}
       <div className="bento-card" style={{gridColumn:'span 5',gridRow:'span 2',background:'rgba(239,68,68,0.04)',border:'1px solid rgba(239,68,68,0.18)',borderRadius:14,padding:26,position:'relative',overflow:'hidden'}}>
         <div style={{position:'absolute',top:-30,right:-30,width:120,height:120,borderRadius:'50%',background:'rgba(239,68,68,0.07)',filter:'blur(20px)'}}/>
@@ -364,15 +364,18 @@ export default function Landing() {
         @media(max-width:900px){
           .lp-rails{display:none!important}
           .desktop-nav{display:none!important}
-          .lp-hero{bottom:70px!important;left:20px!important;right:20px!important;max-width:100%!important}
-          .lp-section{padding:52px 20px!important}
+          .lp-section{padding:48px 20px!important}
           .lp-grid-4{grid-template-columns:1fr 1fr!important}
-          .lp-2col{grid-template-columns:1fr!important;gap:32px!important}
-          .hero-grid{grid-template-columns:1fr!important;gap:32px!important}
-          .bento-full{grid-template-columns:1fr!important}
+          .lp-2col{grid-template-columns:1fr!important;gap:28px!important}
+          .hero-grid{grid-template-columns:1fr!important;gap:24px!important;padding:0 20px!important}
+          .bento-grid-inner>div{grid-column:span 12!important;grid-row:span 1!important}
+          .stat-float{animation:none!important}
         }
         @media(min-width:901px){.mobile-menu-btn{display:none!important}}
-        @media(max-width:540px){.lp-grid-4{grid-template-columns:1fr!important}}
+        @media(max-width:600px){
+          .lp-grid-4{grid-template-columns:1fr!important}
+          .lp-section{padding:36px 16px!important}
+        }
       `}</style>
 
       {/* ══ STICKY NAV ══ */}

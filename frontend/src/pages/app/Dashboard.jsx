@@ -91,6 +91,7 @@ export default function Dashboard() {
   const [loading, setLoading]       = useState(true);
   const [edrStatus, setEdrStatus]   = useState(null);
   const [edrRecent, setEdrRecent]   = useState([]);
+  const [analytics, setAnalytics]   = useState(null);
 
   const loadDashboard = () => {
     Promise.all([
@@ -107,6 +108,13 @@ export default function Dashboard() {
     // EDR status + recent actions (non-blocking)
     api.get('/api/edr/status').then(r => setEdrStatus(r.data)).catch(() => {});
     api.get('/api/edr/history/recent?limit=6').then(r => setEdrRecent(r.data)).catch(() => {});
+    // Analytics trends (non-blocking)
+    Promise.all([
+      api.get('/api/analytics/severity-breakdown'),
+      api.get('/api/analytics/sla-status'),
+    ]).then(([sevRes, slaRes]) => {
+      setAnalytics({ severity: sevRes.data, sla: slaRes.data });
+    }).catch(() => {});
   };
 
   useEffect(() => {
@@ -193,6 +201,79 @@ export default function Dashboard() {
         <StatTile icon={GitMerge}     label="Total IOCs"       value={stats.total_iocs || 0} color="#22C55E" sub="Correlated" />
         <StatTile icon={BarChart2}    label="Total Cases"      value={stats.total_cases || cases.length} color="#F0F0F8" sub={`${stats.closed_cases || closedToday.length} closed`} subColor="#71717A" />
       </div>
+
+      {/* ── ANALYTICS TRENDS ── */}
+      {analytics && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+
+          {/* Severity breakdown bar chart */}
+          <div className="at-card" style={{ padding: '14px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div className="section-label" style={{ margin: 0 }}>Severity Breakdown</div>
+              <button onClick={() => navigate('/app/analytics')} style={{ fontSize: '0.68rem', color: '#71717A', background: 'none', border: 'none', cursor: 'pointer' }}>Full analytics →</button>
+            </div>
+            {(() => {
+              const sevData = analytics.severity || {};
+              const order = ['critical', 'high', 'medium', 'low', 'info'];
+              const colors = { critical: '#EF4444', high: '#F97316', medium: '#EAB308', low: '#A78BFA', info: '#71717A' };
+              const total = order.reduce((s, k) => s + (sevData[k] || 0), 0) || 1;
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                  {order.map(sev => {
+                    const count = sevData[sev] || 0;
+                    const pct = Math.round((count / total) * 100);
+                    return (
+                      <div key={sev} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: '0.62rem', fontFamily: 'JetBrains Mono', color: colors[sev], textTransform: 'uppercase', letterSpacing: '0.05em', width: 50, flexShrink: 0 }}>{sev}</span>
+                        <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,0.05)', borderRadius: 3, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${pct}%`, background: colors[sev], borderRadius: 3, transition: 'width 0.6s ease', opacity: count ? 1 : 0 }} />
+                        </div>
+                        <span style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono', color: count ? colors[sev] : '#71717A', width: 20, textAlign: 'right', flexShrink: 0 }}>{count}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* SLA status */}
+          <div className="at-card" style={{ padding: '14px 16px' }}>
+            <div className="section-label" style={{ marginBottom: 12 }}>SLA Status</div>
+            {(() => {
+              const sla = analytics.sla || {};
+              const breached   = sla.breached   || slaBreach.length;
+              const atRisk     = sla.at_risk    || activeCases.filter(c => {
+                const hrs = (Date.now() - new Date(c.created_at).getTime()) / 3600000;
+                const limit = { critical:4, high:8, medium:48, low:168 }[c.severity] || 48;
+                return c.status !== 'closed' && hrs > limit * 0.8 && hrs <= limit;
+              }).length;
+              const onTrack = Math.max(0, activeCases.length - breached - atRisk);
+              const items = [
+                { label: 'Breached',  count: breached, color: '#EF4444', bg: 'rgba(239,68,68,0.08)' },
+                { label: 'At Risk',   count: atRisk,   color: '#EAB308', bg: 'rgba(234,179,8,0.08)'  },
+                { label: 'On Track',  count: onTrack,  color: '#22C55E', bg: 'rgba(34,197,94,0.08)'  },
+              ];
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                  {items.map(({ label, count, color, bg }) => (
+                    <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 6, background: bg, border: `1px solid ${color}22` }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                        <div style={{ width: 7, height: 7, borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}66` }} />
+                        <span style={{ fontSize: '0.76rem', color: '#B0B0C0' }}>{label}</span>
+                      </div>
+                      <span style={{ fontSize: '1rem', fontWeight: 700, color, fontFamily: 'JetBrains Mono' }}>{count}</span>
+                    </div>
+                  ))}
+                  <div style={{ paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.05)', fontSize: '0.65rem', color: '#71717A', fontFamily: 'JetBrains Mono', textAlign: 'right' }}>
+                    {activeCases.length} active cases total
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
 
       {/* ── MAIN GRID ── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 16 }}>
