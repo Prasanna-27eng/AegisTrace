@@ -4,7 +4,7 @@ import {
   Search, LayoutDashboard, FolderOpen, Shield, Mail, Bug, Wrench,
   Monitor, FileSearch, Crosshair, ScrollText, Globe, Settings,
   Plus, ArrowRight, BookOpen, Terminal, X, Fingerprint, Network, Rss, Cpu,
-  BarChart2, ShieldCheck, ShieldAlert
+  BarChart2, ShieldCheck, ShieldAlert, Bot
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -12,7 +12,7 @@ const NAV_ITEMS = [
   { label: 'Cases',             path: '/app/cases',          Icon: FolderOpen,      group: 'Navigate' },
   { label: 'Threat Hunt',       path: '/app/hunt',           Icon: Crosshair,       group: 'Navigate' },
   { label: 'Endpoints',         path: '/app/endpoints',      Icon: Monitor,         group: 'Navigate' },
-  { label: 'Log Investigation', path: '/app/logs',           Icon: FileSearch,      group: 'Navigate' },
+
   { label: 'Analytics',         path: '/app/analytics',      Icon: BarChart2,       group: 'Navigate' },
   { label: 'Terminal Lab',      path: '/app/terminal-lab',   Icon: Terminal,        group: 'Lab'      },
   { label: 'Identity Graph',    path: '/app/identity-graph', Icon: Fingerprint,     group: 'Lab'      },
@@ -22,7 +22,7 @@ const NAV_ITEMS = [
   { label: 'Email Analysis',    path: '/app/email',          Icon: Mail,            group: 'Tools'    },
   { label: 'PCAP Analysis',     path: '/app/pcap',           Icon: Network,         group: 'Tools'    },
   { label: 'Threat Feeds',      path: '/app/feeds',          Icon: Rss,             group: 'Tools'    },
-  { label: 'Malware Tools',     path: '/app/malware',        Icon: Bug,             group: 'Tools'    },
+  { label: 'AI Agent Security', path: '/app/agent-security', Icon: Bot,             group: 'Lab'      },
   { label: 'Tools Hub',         path: '/app/tools',          Icon: Wrench,          group: 'Tools'    },
   { label: 'Hardware Tools',    path: '/app/hardware/tools', Icon: Cpu,             group: 'Tools'    },
   { label: 'Audit Log',         path: '/app/audit',          Icon: ScrollText,      group: 'System'   },

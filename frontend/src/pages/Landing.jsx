@@ -143,7 +143,7 @@ function AIDemo() {
 }
 
 function Ticker() {
-  const items='◇ ITDR — Credential Stuffing · Impossible Travel · Privilege Escalation · ◇ Identity Graph · Trust Timeline · Provenance Ledger · Pluggable Risk Engine · ◇ Endpoint Agent v2 · Sysmon Collection · Process Tree Analysis · ◇ 18 Hardware Analysis Tools · WiFi Pineapple · HackRF One · Flipper Zero · Proxmark3 · ◇ AI Case Analysis · MITRE ATT&CK · IOC Correlation · Explainable AI · ◇ VirusTotal v3 · Shodan · MalwareBazaar · URLhaus · ThreatFox · GreyNoise · ◇ Email Forensics · DORA Article 19 · Webhook Alerting · ◇ Terminal Lab · Log Parsing · IOC Extraction · ◇ Policy Engine · Trust Validation · Anomaly Detection · ◇ Free. Open. Deployable. · ';
+  const items='◇ ITDR — Credential Stuffing · Impossible Travel · Privilege Escalation · ◇ Identity Graph · Trust Timeline · Provenance Ledger · Pluggable Risk Engine · ◇ Endpoint Agent v2 · Sysmon Collection · Process Tree Analysis · ◇ 18 Hardware Analysis Tools · WiFi Pineapple · HackRF One · Flipper Zero · Proxmark3 · ◇ AI Case Analysis · MITRE ATT&CK · IOC Correlation · Explainable AI · ◇ VirusTotal v3 · Shodan · MalwareBazaar · URLhaus · ThreatFox · GreyNoise · ◇ Email Forensics · DORA Article 19 · Webhook Alerting · ◇ Terminal Lab · Log Parsing · IOC Extraction · ◇ AI Agent Security · Bounded Autonomy · Human Approval Queue · ◇ Policy Engine · Trust Validation · Anomaly Detection · ◇ Free. Open. Deployable. · ';
   return (
     <div style={{position:'absolute',bottom:0,left:0,right:0,zIndex:10,height:32,overflow:'hidden',background:'rgba(7,8,15,0.7)',borderTop:'1px solid rgba(255,255,255,0.06)',display:'flex',alignItems:'center'}}>
       <div style={{display:'flex',animation:'marquee 60s linear infinite',whiteSpace:'nowrap'}}>
@@ -209,12 +209,12 @@ const CERTS = [
 
 const ROADMAP = [
   {
-    phase:'Live — v2.0 → v4.1', status:'live', color:'#22C55E',
+    phase:'Live — v2.0 → v4.2', status:'live', color:'#22C55E',
     items:['SOC case management — 13-tab lifecycle, autosave, MITRE mapping','Explainable multi-model AI (Groq) — reasoning chain, evidence, confidence','7-source IOC enrichment + cross-case correlation + campaign detection','ITDR — credential stuffing, impossible travel, new device, privilege escalation','Identity Graph + Pluggable Risk Engine + 3 detectors','Trust Timeline + Provenance Ledger — every AI action audited','Policy Engine — allow/deny per identity type, IP + time restrictions','Terminal Lab — 20+ commands, AI parsing, IOC extraction, save to case','Endpoint agent v2 — Sysmon, process trees, persistence, auth logs','18 hardware forensic tools (WiFi/RF/RFID/HID/Suricata)','Email forensics — SPF/DKIM/DMARC, AI phishing verdict','DORA Article 19 compliance + PCAP analysis + webhook alerting','Dashboard analytics — severity breakdown chart + SLA status panel','Investigation templates — 6 pre-built scaffolds (phishing, brute force, malware…)','Report completeness preview — 7-section checklist before export','Public case narrative — story format: Trigger → Investigation → Findings → Outcome']
   },
   {
     phase:'In Progress — v4.2', status:'building', color:'#EAB308',
-    items:['Shadow AI Detection — detect data sent to unauthorized AI services','AI Agent Security — bounded autonomy, human approval workflows','SOAR Playbooks — automated response sequences per incident type','Control Plane view — live trust, policy, and agent health dashboard']
+    items:['AI Agent Security ✓ — human approval queue for all AI actions (shipped)','Shadow AI Detection — detect data sent to unauthorized AI services','SOAR Playbooks — automated response sequences per incident type','Control Plane view — live trust, policy, and agent health dashboard']
   },
   {
     phase:'Planned — v5.0', status:'planned', color:'#A78BFA',

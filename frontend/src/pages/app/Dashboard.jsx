@@ -95,7 +95,7 @@ export default function Dashboard() {
 
   const loadDashboard = () => {
     Promise.all([
-      api.get('/api/cases?limit=100'),
+      api.get('/api/cases?limit=25'),
       api.get('/api/vt/history'),
       api.get('/api/portfolio/stats'),
     ]).then(([casesRes, vtRes, statsRes]) => {

@@ -188,7 +188,7 @@ export default function Mission() {
         <div style={{position:'relative',zIndex:10,maxWidth:1100,margin:'0 auto',padding:'0 48px',width:'100%'}}>
           <div style={{display:'inline-flex',alignItems:'center',gap:8,padding:'6px 14px',background:'rgba(74,142,219,0.1)',border:'1px solid rgba(74,142,219,0.25)',borderRadius:20,marginBottom:28}}>
             <div style={{width:7,height:7,borderRadius:'50%',background:'#4A8EDB',animation:'pulse 2s ease-in-out infinite'}}/>
-            <span style={{fontSize:'0.68rem',color:'#6BABEC',...MONO,letterSpacing:'0.15em',textTransform:'uppercase'}}>The Industrial Revolution in Cybersecurity</span>
+            <span style={{fontSize:'0.68rem',color:'#6BABEC',...MONO,letterSpacing:'0.15em',textTransform:'uppercase'}}>v4.2 Live — Identity · Provenance · AI Agent Security</span>
           </div>
 
           <h1 style={{...SERIF,fontSize:'clamp(2.8rem,7vw,5.5rem)',fontWeight:400,lineHeight:0.96,letterSpacing:'-0.015em',marginBottom:24}}>
@@ -198,7 +198,7 @@ export default function Mission() {
 
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:48,alignItems:'flex-end',maxWidth:900}} className="lp-2col">
             <p style={{fontSize:'0.95rem',color:'#A6AFBF',lineHeight:1.85,...MONO,fontWeight:300,margin:0}}>
-              AegisTrace isn't just a product. It's a movement to redefine how humanity defends itself in the AI-agent era — where identity, trust, and provenance become the new perimeter.
+              AegisTrace is a free SOC control plane built on one conviction: the next decade of security is about tracking identities, auditing AI decisions, and keeping humans in control of automated actions. Not more dashboards — a trust layer for the AI-agent era.
             </p>
             <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
               <a href={`mailto:${CONTACT_EMAIL}?subject=I want to join the AegisTrace mission`}
@@ -278,7 +278,7 @@ export default function Mission() {
               </p>
               {/* Pull quote */}
               <blockquote style={{margin:'24px 0 0',padding:'16px 20px',background:'rgba(74,142,219,0.04)',borderLeft:'3px solid rgba(74,142,219,0.5)',borderRadius:'0 8px 8px 0'}}>
-                <em style={{color:'rgba(245,247,250,0.85)',fontSize:'0.92rem',lineHeight:1.7}}>"Which identity, agent, workflow, or prompt caused this breach?"</em>
+                <em style={{color:'rgba(245,247,250,0.85)',fontSize:'0.92rem',lineHeight:1.7}}>"Which identity caused this? Can I trust the AI's verdict? Was every automated action approved?"</em>
                 <div style={{fontSize:'0.68rem',color:'#6F7A8F',marginTop:8,...MONO}}>The question the next decade of security will be built around</div>
               </blockquote>
             </div>
@@ -368,8 +368,8 @@ export default function Mission() {
 
           <div className="lp-3col" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:20}}>
             {[
-              {phase:'Live — v2.0 → v4.0',status:'live',color:'#4Be38A',items:['ITDR — credential stuffing, impossible travel, new device, privilege escalation','Identity Graph + Pluggable Risk Engine + Policy Engine','Trust Timeline + Provenance Ledger (AI action audit)','Terminal Lab — private analyst workspace','Explainable AI — reasoning chain, evidence, confidence on every verdict','Case management (13 tabs) + comments + investigation templates','Analytics dashboard — severity, SLA, MITRE heatmap, throughput','7-source IOC enrichment + 18 hardware forensic tools','Email forensics (SPF/DKIM/DMARC) + PCAP + DORA compliance','Endpoint agent v2 + webhook alerting + audit logs']},
-              {phase:'In Progress — v4.1',status:'building',color:'#F5B84B',items:['Shadow AI Detection — detect data sent to unauthorised AI services','AI Agent Security — bounded autonomy + human approval workflows','SOAR Playbooks — automated response sequences per incident type','Control Plane view — live trust, policy, and agent health dashboard','Report narrative mode — attacker story for board-level audiences']},
+              {phase:'Live — v2.0 → v4.2',status:'live',color:'#4Be38A',items:['ITDR — credential stuffing, impossible travel, new device, privilege escalation','Identity Graph + Pluggable Risk Engine + Policy Engine','Trust Timeline + Provenance Ledger (AI action audit)','Terminal Lab — private analyst workspace','Explainable AI — reasoning chain, evidence, confidence on every verdict','Case management (13 tabs) + comments + investigation templates','Analytics dashboard — severity, SLA, MITRE heatmap, throughput','7-source IOC enrichment + 18 hardware forensic tools','Email forensics (SPF/DKIM/DMARC) + PCAP + DORA compliance','Endpoint agent v2 + webhook alerting + audit logs']},
+              {phase:'In Progress — v4.2',status:'building',color:'#F5B84B',items:['Shadow AI Detection — detect data sent to unauthorised AI services','AI Agent Security — bounded autonomy + human approval workflows','SOAR Playbooks — automated response sequences per incident type','Control Plane view — live trust, policy, and agent health dashboard','Report narrative mode — attacker story for board-level audiences']},
               {phase:'Planned — v5.0',status:'planned',color:'#9C7CFF',items:['Agent Supervision Console — kill switches + task scope','Attacker Path Reconstruction — visual kill-chain across actors','AI Memory across cases — pattern recognition from history','Crypto + Quantum Readiness — certificate inventory, PQ flags','Machine Identity incidents — rogue API keys, service accounts','Future-narrative reporting — board-level attacker stories']},
             ].map(({phase,status,color,items})=>(
               <div key={phase} style={{background:'rgba(12,18,32,0.5)',border:`1px solid ${color}20`,borderRadius:12,padding:24,position:'relative',overflow:'hidden'}}>

@@ -8,9 +8,6 @@
     "react-router-dom": "^6.23.1",
     "axios": "^1.7.2",
     "zustand": "^4.5.2",
-    "react-hook-form": "^7.51.5",
-    "zod": "^3.23.8",
-    "@hookform/resolvers": "^3.4.2",
     "lucide-react": "^0.395.0",
     "react-scripts": "5.0.1"
   },
@@ -20,8 +17,16 @@
     "test": "react-scripts test"
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
-    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "proxy": "http://localhost:8000"
 }

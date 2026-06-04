@@ -4,7 +4,6 @@ import { Cpu, Wifi, Radio, HardDrive, Network, Tag, Monitor, Bot,
          Shield, ChevronRight, Search, X } from 'lucide-react';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
-import './hardware-tools.css';
 
 // ── Tool catalogue ────────────────────────────────────────────────────────────
 const CATEGORIES = [

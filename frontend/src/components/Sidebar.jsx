@@ -1,10 +1,10 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, FolderOpen, Shield, Bug, Mail,
+  LayoutDashboard, FolderOpen, Shield, Mail,
   Wrench, Globe, Settings, LogOut, ChevronLeft, ChevronRight,
-  Crosshair, ScrollText, Monitor, FileSearch, Network, Rss, Cpu,
-  Terminal, Fingerprint, BarChart2, ShieldAlert, ShieldCheck
+  Crosshair, ScrollText, Monitor, Network, Rss, Cpu,
+  Terminal, Fingerprint, BarChart2, ShieldAlert, ShieldCheck, Bot
 } from 'lucide-react';
 import Logo from './Logo';
 import useStore from '../store/useStore';
@@ -18,7 +18,6 @@ const NAV_GROUPS = [
       { to: '/app/analytics',      label: 'Analytics',         Icon: BarChart2 },
       { to: '/app/hunt',           label: 'Threat Hunt',       Icon: Crosshair },
       { to: '/app/endpoints',      label: 'Endpoints',         Icon: Monitor },
-      { to: '/app/logs',           label: 'Log Investigation', Icon: FileSearch },
     ],
   },
   {
@@ -28,16 +27,16 @@ const NAV_GROUPS = [
       { to: '/app/feeds',          label: 'Threat Feeds',      Icon: Rss },
       { to: '/app/email',          label: 'Email Analysis',    Icon: Mail },
       { to: '/app/pcap',           label: 'PCAP Analysis',     Icon: Network },
-      { to: '/app/malware',        label: 'Malware Tools',     Icon: Bug },
       { to: '/app/tools',          label: 'Tools Hub',         Icon: Wrench },
     ],
   },
   {
     label: 'Identity & Trust',
     items: [
-      { to: '/app/identity-graph', label: 'Identity Graph',    Icon: Fingerprint },
-      { to: '/app/itdr',           label: 'ITDR',              Icon: ShieldAlert },
-      { to: '/app/policies',       label: 'Policies',          Icon: ShieldCheck },
+      { to: '/app/identity-graph',   label: 'Identity Graph',    Icon: Fingerprint },
+      { to: '/app/itdr',             label: 'ITDR',              Icon: ShieldAlert },
+      { to: '/app/policies',         label: 'Policies',          Icon: ShieldCheck },
+      { to: '/app/agent-security',   label: 'AI Agent Security', Icon: Bot },
     ],
   },
   {
