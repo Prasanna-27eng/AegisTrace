@@ -95,15 +95,21 @@ const CERTS = [
 
 const PROJECTS = [
   {
-    title: 'AegisTrace — SOC Control Plane',
+    title: 'AegisTrace — Identity-First SOC Control Plane',
     period: 'Jun 2025 — Present',
-    desc: 'Production-grade cybersecurity platform and personal portfolio. v3.0 adds Identity Graph (users/tokens/agents as graph nodes), Trust Timeline (per-case chain of trust), Provenance Ledger (AI action audit), Terminal Lab (private Linux analysis workspace), and explainable AI with full reasoning chains.',
-    tags: ['React', 'FastAPI', 'Groq AI', 'VirusTotal', 'SQLite', 'Docker', 'Render'],
-    badge: 'Live — v3.0',
+    desc: 'Production-grade SOC investigation platform built on identity-first security principles. v4.0 ships ITDR — four real-time detectors (credential stuffing, impossible travel, new device, privilege escalation). Includes a pluggable identity risk engine, Identity Graph, Trust Timeline, Provenance Ledger, Policy Engine, and Terminal Lab. All AI decisions carry full reasoning chains. Deployed on Render free tier.',
+    tags: ['React', 'FastAPI', 'Groq AI', 'VirusTotal', 'SQLite', 'Docker', 'Render', 'ITDR'],
+    badge: 'Live — v4.0',
     badgeColor: '#4BE38A',
     link: null,
     highlight: true,
-    features: ['7-source IOC enrichment', 'Email forensics + DMARC', '18 hardware forensic tools', 'Multi-model AI (4 Groq models)', 'DORA Article 19 compliance'],
+    features: [
+      'ITDR — credential stuffing, impossible travel, new device, privilege escalation detection',
+      'Pluggable identity risk engine with 3 detectors + policy enforcement',
+      'Explainable AI — full reasoning chain on every verdict',
+      '7-source IOC enrichment + 18 hardware forensic tools',
+      'Email forensics (SPF/DKIM/DMARC) + DORA Article 19 compliance',
+    ],
   },
   {
     title: 'WebSecGuard — Browser Vulnerability Scanner',

@@ -4,7 +4,7 @@ import {
   LayoutDashboard, FolderOpen, Shield, Bug, Mail,
   Wrench, Globe, Settings, LogOut, ChevronLeft, ChevronRight,
   Crosshair, ScrollText, Monitor, FileSearch, Network, Rss, Cpu,
-  Terminal, Fingerprint, BarChart2
+  Terminal, Fingerprint, BarChart2, ShieldAlert
 } from 'lucide-react';
 import Logo from './Logo';
 import useStore from '../store/useStore';
@@ -35,6 +35,7 @@ const NAV_GROUPS = [
     label: 'Identity & Trust',
     items: [
       { to: '/app/identity-graph', label: 'Identity Graph',    Icon: Fingerprint },
+      { to: '/app/itdr',           label: 'ITDR',              Icon: ShieldAlert },
     ],
   },
   {

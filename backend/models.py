@@ -497,3 +497,47 @@ class Policy(SQLModel, table=True):
     allowed_hours_end: Optional[str] = Field(default=None)     # "17:00" UTC
     is_active: bool = Field(default=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# ── v4.0 ITDR — Identity Threat Detection & Response ─────────────────────────
+
+class AuthEvent(SQLModel, table=True):
+    """
+    Authentication / identity event for ITDR analysis.
+    Analysts enter these manually or paste from auth logs.
+    """
+    id: Optional[int] = Field(default=None, primary_key=True)
+    # Link to identity node (optional — can exist standalone)
+    node_id: Optional[int] = Field(default=None, foreign_key="identitynode.id", index=True)
+    identity_label: str = Field(default="")   # email / username if no node linked
+
+    # Event type
+    event_type: str = Field(default="login")
+    # login | failed_login | logout | privilege_change | mfa_challenge
+    # password_reset | token_issue | account_lock
+
+    # Auth result
+    success: bool = Field(default=True)
+
+    # Location
+    source_ip: Optional[str] = Field(default=None)
+    country: Optional[str] = Field(default=None)
+    city: Optional[str] = Field(default=None)
+    region: Optional[str] = Field(default=None)   # continent / region for impossible-travel
+
+    # Device
+    device_id: Optional[str] = Field(default=None)
+    device_name: Optional[str] = Field(default=None)
+    user_agent: Optional[str] = Field(default=None)
+
+    # Privilege change fields
+    privilege_before: Optional[str] = Field(default=None)
+    privilege_after: Optional[str] = Field(default=None)
+    approved: Optional[bool] = Field(default=None)
+
+    # Case linkage
+    case_id: Optional[int] = Field(default=None, foreign_key="case.id")
+    notes: Optional[str] = Field(default=None, sa_column=Column(Text))
+
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.utcnow)

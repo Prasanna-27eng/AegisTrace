@@ -30,6 +30,7 @@ import HardwareTools    from './pages/app/HardwareTools';
 import ToolResult       from './pages/app/ToolResult';
 import TerminalLab      from './pages/app/TerminalLab';
 import IdentityGraph    from './pages/app/IdentityGraph';
+import ITDRPage         from './pages/app/ITDRPage';
 
 export default function App() {
   return (
@@ -67,6 +68,7 @@ export default function App() {
           <Route path="hardware/tools"    element={<HardwareTools />} />
           <Route path="terminal-lab"      element={<TerminalLab />} />
           <Route path="identity-graph"    element={<IdentityGraph />} />
+          <Route path="itdr"              element={<ITDRPage />} />
         </Route>
 
         <Route path="/app/hardware/tools/:runId" element={<ToolResult />} />

@@ -151,7 +151,7 @@ function AIDemo() {
 }
 
 function Ticker() {
-  const items='◇ Endpoint Agent v2 · Sysmon Collection · Process Tree Analysis · ◇ 18 Hardware Analysis Tools · WiFi Pineapple · HackRF One · Flipper Zero · Rubber Ducky · Proxmark3 · Suricata · ◇ AI Case Analysis · MITRE ATT&CK · IOC Correlation · ◇ VirusTotal v3 · Shodan · MalwareBazaar · URLhaus · ThreatFox · GreyNoise · ◇ Email Forensics · DORA Compliance · Webhook Alerting · ◇ YARA Generator · PCAP Analysis · Threat Feeds · ◇ Identity Graph · Trust Timeline · Provenance Ledger · Agent Supervision · ◇ Terminal Lab · Sandbox Execution · IOC Extraction · ◇ Free. Open. Deployable. · ';
+  const items='◇ ITDR — Credential Stuffing · Impossible Travel · Privilege Escalation · ◇ Identity Graph · Trust Timeline · Provenance Ledger · Pluggable Risk Engine · ◇ Endpoint Agent v2 · Sysmon Collection · Process Tree Analysis · ◇ 18 Hardware Analysis Tools · WiFi Pineapple · HackRF One · Flipper Zero · Proxmark3 · ◇ AI Case Analysis · MITRE ATT&CK · IOC Correlation · Explainable AI · ◇ VirusTotal v3 · Shodan · MalwareBazaar · URLhaus · ThreatFox · GreyNoise · ◇ Email Forensics · DORA Article 19 · Webhook Alerting · ◇ Terminal Lab · Log Parsing · IOC Extraction · ◇ Policy Engine · Trust Validation · Anomaly Detection · ◇ Free. Open. Deployable. · ';
   return (
     <div style={{position:'absolute',bottom:0,left:0,right:0,zIndex:10,height:32,overflow:'hidden',background:'rgba(7,8,15,0.7)',borderTop:'1px solid rgba(255,255,255,0.06)',display:'flex',alignItems:'center'}}>
       <div style={{display:'flex',animation:'marquee 60s linear infinite',whiteSpace:'nowrap'}}>
@@ -163,18 +163,18 @@ function Ticker() {
 
 /* ─── DATA ──────────────────────────────────────────────────────────────── */
 const FEATURES = [
-  { Icon:FolderSearch, title:'Case Management',     desc:'10-tab lifecycle with IOC tracking, MITRE mapping, AI analysis, AI chat, evidence vault, playbook, and timeline. Playbook state persists across sessions.',  color:'#4DA3FF' },
-  { Icon:Shield,       title:'7-Source IOC Intel',  desc:'VirusTotal v3 + Shodan, MalwareBazaar, URLhaus, ThreatFox, GreyNoise, IPInfo — all queried in parallel. Results saved to history and correlated cross-case.', color:'#A78BFA' },
-  { Icon:Brain,        title:'Multi-Model AI',      desc:'Groq LLM routing — llama-3.3-70b for deep analysis, mixtral-8x7b for phishing classification, gemma2-9b for fast IOC extraction. Zero AI vendor lock-in.',     color:'#EAB308' },
-  { Icon:Mail,         title:'Email Forensics',     desc:'Full RFC header parsing, SPF/DKIM/DMARC validation, routing hop extraction, AI phishing verdict with confidence scoring and MITRE ATT&CK technique mapping.',   color:'#22C55E' },
-  { Icon:Monitor,      title:'Endpoint Agent v2',   desc:'Zero-dependency Python agent for Windows/Linux/Mac. Collects Sysmon events, process trees, persistence, auth logs. Heartbeat every 60s. Retry queue.',            color:'#4DA3FF' },
-  { Icon:Terminal,     title:'Terminal Lab',        desc:'Private Linux-style analysis workspace. Simulated mode for safe demos. Sandboxed real-tool mode for approved security tools. Every output saves to cases.',     color:'#A78BFA' },
-  { Icon:GitMerge,     title:'Identity Graph',      desc:'Graph linking users, service accounts, API keys, tokens, devices, and AI agents. Tracks how trust was formed, inherited, and broken across investigations.',    color:'#EAB308' },
-  { Icon:Activity,     title:'Threat Hunting',      desc:'IOC frequency heatmap, MITRE ATT&CK visualisation, campaign detection, saved hunt queries. Spot patterns across your full investigation history.',               color:'#22C55E' },
-  { Icon:Bug,          title:'Malware Tools',       desc:'Base64/URL encode/decode, MD5/SHA1/SHA256/SHA512 hash generator, defang/refang, and AI-powered YARA rule generation from sample description.',                  color:'#4DA3FF' },
-  { Icon:Network,      title:'PCAP Analysis',       desc:'Upload .pcap files for automated protocol analysis, top-talker identification, DNS query extraction, suspicious flow detection, and AI threat scoring.',         color:'#A78BFA' },
-  { Icon:Globe,        title:'DORA Compliance',     desc:'One-click Article 19 Major ICT Incident Report PDF. Maps 5 DORA pillars to live case data. Built for EU financial services. Export PDF or DOCX.',               color:'#EAB308' },
-  { Icon:Bell,         title:'Webhook Alerting',    desc:'HTTP POST webhooks fire on case events, critical detections, and malicious IOC campaigns. Slack-compatible payload format, HMAC-SHA256 signed.',                color:'#22C55E' },
+  { Icon:ShieldAlert,  title:'ITDR — Identity Threat Detection', desc:'Four real-time detectors: credential stuffing (5+ failed logins), impossible travel (different continents < 4h), new device login, unapproved privilege escalation. Paste auth logs or enter events manually.', color:'#EF4444' },
+  { Icon:Fingerprint,  title:'Identity Risk Engine',  desc:'Pluggable detector architecture: register new risk detectors without touching the core. Ships with AnomalyCountDetector, LastSeenDetector, CompromisedFlagDetector. Every recalculation is logged to audit trail.', color:'#4DA3FF' },
+  { Icon:FolderSearch, title:'Case Management',       desc:'13-tab lifecycle: overview, investigation, IOCs, terminal, timeline, trust timeline, playbook, AI analysis, AI chat, comments, provenance, report, EDR. Autosave, MITRE mapping, SLA breach badges.', color:'#A78BFA' },
+  { Icon:GitMerge,     title:'Identity Graph + Trust', desc:'Force-directed canvas graph of users, service accounts, API keys, tokens, devices, AI agents. Add anomalies per node, recalculate risk scores, track trust events per investigation.', color:'#EAB308' },
+  { Icon:Brain,        title:'Explainable AI',        desc:'Multi-model Groq routing with full reasoning chain. Every verdict shows evidence used, reasoning steps, what-could-be-wrong, and confidence. No black boxes. Provenance ledger records every AI action.', color:'#22C55E' },
+  { Icon:Shield,       title:'7-Source IOC Intel',    desc:'VirusTotal v3 + Shodan, MalwareBazaar, URLhaus, ThreatFox, GreyNoise, IPInfo — all queried in parallel. Results saved to history and correlated cross-case to detect campaigns.', color:'#4DA3FF' },
+  { Icon:Mail,         title:'Email Forensics',       desc:'Full RFC header parsing, SPF/DKIM/DMARC validation, routing hop extraction, AI phishing verdict with confidence scoring and MITRE ATT&CK technique mapping.',   color:'#A78BFA' },
+  { Icon:Monitor,      title:'Endpoint Agent v2',     desc:'Zero-dependency Python agent for Windows/Linux/Mac. Collects Sysmon events, process trees, persistence, auth logs. Heartbeat every 60s, retry queue.',           color:'#EAB308' },
+  { Icon:Terminal,     title:'Terminal Lab',          desc:'Private Linux-style analyst workspace. Simulated mode for 20+ commands. AI parses every output, extracts IOCs, maps to MITRE. Save sessions to cases.',         color:'#22C55E' },
+  { Icon:Activity,     title:'Threat Hunting',        desc:'Cross-case IOC correlation, MITRE heatmap, campaign detection, saved queries. Spots attacker infrastructure reuse across all your investigations.',               color:'#4DA3FF' },
+  { Icon:Globe,        title:'DORA Compliance',       desc:'One-click Article 19 Major ICT Incident Report PDF. Maps 5 DORA pillars to live case data. Built for EU financial services regulated firms.',                    color:'#A78BFA' },
+  { Icon:Bell,         title:'Policy Engine + Alerts', desc:'Create access-control policies per identity type. Validate actions against allow/deny lists, IP restrictions, time windows. Slack-compatible HMAC-signed webhooks.', color:'#EAB308' },
 ];
 
 const HARDWARE_TOOLS = [
@@ -217,44 +217,42 @@ const CERTS = [
 
 const ROADMAP = [
   {
-    phase:'Now — v2.0', status:'live', color:'#22C55E',
+    phase:'Live — v2.0 → v4.0', status:'live', color:'#22C55E',
     items:[
-      'SOC case management with 10-tab lifecycle',
-      'Multi-model AI analysis via Groq (4 models)',
-      '7-source IOC enrichment in parallel',
-      'Endpoint agent — Sysmon, process trees, auth logs',
-      '18 hardware forensic tools (WiFi/RF/RFID/HID)',
-      'Email forensics with SPF/DKIM/DMARC',
-      'PCAP analysis + network forensics',
-      'DORA Article 19 compliance reporting',
-      'Threat hunting + cross-case IOC correlation',
-      'Webhook alerting + audit logs + public case gallery',
+      'SOC case management — 13-tab lifecycle, autosave, MITRE mapping',
+      'Explainable multi-model AI (Groq) — reasoning chain, evidence, confidence',
+      '7-source IOC enrichment + cross-case correlation + campaign detection',
+      'ITDR — credential stuffing, impossible travel, new device, privilege escalation',
+      'Identity Graph + Pluggable Risk Engine + 3 detectors',
+      'Trust Timeline + Provenance Ledger — every AI action audited',
+      'Policy Engine — allow/deny per identity type, IP + time restrictions',
+      'Terminal Lab — 20+ commands, AI parsing, IOC extraction, save to case',
+      'Endpoint agent v2 — Sysmon, process trees, persistence, auth logs',
+      '18 hardware forensic tools (WiFi/RF/RFID/HID/Suricata)',
+      'Email forensics — SPF/DKIM/DMARC, AI phishing verdict',
+      'DORA Article 19 compliance + PCAP analysis + webhook alerting',
     ]
   },
   {
-    phase:'Building — v3.0', status:'building', color:'#EAB308',
+    phase:'In Progress — v4.0', status:'building', color:'#EAB308',
     items:[
-      'Identity Graph — users, tokens, agents, devices as nodes',
-      'Trust Timeline — chain of trust events per case',
-      'Provenance Ledger — full audit of every AI action',
-      'Terminal Lab — private Linux-style analysis workspace',
-      'Explainable AI — reasoning chain for every verdict',
-      'Proactive AI Triage — anomalies surfaced before cases',
-      'Case Comments + Investigation Templates',
-      'Analytics dashboard — trends, SLA, analyst throughput',
+      'Analytics page UI — severity trends, SLA breach tracker, MITRE heatmap',
+      'Policy management UI — create and manage policies via the app',
+      'Investigation templates — 6 scaffold types for common incidents',
+      'Report completeness preview — checklist before PDF export',
+      'Shadow AI Detection — detect data sent to unauthorized AI services',
+      'AI Agent Security — bounded autonomy, human approval workflows',
     ]
   },
   {
-    phase:'Planned — v4.0', status:'planned', color:'#A78BFA',
+    phase:'Planned — v5.0', status:'planned', color:'#A78BFA',
     items:[
       'Agent Supervision Console — supervise AI agents with kill switches',
-      'Attacker Path Reconstruction — visual kill-chain across actors',
-      'AI Memory across cases — pattern recognition from history',
-      'Policy-based response automation — escalation rules per risk level',
-      'Machine Identity Incidents — rogue API keys, service accounts',
-      'Control Plane View — live trust, policy, and agent health',
-      'Crypto + Quantum Readiness — certificate inventory, PQ flags',
-      'Future-narrative reporting — attacker stories for board-level',
+      'Attacker Path Reconstruction — visual kill-chain across human + machine actors',
+      'AI Memory across cases — pattern recognition from investigation history',
+      'Control Plane View — live trust, policy, and agent health dashboard',
+      'Crypto + Quantum Readiness — certificate inventory, post-quantum flags',
+      'Future-narrative reporting — attacker stories for board-level audiences',
     ]
   }
 ];
