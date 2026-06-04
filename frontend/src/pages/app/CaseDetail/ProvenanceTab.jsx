@@ -10,7 +10,7 @@ const ACTION_META = {
   ai_summary:   { color: '#A78BFA', label: 'AI Summary',   Icon: Brain },
   tool_run:     { color: '#EAB308', label: 'Tool Run',      Icon: Wrench },
   evidence_add: { color: '#22C55E', label: 'Evidence Added', Icon: Database },
-  ioc_enrich:   { color: '#C0392B', label: 'IOC Enrich',   Icon: Database },
+  ioc_enrich:   { color: '#3B82F6', label: 'IOC Enrich',   Icon: Database },
   manual:       { color: '#71717A', label: 'Manual',        Icon: Database },
 };
 

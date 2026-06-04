@@ -48,7 +48,7 @@ export default function AppShell() {
   const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform);
 
   return (
-    <div style={{ display: 'flex', height: '100vh', background: '#07080F', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)', overflow: 'hidden' }}>
 
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} recentCases={recentCases} />
 
@@ -68,7 +68,7 @@ export default function AppShell() {
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
 
-        <header style={{ background: '#0F1018', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', flexShrink: 0 }}>
+        <header style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', flexShrink: 0 }}>
           <button onClick={() => setMobileOpen(true)} className="mobile-only"
             style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer', padding: 4, display: 'none' }}>
             <Menu size={18} />
@@ -96,20 +96,20 @@ export default function AppShell() {
               <div style={{ fontSize: '0.75rem', fontWeight: 500, color: '#F0F0F8' }}>{user?.name}</div>
               <div style={{ fontSize: '0.62rem', color: '#71717A', fontFamily: 'JetBrains Mono' }}>{user?.role}</div>
             </div>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 600, color: '#C0392B', flexShrink: 0 }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 600, color: '#60A5FA', flexShrink: 0 }}>
               {user?.name?.[0] || 'A'}
             </div>
           </div>
         </header>
 
-        <main style={{ flex: 1, overflow: 'auto', background: '#07080F', paddingBottom: 60 }}>
+        <main style={{ flex: 1, overflow: 'auto', background: 'var(--bg)', paddingBottom: 60 }}>
           <Outlet />
         </main>
 
-        <nav style={{ display: 'none', position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100, background: '#0F1018', borderTop: '1px solid rgba(255,255,255,0.07)', padding: '8px 0 max(8px, env(safe-area-inset-bottom))' }} className="mobile-bottom-nav">
+        <nav style={{ display: 'none', position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100, background: 'var(--surface)', borderTop: '1px solid var(--border)', padding: '8px 0 max(8px, env(safe-area-inset-bottom))' }} className="mobile-bottom-nav">
           {MOBILE_NAV.map(({ to, Icon, label }) => (
-            <NavLink key={to} to={to} style={({ isActive }) => ({ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '4px 0', flex: 1, textDecoration: 'none', color: isActive ? '#C0392B' : '#71717A', fontSize: '0.6rem', fontFamily: 'JetBrains Mono' })}>
-              {({ isActive }) => (<><Icon size={20} style={{ color: isActive ? '#C0392B' : '#71717A' }} /><span>{label}</span></>)}
+            <NavLink key={to} to={to} style={({ isActive }) => ({ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '4px 0', flex: 1, textDecoration: 'none', color: isActive ? '#60A5FA' : 'var(--text-muted)', fontSize: '0.6rem', fontFamily: 'JetBrains Mono' })}>
+              {({ isActive }) => (<><Icon size={20} style={{ color: isActive ? '#60A5FA' : 'var(--text-muted)' }} /><span>{label}</span></>)}
             </NavLink>
           ))}
         </nav>

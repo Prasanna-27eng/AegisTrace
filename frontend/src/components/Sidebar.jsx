@@ -65,19 +65,19 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
   return (
     <aside style={{
-      width: collapsed ? 56 : 204,
-      background: '#0F1018',
-      borderRight: '1px solid rgba(255,255,255,0.07)',
+      width: collapsed ? 56 : 220,
+      background: 'var(--surface)',
+      borderRight: '1px solid var(--border)',
       display: 'flex', flexDirection: 'column',
       transition: 'width 0.2s ease',
       overflow: 'hidden', flexShrink: 0,
     }}>
       {/* Logo + collapse */}
       <div style={{
-        padding: collapsed ? '14px 0' : '14px',
+        padding: collapsed ? '14px 0' : '14px 12px',
         display: 'flex', alignItems: 'center',
         justifyContent: collapsed ? 'center' : 'space-between',
-        borderBottom: '1px solid rgba(255,255,255,0.07)',
+        borderBottom: '1px solid var(--border)',
         marginBottom: 4, flexShrink: 0,
       }}>
         {collapsed ? <Logo size={22} showText={false} /> : <Logo size={22} showText />}
@@ -111,11 +111,11 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       </nav>
 
       {/* User + logout */}
-      <div style={{ padding: '8px', borderTop: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
+      <div style={{ padding: '8px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
         {!collapsed && user && (
           <div style={{ padding: '6px 10px', marginBottom: 3 }}>
-            <div style={{ fontSize: '0.73rem', color: '#F0F0F8', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</div>
-            <div style={{ fontSize: '0.62rem', color: '#71717A', fontFamily: 'JetBrains Mono', marginTop: 1 }}>{user.role}</div>
+            <div style={{ fontSize: '0.73rem', color: 'var(--text-primary)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</div>
+            <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono', marginTop: 1 }}>{user.role}</div>
           </div>
         )}
         <button onClick={() => { logout(); navigate('/'); }}

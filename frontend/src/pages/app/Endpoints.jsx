@@ -5,7 +5,7 @@ import useStore from '../../store/useStore';
 import { useNavigate } from 'react-router-dom';
 
 const OS_ICON = { windows: '🪟', linux: '🐧', mac: '🍎', unknown: '💻' };
-const SCORE_COLOR = (s) => s >= 80 ? '#EF4444' : s >= 60 ? '#C0392B' : s >= 40 ? '#EAB308' : s >= 20 ? '#A78BFA' : '#22C55E';
+const SCORE_COLOR = (s) => s >= 80 ? '#EF4444' : s >= 60 ? '#3B82F6' : s >= 40 ? '#EAB308' : s >= 20 ? '#A78BFA' : '#22C55E';
 const VERDICT_COLOR = { Malicious:'#EF4444', Suspicious:'#EAB308', Clean:'#22C55E', Unknown:'#71717A' };
 
 const AEGISTRACE_URL = 'https://aegistrace-7qvn.onrender.com';
@@ -24,7 +24,7 @@ function ScoreBar({ score }) {
 function BatchRow({ batch, epId, navigate }) {
   return (
     <div className="at-card" style={{ padding:'10px 14px', cursor:'pointer', transition:'border-color 0.15s' }}
-      onMouseEnter={e => e.currentTarget.style.borderColor='rgba(192,57,43,0.3)'}
+      onMouseEnter={e => e.currentTarget.style.borderColor='rgba(59,130,246,0.3)'}
       onMouseLeave={e => e.currentTarget.style.borderColor='rgba(255,255,255,0.07)'}
       onClick={() => navigate(`/app/endpoints/${epId}/batch/${batch.id}`)}>
       <div style={{ display:'flex', alignItems:'center', gap:12 }}>
@@ -37,7 +37,7 @@ function BatchRow({ batch, epId, navigate }) {
           <div style={{ fontSize:'0.65rem', color:'#71717A', marginTop:2 }}>{new Date(batch.created_at).toLocaleTimeString()}</div>
         </div>
         <ScoreBar score={batch.threat_score} />
-        {batch.case_id && <span style={{ fontSize:'0.65rem', background:'rgba(192,57,43,0.1)', border:'1px solid rgba(192,57,43,0.25)', color:'#C0392B', padding:'1px 6px', borderRadius:3, fontFamily:'JetBrains Mono', flexShrink:0 }}>CASE</span>}
+        {batch.case_id && <span style={{ fontSize:'0.65rem', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.25)', color:'#3B82F6', padding:'1px 6px', borderRadius:3, fontFamily:'JetBrains Mono', flexShrink:0 }}>CASE</span>}
       </div>
       {batch.ai_summary && <div style={{ fontSize:'0.72rem', color:'#71717A', marginTop:5, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{batch.ai_summary}</div>}
     </div>
@@ -99,8 +99,8 @@ INGEST_KEY     = "${ingestKey || 'paste-your-key-here'}"`;
 
         {/* Header */}
         <div style={{ padding:'18px 20px', borderBottom:'1px solid rgba(255,255,255,0.07)', display:'flex', alignItems:'center', gap:12, flexShrink:0 }}>
-          <div style={{ width:36, height:36, background:'rgba(192,57,43,0.15)', border:'1px solid rgba(192,57,43,0.3)', borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <Terminal size={18} style={{ color:'#C0392B' }}/>
+          <div style={{ width:36, height:36, background:'rgba(59,130,246,0.15)', border:'1px solid rgba(59,130,246,0.3)', borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <Terminal size={18} style={{ color:'#3B82F6' }}/>
           </div>
           <div>
             <div style={{ fontWeight:700, fontSize:'1rem' }}>Endpoint Agent Setup Guide</div>
@@ -126,7 +126,7 @@ INGEST_KEY     = "${ingestKey || 'paste-your-key-here'}"`;
             <div>
               <div style={{ marginBottom:20 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
-                  <div style={{ width:22, height:22, borderRadius:'50%', background:'rgba(192,57,43,0.2)', border:'1px solid rgba(192,57,43,0.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.72rem', fontWeight:700, color:'#C0392B', flexShrink:0 }}>1</div>
+                  <div style={{ width:22, height:22, borderRadius:'50%', background:'rgba(59,130,246,0.2)', border:'1px solid rgba(59,130,246,0.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.72rem', fontWeight:700, color:'#3B82F6', flexShrink:0 }}>1</div>
                   <div style={{ fontWeight:600 }}>Get your Ingest Key</div>
                 </div>
                 {ingestKey ? (
@@ -141,7 +141,7 @@ INGEST_KEY     = "${ingestKey || 'paste-your-key-here'}"`;
 
               <div style={{ marginBottom:20 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
-                  <div style={{ width:22, height:22, borderRadius:'50%', background:'rgba(192,57,43,0.2)', border:'1px solid rgba(192,57,43,0.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.72rem', fontWeight:700, color:'#C0392B', flexShrink:0 }}>2</div>
+                  <div style={{ width:22, height:22, borderRadius:'50%', background:'rgba(59,130,246,0.2)', border:'1px solid rgba(59,130,246,0.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.72rem', fontWeight:700, color:'#3B82F6', flexShrink:0 }}>2</div>
                   <div style={{ fontWeight:600 }}>Download &amp; configure the agent</div>
                 </div>
                 <div style={{ fontSize:'0.8rem', color:'#71717A', marginBottom:8 }}>Download <code style={{color:'#A78BFA', fontFamily:'JetBrains Mono', fontSize:'0.78rem'}}>aegistrace_agent.py</code> then open it and set these two lines:</div>
@@ -155,7 +155,7 @@ INGEST_KEY     = "${ingestKey || 'paste-your-key-here'}"`;
 
               <div style={{ marginBottom:20 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
-                  <div style={{ width:22, height:22, borderRadius:'50%', background:'rgba(192,57,43,0.2)', border:'1px solid rgba(192,57,43,0.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.72rem', fontWeight:700, color:'#C0392B', flexShrink:0 }}>3</div>
+                  <div style={{ width:22, height:22, borderRadius:'50%', background:'rgba(59,130,246,0.2)', border:'1px solid rgba(59,130,246,0.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.72rem', fontWeight:700, color:'#3B82F6', flexShrink:0 }}>3</div>
                   <div style={{ fontWeight:600 }}>Run it</div>
                 </div>
                 <CodeBlock code="python3 aegistrace_agent.py" label="Terminal" />
@@ -359,7 +359,7 @@ export default function Endpoints() {
 
       {/* Ingest key panel */}
       {showKey && ingestKey && (
-        <div className="at-card" style={{ padding:14, marginBottom:16, borderColor:'rgba(192,57,43,0.2)' }}>
+        <div className="at-card" style={{ padding:14, marginBottom:16, borderColor:'rgba(59,130,246,0.2)' }}>
           <div className="section-label">Ingest API Key — paste into agent config</div>
           <div style={{ display:'flex', gap:8, alignItems:'center' }}>
             <code style={{ flex:1, fontFamily:'JetBrains Mono', fontSize:'0.78rem', color:'#A78BFA', background:'rgba(255,255,255,0.04)', padding:'8px 12px', borderRadius:6, border:'1px solid rgba(255,255,255,0.08)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{ingestKey}</code>
@@ -375,7 +375,7 @@ export default function Endpoints() {
         <div style={{ textAlign:'center', padding:60, color:'#71717A' }}><Loader2 size={20} className="spinner" style={{ margin:'0 auto 8px' }}/><div>Loading endpoints…</div></div>
       ) : endpoints.length === 0 ? (
         <div className="at-card" style={{ padding:40, textAlign:'center' }}>
-          <Monitor size={32} style={{ color:'rgba(192,57,43,0.3)', margin:'0 auto 12px' }}/>
+          <Monitor size={32} style={{ color:'rgba(59,130,246,0.3)', margin:'0 auto 12px' }}/>
           <div style={{ fontWeight:600, marginBottom:8 }}>No endpoints connected yet</div>
           <div style={{ fontSize:'0.82rem', color:'#71717A', marginBottom:16 }}>Install the agent on any machine to start collecting logs.</div>
           <button onClick={() => setShowGuide(true)} className="btn-ghost" style={{ fontSize:'0.8rem' }}><FileText size={13}/> Setup Guide</button>
@@ -385,8 +385,8 @@ export default function Endpoints() {
           {/* Endpoint list */}
           <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
             {endpoints.map(ep => (
-              <div key={ep.id} className="at-card" style={{ padding:'14px 16px', cursor:'pointer', transition:'border-color 0.15s', borderColor: selected?.id === ep.id ? 'rgba(192,57,43,0.4)' : 'rgba(255,255,255,0.07)' }}
-                onMouseEnter={e => { if(selected?.id!==ep.id) e.currentTarget.style.borderColor='rgba(192,57,43,0.2)'; }}
+              <div key={ep.id} className="at-card" style={{ padding:'14px 16px', cursor:'pointer', transition:'border-color 0.15s', borderColor: selected?.id === ep.id ? 'rgba(59,130,246,0.4)' : 'rgba(255,255,255,0.07)' }}
+                onMouseEnter={e => { if(selected?.id!==ep.id) e.currentTarget.style.borderColor='rgba(59,130,246,0.2)'; }}
                 onMouseLeave={e => { if(selected?.id!==ep.id) e.currentTarget.style.borderColor='rgba(255,255,255,0.07)'; }}
                 onClick={() => loadBatches(ep)}>
                 <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>

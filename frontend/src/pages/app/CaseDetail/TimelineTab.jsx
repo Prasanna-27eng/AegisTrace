@@ -6,7 +6,7 @@ import useStore from '../../../store/useStore';
 const EVENT_TYPES = ['detection','action','escalation','closure','intel','remediation'];
 
 const TYPE_CONFIG = {
-  detection:   { color: '#C0392B', bg: 'rgba(192,57,43,0.12)',   Icon: AlertCircle,  label: 'Detection'   },
+  detection:   { color: '#3B82F6', bg: 'rgba(59,130,246,0.12)',   Icon: AlertCircle,  label: 'Detection'   },
   action:      { color: '#A78BFA', bg: 'rgba(167,139,250,0.12)', Icon: Wrench,        label: 'Action'      },
   escalation:  { color: '#EF4444', bg: 'rgba(239,68,68,0.12)',   Icon: TrendingUp,    label: 'Escalation'  },
   closure:     { color: '#22C55E', bg: 'rgba(34,197,94,0.12)',   Icon: CheckCircle,   label: 'Closure'     },
@@ -62,7 +62,7 @@ export default function TimelineTab({ caseId }) {
       </div>
 
       {showAdd && (
-        <div className="at-card" style={{ padding: 14, marginBottom: 24, borderColor: 'rgba(192,57,43,0.25)' }}>
+        <div className="at-card" style={{ padding: 14, marginBottom: 24, borderColor: 'rgba(59,130,246,0.25)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
             <div className="section-label" style={{ margin: 0 }}>New Timeline Event</div>
             <button onClick={() => setShowAdd(false)} style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer' }}><X size={14} /></button>
@@ -108,7 +108,7 @@ export default function TimelineTab({ caseId }) {
       ) : (
         <div style={{ position: 'relative', paddingLeft: 36 }}>
           {/* Spine */}
-          <div style={{ position: 'absolute', left: 11, top: 16, bottom: 20, width: 2, background: 'linear-gradient(180deg, rgba(192,57,43,0.5) 0%, rgba(192,57,43,0.05) 100%)', borderRadius: 1 }} />
+          <div style={{ position: 'absolute', left: 11, top: 16, bottom: 20, width: 2, background: 'linear-gradient(180deg, rgba(59,130,246,0.5) 0%, rgba(59,130,246,0.05) 100%)', borderRadius: 1 }} />
 
           {events.map((ev, i) => {
             const cfg = TYPE_CONFIG[ev.event_type] || TYPE_CONFIG.action;

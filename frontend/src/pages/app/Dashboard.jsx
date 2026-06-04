@@ -9,8 +9,8 @@ import { SeverityBadge, StatusBadge } from '../../components/SeverityBadge';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 
-const SEV_COLOR  = { critical:'#C0392B', high:'#EF4444', medium:'#EAB308', low:'#A78BFA', info:'#71717A' };
-const STAT_COLOR = { critical:'#C0392B', high:'#EF4444', medium:'#EAB308', low:'#A78BFA', info:'#71717A' };
+const SEV_COLOR  = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'#A78BFA', info:'#71717A' };
+const STAT_COLOR = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'#A78BFA', info:'#71717A' };
 
 function timeAgo(dateStr) {
   if (!dateStr) return '';
@@ -44,11 +44,11 @@ function AttentionRow({ c, navigate }) {
   return (
     <div
       onClick={() => navigate(`/app/cases/${c.id}`)}
-      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 6, cursor: 'pointer', background: '#0F1018', transition: 'background 0.15s', position: 'relative', overflow: 'hidden' }}
+      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 6, cursor: 'pointer', background: '#1F2937', transition: 'background 0.15s', position: 'relative', overflow: 'hidden' }}
       onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
-      onMouseLeave={e => e.currentTarget.style.background = '#0F1018'}
+      onMouseLeave={e => e.currentTarget.style.background = '#1F2937'}
     >
-      {c.severity === 'critical' && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, background: '#C0392B' }} />}
+      {c.severity === 'critical' && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, background: '#3B82F6' }} />}
       <div style={{ flex: 1, minWidth: 0, paddingLeft: c.severity === 'critical' ? 6 : 0 }}>
         <div style={{ fontSize: '0.83rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
         <div style={{ fontSize: '0.67rem', color: '#71717A', fontFamily: 'JetBrains Mono', marginTop: 1 }}>
@@ -69,7 +69,7 @@ function StatTile({ icon: Icon, label, value, sub, subColor, color, onClick }) {
       className="at-card"
       onClick={onClick}
       style={{ padding: '14px 16px', cursor: onClick ? 'pointer' : 'default', transition: 'border-color 0.15s' }}
-      onMouseEnter={e => onClick && (e.currentTarget.style.borderColor = 'rgba(192,57,43,0.3)')}
+      onMouseEnter={e => onClick && (e.currentTarget.style.borderColor = 'rgba(59,130,246,0.3)')}
       onMouseLeave={e => onClick && (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)')}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -166,10 +166,10 @@ export default function Dashboard() {
 
       {/* ── ATTENTION ZONE ── */}
       {attention.length > 0 && (
-        <div style={{ marginBottom: 20, padding: '14px 16px', background: 'rgba(192,57,43,0.04)', border: '1px solid rgba(192,57,43,0.15)', borderRadius: 8 }}>
+        <div style={{ marginBottom: 20, padding: '14px 16px', background: 'rgba(59,130,246,0.04)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
-            <Zap size={13} style={{ color: '#C0392B' }} />
-            <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#C0392B', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'JetBrains Mono' }}>
+            <Zap size={13} style={{ color: '#3B82F6' }} />
+            <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#3B82F6', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'JetBrains Mono' }}>
               Needs attention now
             </span>
             <span style={{ marginLeft: 'auto', fontSize: '0.68rem', color: '#71717A', cursor: 'pointer' }} onClick={() => navigate('/app/cases')}>
@@ -184,7 +184,7 @@ export default function Dashboard() {
 
       {/* ── PRIMARY STATS ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, marginBottom: 20 }}>
-        <StatTile icon={AlertTriangle} label="Critical Open"   value={critical.length}     color="#C0392B"  sub={critical.length ? 'Act now' : 'None active'} subColor={critical.length ? '#EF4444' : '#22C55E'} onClick={() => navigate('/app/cases?severity=critical&status=open')} />
+        <StatTile icon={AlertTriangle} label="Critical Open"   value={critical.length}     color="#3B82F6"  sub={critical.length ? 'Act now' : 'None active'} subColor={critical.length ? '#EF4444' : '#22C55E'} onClick={() => navigate('/app/cases?severity=critical&status=open')} />
         <StatTile icon={Clock}        label="Pending Closure"  value={pending.length}      color="#EAB308"  sub={pending.length ? 'Awaiting review' : 'Queue clear'} subColor={pending.length ? '#EAB308' : '#22C55E'} onClick={() => navigate('/app/cases?status=pending_closure')} />
         <StatTile icon={Activity}     label="In Progress"      value={inProgress.length}   color="#A78BFA"  sub={`${openCases.length} open`} subColor="#71717A" onClick={() => navigate('/app/cases?status=in_progress')} />
         <StatTile icon={TrendingUp}   label="SLA Breach"       value={slaBreach.length}    color={slaBreach.length ? '#EF4444' : '#22C55E'} sub={slaBreach.length ? 'Overdue' : 'All within SLA'} subColor={slaBreach.length ? '#EF4444' : '#22C55E'} />
@@ -201,14 +201,14 @@ export default function Dashboard() {
         <div className="at-card" style={{ padding: '14px 16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <div className="section-label" style={{ margin: 0 }}>Case Queue</div>
-            <button onClick={() => navigate('/app/cases')} style={{ fontSize: '0.7rem', color: '#C0392B', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <button onClick={() => navigate('/app/cases')} style={{ fontSize: '0.7rem', color: '#3B82F6', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
               All cases <ExternalLink size={10} />
             </button>
           </div>
 
           {recentCases.length === 0 ? (
             <div style={{ padding: '32px 0', textAlign: 'center' }}>
-              <FolderOpen size={28} style={{ color: 'rgba(192,57,43,0.2)', margin: '0 auto 10px' }} />
+              <FolderOpen size={28} style={{ color: 'rgba(59,130,246,0.2)', margin: '0 auto 10px' }} />
               <div style={{ fontSize: '0.84rem', fontWeight: 500, marginBottom: 6 }}>No cases yet</div>
               <div style={{ fontSize: '0.76rem', color: '#71717A', marginBottom: 14 }}>Start your first investigation to build your SOC queue.</div>
               <button className="btn-accent" onClick={() => navigate('/app/cases')} style={{ fontSize: '0.78rem' }}>
@@ -221,11 +221,11 @@ export default function Dashboard() {
                 <div
                   key={c.id}
                   onClick={() => navigate(`/app/cases/${c.id}`)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', background: '#0F1018', borderRadius: 6, cursor: 'pointer', transition: 'background 0.15s', position: 'relative', overflow: 'hidden' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', background: '#1F2937', borderRadius: 6, cursor: 'pointer', transition: 'background 0.15s', position: 'relative', overflow: 'hidden' }}
                   onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
-                  onMouseLeave={e => e.currentTarget.style.background = '#0F1018'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#1F2937'}
                 >
-                  {c.severity === 'critical' && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, background: '#C0392B' }} />}
+                  {c.severity === 'critical' && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, background: '#3B82F6' }} />}
                   <div style={{ flex: 1, minWidth: 0, paddingLeft: c.severity === 'critical' ? 6 : 0 }}>
                     <div style={{ fontSize: '0.82rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
                     <div style={{ fontSize: '0.67rem', color: '#71717A', fontFamily: 'JetBrains Mono', marginTop: 1, display: 'flex', gap: 8 }}>
@@ -361,12 +361,12 @@ export default function Dashboard() {
             <div className="section-label">Quick Actions</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
               {[
-                { label: 'New Case',       path: '/app/cases',         color: '#C0392B' },
+                { label: 'New Case',       path: '/app/cases',         color: '#3B82F6' },
                 { label: 'VT Lookup',      path: '/app/vt-lookup',     color: '#A78BFA' },
                 { label: 'Email Analysis', path: '/app/email',          color: '#22C55E' },
                 { label: 'Terminal Lab',   path: '/app/terminal-lab',   color: '#22C55E' },
                 { label: 'Identity Graph', path: '/app/identity-graph', color: '#A78BFA' },
-                { label: 'Threat Hunt',    path: '/app/hunt',           color: '#C0392B' },
+                { label: 'Threat Hunt',    path: '/app/hunt',           color: '#3B82F6' },
                 { label: 'Log Invest.',    path: '/app/logs',           color: '#EAB308' },
                 { label: 'Tools Hub',      path: '/app/tools',          color: '#71717A' },
               ].map(({ label, path, color }) => (

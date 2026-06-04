@@ -61,13 +61,13 @@ export default function ToolResult() {
   }, [runId]);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#07080F', color: '#F0F0F8' }}>
+    <div style={{ minHeight: '100vh', background: '#111827', color: '#F0F0F8' }}>
       {/* Header */}
-      <header style={{ background: '#0F1018', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '14px 32px', display: 'flex', alignItems: 'center', gap: 20, position: 'sticky', top: 0, zIndex: 10 }}>
+      <header style={{ background: '#1F2937', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '14px 32px', display: 'flex', alignItems: 'center', gap: 20, position: 'sticky', top: 0, zIndex: 10 }}>
         <Logo size={20} showText />
         <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.1)' }} />
         <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', fontFamily: 'JetBrains Mono' }}>Hardware Tools</span>
-        <span style={{ color: '#C0392B' }}>/</span>
+        <span style={{ color: '#3B82F6' }}>/</span>
         <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{run?.tool_name?.replace(/_/g,' ')}</span>
         {run && <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.68rem', color: 'rgba(255,255,255,0.35)', marginLeft: 4 }}>Run #{runId}</span>}
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -95,7 +95,7 @@ export default function ToolResult() {
           <>
             <div style={{ marginBottom: 24 }}>
               <h1 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: 4 }}>{run.tool_name?.replace(/_/g, ' ')}</h1>
-              {run.case_id && <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.72rem', background: 'rgba(192,57,43,0.1)', border: '1px solid rgba(192,57,43,0.25)', color: '#C0392B', padding: '2px 8px', borderRadius: 3 }}>Linked to Case #{run.case_id}</span>}
+              {run.case_id && <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.72rem', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)', color: '#3B82F6', padding: '2px 8px', borderRadius: 3 }}>Linked to Case #{run.case_id}</span>}
             </div>
             <ResultRenderer toolKey={run.tool_name} result={run.result} />
           </>

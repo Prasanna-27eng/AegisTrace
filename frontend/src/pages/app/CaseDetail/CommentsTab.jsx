@@ -81,7 +81,7 @@ export default function CommentsTab({ caseId }) {
       {/* Composer */}
       <div className="at-card" style={{ padding: 16, marginBottom: 20 }}>
         <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-          <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#C0392B', fontSize: '0.8rem', flexShrink: 0 }}>
+          <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#3B82F6', fontSize: '0.8rem', flexShrink: 0 }}>
             {user?.name?.[0] || 'A'}
           </div>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -108,7 +108,7 @@ export default function CommentsTab({ caseId }) {
               placeholder="Add a note, handoff, escalation, or decision record…"
               rows={3}
               onKeyDown={e => { if (e.key === 'Enter' && e.ctrlKey) addComment(); }}
-              style={{ background: '#0B0D14', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#F0F0F8', fontSize: '0.82rem', padding: '10px 12px', resize: 'vertical', outline: 'none', lineHeight: 1.6 }}
+              style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#F0F0F8', fontSize: '0.82rem', padding: '10px 12px', resize: 'vertical', outline: 'none', lineHeight: 1.6 }}
             />
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <button className="btn-accent" onClick={addComment} disabled={saving} style={{ fontSize: '0.78rem' }}>
@@ -167,7 +167,7 @@ function CommentCard({ c, editing, setEditing, saveEdit, togglePin, deleteCommen
             value={editing.body}
             onChange={e => setEditing(p => ({ ...p, body: e.target.value }))}
             rows={3}
-            style={{ background: '#0B0D14', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: '#F0F0F8', fontSize: '0.8rem', padding: '8px 10px', resize: 'vertical', outline: 'none' }}
+            style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: '#F0F0F8', fontSize: '0.8rem', padding: '8px 10px', resize: 'vertical', outline: 'none' }}
           />
           <div style={{ display: 'flex', gap: 7 }}>
             <button className="btn-accent" onClick={saveEdit} style={{ fontSize: '0.72rem' }}><Check size={11} /> Save</button>
