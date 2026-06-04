@@ -5,7 +5,7 @@ import {
   Wrench, FolderSearch, ChevronRight, Loader2, Monitor, Activity, Globe,
   Terminal, Bell, Wifi, Radio, HardDrive, Network, Rss, Cpu, Check, X,
   Zap, Lock, Eye, BarChart3, BookOpen, Users, AlertTriangle, Layers,
-  Key, Fingerprint, GitBranch, Database, Search, TrendingUp, Clock,
+  Key, Fingerprint, GitBranch, Database, Search, TrendingUp,
   ShieldCheck, ShieldAlert, UserX, Bot, Crosshair, FileSearch, Boxes
 } from 'lucide-react';
 import Logo from '../components/Logo';
