@@ -4,20 +4,20 @@
 /* Direction: premium control room, cinematic intelligence, alive + serious   */
 /* Reference: enterprise security platform, not generic SaaS, not cyberpunk  */
 :root {
-  /* ── Backgrounds — Layered deep navy ────────────────────────────────────── */
-  --bg:             #070B14;   /* Base — deepest space                        */
-  --surface:        #0D111C;   /* Surface level                               */
-  --card:           #121826;   /* Card background                             */
-  --card-hover:     #182033;   /* Card hover state                            */
-  --elevated:       #1B2436;   /* Elevated surfaces — modals, drawers         */
-  --surface-2:      #202B40;   /* Higher elevation                            */
-  --inset:          #060910;   /* Code blocks, deeply inset areas             */
+  /* ── Backgrounds — True deep dark, not grey ─────────────────────────────── */
+  --bg:             #040812;   /* Deepest — near black with blue tint         */
+  --surface:        #080D1A;   /* Surface — still very dark                   */
+  --card:           #0C1220;   /* Card — readable contrast                    */
+  --card-hover:     #101829;   /* Card hover                                  */
+  --elevated:       #141F30;   /* Modals, drawers                             */
+  --surface-2:      #1A2740;   /* Higher elevation                            */
+  --inset:          #030609;   /* Insets, code blocks                         */
 
-  /* ── Primary — Steel blue (main CTA, primary actions) ───────────────────── */
-  --accent:         #4DA3FF;   /* Steel blue — enterprise, confident, clear   */
-  --accent-hover:   #3A8FE8;   /* Slightly deeper on interaction              */
-  --accent-light:   #7BC4FF;   /* For labels, chips, accents on dark          */
-  --accent-soft:    rgba(77, 163, 255, 0.12);
+  /* ── Primary — Classic enterprise blue (refined, not electric) ──────────── */
+  --accent:         #4A8EDB;   /* Classic steel blue — timeless, trustworthy  */
+  --accent-hover:   #3A7AC8;   /* Deeper on hover                             */
+  --accent-light:   #6BABEC;   /* Lighter for labels on dark                  */
+  --accent-soft:    rgba(74, 142, 219, 0.12);
   --accent-border:  rgba(77, 163, 255, 0.22);
   --accent-glow:    0 0 28px rgba(77, 163, 255, 0.2);
 

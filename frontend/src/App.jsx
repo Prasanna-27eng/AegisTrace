@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Toasts from './components/Toast';
 
 import Landing          from './pages/Landing';
+import Mission          from './pages/Mission';
 import Portfolio        from './pages/Portfolio';
 import PublicGallery    from './pages/PublicGallery';
 import PublicCaseDetail from './pages/PublicCaseDetail';
@@ -37,6 +38,7 @@ export default function App() {
       <Routes>
         {/* Public */}
         <Route path="/"              element={<Landing />} />
+        <Route path="/mission"       element={<Mission />} />
         <Route path="/portfolio"     element={<Portfolio />} />
         <Route path="/public"        element={<PublicGallery />} />
         <Route path="/public/:token" element={<PublicCaseDetail />} />

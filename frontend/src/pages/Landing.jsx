@@ -21,13 +21,13 @@ function ParticleNetwork() {
     const cv = ref.current; if (!cv) return;
     const ctx = cv.getContext('2d');
     let aid;
-    const N = 90;
+    const N = 110;
     const pts = Array.from({ length: N }, () => ({
       x: Math.random(), y: Math.random(),
-      vx: (Math.random() - 0.5) * 0.00025,
-      vy: (Math.random() - 0.5) * 0.00025,
-      r: Math.random() * 1.4 + 0.4,
-      a: Math.random() * 0.55 + 0.2,
+      vx: (Math.random() - 0.5) * 0.00022,
+      vy: (Math.random() - 0.5) * 0.00022,
+      r: Math.random() * 1.8 + 0.6,
+      a: Math.random() * 0.5 + 0.45,
     }));
     function resize() {
       const dpr = Math.min(window.devicePixelRatio||1,2);
@@ -46,7 +46,7 @@ function ParticleNetwork() {
       my += (mRef.current.y - my) * 0.04;
       const ox = (mx - 0.5) * 28, oy = (my - 0.5) * 18;
       ctx.clearRect(0,0,W,H);
-      ctx.fillStyle = '#070B14'; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle = '#040812'; ctx.fillRect(0,0,W,H);
 
       pts.forEach(p => {
         p.x += p.vx; p.y += p.vy;
@@ -54,7 +54,7 @@ function ParticleNetwork() {
         if (p.y < 0) p.y = 1; if (p.y > 1) p.y = 0;
       });
 
-      const THRESH = Math.min(W, H) * 0.16;
+      const THRESH = Math.min(W, H) * 0.20;
       for (let i = 0; i < pts.length; i++) {
         for (let j = i+1; j < pts.length; j++) {
           const a = pts[i], b = pts[j];
@@ -62,9 +62,9 @@ function ParticleNetwork() {
           const bx = b.x*W+ox, by = b.y*H+oy;
           const d  = Math.sqrt((ax-bx)**2+(ay-by)**2);
           if (d < THRESH) {
-            const alpha = (1 - d/THRESH) * 0.18;
+            const alpha = (1 - d/THRESH) * 0.38;
             ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by);
-            ctx.strokeStyle = `rgba(77,163,255,${alpha})`; ctx.lineWidth=0.6; ctx.stroke();
+            ctx.strokeStyle = `rgba(74,142,219,${alpha})`; ctx.lineWidth=0.8; ctx.stroke();
           }
         }
       }
@@ -72,7 +72,7 @@ function ParticleNetwork() {
       pts.forEach(p => {
         const px = p.x*W+ox, py = p.y*H+oy;
         ctx.beginPath(); ctx.arc(px, py, p.r, 0, Math.PI*2);
-        ctx.fillStyle = `rgba(77,163,255,${p.a * 0.85})`; ctx.fill();
+        ctx.fillStyle = `rgba(74,142,219,${p.a})`; ctx.fill();
       });
 
       // Subtle centre glow
@@ -338,6 +338,7 @@ export default function Landing() {
             {[['#problem','The Problem'],['#vision','Future Vision'],['#features','Features'],['#hardware','Hardware'],['#demo','Live Demo'],['#roadmap','Roadmap'],['#certs','About']].map(([href,label])=>(
               <a key={href} href={href} className="nav-link" onClick={e=>{e.preventDefault();document.querySelector(href)?.scrollIntoView({behavior:'smooth'});}}>{label}</a>
             ))}
+            <a href="/mission" className="nav-link" style={{color:'#4A8EDB'}}>Mission</a>
             <a href="/portfolio" className="nav-link">Portfolio</a>
             <a href="/agent-setup" className="nav-link">Agent Setup</a>
           </nav>
