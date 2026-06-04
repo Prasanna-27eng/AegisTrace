@@ -25,6 +25,8 @@ import LogInvestigation from './pages/app/LogInvestigation';
 import EDRPage          from './pages/app/EDRPage';
 import PcapAnalysis     from './pages/app/PcapAnalysis';
 import ThreatFeeds      from './pages/app/ThreatFeeds';
+import HardwareTools    from './pages/app/HardwareTools';
+import ToolResult       from './pages/app/ToolResult';
 
 export default function App() {
   return (
@@ -57,9 +59,11 @@ export default function App() {
           <Route path="admin"       element={<Admin />} />
           <Route path="edr/:caseId" element={<EDRPage />} />
           <Route path="pcap"        element={<PcapAnalysis />} />
-          <Route path="feeds"       element={<ThreatFeeds />} />
+          <Route path="feeds"             element={<ThreatFeeds />} />
+          <Route path="hardware/tools"    element={<HardwareTools />} />
         </Route>
 
+        <Route path="/app/hardware/tools/:runId" element={<ToolResult />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 import uuid
 from sqlmodel import SQLModel, Field, Column, Text
@@ -288,4 +288,46 @@ class WebhookConfig(SQLModel, table=True):
     is_active: bool = Field(default=True)
     last_fired_at: Optional[datetime] = Field(default=None)
     last_status_code: Optional[int] = Field(default=None)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# ── Hardware Security Platform — Session 6 ────────────────────────────────────
+
+class HardwareDevice(SQLModel, table=True):
+    """A physical hardware security/attack tool or sensor registered in the platform."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(default="")
+    device_type: str = Field(default="", index=True)   # wifi_pineapple, hackrf, flipper_zero…
+    category: str = Field(default="")                  # wifi_attack, rf_radio, usb_hid…
+    log_format: str = Field(default="", sa_column=Column(Text))
+    connection_status: str = Field(default="offline")  # online | offline
+    last_seen: Optional[datetime] = Field(default=None)
+    total_events: int = Field(default=0)
+    notes: Optional[str] = Field(default=None, sa_column=Column(Text))
+    is_builtin: bool = Field(default=False)            # built-in profiles can't be deleted
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class HardwareAlert(SQLModel, table=True):
+    """A normalised security alert produced from a hardware device log."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    device_id: Optional[int] = Field(default=None, foreign_key="hardwaredevice.id", index=True)
+    device_name: str = Field(default="")
+    device_type: str = Field(default="")
+    category: str = Field(default="")
+    event_type: str = Field(default="")
+    severity: str = Field(default="info")              # critical|high|medium|low|info
+    mitre_technique: str = Field(default="")
+    mitre_tactic: str = Field(default="")
+    mitre_description: str = Field(default="")
+    hostname: str = Field(default="")
+    src_ip: str = Field(default="")
+    dst_ip: str = Field(default="")
+    iocs: str = Field(default="[]", sa_column=Column(Text))         # JSON array
+    ai_summary: str = Field(default="", sa_column=Column(Text))
+    ai_response: str = Field(default="[]", sa_column=Column(Text))  # JSON array of findings
+    raw: str = Field(default="", sa_column=Column(Text))
+    status: str = Field(default="open")                # open|investigating|closed
+    investigated: bool = Field(default=False)
+    case_id: Optional[int] = Field(default=None, foreign_key="case.id")
     created_at: datetime = Field(default_factory=datetime.utcnow)

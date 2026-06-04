@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, Shield, Bug, Mail,
   Wrench, Globe, Settings, LogOut, ChevronLeft, ChevronRight,
-  Crosshair, ScrollText, Monitor, FileSearch, Network, Rss
+  Crosshair, ScrollText, Monitor, FileSearch, Network, Rss, Cpu
 } from 'lucide-react';
 import Logo from './Logo';
 import useStore from '../store/useStore';
@@ -28,6 +28,12 @@ const NAV_GROUPS = [
       { to: '/app/pcap',       label: 'PCAP Analysis',     Icon: Network },
       { to: '/app/malware',    label: 'Malware Tools',     Icon: Bug },
       { to: '/app/tools',      label: 'Tools Hub',         Icon: Wrench },
+    ],
+  },
+  {
+    label: 'Hardware',
+    items: [
+      { to: '/app/hardware/tools', label: 'Hardware Tools', Icon: Cpu },
     ],
   },
   {

@@ -29,6 +29,7 @@ from routers.edr import router as edr_router
 from routers.pcap import router as pcap_router
 from routers.feeds import router as feeds_router
 from routers.schedule_reports import router as schedule_reports_router, start_scheduler
+from hardware_tools import router as hardware_router
 from ai_router import call_ai_json
 
 app = FastAPI(
@@ -75,7 +76,7 @@ for r in [auth_router, cases_router, vt_router, email_router, ioc_router,
           malware_router, terminal_router, reports_router, public_router,
           portfolio_router, webhooks_router, hunt_router, audit_router,
           ingest_router, enrichment_router, edr_router, pcap_router,
-          feeds_router, schedule_reports_router]:
+          feeds_router, schedule_reports_router, hardware_router]:
     app.include_router(r)
 
 
@@ -154,6 +155,15 @@ async def startup():
     seed_demo_data(engine)   # idempotent — skips if demo cases already exist
     ensure_admin(engine)     # sync admin password from ADMIN_PIN env var
     start_scheduler()        # launch background report-delivery scheduler
+    # ── Hardware platform startup ─────────────────────────────────────────────
+    try:
+        from sqlmodel import Session
+        from models import HardwareDevice
+        from hardware_tools import seed_builtin_devices
+        with Session(engine) as _s:
+            seed_builtin_devices(_s)
+    except Exception as _e:
+        print(f"[hardware] Seed skipped: {_e}")
     print("[AegisTrace v2.0] Server ready.")
     print(f"[AegisTrace] Allowed origins: {ALLOWED_ORIGINS}")
     # ── Security warnings for weak defaults ──────────────────────────────────

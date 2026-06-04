@@ -398,8 +398,55 @@ def get_batch(
 @router.get("/key")
 def get_ingest_key(_user: User = Depends(get_current_user)):
     """Returns the ingest API key for configuring agents."""
-    from routers.auth import require_admin
     return {"ingest_key": _get_ingest_key(), "note": "Use as X-AegisTrace-Key header in agent config"}
+
+
+# ── Heartbeat — v2.0 agent keepalive ─────────────────────────────────────────
+@router.post("/heartbeat")
+async def agent_heartbeat(
+    data: dict,
+    session: Session = Depends(get_session),
+    _key: None = Depends(_verify_key),
+):
+    """
+    Lightweight ping from endpoint agent. Updates last_seen even when
+    no new logs exist. Agent v2.0 calls this every 60 seconds.
+    Also accepts system metrics (cpu/mem/disk) for display in Endpoints page.
+    """
+    hostname = (data.get("hostname") or "unknown").strip()
+    ip_addr  = data.get("ip_address", "")
+    os_type  = data.get("os_type", "unknown")
+    version  = data.get("agent_version", "")
+    tags     = data.get("tags", [])
+    # metrics stored in tags field as JSON for now (no schema change needed)
+
+    endpoint = session.exec(
+        select(Endpoint).where(Endpoint.hostname == hostname)
+    ).first()
+
+    if endpoint:
+        endpoint.last_seen  = datetime.utcnow()
+        endpoint.is_active  = True
+        if ip_addr:              endpoint.ip_address   = ip_addr
+        if os_type != "unknown": endpoint.os_type      = os_type
+        if version:              endpoint.agent_version = version
+        if tags:                 endpoint.tags         = json.dumps(tags)
+        session.add(endpoint)
+        session.commit()
+        return {"ok": True, "known": True, "hostname": hostname,
+                "endpoint_id": endpoint.id}
+    else:
+        # First-ever heartbeat — register the endpoint automatically
+        endpoint = Endpoint(
+            hostname=hostname, os_type=os_type, ip_address=ip_addr,
+            total_batches=0, agent_version=version or "2.0",
+            tags=json.dumps(tags), is_active=True,
+        )
+        session.add(endpoint)
+        session.commit()
+        session.refresh(endpoint)
+        return {"ok": True, "known": False, "hostname": hostname,
+                "endpoint_id": endpoint.id}
 
 
 # ── Manual log analysis (paste in UI) ────────────────────────────────────────
