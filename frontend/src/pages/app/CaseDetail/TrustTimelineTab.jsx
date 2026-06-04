@@ -14,7 +14,7 @@ const CATEGORY_META = {
   approval:        { label: 'Approved',          color: '#22C55E',  Icon: Check },
   rejection:       { label: 'Rejected',          color: '#EF4444',  Icon: X },
   policy_override: { label: 'Policy Override',   color: '#F97316',  Icon: AlertTriangle },
-  response_action: { label: 'Response Action',   color: '#3B82F6',  Icon: Zap },
+  response_action: { label: 'Response Action',   color: '#6366F1',  Icon: Zap },
   action:          { label: 'Action',            color: '#71717A',  Icon: Activity },
 };
 

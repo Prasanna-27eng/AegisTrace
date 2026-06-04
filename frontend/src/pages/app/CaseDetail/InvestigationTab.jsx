@@ -73,7 +73,7 @@ export default function InvestigationTab({ caseData, updateCase, caseId }) {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {evidence.map(ev => (
-                  <div key={ev.id} style={{ background: '#1F2937', borderRadius: 6, padding: '10px 12px', border: `1px solid ${ev.analyst_confirmed ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.05)'}` }}>
+                  <div key={ev.id} style={{ background: '#0D1117', borderRadius: 6, padding: '10px 12px', border: `1px solid ${ev.analyst_confirmed ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.05)'}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
                       <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#F0F0F8' }}>{ev.artifact_type}</span>
                       <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
@@ -106,7 +106,7 @@ export default function InvestigationTab({ caseData, updateCase, caseId }) {
 
           {/* Add evidence modal */}
           {showAddEv && (
-            <div className="at-card" style={{ padding: 16, borderColor: 'rgba(59,130,246,0.25)' }}>
+            <div className="at-card" style={{ padding: 16, borderColor: 'rgba(99,102,241,0.25)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
                 <div className="section-label" style={{ margin: 0 }}>Add Evidence</div>
                 <button onClick={() => setShowAddEv(false)} style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer' }}><X size={14} /></button>

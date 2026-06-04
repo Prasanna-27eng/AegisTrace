@@ -30,7 +30,7 @@ export default function EDRPage() {
 
       {/* Header */}
       <div style={{
-        background: '#1F2937', borderBottom: '1px solid rgba(255,255,255,0.07)',
+        background: '#0D1117', borderBottom: '1px solid rgba(255,255,255,0.07)',
         padding: '12px 24px', display: 'flex', alignItems: 'center', gap: 12,
       }}>
         <button

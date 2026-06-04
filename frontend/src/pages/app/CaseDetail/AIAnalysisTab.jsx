@@ -195,7 +195,7 @@ export default function AIAnalysisTab({ caseData, updateCase, caseId, reload }) 
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {mitre.map((m, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px', background: '#1F2937', borderRadius: 6 }}>
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px', background: '#0D1117', borderRadius: 6 }}>
                     <span style={{ fontSize: '0.75rem', color: '#A78BFA', fontFamily: 'JetBrains Mono', minWidth: 80 }}>{m.id}</span>
                     <span style={{ fontSize: '0.82rem', fontWeight: 500, flex: 1 }}>{m.name}</span>
                     <span style={{ fontSize: '0.7rem', color: '#71717A' }}>{m.tactic}</span>

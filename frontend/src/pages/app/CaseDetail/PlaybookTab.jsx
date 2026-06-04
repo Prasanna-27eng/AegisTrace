@@ -94,7 +94,7 @@ export default function PlaybookTab({ caseData, updateCase }) {
         </div>
         {/* Progress bar */}
         <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${progress}%`, background: progress === 100 ? '#22C55E' : '#3B82F6', borderRadius: 2, transition: 'width 0.3s ease' }} />
+          <div style={{ height: '100%', width: `${progress}%`, background: progress === 100 ? '#22C55E' : '#6366F1', borderRadius: 2, transition: 'width 0.3s ease' }} />
         </div>
       </div>
 
@@ -107,7 +107,7 @@ export default function PlaybookTab({ caseData, updateCase }) {
               </div>
               <div>
                 <span style={{ fontSize: '0.84rem', color: checked[task.id] ? '#71717A' : '#F0F0F8', textDecoration: checked[task.id] ? 'line-through' : 'none', transition: 'all 0.2s' }}>{task.task}</span>
-                {task.milestone && <div style={{ fontSize: '0.65rem', color: '#3B82F6', fontFamily: 'JetBrains Mono', marginTop: 2 }}>MILESTONE</div>}
+                {task.milestone && <div style={{ fontSize: '0.65rem', color: '#6366F1', fontFamily: 'JetBrains Mono', marginTop: 2 }}>MILESTONE</div>}
               </div>
             </div>
           ))}

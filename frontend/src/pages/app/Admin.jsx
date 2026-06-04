@@ -17,11 +17,11 @@ const TABS = [
   { id: 'system',       label: 'System',           Icon: Activity },
 ];
 
-const ROLE_COLOR = { admin: '#3B82F6', analyst: '#A78BFA', viewer: '#71717A' };
+const ROLE_COLOR = { admin: '#6366F1', analyst: '#A78BFA', viewer: '#71717A' };
 const ACTION_COLOR = {
   login: '#22C55E', case_created: '#A78BFA', case_closed: '#22C55E',
   case_deleted: '#EF4444', user_created: '#A78BFA', user_deleted: '#EF4444',
-  ai_generated: '#EAB308', alert_imported: '#3B82F6', share_toggled: '#71717A',
+  ai_generated: '#EAB308', alert_imported: '#6366F1', share_toggled: '#71717A',
   password_changed: '#EAB308', status_changed: '#F0F0F8',
 };
 
@@ -84,7 +84,7 @@ function UsersTab({ user, addToast }) {
       <div className="at-card" style={{ padding:16 }}>
         <div className="section-label">Your Account</div>
         <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:12 }}>
-          <div style={{ width:40, height:40, borderRadius:'50%', background:'rgba(59,130,246,0.15)', border:'1px solid rgba(59,130,246,0.3)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:600, color:'#3B82F6' }}>{user?.name?.[0]}</div>
+          <div style={{ width:40, height:40, borderRadius:'50%', background:'rgba(99,102,241,0.15)', border:'1px solid rgba(99,102,241,0.3)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:600, color:'#6366F1' }}>{user?.name?.[0]}</div>
           <div>
             <div style={{ fontWeight:600, fontSize:'0.88rem' }}>{user?.name}</div>
             <div style={{ fontSize:'0.72rem', color:'#71717A' }}>{user?.email}</div>
@@ -174,7 +174,7 @@ function UsersTab({ user, addToast }) {
                     </div>
                   </div>
                 ) : (
-                  <div style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 14px', background:'#1F2937', borderRadius:6, border:'1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 14px', background:'#0D1117', borderRadius:6, border:'1px solid rgba(255,255,255,0.05)' }}>
                     <div style={{ width:32, height:32, borderRadius:'50%', background:`${ROLE_COLOR[u.role]}18`, border:`1px solid ${ROLE_COLOR[u.role]}40`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.72rem', fontWeight:600, color:ROLE_COLOR[u.role], flexShrink:0 }}>{u.name?.[0]}</div>
                     <div style={{ flex:1 }}>
                       <div style={{ fontWeight:500, fontSize:'0.84rem' }}>{u.name}</div>
@@ -252,7 +252,7 @@ function WebhooksTab({ addToast }) {
 
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
-      <div className="at-card" style={{ padding:16, borderColor:'rgba(59,130,246,0.15)' }}>
+      <div className="at-card" style={{ padding:16, borderColor:'rgba(99,102,241,0.15)' }}>
         <div style={{ fontSize:'0.78rem', color:'#71717A', lineHeight:1.65, marginBottom:8 }}>
           Webhooks fire HTTP POST requests to your URL when SOC events occur. Supports Slack, Microsoft Teams, and any generic JSON endpoint. HMAC-SHA256 signed if secret is configured.
         </div>
@@ -260,7 +260,7 @@ function WebhooksTab({ addToast }) {
       </div>
 
       {showAdd && (
-        <div className="at-card" style={{ padding:16, borderColor:'rgba(59,130,246,0.2)' }}>
+        <div className="at-card" style={{ padding:16, borderColor:'rgba(99,102,241,0.2)' }}>
           <div style={{ display:'flex', justifyContent:'space-between', marginBottom:12 }}>
             <div className="section-label" style={{ margin:0 }}>New Webhook</div>
             <button onClick={() => setShowAdd(false)} style={{ background:'none', border:'none', color:'#71717A', cursor:'pointer' }}><X size={14}/></button>
@@ -274,7 +274,7 @@ function WebhooksTab({ addToast }) {
             <label className="at-label">Events to trigger</label>
             <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
               {EVENTS.map(ev => (
-                <button key={ev} onClick={() => toggleEvent(ev)} style={{ fontSize:'0.7rem', padding:'4px 10px', borderRadius:4, fontFamily:'JetBrains Mono', border:`1px solid ${form.events.includes(ev) ? 'rgba(59,130,246,0.5)' : 'rgba(255,255,255,0.1)'}`, background: form.events.includes(ev) ? 'rgba(59,130,246,0.12)' : 'transparent', color: form.events.includes(ev) ? '#3B82F6' : '#71717A', cursor:'pointer' }}>
+                <button key={ev} onClick={() => toggleEvent(ev)} style={{ fontSize:'0.7rem', padding:'4px 10px', borderRadius:4, fontFamily:'JetBrains Mono', border:`1px solid ${form.events.includes(ev) ? 'rgba(99,102,241,0.5)' : 'rgba(255,255,255,0.1)'}`, background: form.events.includes(ev) ? 'rgba(99,102,241,0.12)' : 'transparent', color: form.events.includes(ev) ? '#6366F1' : '#71717A', cursor:'pointer' }}>
                   {ev}
                 </button>
               ))}
@@ -310,7 +310,7 @@ function WebhooksTab({ addToast }) {
                 </div>
                 <div style={{ display:'flex', gap:6, flexWrap:'wrap', alignItems:'center' }}>
                   {events.map(ev => (
-                    <span key={ev} style={{ fontSize:'0.65rem', background:'rgba(59,130,246,0.08)', border:'1px solid rgba(59,130,246,0.2)', color:'#3B82F6', padding:'2px 7px', borderRadius:3, fontFamily:'JetBrains Mono' }}>{ev}</span>
+                    <span key={ev} style={{ fontSize:'0.65rem', background:'rgba(99,102,241,0.08)', border:'1px solid rgba(99,102,241,0.2)', color:'#6366F1', padding:'2px 7px', borderRadius:3, fontFamily:'JetBrains Mono' }}>{ev}</span>
                   ))}
                   {wh.last_fired_at && (
                     <span style={{ fontSize:'0.68rem', color:'#71717A', marginLeft:'auto', fontFamily:'JetBrains Mono' }}>
@@ -359,7 +359,7 @@ function AuditTab() {
       ) : (
         <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
           {logs.map(l => (
-            <div key={l.id} style={{ display:'flex', gap:12, alignItems:'center', padding:'8px 12px', background:'#1F2937', borderRadius:6, borderLeft:`2px solid ${ACTION_COLOR[l.action]||'#71717A'}` }}>
+            <div key={l.id} style={{ display:'flex', gap:12, alignItems:'center', padding:'8px 12px', background:'#0D1117', borderRadius:6, borderLeft:`2px solid ${ACTION_COLOR[l.action]||'#71717A'}` }}>
               <div style={{ flex:1 }}>
                 <div style={{ fontSize:'0.78rem', fontWeight:500, color:'#F0F0F8', display:'flex', gap:8, alignItems:'center' }}>
                   <span style={{ color:ACTION_COLOR[l.action]||'#71717A', fontFamily:'JetBrains Mono', fontSize:'0.7rem' }}>{l.action}</span>
@@ -411,7 +411,7 @@ function SystemTab({ addToast }) {
         {loading ? <div style={{ color:'#71717A', fontSize:'0.8rem' }}>Checking…</div> : (
           <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
             {checks.map(c => (
-              <div key={c.label} style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 14px', background:'#1F2937', borderRadius:6 }}>
+              <div key={c.label} style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 14px', background:'#0D1117', borderRadius:6 }}>
                 {c.ok ? <CheckCircle size={16} style={{ color:'#22C55E', flexShrink:0 }}/> : <XCircle size={16} style={{ color:'#EF4444', flexShrink:0 }}/>}
                 <div style={{ flex:1 }}>
                   <div style={{ fontSize:'0.84rem', fontWeight:500 }}>{c.label}</div>
@@ -500,7 +500,7 @@ function SchedulesTab({ addToast }) {
     addToast(sched.is_active ? 'Schedule paused' : 'Schedule activated','success'); load();
   };
 
-  const inp = { background:'#1F2937', border:'1px solid rgba(255,255,255,0.1)', borderRadius:5, color:'#F0F0F8', fontSize:'0.78rem', padding:'6px 10px' };
+  const inp = { background:'#0D1117', border:'1px solid rgba(255,255,255,0.1)', borderRadius:5, color:'#F0F0F8', fontSize:'0.78rem', padding:'6px 10px' };
   const sel = { ...inp, cursor:'pointer' };
 
   return (
@@ -600,7 +600,7 @@ const EDR_PLATFORMS = [
   {
     id: 'crowdstrike',
     name: 'CrowdStrike Falcon',
-    color: '#3B82F6',
+    color: '#6366F1',
     docs: 'https://developer.crowdstrike.com/crowdstrike/docs/authentication-overview',
     envVars: [
       { key: 'CROWDSTRIKE_CLIENT_ID',     desc: 'OAuth2 Client ID from Falcon API Clients page' },
@@ -771,7 +771,7 @@ function IntegrationsTab({ addToast }) {
                   <div style={{ fontSize: '0.72rem', color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, ...mono }}>Required Environment Variables</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {platform.envVars.map(({ key, desc }) => (
-                      <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', background: '#111827', borderRadius: 6, border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', background: '#080C14', borderRadius: 6, border: '1px solid rgba(255,255,255,0.06)' }}>
                         <code style={{ flex: '0 0 auto', fontSize: '0.75rem', color: platform.color, ...mono, minWidth: 260 }}>{key}</code>
                         <div style={{ flex: 1, fontSize: '0.72rem', color: '#71717A' }}>{desc}</div>
                         <button
@@ -836,8 +836,8 @@ export default function Admin() {
         {TABS.map(({ id, label, Icon }) => (
           <button key={id} onClick={() => setTab(id)}
             style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 16px', borderRadius:6, fontSize:'0.8rem', cursor:'pointer', border:'1px solid', fontFamily:'Inter', transition:'all 0.15s',
-              background: tab === id ? 'rgba(59,130,246,0.12)' : 'rgba(255,255,255,0.03)',
-              borderColor: tab === id ? 'rgba(59,130,246,0.4)' : 'rgba(255,255,255,0.08)',
+              background: tab === id ? 'rgba(99,102,241,0.12)' : 'rgba(255,255,255,0.03)',
+              borderColor: tab === id ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.08)',
               color: tab === id ? '#F0F0F8' : '#71717A',
             }}>
             <Icon size={14}/> {label}

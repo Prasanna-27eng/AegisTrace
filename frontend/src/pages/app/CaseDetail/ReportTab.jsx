@@ -39,7 +39,7 @@ export default function ReportTab({ caseId, caseData }) {
 
   const reports = [
     {
-      icon: <File size={28} style={{ color: '#3B82F6', marginBottom: 12 }} />,
+      icon: <File size={28} style={{ color: '#6366F1', marginBottom: 12 }} />,
       title: 'Standard PDF Report',
       desc: 'Full case report with executive summary, findings, IOC table, MITRE mapping, timeline, and commands.',
       url: `/api/reports/${caseId}/pdf`,

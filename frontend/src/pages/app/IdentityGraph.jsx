@@ -10,7 +10,7 @@ import useStore from '../../store/useStore';
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 
 const NODE_TYPES = [
-  { id: 'user',            label: 'Human User',      color: '#3B82F6',  Icon: User },
+  { id: 'user',            label: 'Human User',      color: '#6366F1',  Icon: User },
   { id: 'service_account', label: 'Service Account', color: '#EAB308',  Icon: Shield },
   { id: 'api_key',         label: 'API Key',          color: '#A78BFA',  Icon: Key },
   { id: 'token',           label: 'Token',            color: '#F97316',  Icon: Key },
@@ -131,7 +131,7 @@ function GraphCanvas({ nodes, edges, onNodeClick, selectedId }) {
     function draw() {
       const W = canvas.offsetWidth, H = canvas.offsetHeight;
       ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = '#111827';
+      ctx.fillStyle = '#080C14';
       ctx.fillRect(0, 0, W, H);
 
       // Edges
@@ -253,7 +253,7 @@ function NodePanel({ node, onMarkCompromised, onDelete, onClose }) {
   const { Icon } = meta;
 
   return (
-    <div style={{ width: 280, background: '#111827', borderLeft: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+    <div style={{ width: 280, background: '#080C14', borderLeft: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
       <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 8 }}>
         <Icon size={14} style={{ color: meta.color }} />
         <div style={{ flex: 1, fontWeight: 600, fontSize: '0.84rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{node.label}</div>
@@ -398,9 +398,9 @@ export default function IdentityGraph() {
     : graph.nodes;
 
   return (
-    <div style={{ display: 'flex', height: '100%', background: '#111827', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '100%', background: '#080C14', overflow: 'hidden' }}>
       {/* Left panel */}
-      <div style={{ width: 220, flexShrink: 0, background: '#111827', borderRight: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ width: 220, flexShrink: 0, background: '#080C14', borderRight: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column' }}>
         {/* Header */}
         <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -436,7 +436,7 @@ export default function IdentityGraph() {
 
         {/* Search */}
         <div style={{ padding: '8px 10px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 5, padding: '4px 8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#080C14', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 5, padding: '4px 8px' }}>
             <Search size={11} style={{ color: '#71717A', flexShrink: 0 }} />
             <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search nodes…"
               style={{ background: 'none', border: 'none', outline: 'none', color: '#F0F0F8', fontSize: '0.72rem', ...MONO, flex: 1 }} />
@@ -531,7 +531,7 @@ export default function IdentityGraph() {
       {/* Add Node Modal */}
       {showAdd && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowAdd(false)}>
-          <div style={{ background: '#1F2937', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: 24, width: 380, maxWidth: '90vw' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: '#0D1117', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: 24, width: 380, maxWidth: '90vw' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
               <div style={{ fontWeight: 600 }}>Add Identity Node</div>
               <button onClick={() => setShowAdd(false)} style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer' }}><X size={15} /></button>
@@ -567,7 +567,7 @@ export default function IdentityGraph() {
       {/* Add Edge Modal */}
       {showEdge && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowEdge(false)}>
-          <div style={{ background: '#1F2937', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: 24, width: 360, maxWidth: '90vw' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: '#0D1117', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: 24, width: 360, maxWidth: '90vw' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
               <div style={{ fontWeight: 600 }}>Link Identity Nodes</div>
               <button onClick={() => setShowEdge(false)} style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer' }}><X size={15} /></button>

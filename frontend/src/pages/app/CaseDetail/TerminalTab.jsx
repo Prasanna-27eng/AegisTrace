@@ -86,7 +86,7 @@ export default function TerminalTab({ caseData, caseId, updateCase }) {
                 {result.key_findings?.length > 0 && (
                   <div style={{ marginBottom: 10 }}>
                     <div style={{ fontSize: '0.68rem', color: '#71717A', fontFamily: 'JetBrains Mono', textTransform: 'uppercase', marginBottom: 6 }}>Key Findings</div>
-                    {result.key_findings.map((f, i) => <div key={i} style={{ fontSize: '0.8rem', color: '#F0F0F8', padding: '3px 0', display: 'flex', gap: 8 }}><span style={{ color: '#3B82F6' }}>→</span>{f}</div>)}
+                    {result.key_findings.map((f, i) => <div key={i} style={{ fontSize: '0.8rem', color: '#F0F0F8', padding: '3px 0', display: 'flex', gap: 8 }}><span style={{ color: '#6366F1' }}>→</span>{f}</div>)}
                   </div>
                 )}
 
@@ -126,7 +126,7 @@ export default function TerminalTab({ caseData, caseId, updateCase }) {
               <div className="section-label">Run History</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 200, overflowY: 'auto' }}>
                 {history.map((run, i) => (
-                  <div key={run.id || i} style={{ padding: '7px 10px', background: '#1F2937', borderRadius: 5, cursor: 'pointer', fontSize: '0.78rem' }}
+                  <div key={run.id || i} style={{ padding: '7px 10px', background: '#0D1117', borderRadius: 5, cursor: 'pointer', fontSize: '0.78rem' }}
                     onClick={() => { setTool(run.tool_name); setCommand(run.command); setOutput(run.output); const p = JSON.parse(run.ai_parsed_result || '{}'); setResult(p); }}>
                     <div style={{ fontWeight: 500, color: '#F0F0F8' }}>{run.tool_name}</div>
                     <div style={{ fontSize: '0.7rem', color: '#71717A', fontFamily: 'JetBrains Mono', marginTop: 2 }}>{new Date(run.created_at).toLocaleString()}</div>

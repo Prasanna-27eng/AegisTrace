@@ -8,14 +8,14 @@ import api from '../../api/client';
 import useStore from '../../store/useStore';
 
 const VERDICT_COLOR = {
-  Malicious:   '#3B82F6',
+  Malicious:   '#6366F1',
   Suspicious:  '#EAB308',
   Clean:       '#22C55E',
   Unknown:     '#71717A',
 };
 
 function ScoreBar({ score }) {
-  const color = score > 70 ? '#3B82F6' : score > 40 ? '#EAB308' : '#22C55E';
+  const color = score > 70 ? '#6366F1' : score > 40 ? '#EAB308' : '#22C55E';
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
@@ -114,9 +114,9 @@ export default function PcapAnalysis() {
             onDragLeave={() => setDragging(false)}
             onClick={() => fileRef.current?.click()}
             style={{
-              border: `2px dashed ${dragging ? 'rgba(59,130,246,0.5)' : 'rgba(255,255,255,0.1)'}`,
+              border: `2px dashed ${dragging ? 'rgba(99,102,241,0.5)' : 'rgba(255,255,255,0.1)'}`,
               borderRadius: 10, padding: '28px 20px', textAlign: 'center', cursor: 'pointer',
-              background: dragging ? 'rgba(59,130,246,0.04)' : 'rgba(255,255,255,0.02)',
+              background: dragging ? 'rgba(99,102,241,0.04)' : 'rgba(255,255,255,0.02)',
               transition: 'all 0.2s',
             }}
           >
@@ -140,7 +140,7 @@ export default function PcapAnalysis() {
                     onClick={e => e.stopPropagation()}
                     placeholder="Link to case ID (optional)"
                     style={{
-                      padding: '5px 10px', background: '#1F2937',
+                      padding: '5px 10px', background: '#0D1117',
                       border: '1px solid rgba(255,255,255,0.1)', borderRadius: 5,
                       color: '#F0F0F8', fontSize: '0.75rem', fontFamily: 'JetBrains Mono', width: 200,
                     }}
@@ -200,12 +200,12 @@ export default function PcapAnalysis() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                     {result.ai_findings.map((f, i) => (
                       <div key={i} style={{ display: 'flex', gap: 8, fontSize: '0.78rem' }}>
-                        <span style={{ color: '#3B82F6', flexShrink: 0 }}>→</span>
+                        <span style={{ color: '#6366F1', flexShrink: 0 }}>→</span>
                         <span>{f}</span>
                       </div>
                     ))}
                     {result.ai_likely_attack && result.ai_likely_attack !== 'None' && (
-                      <div style={{ marginTop: 4, fontSize: '0.75rem', padding: '5px 10px', background: 'rgba(59,130,246,0.06)', borderRadius: 4, color: '#EF4444' }}>
+                      <div style={{ marginTop: 4, fontSize: '0.75rem', padding: '5px 10px', background: 'rgba(99,102,241,0.06)', borderRadius: 4, color: '#EF4444' }}>
                         Likely attack: <strong>{result.ai_likely_attack}</strong>
                       </div>
                     )}
@@ -220,8 +220,8 @@ export default function PcapAnalysis() {
                     {result.suspicious_flows.map((f, i) => (
                       <div key={i} style={{
                         padding: '8px 10px', borderRadius: 5, fontSize: '0.75rem',
-                        background: f.severity === 'high' ? 'rgba(59,130,246,0.07)' : 'rgba(234,179,8,0.06)',
-                        border: `1px solid ${f.severity === 'high' ? 'rgba(59,130,246,0.2)' : 'rgba(234,179,8,0.2)'}`,
+                        background: f.severity === 'high' ? 'rgba(99,102,241,0.07)' : 'rgba(234,179,8,0.06)',
+                        border: `1px solid ${f.severity === 'high' ? 'rgba(99,102,241,0.2)' : 'rgba(234,179,8,0.2)'}`,
                       }}>
                         <div style={{ fontWeight: 600, color: f.severity === 'high' ? '#EF4444' : '#EAB308', marginBottom: 3 }}>
                           [{f.type.toUpperCase()}] {f.description}

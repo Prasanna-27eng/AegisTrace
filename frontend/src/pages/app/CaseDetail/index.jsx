@@ -110,7 +110,7 @@ export default function CaseDetail() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Case header */}
-      <div style={{ background: '#1F2937', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '12px 20px' }}>
+      <div style={{ background: '#0D1117', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '12px 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
           <button onClick={() => navigate('/app/cases')} style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.78rem' }}>
             <ChevronLeft size={14} /> Cases
@@ -140,7 +140,7 @@ export default function CaseDetail() {
       </div>
 
       {/* Tabs */}
-      <div style={{ background: '#1F2937', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', overflowX: 'auto', flexShrink: 0 }}>
+      <div style={{ background: '#0D1117', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', overflowX: 'auto', flexShrink: 0 }}>
         {TABS.map(t => (
           <button
             key={t.id}

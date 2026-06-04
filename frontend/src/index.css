@@ -1,61 +1,67 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
 
-/* ── Theme Variables ───────────────────────────────────────────────────────── */
+/* ── Premium Futuristic Dark Theme ────────────────────────────────────────── */
+/* Inspired by: Vercel, Linear, Framer, Resend                                */
+/* Philosophy: Deep space, refined indigo, glassmorphism, no neon             */
 :root {
-  /* Backgrounds — dark navy, NOT pitch black */
-  --bg:             #111827;
-  --surface:        #1F2937;
-  --card:           #1E293B;
-  --card-hover:     #273549;
-  --elevated:       #374151;
+  /* ── Backgrounds — Deep space navy ──────────────────────────────────────── */
+  --bg:             #080C14;   /* Deep space — very dark navy, not black      */
+  --surface:        #0D1117;   /* GitHub-dark style surface                   */
+  --card:           #111827;   /* Card background with blue tint              */
+  --card-hover:     #161E2E;   /* Slightly lighter on hover                   */
+  --elevated:       #1E2B3C;   /* Modals, popovers                            */
+  --inset:          #060A10;   /* Darker insets, code blocks                  */
 
-  /* Primary — trust blue */
-  --accent:         #3B82F6;
-  --accent-hover:   #2563EB;
-  --accent-light:   #60A5FA;
-  --accent-soft:    rgba(59, 130, 246, 0.1);
-  --accent-border:  rgba(59, 130, 246, 0.25);
+  /* ── Primary — Refined Indigo ───────────────────────────────────────────── */
+  --accent:         #6366F1;   /* Indigo-500 — classy, not neon, not punky    */
+  --accent-hover:   #4F46E5;   /* Indigo-600 — deeper on hover                */
+  --accent-light:   #818CF8;   /* Indigo-400 — lighter for text/labels        */
+  --accent-soft:    rgba(99, 102, 241, 0.12);
+  --accent-border:  rgba(99, 102, 241, 0.25);
+  --accent-glow:    0 0 24px rgba(99, 102, 241, 0.2);
 
-  /* Secondary — AI purple (kept) */
-  --accent2:        #8B5CF6;
-  --accent2-light:  #A78BFA;
-  --accent2-soft:   rgba(139, 92, 246, 0.1);
-  --accent2-border: rgba(139, 92, 246, 0.25);
+  /* ── Secondary — Violet (AI / Intelligence) ─────────────────────────────── */
+  --accent2:        #8B5CF6;   /* Violet-500 — for AI labels, trust features  */
+  --accent2-light:  #A78BFA;   /* Violet-400                                  */
+  --accent2-soft:   rgba(139, 92, 246, 0.12);
+  --accent2-border: rgba(139, 92, 246, 0.2);
 
-  /* Text */
-  --text-primary:   #F9FAFB;
-  --text-secondary: #D1D5DB;
-  --text-muted:     #9CA3AF;
-  --text-disabled:  #6B7280;
+  /* ── Text — Refined slate scale ─────────────────────────────────────────── */
+  --text-primary:   #F8FAFC;   /* Slate-50 — near white, clean                */
+  --text-secondary: #CBD5E1;   /* Slate-300 — readable body text              */
+  --text-muted:     #64748B;   /* Slate-500 — metadata, captions              */
+  --text-disabled:  #334155;   /* Slate-700                                   */
 
-  /* Borders */
-  --border:         rgba(255, 255, 255, 0.08);
-  --border-light:   rgba(255, 255, 255, 0.12);
-  --border-medium:  rgba(255, 255, 255, 0.16);
+  /* ── Borders — Ultra-subtle ─────────────────────────────────────────────── */
+  --border:         rgba(148, 163, 184, 0.08);   /* Slate tint, barely there  */
+  --border-light:   rgba(148, 163, 184, 0.13);
+  --border-medium:  rgba(148, 163, 184, 0.18);
 
-  /* Status */
+  /* ── Status colors ───────────────────────────────────────────────────────── */
   --success:        #10B981;
   --warning:        #F59E0B;
   --error:          #EF4444;
-  --info:           #3B82F6;
 
-  /* Shadows */
-  --shadow-sm:  0 1px 3px rgba(0,0,0,0.3);
-  --shadow-md:  0 4px 12px rgba(0,0,0,0.4);
-  --shadow-lg:  0 10px 24px rgba(0,0,0,0.5);
-  --glow-blue:  0 0 20px rgba(59,130,246,0.15);
-  --glow-purple:0 0 20px rgba(139,92,246,0.15);
+  /* ── Shadows — Premium depth ─────────────────────────────────────────────── */
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md:   0 4px 16px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3);
+  --shadow-lg:   0 12px 32px rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4);
+  --shadow-card: 0 0 0 1px rgba(148,163,184,0.06), 0 4px 20px rgba(0,0,0,0.4);
 
-  /* Radius */
+  /* ── Glassmorphism ───────────────────────────────────────────────────────── */
+  --glass-bg:     rgba(13, 17, 23, 0.7);
+  --glass-border: rgba(148, 163, 184, 0.08);
+
+  /* ── Radius ──────────────────────────────────────────────────────────────── */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
 
-  /* Transitions */
-  --fast: 150ms ease;
-  --base: 200ms ease;
-  --slow: 300ms ease;
+  /* ── Transitions ─────────────────────────────────────────────────────────── */
+  --fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ── Reset ─────────────────────────────────────────────────────────────────── */
@@ -168,7 +174,7 @@ pre {
   font-family: 'JetBrains Mono', monospace;
 }
 .status-open            { background: rgba(16,185,129,0.1);  color: #34D399; border: 1px solid rgba(16,185,129,0.25); }
-.status-in_progress     { background: rgba(59,130,246,0.1);  color: #60A5FA; border: 1px solid rgba(59,130,246,0.25); }
+.status-in_progress     { background: rgba(99,102,241,0.1);  color: #818CF8; border: 1px solid rgba(99,102,241,0.25); }
 .status-pending_closure { background: rgba(245,158,11,0.1);  color: #FBBF24; border: 1px solid rgba(245,158,11,0.25); }
 .status-closed          { background: rgba(156,163,175,0.08);color: #9CA3AF; border: 1px solid rgba(156,163,175,0.18);}
 
@@ -373,7 +379,7 @@ pre {
 }
 .at-select:hover { border-color: var(--border-medium); }
 .at-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
-.at-select option { background: #1E293B; color: var(--text-primary); padding: 8px; }
+.at-select option { background: #0D1117; color: var(--text-primary); padding: 8px; }
 
 /* ── Form label ────────────────────────────────────────────────────────────── */
 .at-label {
@@ -395,14 +401,20 @@ input[type="checkbox"] {
   cursor: pointer;
 }
 
-/* ── Card ──────────────────────────────────────────────────────────────────── */
+/* ── Card — glassmorphism ──────────────────────────────────────────────────── */
 .at-card {
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: rgba(13, 17, 23, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.08);
   border-radius: var(--radius-lg);
-  transition: border-color var(--base);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03);
+  transition: border-color var(--base), box-shadow var(--base);
 }
-.at-card:hover { border-color: var(--border-light); }
+.at-card:hover {
+  border-color: rgba(99, 102, 241, 0.18);
+  box-shadow: 0 0 0 1px rgba(99,102,241,0.1), 0 4px 20px rgba(0,0,0,0.4);
+}
 
 /* ── Section label ─────────────────────────────────────────────────────────── */
 .section-label {

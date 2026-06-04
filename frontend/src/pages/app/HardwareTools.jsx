@@ -9,7 +9,7 @@ import './hardware-tools.css';
 // ── Tool catalogue ────────────────────────────────────────────────────────────
 const CATEGORIES = [
   {
-    id: 'wifi', label: 'WiFi Attack', icon: Wifi, color: '#3B82F6',
+    id: 'wifi', label: 'WiFi Attack', icon: Wifi, color: '#6366F1',
     tools: [
       { key: 'probe_request_analyser',   name: 'Probe Request Analyser',   desc: 'Identify aggressive WiFi scanners from PineAP logs', hint: 'Paste WiFi Pineapple PineAP log output.\nSupports JSON lines, CSV, or plain text.\n\nExample:\n{"type":"probe","client_mac":"AA:BB:CC:11:22:33","ssid":"HomeNet","channel":6}' },
       { key: 'evil_twin_detector',       name: 'Evil Twin Detector',       desc: 'Find rogue APs claiming a legitimate SSID',           hint: 'Paste beacon/AP scan log showing SSIDs and BSSIDs.\n\nExample:\nSSID: HomeNet | BSSID: AA:BB:CC:DD:EE:FF | Channel: 6' },
@@ -50,7 +50,7 @@ const CATEGORIES = [
     ],
   },
   {
-    id: 'endpoint', label: 'Endpoint', icon: Monitor, color: '#3B82F6',
+    id: 'endpoint', label: 'Endpoint', icon: Monitor, color: '#6366F1',
     tools: [
       { key: 'sysmon_parser',            name: 'Sysmon Event Parser',        desc: 'LOLBin detection, LSASS access, process injection',   hint: 'Paste Windows Sysmon event log in XML or JSON format.\nEventIDs 1,3,7,8,10,11,12,13,22 are fully supported.' },
       { key: 'process_tree_analyser',    name: 'Process Tree Analyser',      desc: 'Risk-score every process, flag suspicious spawning',   hint: 'Paste process list from aegistrace_agent.py or any JSON/CSV/text with PID, PPID, and process name.' },
@@ -175,7 +175,7 @@ function ResultRenderer({ toolKey, result }) {
             <KVPairs data={result} skip={['client_profiles','suspicious_clients','top_probed_ssids','summary']} />
             {result.suspicious_clients?.length > 0 && (
               <div style={{margin:'14px 16px 0'}}>
-                <div style={{fontSize:'0.68rem',color:'#3B82F6',fontWeight:700,marginBottom:6,fontFamily:'JetBrains Mono',textTransform:'uppercase',letterSpacing:'0.06em'}}>Suspicious Clients</div>
+                <div style={{fontSize:'0.68rem',color:'#6366F1',fontWeight:700,marginBottom:6,fontFamily:'JetBrains Mono',textTransform:'uppercase',letterSpacing:'0.06em'}}>Suspicious Clients</div>
                 <DataTable rows={result.suspicious_clients} />
               </div>
             )}
@@ -193,7 +193,7 @@ function ResultRenderer({ toolKey, result }) {
             <KVPairs data={result} skip={['evil_twin_suspects','summary']} />
             {result.evil_twin_suspects?.length > 0 && (
               <div style={{margin:'14px 16px 0'}}>
-                <div style={{fontSize:'0.68rem',color:'#3B82F6',fontWeight:700,marginBottom:6,fontFamily:'JetBrains Mono',textTransform:'uppercase',letterSpacing:'0.06em'}}>Evil Twin Suspects</div>
+                <div style={{fontSize:'0.68rem',color:'#6366F1',fontWeight:700,marginBottom:6,fontFamily:'JetBrains Mono',textTransform:'uppercase',letterSpacing:'0.06em'}}>Evil Twin Suspects</div>
                 <DataTable rows={result.evil_twin_suspects} cols={['ssid','bssid_count','channels','verdict','reason']} />
               </div>
             )}
@@ -483,7 +483,7 @@ export default function HardwareTools() {
                     <div className="hw-tool-name">{t.name}</div>
                     <div className="hw-tool-key">{t.key}</div>
                   </div>
-                  {selected === t.key && <ChevronRight size={12} style={{ color: '#3B82F6', flexShrink:0 }} />}
+                  {selected === t.key && <ChevronRight size={12} style={{ color: '#6366F1', flexShrink:0 }} />}
                 </div>
               ))}
             </div>
@@ -557,7 +557,7 @@ export default function HardwareTools() {
               <div className="hw-result-section">
                 <div className="hw-result-header">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Shield size={14} style={{ color: '#3B82F6' }} />
+                    <Shield size={14} style={{ color: '#6366F1' }} />
                     <span style={{ fontWeight: 600, fontSize: '0.88rem' }}>{tool.name} — Analysis Complete</span>
                     {runId && <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono' }}>Run #{runId}</span>}
                   </div>
