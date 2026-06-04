@@ -3,24 +3,30 @@ import { useNavigate } from 'react-router-dom';
 import {
   Search, LayoutDashboard, FolderOpen, Shield, Mail, Bug, Wrench,
   Monitor, FileSearch, Crosshair, ScrollText, Globe, Settings,
-  Plus, ArrowRight, BookOpen, Terminal, X
+  Plus, ArrowRight, BookOpen, Terminal, X, Fingerprint, Network, Rss, Cpu
 } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { label: 'Dashboard',         path: '/app/dashboard',  Icon: LayoutDashboard, group: 'Navigate' },
-  { label: 'Cases',             path: '/app/cases',      Icon: FolderOpen,      group: 'Navigate' },
-  { label: 'Threat Hunt',       path: '/app/hunt',       Icon: Crosshair,       group: 'Navigate' },
-  { label: 'Endpoints',         path: '/app/endpoints',  Icon: Monitor,         group: 'Navigate' },
-  { label: 'Log Investigation', path: '/app/logs',       Icon: FileSearch,      group: 'Navigate' },
-  { label: 'VT Lookup',         path: '/app/vt-lookup',  Icon: Shield,          group: 'Tools'    },
-  { label: 'Email Analysis',    path: '/app/email',      Icon: Mail,            group: 'Tools'    },
-  { label: 'Malware Tools',     path: '/app/malware',    Icon: Bug,             group: 'Tools'    },
-  { label: 'Tools Hub',         path: '/app/tools',      Icon: Wrench,          group: 'Tools'    },
-  { label: 'Audit Log',         path: '/app/audit',      Icon: ScrollText,      group: 'System'   },
-  { label: 'Admin',             path: '/app/admin',      Icon: Settings,        group: 'System'   },
-  { label: 'Public Cases',      path: '/public',         Icon: Globe,           group: 'Public'   },
-  { label: 'Portfolio',         path: '/portfolio',      Icon: BookOpen,        group: 'Public'   },
-  { label: 'Agent Setup',       path: '/agent-setup',    Icon: Terminal,        group: 'Public'   },
+  { label: 'Dashboard',         path: '/app/dashboard',      Icon: LayoutDashboard, group: 'Navigate' },
+  { label: 'Cases',             path: '/app/cases',          Icon: FolderOpen,      group: 'Navigate' },
+  { label: 'Threat Hunt',       path: '/app/hunt',           Icon: Crosshair,       group: 'Navigate' },
+  { label: 'Endpoints',         path: '/app/endpoints',      Icon: Monitor,         group: 'Navigate' },
+  { label: 'Log Investigation', path: '/app/logs',           Icon: FileSearch,      group: 'Navigate' },
+  { label: 'Terminal Lab',      path: '/app/terminal-lab',   Icon: Terminal,        group: 'Lab'      },
+  { label: 'Identity Graph',    path: '/app/identity-graph', Icon: Fingerprint,     group: 'Lab'      },
+  { label: 'VT Lookup',         path: '/app/vt-lookup',      Icon: Shield,          group: 'Tools'    },
+  { label: 'Email Analysis',    path: '/app/email',          Icon: Mail,            group: 'Tools'    },
+  { label: 'PCAP Analysis',     path: '/app/pcap',           Icon: Network,         group: 'Tools'    },
+  { label: 'Threat Feeds',      path: '/app/feeds',          Icon: Rss,             group: 'Tools'    },
+  { label: 'Malware Tools',     path: '/app/malware',        Icon: Bug,             group: 'Tools'    },
+  { label: 'Tools Hub',         path: '/app/tools',          Icon: Wrench,          group: 'Tools'    },
+  { label: 'Hardware Tools',    path: '/app/hardware/tools', Icon: Cpu,             group: 'Tools'    },
+  { label: 'Audit Log',         path: '/app/audit',          Icon: ScrollText,      group: 'System'   },
+  { label: 'Admin',             path: '/app/admin',          Icon: Settings,        group: 'System'   },
+  { label: 'Integrations',      path: '/app/admin?tab=integrations', Icon: Settings, group: 'System'  },
+  { label: 'Public Cases',      path: '/public',             Icon: Globe,           group: 'Public'   },
+  { label: 'Portfolio',         path: '/portfolio',          Icon: BookOpen,        group: 'Public'   },
+  { label: 'Agent Setup',       path: '/agent-setup',        Icon: Terminal,        group: 'Public'   },
 ];
 
 const ACTIONS = [

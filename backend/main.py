@@ -17,6 +17,7 @@ from routers.email_router import router as email_router
 from routers.ioc import router as ioc_router
 from routers.malware import router as malware_router
 from routers.terminal import router as terminal_router
+from routers.terminal_lab import router as terminal_lab_router
 from routers.reports import router as reports_router
 from routers.public import router as public_router
 from routers.portfolio import router as portfolio_router
@@ -29,6 +30,10 @@ from routers.edr import router as edr_router
 from routers.pcap import router as pcap_router
 from routers.feeds import router as feeds_router
 from routers.schedule_reports import router as schedule_reports_router, start_scheduler
+from routers.identity import router as identity_router
+from routers.provenance import router as provenance_router
+from routers.analytics import router as analytics_router
+from routers.comments import router as comments_router
 from hardware_tools import router as hardware_router
 from ai_router import call_ai_json
 
@@ -73,10 +78,11 @@ app.add_middleware(SecurityHeadersMiddleware)
 
 # ── Routers ───────────────────────────────────────────────────────────────────
 for r in [auth_router, cases_router, vt_router, email_router, ioc_router,
-          malware_router, terminal_router, reports_router, public_router,
-          portfolio_router, webhooks_router, hunt_router, audit_router,
-          ingest_router, enrichment_router, edr_router, pcap_router,
-          feeds_router, schedule_reports_router, hardware_router]:
+          malware_router, terminal_router, terminal_lab_router, reports_router,
+          public_router, portfolio_router, webhooks_router, hunt_router,
+          audit_router, ingest_router, enrichment_router, edr_router, pcap_router,
+          feeds_router, schedule_reports_router, hardware_router,
+          identity_router, provenance_router, analytics_router, comments_router]:
     app.include_router(r)
 
 

@@ -27,6 +27,8 @@ import PcapAnalysis     from './pages/app/PcapAnalysis';
 import ThreatFeeds      from './pages/app/ThreatFeeds';
 import HardwareTools    from './pages/app/HardwareTools';
 import ToolResult       from './pages/app/ToolResult';
+import TerminalLab      from './pages/app/TerminalLab';
+import IdentityGraph    from './pages/app/IdentityGraph';
 
 export default function App() {
   return (
@@ -61,6 +63,8 @@ export default function App() {
           <Route path="pcap"        element={<PcapAnalysis />} />
           <Route path="feeds"             element={<ThreatFeeds />} />
           <Route path="hardware/tools"    element={<HardwareTools />} />
+          <Route path="terminal-lab"      element={<TerminalLab />} />
+          <Route path="identity-graph"    element={<IdentityGraph />} />
         </Route>
 
         <Route path="/app/hardware/tools/:runId" element={<ToolResult />} />

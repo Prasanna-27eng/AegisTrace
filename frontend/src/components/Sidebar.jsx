@@ -3,7 +3,8 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, Shield, Bug, Mail,
   Wrench, Globe, Settings, LogOut, ChevronLeft, ChevronRight,
-  Crosshair, ScrollText, Monitor, FileSearch, Network, Rss, Cpu
+  Crosshair, ScrollText, Monitor, FileSearch, Network, Rss, Cpu,
+  Terminal, Fingerprint, BarChart2
 } from 'lucide-react';
 import Logo from './Logo';
 import useStore from '../store/useStore';
@@ -12,36 +13,48 @@ const NAV_GROUPS = [
   {
     label: 'Investigation',
     items: [
-      { to: '/app/dashboard',  label: 'Dashboard',         Icon: LayoutDashboard },
-      { to: '/app/cases',      label: 'Cases',             Icon: FolderOpen },
-      { to: '/app/hunt',       label: 'Threat Hunt',       Icon: Crosshair },
-      { to: '/app/endpoints',  label: 'Endpoints',         Icon: Monitor },
-      { to: '/app/logs',       label: 'Log Investigation', Icon: FileSearch },
+      { to: '/app/dashboard',      label: 'Dashboard',         Icon: LayoutDashboard },
+      { to: '/app/cases',          label: 'Cases',             Icon: FolderOpen },
+      { to: '/app/hunt',           label: 'Threat Hunt',       Icon: Crosshair },
+      { to: '/app/endpoints',      label: 'Endpoints',         Icon: Monitor },
+      { to: '/app/logs',           label: 'Log Investigation', Icon: FileSearch },
     ],
   },
   {
     label: 'Intelligence',
     items: [
-      { to: '/app/vt-lookup',  label: 'VT Lookup',         Icon: Shield },
-      { to: '/app/feeds',      label: 'Threat Feeds',      Icon: Rss },
-      { to: '/app/email',      label: 'Email Analysis',    Icon: Mail },
-      { to: '/app/pcap',       label: 'PCAP Analysis',     Icon: Network },
-      { to: '/app/malware',    label: 'Malware Tools',     Icon: Bug },
-      { to: '/app/tools',      label: 'Tools Hub',         Icon: Wrench },
+      { to: '/app/vt-lookup',      label: 'VT Lookup',         Icon: Shield },
+      { to: '/app/feeds',          label: 'Threat Feeds',      Icon: Rss },
+      { to: '/app/email',          label: 'Email Analysis',    Icon: Mail },
+      { to: '/app/pcap',           label: 'PCAP Analysis',     Icon: Network },
+      { to: '/app/malware',        label: 'Malware Tools',     Icon: Bug },
+      { to: '/app/tools',          label: 'Tools Hub',         Icon: Wrench },
+    ],
+  },
+  {
+    label: 'Identity & Trust',
+    items: [
+      { to: '/app/identity-graph', label: 'Identity Graph',    Icon: Fingerprint },
+    ],
+  },
+  {
+    label: 'Lab',
+    items: [
+      { to: '/app/terminal-lab',   label: 'Terminal Lab',      Icon: Terminal },
     ],
   },
   {
     label: 'Hardware',
     items: [
-      { to: '/app/hardware/tools', label: 'Hardware Tools', Icon: Cpu },
+      { to: '/app/hardware/tools', label: 'Hardware Tools',    Icon: Cpu },
     ],
   },
   {
     label: 'System',
     items: [
-      { to: '/app/audit',      label: 'Audit Log',         Icon: ScrollText },
-      { to: '/app/public',     label: 'Public View',       Icon: Globe },
-      { to: '/app/admin',      label: 'Admin',             Icon: Settings },
+      { to: '/app/audit',          label: 'Audit Log',         Icon: ScrollText },
+      { to: '/app/public',         label: 'Public View',       Icon: Globe },
+      { to: '/app/admin',          label: 'Admin',             Icon: Settings },
     ],
   },
 ];

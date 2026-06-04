@@ -331,3 +331,137 @@ class HardwareAlert(SQLModel, table=True):
     investigated: bool = Field(default=False)
     case_id: Optional[int] = Field(default=None, foreign_key="case.id")
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# ── v3.0 Futuristic Models ────────────────────────────────────────────────────
+
+class TerminalSession(SQLModel, table=True):
+    """A named Terminal Lab session grouping commands under a case or standalone."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    session_name: str = Field(default="")
+    case_id: Optional[int] = Field(default=None, foreign_key="case.id")
+    mode: str = Field(default="simulated")        # simulated | sandbox
+    sandbox_id: Optional[str] = Field(default=None)
+    status: str = Field(default="active")         # active | closed | destroyed
+    notes: Optional[str] = Field(default="", sa_column=Column(Text))
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    ended_at: Optional[datetime] = Field(default=None)
+
+
+class TerminalCommand(SQLModel, table=True):
+    """A single command run inside a TerminalSession."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    session_id: int = Field(foreign_key="terminalsession.id", index=True)
+    case_id: Optional[int] = Field(default=None, foreign_key="case.id")
+    command: str = Field(default="", sa_column=Column(Text))
+    tool_name: str = Field(default="")
+    mode: str = Field(default="simulated")
+    status: str = Field(default="completed")      # queued | running | completed | failed
+    raw_output: str = Field(default="", sa_column=Column(Text))
+    parsed_output: Optional[str] = Field(default="{}", sa_column=Column(Text))
+    extracted_iocs: Optional[str] = Field(default="[]", sa_column=Column(Text))
+    mitre_techniques: Optional[str] = Field(default="[]", sa_column=Column(Text))
+    ai_summary: Optional[str] = Field(default="", sa_column=Column(Text))
+    error_message: Optional[str] = Field(default=None)
+    user_notes: Optional[str] = Field(default="", sa_column=Column(Text))
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    completed_at: Optional[datetime] = Field(default=None)
+
+
+class IdentityNode(SQLModel, table=True):
+    """A first-class identity entity: user, service account, token, device, or agent."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    node_type: str = Field(default="")            # user | service_account | api_key | token | device | agent | prompt
+    label: str = Field(default="", index=True)
+    metadata_json: Optional[str] = Field(default="{}", sa_column=Column(Text))  # role, scope, issuer, etc.
+    risk_score: int = Field(default=0)            # 0–100
+    is_compromised: bool = Field(default=False)
+    first_seen: datetime = Field(default_factory=datetime.utcnow)
+    last_seen: datetime = Field(default_factory=datetime.utcnow)
+    linked_case_ids: Optional[str] = Field(default="[]", sa_column=Column(Text))
+    org_id: int = Field(default=1)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class IdentityEdge(SQLModel, table=True):
+    """A directed relationship between two IdentityNodes."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    source_id: int = Field(foreign_key="identitynode.id", index=True)
+    target_id: int = Field(foreign_key="identitynode.id", index=True)
+    relationship: str = Field(default="")         # used | issued | accessed | owned | compromised_by | inherited_from
+    confidence: int = Field(default=100)
+    evidence_ref: Optional[str] = Field(default=None)  # "case:123" or "ioc:x.x.x.x"
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class TrustEvent(SQLModel, table=True):
+    """A trust-relevant event in the chain of actions for a case."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    case_id: Optional[int] = Field(default=None, foreign_key="case.id", index=True)
+    event_category: str = Field(default="")       # login | token_use | privilege_change | agent_action | ai_output | approval | rejection | policy_override | response_action
+    actor: str = Field(default="")                # user email, agent name, or "ai"
+    actor_type: str = Field(default="")           # human | ai | agent | system
+    description: str = Field(default="", sa_column=Column(Text))
+    trust_level: str = Field(default="")          # verified | unverified | suspicious | revoked
+    evidence_ref: Optional[str] = Field(default=None)
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class ProvenanceLedger(SQLModel, table=True):
+    """Full audit record for every AI-generated or tool-generated action."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    case_id: Optional[int] = Field(default=None, foreign_key="case.id", index=True)
+    action_type: str = Field(default="")          # ai_analysis | ai_summary | tool_run | evidence_add | ioc_enrich
+    actor: str = Field(default="")                # user email or "ai"
+    model_used: Optional[str] = Field(default=None)
+    tool_name: Optional[str] = Field(default=None)
+    input_context: str = Field(default="", sa_column=Column(Text))
+    output_summary: str = Field(default="", sa_column=Column(Text))
+    confidence: int = Field(default=0)
+    approval_status: str = Field(default="auto")  # auto | pending | approved | rejected
+    approved_by: Optional[str] = Field(default=None)
+    linked_evidence_id: Optional[int] = Field(default=None)
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+
+class CaseComment(SQLModel, table=True):
+    """Structured analyst note or handoff comment on a case."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    case_id: int = Field(foreign_key="case.id", index=True)
+    author_email: str = Field(default="")
+    author_name: str = Field(default="")
+    comment_type: str = Field(default="note")     # note | handoff | escalation | decision
+    body: str = Field(default="", sa_column=Column(Text))
+    is_pinned: bool = Field(default=False)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class InvestigationTemplate(SQLModel, table=True):
+    """Pre-built case scaffold for common incident types."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(default="")
+    incident_type: str = Field(default="")        # phishing | brute_force | malware | exfiltration | suspicious_login | endpoint_compromise
+    description_template: str = Field(default="", sa_column=Column(Text))
+    playbook_template: str = Field(default="{}", sa_column=Column(Text))
+    default_severity: str = Field(default="medium")
+    default_mitre: Optional[str] = Field(default="[]", sa_column=Column(Text))
+    is_builtin: bool = Field(default=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class AgentAction(SQLModel, table=True):
+    """Audit record for every autonomous AI or automation action."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    agent_name: str = Field(default="")
+    task_scope: str = Field(default="", sa_column=Column(Text))
+    action_type: str = Field(default="")          # triage | enrich | summarise | escalate | close
+    input_data: str = Field(default="", sa_column=Column(Text))
+    output_data: Optional[str] = Field(default=None, sa_column=Column(Text))
+    confidence: int = Field(default=0)
+    approval_required: bool = Field(default=False)
+    approval_status: str = Field(default="auto")  # auto | pending | approved | rejected
+    approved_by: Optional[str] = Field(default=None)
+    case_id: Optional[int] = Field(default=None, foreign_key="case.id")
+    provenance_id: Optional[int] = Field(default=None)
+    created_at: datetime = Field(default_factory=datetime.utcnow)

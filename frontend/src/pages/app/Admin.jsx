@@ -2,17 +2,19 @@ import React, { useState, useEffect } from 'react';
 import {
   Users, Webhook, ScrollText, Activity, Plus, Trash2,
   Edit, X, Shield, Key, CheckCircle, XCircle, Globe,
-  AlertTriangle, RefreshCw, Loader2, Mail
+  AlertTriangle, RefreshCw, Loader2, Mail, Plug, Copy,
+  ExternalLink, Terminal, ChevronDown, ChevronRight
 } from 'lucide-react';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 
 const TABS = [
-  { id: 'users',     label: 'Users',            Icon: Users },
-  { id: 'webhooks',  label: 'Webhooks',          Icon: Webhook },
-  { id: 'schedules', label: 'Report Schedules',  Icon: Mail },
-  { id: 'audit',     label: 'Audit Log',         Icon: ScrollText },
-  { id: 'system',    label: 'System',            Icon: Activity },
+  { id: 'users',        label: 'Users',            Icon: Users },
+  { id: 'integrations', label: 'Integrations',     Icon: Plug },
+  { id: 'webhooks',     label: 'Webhooks',         Icon: Webhook },
+  { id: 'schedules',    label: 'Report Schedules', Icon: Mail },
+  { id: 'audit',        label: 'Audit Log',        Icon: ScrollText },
+  { id: 'system',       label: 'System',           Icon: Activity },
 ];
 
 const ROLE_COLOR = { admin: '#C0392B', analyst: '#A78BFA', viewer: '#71717A' };
@@ -593,10 +595,235 @@ function SchedulesTab({ addToast }) {
 }
 
 
+// ── Integrations Tab ──────────────────────────────────────────────────────────
+const EDR_PLATFORMS = [
+  {
+    id: 'crowdstrike',
+    name: 'CrowdStrike Falcon',
+    color: '#C0392B',
+    docs: 'https://developer.crowdstrike.com/crowdstrike/docs/authentication-overview',
+    envVars: [
+      { key: 'CROWDSTRIKE_CLIENT_ID',     desc: 'OAuth2 Client ID from Falcon API Clients page' },
+      { key: 'CROWDSTRIKE_CLIENT_SECRET', desc: 'OAuth2 Client Secret (shown once on creation)' },
+      { key: 'CROWDSTRIKE_BASE_URL',      desc: 'API base URL — defaults to https://api.crowdstrike.com' },
+    ],
+    steps: [
+      'In Falcon console → Support → API Clients and Keys',
+      'Create a new OAuth2 client with Read scope on Hosts and RTR',
+      'Copy the Client ID and Client Secret immediately (secret shown once)',
+      'Add all three env vars to Render → Your Service → Environment',
+      'Redeploy the service for the vars to take effect',
+    ],
+  },
+  {
+    id: 'sentinelone',
+    name: 'SentinelOne',
+    color: '#A78BFA',
+    docs: 'https://usea1-partners.sentinelone.net/docs/en/generating-api-tokens.html',
+    envVars: [
+      { key: 'SENTINELONE_BASE_URL',  desc: 'Your console URL e.g. https://usea1.sentinelone.net' },
+      { key: 'SENTINELONE_API_TOKEN', desc: 'API token from Settings → Users → Generate API Token' },
+    ],
+    steps: [
+      'In SentinelOne console → Settings → Users → select your user',
+      'Click "Generate API Token" — copy the token shown',
+      'Add SENTINELONE_BASE_URL (your console domain) and SENTINELONE_API_TOKEN',
+      'Add both env vars to Render → Your Service → Environment',
+      'Redeploy the service',
+    ],
+  },
+  {
+    id: 'carbonblack',
+    name: 'VMware Carbon Black Cloud',
+    color: '#22C55E',
+    docs: 'https://developer.carbonblack.com/reference/carbon-black-cloud/authentication/',
+    envVars: [
+      { key: 'CARBONBLACK_BASE_URL',    desc: 'API URL e.g. https://defense.conferdeploy.net' },
+      { key: 'CARBONBLACK_ORG_KEY',     desc: 'Org Key from Settings → API Access → API Keys' },
+      { key: 'CARBONBLACK_API_ID',      desc: 'API ID from the created access level' },
+      { key: 'CARBONBLACK_API_SECRET',  desc: 'API Secret (shown once on creation)' },
+    ],
+    steps: [
+      'In CBC console → Settings → API Access → Add API Key',
+      'Select "Carbon Black Cloud API" access level type',
+      'Copy Org Key, API ID, and API Secret',
+      'Add all four env vars to Render → Your Service → Environment',
+      'Redeploy the service',
+    ],
+  },
+];
+
+function IntegrationsTab({ addToast }) {
+  const [edrStatus, setEdrStatus]   = useState(null);
+  const [loading, setLoading]       = useState(true);
+  const [testing, setTesting]       = useState(null);
+  const [expanded, setExpanded]     = useState({});
+
+  const load = () => {
+    setLoading(true);
+    api.get('/api/edr/status')
+      .then(r => { setEdrStatus(r.data); setLoading(false); })
+      .catch(() => setLoading(false));
+  };
+  useEffect(() => { load(); }, []);
+
+  const testConnection = async (platformId) => {
+    setTesting(platformId);
+    try {
+      // Re-fetch status which pings each platform
+      const r = await api.get('/api/edr/status');
+      setEdrStatus(r.data);
+      const info = r.data.platforms[platformId];
+      if (info?.connected) addToast(`${platformId} — connected`, 'success');
+      else if (info?.configured) addToast(`${platformId} — configured but unreachable: ${info.error || 'check credentials'}`, 'error');
+      else addToast(`${platformId} — not configured (set env vars and redeploy)`, 'error');
+    } catch { addToast('Test failed', 'error'); }
+    setTesting(null);
+  };
+
+  const copyEnvKey = (key) => {
+    navigator.clipboard.writeText(key);
+    addToast(`Copied ${key}`, 'success');
+  };
+
+  const toggleExpanded = (id) => setExpanded(p => ({ ...p, [id]: !p[id] }));
+
+  const mono = { fontFamily: 'JetBrains Mono, monospace' };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 860 }}>
+
+      {/* Intro banner */}
+      <div className="at-card" style={{ padding: '14px 18px', borderColor: 'rgba(167,139,250,0.2)', background: 'rgba(167,139,250,0.04)' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+          <Terminal size={15} style={{ color: '#A78BFA', marginTop: 2, flexShrink: 0 }} />
+          <div>
+            <div style={{ fontWeight: 600, fontSize: '0.86rem', marginBottom: 4 }}>EDR Integration — Environment Variables</div>
+            <div style={{ fontSize: '0.78rem', color: '#71717A', lineHeight: 1.65 }}>
+              AegisTrace connects to EDR platforms via API credentials stored as environment variables — not in the database.
+              On Render, add them at <strong style={{ color: '#A78BFA' }}>Dashboard → Your Service → Environment</strong> then redeploy.
+              Credentials are never logged or stored in SQLite.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Render quick link */}
+      <div style={{ display: 'flex', gap: 10 }}>
+        <a href="https://dashboard.render.com" target="_blank" rel="noreferrer"
+          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0F8', fontSize: '0.78rem', textDecoration: 'none', ...mono }}>
+          <ExternalLink size={12} style={{ color: '#A78BFA' }} /> Open Render Dashboard
+        </a>
+        <button className="btn-ghost" onClick={load} style={{ fontSize: '0.78rem', padding: '8px 14px' }}>
+          <RefreshCw size={12} /> Refresh Status
+        </button>
+      </div>
+
+      {/* Platform cards */}
+      {EDR_PLATFORMS.map(platform => {
+        const status = edrStatus?.platforms?.[platform.id];
+        const isOpen = expanded[platform.id];
+
+        const statusColor = !status ? '#71717A'
+          : status.connected ? '#22C55E'
+          : status.configured ? '#EF4444'
+          : '#71717A';
+
+        const statusLabel = loading ? 'Checking…'
+          : !status ? 'Unknown'
+          : status.connected ? 'Connected'
+          : status.configured ? 'Credentials set — unreachable'
+          : 'Not configured';
+
+        return (
+          <div key={platform.id} className="at-card" style={{ padding: 0, overflow: 'hidden' }}>
+            {/* Header row */}
+            <div
+              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 18px', cursor: 'pointer' }}
+              onClick={() => toggleExpanded(platform.id)}
+            >
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: statusColor, flexShrink: 0,
+                boxShadow: status?.connected ? `0 0 8px ${statusColor}66` : 'none' }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{platform.name}</div>
+                <div style={{ fontSize: '0.7rem', color: statusColor, ...mono, marginTop: 2 }}>
+                  {status?.error ? `${statusLabel} — ${status.error}` : statusLabel}
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <button
+                  className="btn-ghost"
+                  style={{ fontSize: '0.72rem', padding: '5px 10px' }}
+                  onClick={e => { e.stopPropagation(); testConnection(platform.id); }}
+                  disabled={testing === platform.id}
+                >
+                  {testing === platform.id ? <Loader2 size={11} className="spinner" /> : 'Test Connection'}
+                </button>
+                {isOpen ? <ChevronDown size={13} style={{ color: '#71717A' }} /> : <ChevronRight size={13} style={{ color: '#71717A' }} />}
+              </div>
+            </div>
+
+            {/* Expanded content */}
+            {isOpen && (
+              <div style={{ padding: '0 18px 18px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                {/* Env vars */}
+                <div style={{ marginTop: 14, marginBottom: 12 }}>
+                  <div style={{ fontSize: '0.72rem', color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, ...mono }}>Required Environment Variables</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {platform.envVars.map(({ key, desc }) => (
+                      <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', background: '#0B0D14', borderRadius: 6, border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <code style={{ flex: '0 0 auto', fontSize: '0.75rem', color: platform.color, ...mono, minWidth: 260 }}>{key}</code>
+                        <div style={{ flex: 1, fontSize: '0.72rem', color: '#71717A' }}>{desc}</div>
+                        <button
+                          onClick={() => copyEnvKey(key)}
+                          style={{ background: 'none', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4, padding: '3px 8px', color: '#71717A', cursor: 'pointer', fontSize: '0.68rem', ...mono, display: 'flex', alignItems: 'center', gap: 4 }}
+                        >
+                          <Copy size={10} /> Copy
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Setup steps */}
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: '0.72rem', color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, ...mono }}>Setup Steps</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {platform.steps.map((step, i) => (
+                      <div key={i} style={{ display: 'flex', gap: 10, fontSize: '0.78rem', color: '#F0F0F8', padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                        <span style={{ color: platform.color, ...mono, minWidth: 18 }}>{i + 1}.</span>
+                        <span style={{ color: 'rgba(240,240,248,0.7)' }}>{step}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Docs link */}
+                <a href={platform.docs} target="_blank" rel="noreferrer"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.74rem', color: '#A78BFA', textDecoration: 'none', ...mono }}>
+                  <ExternalLink size={11} /> {platform.name} API Documentation
+                </a>
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* Important note */}
+      <div style={{ padding: '12px 16px', borderRadius: 7, background: 'rgba(234,179,8,0.05)', border: '1px solid rgba(234,179,8,0.15)', fontSize: '0.76rem', color: '#EAB308', lineHeight: 1.6 }}>
+        <strong>After adding env vars on Render:</strong> go to your service → click "Manual Deploy" → "Deploy latest commit". The new env vars take effect only after a redeploy. You will see "Connected" in this panel once the service restarts with valid credentials.
+      </div>
+    </div>
+  );
+}
+
+
 // ── Main Admin Page ───────────────────────────────────────────────────────────
 export default function Admin() {
   const { addToast, user } = useStore();
-  const [tab, setTab] = useState('users');
+  // Support ?tab=integrations deep-link from dashboard EDR widget
+  const defaultTab = new URLSearchParams(window.location.search).get('tab') || 'users';
+  const [tab, setTab] = useState(defaultTab);
 
   return (
     <div style={{ padding:'24px 28px' }}>
@@ -618,11 +845,12 @@ export default function Admin() {
         ))}
       </div>
 
-      {tab === 'users'     && <UsersTab user={user} addToast={addToast}/>}
-      {tab === 'webhooks'  && <WebhooksTab addToast={addToast}/>}
-      {tab === 'schedules' && <SchedulesTab addToast={addToast}/>}
-      {tab === 'audit'     && <AuditTab/>}
-      {tab === 'system'    && <SystemTab addToast={addToast}/>}
+      {tab === 'users'        && <UsersTab user={user} addToast={addToast}/>}
+      {tab === 'integrations' && <IntegrationsTab addToast={addToast}/>}
+      {tab === 'webhooks'     && <WebhooksTab addToast={addToast}/>}
+      {tab === 'schedules'    && <SchedulesTab addToast={addToast}/>}
+      {tab === 'audit'        && <AuditTab/>}
+      {tab === 'system'       && <SystemTab addToast={addToast}/>}
     </div>
   );
 }

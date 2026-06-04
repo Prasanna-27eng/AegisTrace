@@ -258,6 +258,11 @@ export default function CaseList() {
 
                 {/* Badges */}
                 <div style={{ display: 'flex', gap: 5, alignItems: 'center', flexShrink: 0 }}>
+                  {isSlaBreached && (
+                    <span style={{ fontSize: '0.6rem', fontFamily: 'JetBrains Mono', fontWeight: 700, color: '#EF4444', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', padding: '1px 6px', borderRadius: 3, letterSpacing: '0.06em' }}>
+                      SLA BREACH
+                    </span>
+                  )}
                   <SeverityBadge severity={c.severity} />
                   <StatusBadge status={c.status} />
                 </div>

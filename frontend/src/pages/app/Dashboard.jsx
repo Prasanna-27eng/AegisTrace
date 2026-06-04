@@ -92,7 +92,7 @@ export default function Dashboard() {
   const [edrStatus, setEdrStatus]   = useState(null);
   const [edrRecent, setEdrRecent]   = useState([]);
 
-  useEffect(() => {
+  const loadDashboard = () => {
     Promise.all([
       api.get('/api/cases?limit=100'),
       api.get('/api/vt/history'),
@@ -104,9 +104,16 @@ export default function Dashboard() {
       setLoading(false);
     }).catch(() => setLoading(false));
 
-    // EDR status + recent actions (non-blocking — EDR may not be configured)
+    // EDR status + recent actions (non-blocking)
     api.get('/api/edr/status').then(r => setEdrStatus(r.data)).catch(() => {});
     api.get('/api/edr/history/recent?limit=6').then(r => setEdrRecent(r.data)).catch(() => {});
+  };
+
+  useEffect(() => {
+    loadDashboard();
+    // Live refresh every 30 seconds
+    const interval = setInterval(loadDashboard, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const now = Date.now();
@@ -344,7 +351,7 @@ export default function Dashboard() {
             {edrStatus && !edrStatus.any_configured && (
               <div style={{ fontSize: '0.7rem', color: '#71717A', marginTop: 4 }}>
                 No EDR configured.{' '}
-                <span style={{ color: '#A78BFA', cursor: 'pointer' }} onClick={() => navigate('/app/admin')}>Add credentials →</span>
+                <span style={{ color: '#A78BFA', cursor: 'pointer' }} onClick={() => navigate('/app/admin?tab=integrations')}>Configure integrations →</span>
               </div>
             )}
           </div>
@@ -354,12 +361,14 @@ export default function Dashboard() {
             <div className="section-label">Quick Actions</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
               {[
-                { label: 'New Case',       path: '/app/cases',      color: '#C0392B' },
-                { label: 'VT Lookup',      path: '/app/vt-lookup',  color: '#A78BFA' },
-                { label: 'Email Analysis', path: '/app/email',       color: '#22C55E' },
-                { label: 'Log Invest.',    path: '/app/logs',        color: '#EAB308' },
-                { label: 'Threat Hunt',    path: '/app/hunt',        color: '#A78BFA' },
-                { label: 'Tools Hub',      path: '/app/tools',       color: '#71717A' },
+                { label: 'New Case',       path: '/app/cases',         color: '#C0392B' },
+                { label: 'VT Lookup',      path: '/app/vt-lookup',     color: '#A78BFA' },
+                { label: 'Email Analysis', path: '/app/email',          color: '#22C55E' },
+                { label: 'Terminal Lab',   path: '/app/terminal-lab',   color: '#22C55E' },
+                { label: 'Identity Graph', path: '/app/identity-graph', color: '#A78BFA' },
+                { label: 'Threat Hunt',    path: '/app/hunt',           color: '#C0392B' },
+                { label: 'Log Invest.',    path: '/app/logs',           color: '#EAB308' },
+                { label: 'Tools Hub',      path: '/app/tools',          color: '#71717A' },
               ].map(({ label, path, color }) => (
                 <button key={path} onClick={() => navigate(path)} className="btn-ghost"
                   style={{ fontSize: '0.76rem', padding: '7px 10px', justifyContent: 'flex-start', gap: 6 }}>

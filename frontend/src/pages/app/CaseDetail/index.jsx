@@ -5,27 +5,33 @@ import { SeverityBadge, StatusBadge } from '../../../components/SeverityBadge';
 import api from '../../../api/client';
 import useStore from '../../../store/useStore';
 
-import OverviewTab     from './OverviewTab';
+import OverviewTab      from './OverviewTab';
 import InvestigationTab from './InvestigationTab';
-import IOCsTab         from './IOCsTab';
-import TerminalTab     from './TerminalTab';
-import TimelineTab     from './TimelineTab';
-import PlaybookTab     from './PlaybookTab';
-import AIAnalysisTab   from './AIAnalysisTab';
-import AIChatTab       from './AIChatTab';
-import ReportTab       from './ReportTab';
+import IOCsTab          from './IOCsTab';
+import TerminalTab      from './TerminalTab';
+import TimelineTab      from './TimelineTab';
+import PlaybookTab      from './PlaybookTab';
+import AIAnalysisTab    from './AIAnalysisTab';
+import AIChatTab        from './AIChatTab';
+import ReportTab        from './ReportTab';
+import CommentsTab      from './CommentsTab';
+import TrustTimelineTab from './TrustTimelineTab';
+import ProvenanceTab    from './ProvenanceTab';
 
 const TABS = [
-  { id: 'overview',     label: 'Overview' },
-  { id: 'investigation',label: 'Investigation' },
-  { id: 'iocs',         label: 'IOCs' },
-  { id: 'terminal',     label: 'Terminal' },
-  { id: 'timeline',     label: 'Timeline' },
-  { id: 'playbook',     label: 'Playbook' },
-  { id: 'ai',           label: 'AI Analysis' },
-  { id: 'chat',         label: 'AI Chat' },
-  { id: 'report',       label: 'Report' },
-  { id: 'edr',          label: '🛡 EDR', newTab: true },
+  { id: 'overview',      label: 'Overview' },
+  { id: 'investigation', label: 'Investigation' },
+  { id: 'iocs',          label: 'IOCs' },
+  { id: 'terminal',      label: 'Terminal' },
+  { id: 'timeline',      label: 'Timeline' },
+  { id: 'trust',         label: 'Trust' },
+  { id: 'playbook',      label: 'Playbook' },
+  { id: 'ai',            label: 'AI Analysis' },
+  { id: 'chat',          label: 'AI Chat' },
+  { id: 'comments',      label: 'Comments' },
+  { id: 'provenance',    label: 'Provenance' },
+  { id: 'report',        label: 'Report' },
+  { id: 'edr',           label: '🛡 EDR', newTab: true },
 ];
 
 export default function CaseDetail() {
@@ -160,9 +166,12 @@ export default function CaseDetail() {
         {tab === 'iocs'          && <IOCsTab {...tabProps} />}
         {tab === 'terminal'      && <TerminalTab {...tabProps} />}
         {tab === 'timeline'      && <TimelineTab {...tabProps} />}
+        {tab === 'trust'         && <TrustTimelineTab caseId={id} />}
         {tab === 'playbook'      && <PlaybookTab {...tabProps} />}
         {tab === 'ai'            && <AIAnalysisTab {...tabProps} />}
         {tab === 'chat'          && <AIChatTab {...tabProps} />}
+        {tab === 'comments'      && <CommentsTab caseId={id} />}
+        {tab === 'provenance'    && <ProvenanceTab caseId={id} />}
         {tab === 'report'        && <ReportTab {...tabProps} />}
       </div>
     </div>
