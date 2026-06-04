@@ -467,7 +467,7 @@ export default function Portfolio() {
           <div className="port-grid-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 12 }}>
             {[
               { degree: 'MSc Information Systems & Computing', school: 'Dublin Business School (DBS)', year: '2024–2025', note: 'Dissertation: WebSecGuard Chrome Extension — real-time XSS/CSRF detection', color: '#4A8EDB' },
-              { degree: 'BSc Computer Science', school: 'Presidency College, Chennai', year: '2019–2022', note: 'Foundation in programming, algorithms, databases, and systems architecture', color: '#9C7CFF' },
+              { degree: 'B.E. Electronics and Communication Engineering', school: 'PSG College of Technology, Coimbatore', year: '2019–2023', note: 'Strong foundation in electronics, embedded systems, signal processing, and hardware-software integration', color: '#9C7CFF' },
             ].map(e => (
               <div key={e.degree} style={{ background: 'rgba(12,18,32,0.5)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: '20px', borderLeft: `2px solid ${e.color}` }}>
                 <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 4 }}>{e.degree}</div>

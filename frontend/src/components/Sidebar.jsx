@@ -4,7 +4,7 @@ import {
   LayoutDashboard, FolderOpen, Shield, Bug, Mail,
   Wrench, Globe, Settings, LogOut, ChevronLeft, ChevronRight,
   Crosshair, ScrollText, Monitor, FileSearch, Network, Rss, Cpu,
-  Terminal, Fingerprint, BarChart2, ShieldAlert
+  Terminal, Fingerprint, BarChart2, ShieldAlert, ShieldCheck
 } from 'lucide-react';
 import Logo from './Logo';
 import useStore from '../store/useStore';
@@ -15,6 +15,7 @@ const NAV_GROUPS = [
     items: [
       { to: '/app/dashboard',      label: 'Dashboard',         Icon: LayoutDashboard },
       { to: '/app/cases',          label: 'Cases',             Icon: FolderOpen },
+      { to: '/app/analytics',      label: 'Analytics',         Icon: BarChart2 },
       { to: '/app/hunt',           label: 'Threat Hunt',       Icon: Crosshair },
       { to: '/app/endpoints',      label: 'Endpoints',         Icon: Monitor },
       { to: '/app/logs',           label: 'Log Investigation', Icon: FileSearch },
@@ -36,6 +37,7 @@ const NAV_GROUPS = [
     items: [
       { to: '/app/identity-graph', label: 'Identity Graph',    Icon: Fingerprint },
       { to: '/app/itdr',           label: 'ITDR',              Icon: ShieldAlert },
+      { to: '/app/policies',       label: 'Policies',          Icon: ShieldCheck },
     ],
   },
   {

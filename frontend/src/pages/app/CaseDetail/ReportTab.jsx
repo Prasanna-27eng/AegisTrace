@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Download, FileText, File, Shield, Loader2 } from 'lucide-react';
+import { Download, FileText, File, Shield, Loader2, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 import api from '../../../api/client';
 import useStore from '../../../store/useStore';
+
+const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 
 // Downloads a report via Axios (carries auth token) and triggers browser save
 function useAuthDownload() {
@@ -99,27 +101,61 @@ export default function ReportTab({ caseId, caseData }) {
         ))}
       </div>
 
-      {/* Preview */}
-      <div className="at-card" style={{ padding: 16 }}>
-        <div className="section-label">Report Contents Preview</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: '0.8rem', color: '#71717A' }}>
-          {[
-            ['Case Number',    caseData?.case_number, true],
-            ['Title',         caseData?.title,        true],
-            ['Severity',      caseData?.severity?.toUpperCase(), true],
-            ['Analyst',       caseData?.analyst_name, true],
-            ['Customer',      caseData?.customer_name || '—', true],
-            ['AI Summary',    hasAI ? '✓ Present' : '✗ Not generated — run AI Analysis tab first', hasAI],
-            ['Findings',      hasFindings ? '✓ Present' : '✗ Missing — add findings in Investigation tab', hasFindings],
-            ['Closure Notes', isClosed ? '✓ Present' : '✗ Case not closed — close case for full DORA report', isClosed],
-          ].map(([k, v, ok]) => (
-            <div key={k} style={{ display: 'flex', gap: 12, padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-              <span style={{ color: '#71717A', minWidth: 120 }}>{k}</span>
-              <span style={{ color: ok ? '#F0F0F8' : '#EAB308' }}>{v}</span>
+      {/* ── Completeness Preview ── */}
+      {(() => {
+        const hasDescription = !!(caseData?.description && caseData.description.length > 20);
+        const hasIOCs        = (() => { try { return JSON.parse(caseData?.iocs || '[]').length > 0; } catch { return false; } })();
+        const hasMITRE       = (() => { try { return JSON.parse(caseData?.mitre_techniques || '[]').length > 0; } catch { return false; } })();
+        const hasRecommendations = !!(caseData?.recommendations && caseData.recommendations.length > 10);
+
+        const sections = [
+          { label: 'Case description',     done: hasDescription,                       hint: 'Add description in Overview tab' },
+          { label: 'Investigation findings', done: hasFindings,                         hint: 'Add findings in Investigation tab' },
+          { label: 'IOC enrichment',        done: hasIOCs,                             hint: 'Add IOCs in IOCs tab' },
+          { label: 'MITRE ATT&CK mapping',  done: hasMITRE,                            hint: 'Add MITRE techniques via AI Analysis' },
+          { label: 'AI executive summary',  done: hasAI,                               hint: 'Generate in AI Analysis tab' },
+          { label: 'Recommendations',       done: hasRecommendations,                  hint: 'Add in Investigation tab' },
+          { label: 'Case closed',           done: isClosed,                            hint: 'Close the case when investigation complete' },
+        ];
+        const complete = sections.filter(s => s.done).length;
+        const pct = Math.round((complete / sections.length) * 100);
+        const isReady = pct >= 85;
+
+        return (
+          <div className="at-card" style={{ padding: 16 }}>
+            {/* Score bar */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span className="section-label" style={{ margin: 0 }}>Report Completeness</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: isReady ? '#22C55E' : pct >= 57 ? '#EAB308' : '#EF4444', ...MONO }}>{pct}%</span>
+                    <span style={{ fontSize: '0.65rem', padding: '2px 8px', borderRadius: 12, background: isReady ? 'rgba(34,197,94,0.12)' : 'rgba(245,158,11,0.12)', color: isReady ? '#22C55E' : '#F5B84B', border: `1px solid ${isReady ? 'rgba(34,197,94,0.25)' : 'rgba(245,158,11,0.25)'}`, ...MONO, fontWeight: 600 }}>
+                      {isReady ? '✓ Ready to Export' : `${complete}/${sections.length} sections`}
+                    </span>
+                  </div>
+                </div>
+                <div style={{ height: 5, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{ width: `${pct}%`, height: '100%', background: isReady ? '#22C55E' : pct >= 57 ? '#EAB308' : '#EF4444', borderRadius: 3, transition: 'width 0.5s ease' }} />
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
+
+            {/* Section checklist */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {sections.map(s => (
+                <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                  {s.done
+                    ? <CheckCircle size={13} style={{ color: '#22C55E', flexShrink: 0 }} />
+                    : <XCircle size={13} style={{ color: '#EF4444', opacity: 0.5, flexShrink: 0 }} />}
+                  <span style={{ flex: 1, fontSize: '0.78rem', color: s.done ? '#D7DCE6' : '#6F7A8F' }}>{s.label}</span>
+                  {!s.done && <span style={{ fontSize: '0.65rem', color: '#3A4556', ...MONO }}>{s.hint}</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

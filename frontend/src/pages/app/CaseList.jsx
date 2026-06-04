@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Plus, Search, Globe, FileText, Share2, Trash2, Lock, Clock, AlertTriangle, FolderOpen } from 'lucide-react';
+import { Plus, Search, Globe, FileText, Share2, Trash2, Lock, Clock, AlertTriangle, FolderOpen, Layers } from 'lucide-react';
 import { SeverityBadge, StatusBadge } from '../../components/SeverityBadge';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
+import InvestigationTemplates from '../../components/InvestigationTemplates';
 
 function caseAge(dateStr) {
   const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
@@ -43,13 +44,14 @@ export default function CaseList() {
   const [searchParams] = useSearchParams();
   const { addToast, user } = useStore();
 
-  const [cases, setCases]       = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [q, setQ]               = useState(searchParams.get('q') || '');
-  const [severity, setSeverity] = useState(searchParams.get('severity') || '');
-  const [status, setStatus]     = useState(searchParams.get('status') || '');
-  const [sort, setSort]         = useState('newest');
+  const [cases, setCases]         = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [q, setQ]                 = useState(searchParams.get('q') || '');
+  const [severity, setSeverity]   = useState(searchParams.get('severity') || '');
+  const [status, setStatus]       = useState(searchParams.get('status') || '');
+  const [sort, setSort]           = useState('newest');
   const [activeChip, setActiveChip] = useState(0);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   const fetchCases = useCallback(() => {
     setLoading(true);
@@ -78,6 +80,21 @@ export default function CaseList() {
       const res = await api.post('/api/cases', { title: 'New Investigation', severity: 'medium', analyst_name: user?.name || 'Analyst' });
       navigate(`/app/cases/${res.data.id}`);
     } catch { addToast('Failed to create case', 'error'); }
+  };
+
+  const handleTemplateSelect = async (template) => {
+    setShowTemplates(false);
+    try {
+      const res = await api.post('/api/cases', {
+        title: template.title,
+        description: template.description,
+        severity: template.severity,
+        incident_type: template.incident_type,
+        analyst_name: user?.name || 'Analyst',
+      });
+      addToast(`Case created from ${template.label} template`, 'success');
+      navigate(`/app/cases/${res.data.id}`);
+    } catch { addToast('Failed to create case from template', 'error'); }
   };
 
   const handleDelete = async (e, caseId, caseNumber) => {
@@ -134,10 +151,23 @@ export default function CaseList() {
             {pending > 0 && <span style={{ color: '#EAB308' }}>{pending} pending</span>}
           </div>
         </div>
-        <button className="btn-accent" onClick={handleNewCase} style={{ fontSize: '0.8rem' }}>
-          <Plus size={13} /> New Case
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn-ghost" onClick={() => setShowTemplates(true)} style={{ fontSize: '0.78rem' }}>
+            <Layers size={13} /> Templates
+          </button>
+          <button className="btn-accent" onClick={handleNewCase} style={{ fontSize: '0.8rem' }}>
+            <Plus size={13} /> New Case
+          </button>
+        </div>
       </div>
+
+      {/* Investigation Templates modal */}
+      {showTemplates && (
+        <InvestigationTemplates
+          onSelect={handleTemplateSelect}
+          onClose={() => setShowTemplates(false)}
+        />
+      )}
 
       {/* Quick filter chips */}
       <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>

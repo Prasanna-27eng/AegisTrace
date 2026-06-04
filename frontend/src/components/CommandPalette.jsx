@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import {
   Search, LayoutDashboard, FolderOpen, Shield, Mail, Bug, Wrench,
   Monitor, FileSearch, Crosshair, ScrollText, Globe, Settings,
-  Plus, ArrowRight, BookOpen, Terminal, X, Fingerprint, Network, Rss, Cpu
+  Plus, ArrowRight, BookOpen, Terminal, X, Fingerprint, Network, Rss, Cpu,
+  BarChart2, ShieldCheck, ShieldAlert
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -12,8 +13,11 @@ const NAV_ITEMS = [
   { label: 'Threat Hunt',       path: '/app/hunt',           Icon: Crosshair,       group: 'Navigate' },
   { label: 'Endpoints',         path: '/app/endpoints',      Icon: Monitor,         group: 'Navigate' },
   { label: 'Log Investigation', path: '/app/logs',           Icon: FileSearch,      group: 'Navigate' },
+  { label: 'Analytics',         path: '/app/analytics',      Icon: BarChart2,       group: 'Navigate' },
   { label: 'Terminal Lab',      path: '/app/terminal-lab',   Icon: Terminal,        group: 'Lab'      },
   { label: 'Identity Graph',    path: '/app/identity-graph', Icon: Fingerprint,     group: 'Lab'      },
+  { label: 'ITDR',              path: '/app/itdr',           Icon: ShieldAlert,     group: 'Lab'      },
+  { label: 'Policies',          path: '/app/policies',       Icon: ShieldCheck,     group: 'Lab'      },
   { label: 'VT Lookup',         path: '/app/vt-lookup',      Icon: Shield,          group: 'Tools'    },
   { label: 'Email Analysis',    path: '/app/email',          Icon: Mail,            group: 'Tools'    },
   { label: 'PCAP Analysis',     path: '/app/pcap',           Icon: Network,         group: 'Tools'    },

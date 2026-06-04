@@ -284,7 +284,7 @@ export default function Mission() {
 
           <div className="lp-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginTop: 32 }}>
             <ContribCard Icon={Code}     color="#4A8EDB" title="Build Features"        action="Email to discuss →"
-              desc="Help build the v3.0 features: Identity Graph, Terminal Lab, Agent Supervision, Attacker Path Reconstruction. Any stack welcome." />
+              desc="Help build the v4.1+ features: Shadow AI Detection, AI Agent Security, SOAR Playbooks, Attacker Path Reconstruction, AI Memory across cases. Any stack welcome." />
             <ContribCard Icon={Shield}   color="#9C7CFF" title="Security Research"     action="Share your research →"
               desc="Contribute AI threat models, identity attack patterns, MITRE mappings, or research on emerging threats in the AI-agent era." />
             <ContribCard Icon={Brain}    color="#4BE38A" title="AI / ML Engineering"  action="Email to collaborate →"
@@ -323,16 +323,40 @@ export default function Mission() {
           <div className="lp-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
             {[
               {
-                phase: 'Now — v2.0', status: 'live', color: '#4BE38A',
-                items: ['Case management lifecycle','Multi-model AI (4 Groq models)','7-source IOC enrichment','Endpoint agent (Sysmon/process)','18 hardware forensic tools','Email forensics','PCAP analysis','DORA Article 19 compliance','Threat hunting + campaigns','Audit logs + webhook alerting'],
+                phase: 'Live — v2.0 → v4.0', status: 'live', color: '#4BE38A',
+                items: [
+                  'ITDR — credential stuffing, impossible travel, new device, privilege escalation',
+                  'Identity Graph + Pluggable Risk Engine + Policy Engine',
+                  'Trust Timeline + Provenance Ledger (AI action audit)',
+                  'Terminal Lab — private analyst workspace',
+                  'Explainable AI — reasoning chain, evidence, confidence on every verdict',
+                  'Case management (13 tabs) + comments + investigation templates',
+                  'Analytics dashboard — severity, SLA, MITRE heatmap, throughput',
+                  '7-source IOC enrichment + 18 hardware forensic tools',
+                  'Email forensics (SPF/DKIM/DMARC) + PCAP + DORA compliance',
+                  'Endpoint agent v2 + webhook alerting + audit logs',
+                ],
               },
               {
-                phase: 'Building — v3.0', status: 'building', color: '#F5B84B',
-                items: ['Identity Graph — users/tokens/agents as nodes','Trust Timeline — per-case chain of events','Provenance Ledger — AI action audit','Terminal Lab — private analyst workspace','Explainable AI — reasoning chain','Proactive triage — AI-surfaced anomalies','Case Comments + investigation templates','Analytics — trends, SLA, throughput'],
+                phase: 'In Progress — v4.1', status: 'building', color: '#F5B84B',
+                items: [
+                  'Shadow AI Detection — detect data sent to unauthorised AI services',
+                  'AI Agent Security — bounded autonomy + human approval workflows',
+                  'SOAR Playbooks — automated response sequences per incident type',
+                  'Control Plane view — live trust, policy, and agent health dashboard',
+                  'Report narrative mode — attacker story for board-level audiences',
+                ],
               },
               {
-                phase: 'Planned — v4.0', status: 'planned', color: '#9C7CFF',
-                items: ['Agent Supervision Console — kill switches','Attacker Path Reconstruction','AI Memory across cases','Policy-based response automation','Machine Identity incidents','Control Plane view — live trust/policy','Crypto + Quantum Readiness inventory','Future-narrative board-level reporting'],
+                phase: 'Planned — v5.0', status: 'planned', color: '#9C7CFF',
+                items: [
+                  'Agent Supervision Console — kill switches + task scope',
+                  'Attacker Path Reconstruction — visual kill-chain across actors',
+                  'AI Memory across cases — pattern recognition from history',
+                  'Crypto + Quantum Readiness — certificate inventory, PQ flags',
+                  'Machine Identity incidents — rogue API keys, service accounts',
+                  'Future-narrative reporting — board-level attacker stories',
+                ],
               },
             ].map(({ phase, status, color, items }) => (
               <div key={phase} style={{ background: 'rgba(12,18,32,0.5)', border: `1px solid ${color}20`, borderRadius: 12, padding: 24, position: 'relative', overflow: 'hidden' }}>

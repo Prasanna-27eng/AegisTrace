@@ -31,6 +31,8 @@ import ToolResult       from './pages/app/ToolResult';
 import TerminalLab      from './pages/app/TerminalLab';
 import IdentityGraph    from './pages/app/IdentityGraph';
 import ITDRPage         from './pages/app/ITDRPage';
+import Analytics        from './pages/app/Analytics';
+import Policies         from './pages/app/Policies';
 
 export default function App() {
   return (
@@ -69,6 +71,8 @@ export default function App() {
           <Route path="terminal-lab"      element={<TerminalLab />} />
           <Route path="identity-graph"    element={<IdentityGraph />} />
           <Route path="itdr"              element={<ITDRPage />} />
+          <Route path="analytics"         element={<Analytics />} />
+          <Route path="policies"          element={<Policies />} />
         </Route>
 
         <Route path="/app/hardware/tools/:runId" element={<ToolResult />} />
