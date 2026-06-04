@@ -18,7 +18,7 @@ from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select
-from models import IdentityNode, IdentityEdge, User, AuditLog
+from models import IdentityNode, IdentityEdge, IdentityAnomaly, User, AuditLog
 from database import get_session
 from routers.auth import get_current_user
 
@@ -219,6 +219,110 @@ def delete_edge(
     session.delete(edge)
     session.commit()
     return {"ok": True}
+
+
+
+# ── v4.0 Identity Risk Engine endpoints ──────────────────────────────────────
+
+@router.get("/nodes/{node_id}/anomalies")
+def get_node_anomalies(
+    node_id: int,
+    resolved: Optional[bool] = Query(None),
+    session: Session = Depends(get_session),
+    _user: User = Depends(get_current_user),
+):
+    """Get all anomalies for a node."""
+    q = select(IdentityAnomaly).where(IdentityAnomaly.node_id == node_id)
+    if resolved is not None:
+        q = q.where(IdentityAnomaly.resolved == resolved)
+    q = q.order_by(IdentityAnomaly.detected_at.desc())
+    return session.exec(q).all()
+
+
+@router.post("/nodes/{node_id}/anomalies")
+def create_node_anomaly(
+    node_id: int,
+    data: dict,
+    session: Session = Depends(get_session),
+    user: User = Depends(get_current_user),
+):
+    """
+    Record an anomaly for an identity node, then immediately recalculate risk.
+    Returns: {node, risk_score, anomaly, detector_results}
+    """
+    from core.identity_engine import engine as identity_engine
+
+    node = session.get(IdentityNode, node_id)
+    if not node:
+        raise HTTPException(404, "Node not found")
+
+    anomaly = IdentityAnomaly(
+        node_id=node_id,
+        anomaly_type=data.get("anomaly_type", "unknown"),
+        description=data.get("description", ""),
+        severity=data.get("severity", "medium"),
+        confidence=float(data.get("confidence", 0.8)),
+        case_id=data.get("case_id"),
+    )
+    session.add(anomaly)
+    session.add(AuditLog(
+        action="identity_anomaly_added",
+        entity_type="identity_node", entity_id=str(node_id),
+        new_value=f"{anomaly.severity} — {anomaly.anomaly_type}",
+        user_id=user.id, user_email=user.email,
+    ))
+    session.commit()
+    session.refresh(anomaly)
+
+    result = identity_engine.process(node_id=node_id, session=session)
+
+    return {
+        "node": result.get("node_id"),
+        "risk_score": result["new_score"],
+        "anomaly": anomaly,
+        "detector_results": result["detector_results"],
+    }
+
+
+@router.patch("/nodes/{node_id}/anomalies/{anomaly_id}/resolve")
+def resolve_anomaly(
+    node_id: int,
+    anomaly_id: int,
+    session: Session = Depends(get_session),
+    user: User = Depends(get_current_user),
+):
+    """Mark an anomaly as resolved and recalculate risk."""
+    from core.identity_engine import engine as identity_engine
+
+    anomaly = session.get(IdentityAnomaly, anomaly_id)
+    if not anomaly or anomaly.node_id != node_id:
+        raise HTTPException(404, "Anomaly not found")
+    anomaly.resolved = True
+    anomaly.resolved_at = datetime.utcnow()
+    session.add(anomaly)
+    session.commit()
+
+    result = identity_engine.process(node_id=node_id, session=session)
+    return {"ok": True, "new_score": result["new_score"]}
+
+
+@router.post("/nodes/{node_id}/recalculate")
+def recalculate_node_risk(
+    node_id: int,
+    session: Session = Depends(get_session),
+    user: User = Depends(get_current_user),
+):
+    """
+    Manually trigger risk recalculation for a node.
+    Returns: {node_id, old_score, new_score, detector_results}
+    """
+    from core.identity_engine import engine as identity_engine
+
+    node = session.get(IdentityNode, node_id)
+    if not node:
+        raise HTTPException(404, "Node not found")
+
+    return identity_engine.process(node_id=node_id, session=session)
 
 
 @router.get("/search")

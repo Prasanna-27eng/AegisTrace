@@ -465,3 +465,35 @@ class AgentAction(SQLModel, table=True):
     case_id: Optional[int] = Field(default=None, foreign_key="case.id")
     provenance_id: Optional[int] = Field(default=None)
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# ── v4.0 Identity Risk Engine ─────────────────────────────────────────────────
+
+class IdentityAnomaly(SQLModel, table=True):
+    """Anomaly detected for an identity node — drives risk score calculation."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    node_id: int = Field(foreign_key="identitynode.id", index=True)
+    anomaly_type: str = Field(default="")             # new_location | impossible_travel | failed_login | privilege_change | etc.
+    description: str = Field(default="", sa_column=Column(Text))
+    severity: str = Field(default="medium")           # low | medium | high | critical
+    confidence: float = Field(default=0.8)            # 0.0–1.0
+    detected_at: datetime = Field(default_factory=datetime.utcnow)
+    resolved: bool = Field(default=False)
+    resolved_at: Optional[datetime] = Field(default=None)
+    case_id: Optional[int] = Field(default=None, foreign_key="case.id")
+
+
+class Policy(SQLModel, table=True):
+    """SOC access control policy — validated by the policy engine."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(default="")
+    description: Optional[str] = Field(default=None, sa_column=Column(Text))
+    identity_type: Optional[str] = Field(default=None)   # user | service_account | agent | None=all
+    role: Optional[str] = Field(default=None)             # developer | admin | analyst | None=all
+    allowed_actions: Optional[str] = Field(default="[]", sa_column=Column(Text))  # JSON list
+    denied_actions: Optional[str] = Field(default="[]", sa_column=Column(Text))   # JSON list
+    allowed_ips: Optional[str] = Field(default="[]", sa_column=Column(Text))      # JSON list
+    allowed_hours_start: Optional[str] = Field(default=None)   # "09:00" UTC
+    allowed_hours_end: Optional[str] = Field(default=None)     # "17:00" UTC
+    is_active: bool = Field(default=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)

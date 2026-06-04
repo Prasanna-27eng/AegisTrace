@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Plus, Trash2, RefreshCw, AlertTriangle, Shield, Key,
   Monitor, Bot, User, Link, Loader2, X, ChevronRight,
-  Fingerprint, ShieldAlert, GitMerge, Search
+  Fingerprint, ShieldAlert, GitMerge, Search, CheckCircle,
+  Activity, BarChart2
 } from 'lucide-react';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
@@ -246,73 +247,202 @@ function GraphCanvas({ nodes, edges, onNodeClick, selectedId }) {
   );
 }
 
-// ── Node Detail Panel ────────────────────────────────────────────────────────
-function NodePanel({ node, onMarkCompromised, onDelete, onClose }) {
+const SEV_COLOR = { low: '#22C55E', medium: '#EAB308', high: '#F97316', critical: '#EF4444' };
+
+// ── Node Detail Panel (v4.0 — with anomaly management + risk engine) ──────────
+function NodePanel({ node, onMarkCompromised, onDelete, onClose, onScoreUpdate }) {
+  const { addToast } = useStore();
+  const [anomalies, setAnomalies]       = useState([]);
+  const [anomLoading, setAnomLoading]   = useState(false);
+  const [showAddAnom, setShowAddAnom]   = useState(false);
+  const [recalcResult, setRecalcResult] = useState(null);
+  const [recalcLoading, setRecalcLoading] = useState(false);
+  const [saving, setSaving]             = useState(false);
+  const [anomForm, setAnomForm]         = useState({
+    anomaly_type: '', description: '', severity: 'medium', confidence: 0.8,
+  });
+
   if (!node) return null;
   const meta = TYPE_MAP[node.type] || NODE_TYPES[0];
   const { Icon } = meta;
 
+  const loadAnomalies = useCallback(() => {
+    setAnomLoading(true);
+    api.get(`/api/identity/nodes/${node.id}/anomalies?resolved=false`)
+      .then(r => setAnomalies(r.data))
+      .catch(() => {})
+      .finally(() => setAnomLoading(false));
+  }, [node.id]);
+
+  useEffect(() => { loadAnomalies(); setRecalcResult(null); }, [node.id]);
+
+  const addAnomaly = async () => {
+    if (!anomForm.anomaly_type.trim() || !anomForm.description.trim()) {
+      addToast('Type and description required', 'error'); return;
+    }
+    setSaving(true);
+    try {
+      const res = await api.post(`/api/identity/nodes/${node.id}/anomalies`, anomForm);
+      loadAnomalies();
+      setRecalcResult(res.data);
+      if (onScoreUpdate) onScoreUpdate(node.id, res.data.risk_score);
+      setShowAddAnom(false);
+      setAnomForm({ anomaly_type: '', description: '', severity: 'medium', confidence: 0.8 });
+      addToast('Anomaly recorded, risk score updated', 'success');
+    } catch (e) { addToast(e.response?.data?.detail || 'Failed', 'error'); }
+    setSaving(false);
+  };
+
+  const resolveAnomaly = async (anomId) => {
+    try {
+      const res = await api.patch(`/api/identity/nodes/${node.id}/anomalies/${anomId}/resolve`);
+      loadAnomalies();
+      if (onScoreUpdate) onScoreUpdate(node.id, res.data.new_score);
+      addToast('Anomaly resolved', 'success');
+    } catch { addToast('Failed', 'error'); }
+  };
+
+  const recalculate = async () => {
+    setRecalcLoading(true);
+    try {
+      const res = await api.post(`/api/identity/nodes/${node.id}/recalculate`);
+      setRecalcResult(res.data);
+      if (onScoreUpdate) onScoreUpdate(node.id, res.data.new_score);
+      addToast(`Risk score: ${res.data.old_score} → ${res.data.new_score}`, 'success');
+    } catch { addToast('Recalculate failed', 'error'); }
+    setRecalcLoading(false);
+  };
+
   return (
-    <div style={{ width: 280, background: '#070B14', borderLeft: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
-      <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div style={{ width: 300, background: '#070B14', borderLeft: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+      {/* Header */}
+      <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
         <Icon size={14} style={{ color: meta.color }} />
         <div style={{ flex: 1, fontWeight: 600, fontSize: '0.84rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{node.label}</div>
         <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer', padding: 2 }}><X size={13} /></button>
       </div>
-      <div style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {/* Type + risk */}
-        <div style={{ display: 'flex', gap: 8 }}>
-          <span style={{ fontSize: '0.68rem', background: `${meta.color}18`, color: meta.color, padding: '2px 8px', borderRadius: 3, ...MONO }}>{node.type?.replace('_', ' ').toUpperCase()}</span>
-          <span style={{ fontSize: '0.68rem', background: `${riskColor(node.risk_score)}18`, color: riskColor(node.risk_score), padding: '2px 8px', borderRadius: 3, ...MONO }}>RISK {node.risk_score}</span>
-          {node.is_compromised && <span style={{ fontSize: '0.68rem', background: 'rgba(239,68,68,0.15)', color: '#EF4444', padding: '2px 8px', borderRadius: 3, ...MONO }}>COMPROMISED</span>}
+
+      <div style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 12, flex: 1, overflowY: 'auto' }}>
+        {/* Type + risk badges */}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.65rem', background: `${meta.color}18`, color: meta.color, padding: '2px 7px', borderRadius: 3, ...MONO }}>{node.type?.replace('_', ' ').toUpperCase()}</span>
+          <span style={{ fontSize: '0.65rem', background: `${riskColor(node.risk_score)}18`, color: riskColor(node.risk_score), padding: '2px 7px', borderRadius: 3, ...MONO }}>RISK {node.risk_score ?? 0}</span>
+          {node.is_compromised && <span style={{ fontSize: '0.65rem', background: 'rgba(239,68,68,0.15)', color: '#EF4444', padding: '2px 7px', borderRadius: 3, ...MONO }}>COMPROMISED</span>}
+          {anomalies.length > 0 && <span style={{ fontSize: '0.65rem', background: 'rgba(245,158,11,0.12)', color: '#F5B84B', padding: '2px 7px', borderRadius: 3, ...MONO }}>{anomalies.length} ANOMALY</span>}
+        </div>
+
+        {/* Timestamps */}
+        <div style={{ fontSize: '0.68rem', color: '#71717A', ...MONO, lineHeight: 1.8 }}>
+          First seen: {node.first_seen ? new Date(node.first_seen).toLocaleString() : '—'}<br/>
+          Last seen: {node.last_seen ? new Date(node.last_seen).toLocaleString() : '—'}
         </div>
 
         {/* Metadata */}
         {node.metadata && Object.keys(node.metadata).length > 0 && (
           <div>
-            <div style={{ fontSize: '0.62rem', color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6, ...MONO }}>Metadata</div>
+            <div style={{ fontSize: '0.6rem', color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5, ...MONO }}>Metadata</div>
             {Object.entries(node.metadata).map(([k, v]) => (
-              <div key={k} style={{ display: 'flex', gap: 8, padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: '0.72rem' }}>
-                <span style={{ color: '#71717A', minWidth: 70 }}>{k}</span>
-                <span style={{ color: 'rgba(240,240,248,0.7)', ...MONO, wordBreak: 'break-all' }}>{String(v)}</span>
+              <div key={k} style={{ display: 'flex', gap: 8, padding: '3px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: '0.7rem' }}>
+                <span style={{ color: '#71717A', minWidth: 60 }}>{k}</span>
+                <span style={{ color: 'rgba(240,240,248,0.7)', ...MONO, wordBreak: 'break-all', fontSize: '0.68rem' }}>{String(v)}</span>
               </div>
             ))}
           </div>
         )}
 
-        {/* Linked cases */}
-        {node.case_ids?.length > 0 && (
-          <div>
-            <div style={{ fontSize: '0.62rem', color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6, ...MONO }}>Linked Cases</div>
-            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-              {node.case_ids.map(id => (
-                <a key={id} href={`/app/cases/${id}`} style={{ fontSize: '0.68rem', color: '#A78BFA', ...MONO, textDecoration: 'none', background: 'rgba(167,139,250,0.08)', padding: '2px 7px', borderRadius: 3 }}>Case #{id}</a>
+        {/* ── ANOMALIES SECTION ─────────────────────────────── */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ fontSize: '0.6rem', color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.08em', ...MONO, display: 'flex', alignItems: 'center', gap: 5 }}>
+              <AlertTriangle size={10} style={{ color: '#F5B84B' }} /> Anomalies ({anomalies.length})
+            </div>
+            <button onClick={() => setShowAddAnom(p => !p)} style={{ background: 'none', border: 'none', color: '#4A8EDB', cursor: 'pointer', fontSize: '0.68rem', ...MONO, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Plus size={10} /> Add
+            </button>
+          </div>
+
+          {/* Add anomaly form */}
+          {showAddAnom && (
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, padding: 10, marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 7 }}>
+              <input className="at-input" value={anomForm.anomaly_type} onChange={e => setAnomForm(p => ({...p, anomaly_type: e.target.value}))} placeholder="Type (e.g. impossible_travel)" style={{ fontSize: '0.72rem', ...MONO }} />
+              <input className="at-input" value={anomForm.description} onChange={e => setAnomForm(p => ({...p, description: e.target.value}))} placeholder="Description" style={{ fontSize: '0.72rem' }} />
+              <div style={{ display: 'flex', gap: 6 }}>
+                <select className="at-select" value={anomForm.severity} onChange={e => setAnomForm(p => ({...p, severity: e.target.value}))} style={{ flex: 1, fontSize: '0.72rem' }}>
+                  {['low','medium','high','critical'].map(s => <option key={s}>{s}</option>)}
+                </select>
+                <input type="number" className="at-input" min="0" max="1" step="0.1" value={anomForm.confidence} onChange={e => setAnomForm(p => ({...p, confidence: parseFloat(e.target.value)}))} style={{ width: 56, fontSize: '0.72rem', ...MONO }} />
+              </div>
+              <div style={{ display: 'flex', gap: 5 }}>
+                <button className="btn-accent" onClick={addAnomaly} disabled={saving} style={{ fontSize: '0.7rem', flex: 1 }}>
+                  {saving ? <Loader2 size={11} className="spinner" /> : 'Record'}
+                </button>
+                <button className="btn-ghost" onClick={() => setShowAddAnom(false)} style={{ fontSize: '0.7rem' }}>Cancel</button>
+              </div>
+            </div>
+          )}
+
+          {/* Anomaly list */}
+          {anomLoading ? (
+            <div style={{ textAlign: 'center', padding: '8px 0' }}><Loader2 size={13} className="spinner" style={{ color: '#71717A' }} /></div>
+          ) : anomalies.length === 0 ? (
+            <div style={{ fontSize: '0.7rem', color: '#3A4556', ...MONO, textAlign: 'center', padding: '6px 0' }}>No active anomalies</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {anomalies.map(a => (
+                <div key={a.id} style={{ background: `${SEV_COLOR[a.severity] || '#71717A'}08`, border: `1px solid ${SEV_COLOR[a.severity] || '#71717A'}25`, borderRadius: 5, padding: '7px 9px', position: 'relative' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 3 }}>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 600, color: SEV_COLOR[a.severity] || '#71717A', ...MONO }}>{a.anomaly_type}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <span style={{ fontSize: '0.6rem', color: SEV_COLOR[a.severity] || '#71717A', ...MONO }}>{a.severity}</span>
+                      <button onClick={() => resolveAnomaly(a.id)} title="Mark resolved" style={{ background: 'none', border: 'none', color: '#22C55E', cursor: 'pointer', padding: '1px' }}>
+                        <CheckCircle size={11} />
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: '#A6AFBF', lineHeight: 1.4 }}>{a.description}</div>
+                  <div style={{ fontSize: '0.6rem', color: '#6F7A8F', ...MONO, marginTop: 3 }}>
+                    Confidence: {Math.round(a.confidence * 100)}% · {new Date(a.detected_at).toLocaleDateString()}
+                  </div>
+                </div>
               ))}
             </div>
-          </div>
-        )}
-
-        {/* Timestamps */}
-        <div style={{ fontSize: '0.68rem', color: '#71717A', ...MONO }}>
-          First seen: {node.first_seen ? new Date(node.first_seen).toLocaleString() : '—'}<br/>
-          Last seen: {node.last_seen ? new Date(node.last_seen).toLocaleString() : '—'}
+          )}
         </div>
 
-        {/* Actions */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
-          <button
-            className={node.is_compromised ? 'btn-ghost' : 'btn-danger'}
-            onClick={() => onMarkCompromised(node.id, !node.is_compromised)}
-            style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: 6 }}
-          >
+        {/* ── RISK ENGINE SECTION ───────────────────────────── */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10 }}>
+          <div style={{ fontSize: '0.6rem', color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, ...MONO, display: 'flex', alignItems: 'center', gap: 5 }}>
+            <BarChart2 size={10} style={{ color: '#4A8EDB' }} /> Risk Engine
+          </div>
+          <button className="btn-ghost" onClick={recalculate} disabled={recalcLoading} style={{ width: '100%', fontSize: '0.74rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+            {recalcLoading ? <Loader2 size={12} className="spinner" /> : <RefreshCw size={12} />}
+            Recalculate Risk Score
+          </button>
+
+          {recalcResult && (
+            <div style={{ marginTop: 8, background: 'rgba(74,142,219,0.06)', border: '1px solid rgba(74,142,219,0.15)', borderRadius: 6, padding: 10 }}>
+              <div style={{ fontSize: '0.7rem', color: '#4A8EDB', ...MONO, marginBottom: 6 }}>
+                {recalcResult.old_score ?? '—'} → <strong>{recalcResult.new_score}</strong>
+                {recalcResult.new_score > (recalcResult.old_score ?? 0) ? ' ↑' : ' ↓'}
+              </div>
+              {recalcResult.detector_results?.map(d => (
+                <div key={d.name} style={{ display: 'flex', gap: 6, fontSize: '0.65rem', ...MONO, padding: '2px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                  <span style={{ color: '#6F7A8F', flex: 1 }}>{d.name}</span>
+                  <span style={{ color: d.score > 50 ? '#EF4444' : d.score > 20 ? '#F5B84B' : '#22C55E' }}>{d.score}</span>
+                  <span style={{ color: '#3A4556' }}>×{d.weight}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ── NODE ACTIONS ──────────────────────────────────── */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <button className={node.is_compromised ? 'btn-ghost' : 'btn-danger'} onClick={() => onMarkCompromised(node.id, !node.is_compromised)} style={{ fontSize: '0.74rem', display: 'flex', alignItems: 'center', gap: 6 }}>
             <ShieldAlert size={12} />
             {node.is_compromised ? 'Clear Compromised Flag' : 'Mark as Compromised'}
           </button>
-          <button
-            className="btn-ghost"
-            onClick={() => onDelete(node.id)}
-            style={{ fontSize: '0.75rem', color: '#EF4444', display: 'flex', alignItems: 'center', gap: 6 }}
-          >
+          <button className="btn-ghost" onClick={() => onDelete(node.id)} style={{ fontSize: '0.74rem', color: '#EF4444', display: 'flex', alignItems: 'center', gap: 6 }}>
             <Trash2 size={12} /> Delete Node
           </button>
         </div>
@@ -525,6 +655,13 @@ export default function IdentityGraph() {
           onMarkCompromised={markCompromised}
           onDelete={deleteNode}
           onClose={() => setSelected(null)}
+          onScoreUpdate={(nodeId, newScore) => {
+            setGraph(prev => ({
+              ...prev,
+              nodes: prev.nodes.map(n => n.id === nodeId ? { ...n, risk_score: newScore } : n),
+            }));
+            setSelected(prev => prev?.id === nodeId ? { ...prev, risk_score: newScore } : prev);
+          }}
         />
       )}
 
