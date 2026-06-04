@@ -145,7 +145,7 @@ INGEST_KEY     = "paste-your-ingest-key-here"`;
           </div>
           {SIDEBAR_SECTIONS.map(({id,label,icon:Icon})=>(
             <button key={id} onClick={()=>scrollTo(id)}
-              style={{display:'flex',alignItems:'center',gap:10,padding:'14px 0',fontSize:14,color:'rgba(240,240,248,0.75)',background:'none',border:'none',cursor:'pointer',textAlign:'left',borderBottom:'1px solid rgba(255,255,255,0.05)'},width:'100%',...mono,letterSpacing:'0.06em',textTransform:'uppercase'}>
+              style={{display:'flex',alignItems:'center',gap:10,padding:'14px 0',fontSize:14,color:'rgba(240,240,248,0.75)',background:'none',border:'none',cursor:'pointer',textAlign:'left',borderBottom:'1px solid rgba(255,255,255,0.05)',width:'100%',...mono,letterSpacing:'0.06em',textTransform:'uppercase'}}>
               <Icon size={14}/>{label}
             </button>
           ))}
