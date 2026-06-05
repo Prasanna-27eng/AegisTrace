@@ -275,7 +275,7 @@ export default function Portfolio() {
           <div style={{textAlign:'center',marginBottom:24,padding:'0 8px'}}>
             <div style={{width:64,height:64,borderRadius:'50%',background:'rgba(74,142,219,0.1)',border:'2px solid rgba(74,142,219,0.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'1.2rem',fontWeight:700,color:'#4A8EDB',margin:'0 auto 10px',...MONO}}>PK</div>
             <div style={{fontSize:'0.8rem',fontWeight:600,color:'#F5F7FA'}}>Prasanna Kumar</div>
-            <div style={{fontSize:'0.68rem',color:'#6F7A8F',...MONO,marginTop:3}}>SOC Analyst · Dublin</div>
+            <div style={{fontSize:'0.68rem',color:'#6F7A8F',...MONO,marginTop:3}}>SOC Analyst · Trust OS Builder</div>
             <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:5,marginTop:6}}>
               <div style={{width:5,height:5,borderRadius:'50%',background:'#4BE38A',boxShadow:'0 0 5px #4BE38A'}}/>
               <span style={{fontSize:'0.62rem',color:'#4BE38A',...MONO}}>Open to roles</span>
@@ -320,7 +320,7 @@ export default function Portfolio() {
                   <span style={{display:'flex',alignItems:'center',gap:4,color:'#6F7A8F'}}><MapPin size={12}/> Dublin, Ireland</span>
                 </div>
                 <p style={{fontSize:'0.88rem',color:'#A6AFBF',lineHeight:1.85,maxWidth:520,marginBottom:22}}>
-                  MSc Information Systems & Computing (Dublin Business School, 2025). Hands-on experience across SIEM platforms, Active Directory security, email forensics, vulnerability assessment, and cloud infrastructure automation. Builder of AegisTrace — open-source SOC control plane.
+                  MSc Information Systems & Computing (Dublin Business School, 2025). Hands-on experience across SIEM platforms, Active Directory security, email forensics, vulnerability assessment, and cloud infrastructure automation. Builder of AegisTrace — a trust operating system for the AI era.
                 </p>
                 <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:24}}>
                   {['SC-200 ✓','Security+ ✓','TCM PEH ✓','BTL1 — 55%','MITRE ATT&CK','KQL · SPL'].map(tag=>(

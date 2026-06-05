@@ -6,7 +6,9 @@
 
 ## WHAT IS AEGISTRACE?
 
-AegisTrace is a **free, open-source SOC (Security Operations Center) control plane** built for the AI-agent era. It is the only free platform that combines identity-first threat detection, explainable AI, hardware attack tool forensics, a terminal lab, and an AI agent approval queue — all on free-tier infrastructure.
+AegisTrace is a **free, open-source Trust Operating System for the AI-agent era** — the security layer that tracks every identity (human, service account, AI agent, token), makes every AI decision auditable with a full reasoning chain, and requires human approval before every automated action executes. It is the only free platform that combines identity-first threat detection, explainable AI, hardware attack tool forensics, a terminal lab, and an AI agent approval queue — all on free-tier infrastructure.
+
+**Core conviction:** Attackers no longer break in. They become trusted. AegisTrace is how you defend the trust surface.
 
 **Built by:** Prasanna Kumar Surendran, Blue Team analyst, Dublin, Ireland  
 **Live at:** https://aegistrace-7qvn.onrender.com  
@@ -269,11 +271,85 @@ react, react-dom, react-router-dom, axios, zustand, lucide-react, react-scripts
 
 ---
 
+## CURRENT WEBSITE NARRATIVE (v4.2 — June 2026)
+
+The website has been re-framed around the Trust OS vision:
+- **Landing hero:** "Attackers no longer break in. / They become trusted."
+- **Landing badge:** "Trust Operating System · v4.2"
+- **Mission hero:** "The Trust Layer / for the AI-Agent Era."
+- **Mission sub-copy:** "Attackers no longer break in. They become trusted. AegisTrace tracks every identity, audits every AI decision, and ensures every automated action has a human approval behind it."
+- **Portfolio project title:** "AegisTrace — Trust Operating System for the AI Era"
+- Hardware Tools: kept in app, de-emphasised in hero marketing
+
+---
+
+## SECURITY FIXES NEEDED (Do in next session)
+
+These are confirmed vulnerabilities in the current codebase — not theoretical:
+
+### 🔴 Critical — Fix ASAP
+1. **SHA-256 → bcrypt passwords** (`backend/routers/auth.py` line 33)
+   - Current: `hashlib.sha256((pw + SECRET).encode()).hexdigest()` — crackable at 10B/sec
+   - Fix: `import bcrypt` · `bcrypt.hashpw(pw.encode(), bcrypt.gensalt(12))` — ~100ms/attempt
+   - Add `bcrypt==4.1.2` to `requirements.txt`
+   - On login: if `len(user.hashed_password) == 64` (SHA-256), re-hash with bcrypt transparently
+
+2. **localStorage JWT → sessionStorage or httpOnly cookie** (`frontend/src/store/useStore.js` lines 5-21)
+   - Current: `localStorage.setItem('at_token', token)` — readable by any XSS payload
+   - Quick fix: change `localStorage` → `sessionStorage` everywhere (10-min change, 80% risk reduction)
+   - Full fix: httpOnly cookie from FastAPI (2-3 hours, requires CORS + frontend auth flow change)
+
+3. **VT/Enrichment rate limiting** (`backend/routers/vt.py`, `backend/routers/enrichment.py`)
+   - No rate limit = attacker can burn free VT quota (4 req/min tier)
+   - Fix: `pip install slowapi` · add `@limiter.limit("10/minute")` to VT and enrichment endpoints
+   - Add `slowapi==0.1.9` to `requirements.txt`
+
+---
+
+## FULL FUTURE WORK BACKLOG
+
+### Priority 1 — Security (Do First)
+- [ ] **bcrypt password hashing** — `backend/routers/auth.py`, add `bcrypt` to requirements.txt
+- [ ] **sessionStorage quick-fix** — `frontend/src/store/useStore.js` + `frontend/src/api/client.js` (change localStorage → sessionStorage, 10 min)
+- [ ] **Rate limiting on VT** — `backend/routers/vt.py` and `enrichment.py`, add `slowapi`
+- [ ] **JWT server-side invalidation** — Add `TokenBlocklist` model in `models.py`, check on every request
+
+### Priority 2 — ITDR Detector Hardening (High value, fits Trust OS vision)
+- [ ] **Multiple time windows for credential stuffing** — Currently only 10-min window. Add 1h (≥15) and 24h (≥25) thresholds in `backend/routers/itdr.py` `_detect_credential_stuffing()`
+- [ ] **IP-based distributed attack detection** — Check total failed logins from same IP across ALL users in `_detect_credential_stuffing()` (catches 100 users × 2 attempts each)
+- [ ] **Multiple time windows for lateral movement** — Add 6h (≥8 devices) and 24h (≥12 devices) windows
+- [ ] **User-agent check for token theft** — Check user_agent changes per session, not just IP
+
+### Priority 3 — Trust OS Features (Next major build)
+- [ ] **Shadow AI Detection** — Detect when endpoint processes send data to known AI APIs (OpenAI, Anthropic, etc.) not on approved list. Show alert in ITDR page and Dashboard.
+- [ ] **SOAR Playbooks engine** — Playbook builder UI + automated execution: trigger → action sequence → approval gate → result. Backend: `backend/routers/playbooks.py`
+- [ ] **Control Plane View** — New page `/app/control-plane` showing live: identity trust scores, active AI agent actions pending approval, policy violations, endpoint heartbeats. This IS the Trust OS dashboard.
+
+### Priority 4 — Identity Graph Enhancements
+- [ ] **Click device node → Device Details panel** — When you click a `device` type node in IdentityGraph, show a right-side panel with: OS, IP, last seen, risk score, recent activity from `EndpointLog`, create-case button. All data already exists in `EndpointAgent` + `EndpointLog` models.
+- [ ] **Identity risk timeline** — Show risk score history per node (line graph) using existing `IdentityAnomaly` data
+- [ ] **Filter by risk threshold** — Add slider/toggle to show only nodes above risk score X
+
+### Priority 5 — Analytics & Reporting
+- [ ] **ITDR analytics** — Add to Analytics page: detector fire rate per type, top targeted identities, false positive trend
+- [ ] **Trust score trending** — Track identity node risk scores over time (requires new `IdentityRiskHistory` model)
+- [ ] **DORA compliance improvements** — Map more case fields to DORA Article 19 requirements
+
+### Priority 6 — Polish & UX
+- [ ] **2FA/TOTP for Admin users** — Add `mfa_secret` + `mfa_enabled` to `User` model, TOTP via `pyotp`
+- [ ] **Terminal Lab: sandbox mode** — Real Docker sandbox for actual command execution (vs simulated). Requires Docker-in-Docker or exec isolation.
+- [ ] **Email notifications on ITDR anomaly** — When a detector fires, send email via SendGrid (env var already set). Template: "Anomaly detected for identity X"
+- [ ] **Portfolio: add Trust OS phase roadmap** — Add a subtle 5-phase roadmap card to Portfolio.jsx (Phase 1 NOW → Phase 5 2030+)
+
+---
+
 ## HOW TO RESUME BUILDING
 
 Start a new Claude session and say:
 
-> "Read AEGISTRACE_CONTEXT.md then continue from WHERE_I_LEFT_OFF. Next task: [task name from v4.2 In Progress list above]"
+> "Read AEGISTRACE_CONTEXT.md — I want to work on [task from backlog above]"
+
+The Security fixes are the highest priority. Start with bcrypt (30 min) then sessionStorage swap (10 min).
 
 Do NOT give Claude the full codebase — this file is sufficient context for any continuation task.
 

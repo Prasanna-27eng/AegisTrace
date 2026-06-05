@@ -143,7 +143,7 @@ function AIDemo() {
 }
 
 function Ticker() {
-  const items='◇ ITDR — Credential Stuffing · Impossible Travel · Privilege Escalation · ◇ Identity Graph · Trust Timeline · Provenance Ledger · Pluggable Risk Engine · ◇ Endpoint Agent v2 · Sysmon Collection · Process Tree Analysis · ◇ 18 Hardware Analysis Tools · WiFi Pineapple · HackRF One · Flipper Zero · Proxmark3 · ◇ AI Case Analysis · MITRE ATT&CK · IOC Correlation · Explainable AI · ◇ VirusTotal v3 · Shodan · MalwareBazaar · URLhaus · ThreatFox · GreyNoise · ◇ Email Forensics · DORA Article 19 · Webhook Alerting · ◇ Terminal Lab · Log Parsing · IOC Extraction · ◇ AI Agent Security · Bounded Autonomy · Human Approval Queue · ◇ Policy Engine · Trust Validation · Anomaly Detection · ◇ Free. Open. Deployable. · ';
+  const items='◇ Trust Operating System · Identity · Provenance · Control · ◇ ITDR — Credential Stuffing · Impossible Travel · Privilege Escalation · ◇ Identity Graph · Trust Timeline · Provenance Ledger · Pluggable Risk Engine · ◇ Endpoint Agent v2 · Sysmon Collection · Process Tree Analysis · ◇ 18 Hardware Analysis Tools · WiFi Pineapple · HackRF One · Flipper Zero · Proxmark3 · ◇ AI Case Analysis · MITRE ATT&CK · IOC Correlation · Explainable AI · ◇ VirusTotal v3 · Shodan · MalwareBazaar · URLhaus · ThreatFox · GreyNoise · ◇ Email Forensics · DORA Article 19 · Webhook Alerting · ◇ Terminal Lab · Log Parsing · IOC Extraction · ◇ AI Agent Security · Bounded Autonomy · Human Approval Queue · ◇ Policy Engine · Trust Validation · Anomaly Detection · ◇ Free. Open. Deployable. · ';
   return (
     <div style={{position:'absolute',bottom:0,left:0,right:0,zIndex:10,height:32,overflow:'hidden',background:'rgba(7,8,15,0.7)',borderTop:'1px solid rgba(255,255,255,0.06)',display:'flex',alignItems:'center'}}>
       <div style={{display:'flex',animation:'marquee 60s linear infinite',whiteSpace:'nowrap'}}>
@@ -223,7 +223,7 @@ const ROADMAP = [
 ];
 
 const PROBLEMS = [
-  { Icon:UserX,       title:'Identity is the new perimeter',            desc:'Attackers no longer break through firewalls — they log in with stolen credentials, hijacked tokens, or abused service accounts. Traditional SOC tools track machines. AegisTrace tracks identities.', color:'#4DA3FF' },
+  { Icon:UserX,       title:'Attackers no longer break in — they become trusted', desc:'They log in with stolen credentials, abuse hijacked tokens, or impersonate service accounts. The breach starts the moment a malicious actor is granted trust. Traditional SOC tools track machines. AegisTrace tracks trust.', color:'#4DA3FF' },
   { Icon:Bot,         title:'AI agents are becoming attack surfaces',   desc:'The rise of autonomous agents means attackers can hijack a workflow, poison an AI prompt, or impersonate an API key. Security teams need to supervise non-human identities the same way they supervise people.', color:'#A78BFA' },
   { Icon:ShieldAlert, title:'Black-box AI is unacceptable in security', desc:'If your SIEM or AI tool cannot explain why it flagged something — cannot show you the evidence, the reasoning chain, and the confidence — then you cannot trust it in production. AegisTrace shows its work.', color:'#EAB308' },
   { Icon:Boxes,       title:'Static dashboards cannot handle machine-speed threats', desc:'Modern attacks happen faster than analysts can react. The future of security operations is a live control plane: identity states, agent actions, trust events, and policy decisions visible in real time.', color:'#22C55E' },
@@ -445,8 +445,8 @@ export default function Landing() {
                 Trust · Identity · Provenance · Control Plane
               </div>
               <h1 style={{fontFamily:'Instrument Serif,Georgia,serif',lineHeight:0.92,letterSpacing:'-0.015em',marginBottom:28}}>
-                <div style={{fontSize:'clamp(2.8rem,7vw,8.5rem)',color:'#F0F0F8',fontWeight:400}}>When threats rise,</div>
-                <div style={{fontSize:'clamp(2.8rem,7vw,8.5rem)',color:'#4DA3FF',fontStyle:'italic',fontWeight:400}}>we trace the storm.</div>
+                <div style={{fontSize:'clamp(2.8rem,7vw,8.5rem)',color:'#F0F0F8',fontWeight:400}}>Attackers no longer break in.</div>
+                <div style={{fontSize:'clamp(2.8rem,7vw,8.5rem)',color:'#4DA3FF',fontStyle:'italic',fontWeight:400}}>They become trusted.</div>
               </h1>
               <p style={{maxWidth:520,fontSize:13,color:'rgba(240,240,248,0.5)',lineHeight:1.8,...mono,fontWeight:300,marginBottom:28}}>
                 AegisTrace is not just a SOC dashboard — it is a security control plane built for the AI-agent era. Identity-centric. Provenance-aware. Explainable.
@@ -526,7 +526,7 @@ export default function Landing() {
             <div>
               <div style={{fontSize:10,color:'#A78BFA',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:12}}>◇ Future Vision</div>
               <h2 style={{fontFamily:'Instrument Serif,serif',fontSize:'clamp(2rem,4vw,3.4rem)',fontWeight:400,letterSpacing:'-0.02em',lineHeight:1.1}}>
-                From case manager<br/>to <span style={{color:'#A78BFA',fontStyle:'italic'}}>trust control plane.</span>
+                From SOC dashboard<br/>to <span style={{color:'#A78BFA',fontStyle:'italic'}}>Trust Operating System.</span>
               </h2>
               <p style={{marginTop:18,fontSize:13,color:'rgba(240,240,248,0.5)',lineHeight:1.85,...mono,fontWeight:300}}>
                 The next evolution of AegisTrace is not adding more tools. It is changing the fundamental model of how the platform thinks about security — tracking identities, trust relationships, agent actions, and provenance chains.

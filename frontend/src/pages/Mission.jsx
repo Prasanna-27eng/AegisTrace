@@ -188,17 +188,17 @@ export default function Mission() {
         <div style={{position:'relative',zIndex:10,maxWidth:1100,margin:'0 auto',padding:'0 48px',width:'100%'}}>
           <div style={{display:'inline-flex',alignItems:'center',gap:8,padding:'6px 14px',background:'rgba(74,142,219,0.1)',border:'1px solid rgba(74,142,219,0.25)',borderRadius:20,marginBottom:28}}>
             <div style={{width:7,height:7,borderRadius:'50%',background:'#4A8EDB',animation:'pulse 2s ease-in-out infinite'}}/>
-            <span style={{fontSize:'0.68rem',color:'#6BABEC',...MONO,letterSpacing:'0.15em',textTransform:'uppercase'}}>v4.2 Live — Identity · Provenance · AI Agent Security</span>
+            <span style={{fontSize:'0.68rem',color:'#6BABEC',...MONO,letterSpacing:'0.15em',textTransform:'uppercase'}}>Trust Operating System for the AI Era</span>
           </div>
 
           <h1 style={{...SERIF,fontSize:'clamp(2.8rem,7vw,5.5rem)',fontWeight:400,lineHeight:0.96,letterSpacing:'-0.015em',marginBottom:24}}>
-            <div style={{color:'#F5F7FA'}}>Building the Future of</div>
-            <div style={{color:'#4A8EDB',fontStyle:'italic'}}>AI-Augmented Security.</div>
+            <div style={{color:'#F5F7FA'}}>The Trust Layer</div>
+            <div style={{color:'#4A8EDB',fontStyle:'italic'}}>for the AI-Agent Era.</div>
           </h1>
 
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:48,alignItems:'flex-end',maxWidth:900}} className="lp-2col">
             <p style={{fontSize:'0.95rem',color:'#A6AFBF',lineHeight:1.85,...MONO,fontWeight:300,margin:0}}>
-              AegisTrace is a free SOC control plane built on one conviction: the next decade of security is about tracking identities, auditing AI decisions, and keeping humans in control of automated actions. Not more dashboards — a trust layer for the AI-agent era.
+              Attackers no longer break in. They become trusted. AegisTrace is the operating layer that tracks every identity, audits every AI decision, and ensures every automated action has a human approval behind it.
             </p>
             <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
               <a href={`mailto:${CONTACT_EMAIL}?subject=I want to join the AegisTrace mission`}
@@ -225,7 +225,7 @@ export default function Mission() {
                 The world is changing.<br/><span style={{color:'#4A8EDB',fontStyle:'italic'}}>Security isn't keeping up.</span>
               </h2>
               <p className="mission-body">
-                The SOC model built in the 2000s — tracking machines, IPs, and endpoints — is <strong style={{color:'#F5F7FA'}}>fundamentally broken</strong>. Attackers no longer breach perimeters. They log in. The real attack surface has shifted entirely.
+                The SOC model built in the 2000s was designed for a world of firewalls and malware. That world still exists. But the dominant attack vector is now compromised trust — stolen credentials, hijacked tokens, abused service accounts, and AI agents operating outside their intended scope. The question is no longer <em style={{color:'#F5F7FA'}}>"what machine was attacked?"</em> — it's <em style={{color:'#F5F7FA'}}>"which identity was trusted that shouldn't have been?"</em>
               </p>
               {/* Problem tiles */}
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:24}}>
@@ -271,10 +271,10 @@ export default function Mission() {
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:56,marginBottom:52}} className="lp-2col">
             <div>
               <p className="mission-body">
-                AegisTrace started as an open-source case manager. But the future is far bigger.
+                AegisTrace started as an open-source SOC tool. The vision is bigger: a trust operating system.
               </p>
               <p className="mission-body">
-                We're building the <strong style={{color:'#4A8EDB'}}>control plane for the AI-agent era</strong> — where every action is traced to an identity, every AI decision is explainable and auditable, and every agent operates within human-defined trust boundaries.
+                We're building the <strong style={{color:'#4A8EDB'}}>trust layer for the AI-agent era</strong> — where every identity (human, service, agent, token) is a tracked security entity, every AI verdict is explainable with evidence, and every automated action requires human approval before it executes.
               </p>
               {/* Pull quote */}
               <blockquote style={{margin:'24px 0 0',padding:'16px 20px',background:'rgba(74,142,219,0.04)',borderLeft:'3px solid rgba(74,142,219,0.5)',borderRadius:'0 8px 8px 0'}}>
