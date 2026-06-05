@@ -4,6 +4,43 @@
 
 ---
 
+## 🤖 INSTRUCTIONS FOR CLAUDE (READ THIS FIRST — EVERY SESSION)
+
+You are working on AegisTrace, a security product built by Prasanna. Here is exactly how to operate:
+
+**Before doing ANYTHING:**
+1. Read this entire file top to bottom before writing a single line of code
+2. Check the `## FULL FUTURE WORK BACKLOG` section — that is the source of truth for what to build next
+3. Check `## SECURITY FIXES NEEDED` — those are confirmed vulnerabilities, fix them before new features
+4. Never re-read the full codebase — this file is sufficient. If you need a specific file, read only that file.
+
+**Rules for every session:**
+- Keep the original dark navy theme (`#080C14`, `#4DA3FF`, `#A78BFA`) — never change colors
+- Use inline styles only — this codebase does NOT use Tailwind CSS
+- Do NOT add `@tanstack/react-query`, `recharts`, `alembic`, or any new npm packages without explicit approval
+- All models go in `backend/models.py` — never create separate model files
+- No Alembic migrations — SQLModel's `create_all()` handles new tables automatically on startup
+- SQLite is the database — `func.date_trunc` does NOT work, use `strftime('%Y-%W', ...)` instead
+- After completing work, update this file: mark tasks done, add new discoveries
+
+**When Prasanna says "start the next task":**
+→ Look at the backlog below, pick the highest-priority unchecked item, confirm it with him, then build it.
+
+**When Prasanna says "push to GitHub":**
+→ Give him these exact commands (the sandbox can't push, he must run them):
+```bash
+cd ~/Documents/Claude/Projects/aegistrace
+rm -f .git/index.lock .git/HEAD.lock
+git add -A
+git commit -m "your message here"
+git push origin main
+```
+
+**When Prasanna says "what's next?":**
+→ Read the backlog, summarise the top 3 options with time estimates, let him choose.
+
+---
+
 ## WHAT IS AEGISTRACE?
 
 AegisTrace is a **free, open-source Trust Operating System for the AI-agent era** — the security layer that tracks every identity (human, service account, AI agent, token), makes every AI decision auditable with a full reasoning chain, and requires human approval before every automated action executes. It is the only free platform that combines identity-first threat detection, explainable AI, hardware attack tool forensics, a terminal lab, and an AI agent approval queue — all on free-tier infrastructure.
