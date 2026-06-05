@@ -74,7 +74,7 @@ function HeroBg() {
       const dt = Math.min(ts - last, 40);
       last = ts;
 
-      ctx.fillStyle = '#040812';
+      ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, W, H);
 
       // Spawn new wave
@@ -124,7 +124,7 @@ function HeroBg() {
       // Bottom fade
       const fade = ctx.createLinearGradient(0, H * 0.35, 0, H);
       fade.addColorStop(0, 'transparent');
-      fade.addColorStop(1, 'rgba(4,8,18,0.96)');
+      fade.addColorStop(1, 'rgba(0,0,0,0.96)');
       ctx.fillStyle = fade;
       ctx.fillRect(0, 0, W, H);
 
@@ -286,7 +286,7 @@ export default function Portfolio() {
   const scrollTo = id => { document.getElementById(id)?.scrollIntoView({behavior:'smooth'}); setMobileNav(false); };
 
   return (
-    <div style={{minHeight:'100vh',background:'#040812',color:'#F5F7FA',fontFamily:'Inter,system-ui,sans-serif'}}>
+    <div style={{minHeight:'100vh',background:'#000000',color:'#EBEBEB',fontFamily:'Inter,system-ui,sans-serif'}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600;700&display=swap');
         @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
@@ -298,9 +298,9 @@ export default function Portfolio() {
         .case-card:hover{border-color:rgba(74,142,219,0.4)}
         .focus-card{padding:20px;background:rgba(12,18,32,0.5);border:1px solid rgba(255,255,255,0.07);border-radius:10px;transition:border-color 0.2s,transform 0.2s}
         .focus-card:hover{border-color:rgba(74,142,219,0.2);transform:translateY(-2px)}
-        .sidebar-link{display:block;padding:8px 16px;font-size:0.72rem;color:#6F7A8F;text-decoration:none;border-radius:6px;transition:all 0.15s;font-family:'JetBrains Mono',monospace;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;background:none;border:none;text-align:left;width:100%}
+        .sidebar-link{display:block;padding:8px 16px;font-size:0.72rem;color:#787878;text-decoration:none;border-radius:6px;transition:all 0.15s;font-family:'JetBrains Mono',monospace;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;background:none;border:none;text-align:left;width:100%}
         .sidebar-link:hover,.sidebar-link.active{color:#4A8EDB;background:rgba(74,142,219,0.07)}
-        .mobile-nav-drawer{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(4,8,18,0.97);z-index:200;display:flex;flex-direction:column;padding:24px;backdrop-filter:blur(20px)}
+        .mobile-nav-drawer{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.97);z-index:200;display:flex;flex-direction:column;padding:24px;backdrop-filter:blur(20px)}
         @media(max-width:900px){
           .port-sidebar{display:none!important}
           .port-main{margin-left:0!important;max-width:100%!important}
@@ -313,18 +313,18 @@ export default function Portfolio() {
       `}</style>
 
       {/* ── FIXED TOP NAV ── */}
-      <nav style={{position:'fixed',top:0,left:0,right:0,zIndex:100,background:'rgba(4,8,18,0.92)',backdropFilter:'blur(14px)',borderBottom:'1px solid rgba(255,255,255,0.06)',padding:'12px 24px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+      <nav style={{position:'fixed',top:0,left:0,right:0,zIndex:100,background:'rgba(0,0,0,0.92)',backdropFilter:'blur(14px)',borderBottom:'1px solid rgba(255,255,255,0.06)',padding:'12px 24px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
         <Logo size={22} showText/>
         <div style={{display:'flex',gap:20,alignItems:'center'}}>
           {/* Desktop links */}
           <div style={{display:'flex',gap:16}} className="port-desktop-links">
-            <a href="/" className="port-nav-link" style={{color:'#6F7A8F',textDecoration:'none',fontSize:'0.78rem',...MONO,letterSpacing:'0.06em',textTransform:'uppercase'}}>Home</a>
-            <a href="/mission" className="port-nav-link" style={{color:'#6F7A8F',textDecoration:'none',fontSize:'0.78rem',...MONO,letterSpacing:'0.06em',textTransform:'uppercase'}}>Mission</a>
-            <a href="/public" className="port-nav-link" style={{color:'#6F7A8F',textDecoration:'none',fontSize:'0.78rem',...MONO,letterSpacing:'0.06em',textTransform:'uppercase'}}>Cases</a>
+            <a href="/" className="port-nav-link" style={{color:'#787878',textDecoration:'none',fontSize:'0.78rem',...MONO,letterSpacing:'0.06em',textTransform:'uppercase'}}>Home</a>
+            <a href="/mission" className="port-nav-link" style={{color:'#787878',textDecoration:'none',fontSize:'0.78rem',...MONO,letterSpacing:'0.06em',textTransform:'uppercase'}}>Mission</a>
+            <a href="/public" className="port-nav-link" style={{color:'#787878',textDecoration:'none',fontSize:'0.78rem',...MONO,letterSpacing:'0.06em',textTransform:'uppercase'}}>Cases</a>
           </div>
           <div style={{display:'flex',gap:8}}>
             <a href="https://github.com/Prasanna-27eng" target="_blank" rel="noreferrer"
-              style={{display:'flex',alignItems:'center',gap:5,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:6,padding:'7px 14px',fontSize:'0.78rem',color:'#D7DCE6',textDecoration:'none'}}>
+              style={{display:'flex',alignItems:'center',gap:5,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:6,padding:'7px 14px',fontSize:'0.78rem',color:'#A8A8A8',textDecoration:'none'}}>
               <Github size={13}/> GitHub
             </a>
             <a href="mailto:Prasanna80564@gmail.com"
@@ -332,7 +332,7 @@ export default function Portfolio() {
               <Mail size={13}/> Contact
             </a>
           </div>
-          <button onClick={()=>setMobileNav(true)} style={{display:'none',background:'none',border:'1px solid rgba(240,240,248,0.15)',borderRadius:6,padding:'7px 9px',cursor:'pointer',color:'#F0F0F8'}} className="port-mobile-btn">
+          <button onClick={()=>setMobileNav(true)} style={{display:'none',background:'none',border:'1px solid rgba(240,240,248,0.15)',borderRadius:6,padding:'7px 9px',cursor:'pointer',color:'#EBEBEB'}} className="port-mobile-btn">
             <Menu size={16}/>
           </button>
         </div>
@@ -358,12 +358,12 @@ export default function Portfolio() {
       <div style={{display:'flex',paddingTop:57}}>
 
         {/* LEFT SIDEBAR — sticky */}
-        <aside className="port-sidebar" style={{width:220,flexShrink:0,position:'sticky',top:57,height:'calc(100vh - 57px)',overflow:'auto',background:'rgba(4,8,18,0.6)',borderRight:'1px solid rgba(255,255,255,0.06)',display:'flex',flexDirection:'column',padding:'28px 12px'}}>
+        <aside className="port-sidebar" style={{width:220,flexShrink:0,position:'sticky',top:57,height:'calc(100vh - 57px)',overflow:'auto',background:'rgba(0,0,0,0.6)',borderRight:'1px solid rgba(255,255,255,0.06)',display:'flex',flexDirection:'column',padding:'28px 12px'}}>
           {/* Mini profile */}
           <div style={{textAlign:'center',marginBottom:24,padding:'0 8px'}}>
             <div style={{width:64,height:64,borderRadius:'50%',background:'rgba(74,142,219,0.1)',border:'2px solid rgba(74,142,219,0.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'1.2rem',fontWeight:700,color:'#4A8EDB',margin:'0 auto 10px',...MONO}}>PK</div>
-            <div style={{fontSize:'0.8rem',fontWeight:600,color:'#F5F7FA'}}>Prasanna Kumar</div>
-            <div style={{fontSize:'0.68rem',color:'#6F7A8F',...MONO,marginTop:3}}>SOC Analyst · Trust OS Builder</div>
+            <div style={{fontSize:'0.8rem',fontWeight:600,color:'#EBEBEB'}}>Prasanna Kumar</div>
+            <div style={{fontSize:'0.68rem',color:'#787878',...MONO,marginTop:3}}>SOC Analyst · Trust OS Builder</div>
             <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:5,marginTop:6}}>
               <div style={{width:5,height:5,borderRadius:'50%',background:'#4BE38A',boxShadow:'0 0 5px #4BE38A'}}/>
               <span style={{fontSize:'0.62rem',color:'#4BE38A',...MONO}}>Open to roles</span>
@@ -377,10 +377,10 @@ export default function Portfolio() {
             ))}
           </div>
           <div style={{marginTop:'auto',paddingTop:20,display:'flex',flexDirection:'column',gap:6}}>
-            <a href="tel:+353899582880" style={{display:'flex',alignItems:'center',gap:5,fontSize:'0.65rem',color:'#6F7A8F',textDecoration:'none',...MONO}}>
+            <a href="tel:+353899582880" style={{display:'flex',alignItems:'center',gap:5,fontSize:'0.65rem',color:'#787878',textDecoration:'none',...MONO}}>
               <Phone size={10}/> +353 089 958 2880
             </a>
-            <a href="mailto:Prasanna80564@gmail.com" style={{display:'flex',alignItems:'center',gap:5,fontSize:'0.65rem',color:'#6F7A8F',textDecoration:'none',...MONO}}>
+            <a href="mailto:Prasanna80564@gmail.com" style={{display:'flex',alignItems:'center',gap:5,fontSize:'0.65rem',color:'#787878',textDecoration:'none',...MONO}}>
               <Mail size={10}/> Prasanna80564@gmail.com
             </a>
           </div>
@@ -399,15 +399,15 @@ export default function Portfolio() {
                   <span style={{fontSize:'0.68rem',color:'#6BABEC',...MONO,letterSpacing:'0.1em'}}>Open to SOC / Blue Team Roles</span>
                 </div>
                 <h1 style={{...SERIF,fontSize:'clamp(2.4rem,5vw,4rem)',fontWeight:400,lineHeight:1.0,letterSpacing:'-0.015em',marginBottom:16}}>
-                  <div style={{color:'#F5F7FA'}}>Prasanna Kumar</div>
+                  <div style={{color:'#EBEBEB'}}>Prasanna Kumar</div>
                   <div style={{color:'#4A8EDB',fontStyle:'italic'}}>Surendran.</div>
                 </h1>
                 <div style={{fontSize:'0.9rem',color:'#9C7CFF',...MONO,marginBottom:14,display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
                   <span>SOC Analyst · Blue Team L1</span>
                   <span style={{color:'rgba(255,255,255,0.15)'}}>·</span>
-                  <span style={{display:'flex',alignItems:'center',gap:4,color:'#6F7A8F'}}><MapPin size={12}/> Dublin, Ireland</span>
+                  <span style={{display:'flex',alignItems:'center',gap:4,color:'#787878'}}><MapPin size={12}/> Dublin, Ireland</span>
                 </div>
-                <p style={{fontSize:'0.88rem',color:'#A6AFBF',lineHeight:1.85,maxWidth:520,marginBottom:22}}>
+                <p style={{fontSize:'0.88rem',color:'#909090',lineHeight:1.85,maxWidth:520,marginBottom:22}}>
                   MSc Information Systems & Computing (Dublin Business School, 2025). Hands-on experience across SIEM platforms, Active Directory security, email forensics, vulnerability assessment, and cloud infrastructure automation. Builder of AegisTrace — a trust operating system for the AI era.
                 </p>
                 <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:24}}>
@@ -419,7 +419,7 @@ export default function Portfolio() {
                   <a href="mailto:Prasanna80564@gmail.com" style={{display:'inline-flex',alignItems:'center',gap:7,background:'#4A8EDB',color:'white',borderRadius:7,padding:'11px 22px',fontSize:'0.85rem',fontWeight:600,textDecoration:'none'}}>
                     <Mail size={15}/> Get in Touch
                   </a>
-                  <a href="https://www.linkedin.com/in/prasannakumarsurendran" target="_blank" rel="noreferrer" style={{display:'inline-flex',alignItems:'center',gap:7,background:'rgba(255,255,255,0.05)',color:'#D7DCE6',border:'1px solid rgba(255,255,255,0.1)',borderRadius:7,padding:'11px 20px',fontSize:'0.85rem',textDecoration:'none'}}>
+                  <a href="https://www.linkedin.com/in/prasannakumarsurendran" target="_blank" rel="noreferrer" style={{display:'inline-flex',alignItems:'center',gap:7,background:'rgba(255,255,255,0.05)',color:'#A8A8A8',border:'1px solid rgba(255,255,255,0.1)',borderRadius:7,padding:'11px 20px',fontSize:'0.85rem',textDecoration:'none'}}>
                     <Linkedin size={15}/> LinkedIn
                   </a>
                   <button onClick={()=>navigate('/app/login')} style={{display:'inline-flex',alignItems:'center',gap:7,background:'rgba(156,124,255,0.08)',color:'#B9A4FF',border:'1px solid rgba(156,124,255,0.2)',borderRadius:7,padding:'11px 20px',fontSize:'0.85rem',cursor:'pointer'}}>
@@ -432,12 +432,12 @@ export default function Portfolio() {
                 <TerminalWindow/>
               </div>
             </div>
-            <div style={{position:'absolute',bottom:0,left:0,right:0,height:'20%',background:'linear-gradient(to top,#040812,transparent)'}}/>
+            <div style={{position:'absolute',bottom:0,left:0,right:0,height:'20%',background:'linear-gradient(to top,#000000,transparent)'}}/>
           </section>
 
           {/* ── LIVE STATS ── */}
           <section style={{padding:'0 48px 52px'}} className="port-section">
-            <div style={{fontSize:'0.65rem',color:'#3A4556',...MONO,letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:12,textAlign:'center'}}>Live Platform Activity — AegisTrace</div>
+            <div style={{fontSize:'0.65rem',color:'#404040',...MONO,letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:12,textAlign:'center'}}>Live Platform Activity — AegisTrace</div>
             <div className="port-stat-grid" style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
               {[
                 {val:stats.total_cases,  label:'Cases Created',  color:'#4A8EDB'},
@@ -447,21 +447,21 @@ export default function Portfolio() {
               ].map(s=>(
                 <div key={s.label} style={{textAlign:'center',padding:'18px 14px',background:'rgba(12,18,32,0.6)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:10,borderTop:`2px solid ${s.color}`}}>
                   <div style={{fontSize:'1.8rem',fontWeight:700,color:s.color,...MONO,lineHeight:1}}>{(s.val||0).toLocaleString()}</div>
-                  <div style={{fontSize:'0.7rem',color:'#6F7A8F',marginTop:6,...MONO}}>{s.label}</div>
+                  <div style={{fontSize:'0.7rem',color:'#787878',marginTop:6,...MONO}}>{s.label}</div>
                 </div>
               ))}
             </div>
           </section>
 
           {/* ── FOCUS AREAS ── */}
-          <section id="focus" className="port-section" style={{padding:'52px 48px',background:'#060A16',borderTop:'1px solid rgba(255,255,255,0.05)'}}>
+          <section id="focus" className="port-section" style={{padding:'52px 48px',background:'#0A0A0A',borderTop:'1px solid rgba(255,255,255,0.05)'}}>
             <SectionHead label="Focus Areas" title="Where I operate." accent="What I build."/>
             <div className="port-grid-3" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:14}}>
               {FOCUS.map(({Icon,label,desc})=>(
                 <div key={label} className="focus-card">
                   <Icon size={18} style={{color:'#4A8EDB',marginBottom:10}}/>
                   <div style={{fontWeight:600,fontSize:'0.86rem',marginBottom:7}}>{label}</div>
-                  <div style={{fontSize:'0.74rem',color:'#8A95A8',lineHeight:1.65}}>{desc}</div>
+                  <div style={{fontSize:'0.74rem',color:'#787878',lineHeight:1.65}}>{desc}</div>
                 </div>
               ))}
             </div>
@@ -498,17 +498,17 @@ export default function Portfolio() {
           </section>
 
           {/* ── CERTS ── */}
-          <section id="certs" className="port-section" style={{padding:'52px 48px',background:'#060A16',borderTop:'1px solid rgba(255,255,255,0.05)'}}>
+          <section id="certs" className="port-section" style={{padding:'52px 48px',background:'#0A0A0A',borderTop:'1px solid rgba(255,255,255,0.05)'}}>
             <SectionHead label="Certifications" title="Proven." accent="In progress. Growing."/>
             <div className="port-grid-2" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:10}}>
               {CERTS.map(c=>(
                 <div key={c.name} style={{background:'rgba(12,18,32,0.6)',border:`1px solid ${c.status==='completed'?`${c.color}30`:'rgba(255,255,255,0.07)'}`,borderRadius:10,padding:'14px 16px',display:'flex',alignItems:'center',gap:12,transition:'border-color 0.2s',borderLeft:`2px solid ${c.status==='completed'?c.color:'rgba(255,255,255,0.1)'}`,opacity:c.status==='ongoing'?0.75:1}}>
                   <div style={{flexShrink:0}}>
-                    {c.status==='completed'?<CheckCircle size={18} style={{color:c.color}}/>:<Clock size={18} style={{color:'#6F7A8F'}}/>}
+                    {c.status==='completed'?<CheckCircle size={18} style={{color:c.color}}/>:<Clock size={18} style={{color:'#787878'}}/>}
                   </div>
                   <div>
-                    <div style={{fontWeight:600,fontSize:'0.86rem',color:c.status==='completed'?'#F5F7FA':'#A6AFBF'}}>{c.name}</div>
-                    <div style={{fontSize:'0.72rem',color:'#6F7A8F',marginTop:2,...MONO}}>{c.sub}</div>
+                    <div style={{fontWeight:600,fontSize:'0.86rem',color:c.status==='completed'?'#EBEBEB':'#909090'}}>{c.name}</div>
+                    <div style={{fontSize:'0.72rem',color:'#787878',marginTop:2,...MONO}}>{c.sub}</div>
                     <div style={{fontSize:'0.68rem',color:c.status==='completed'?'#4Be38A':'#F5B84B',marginTop:4,...MONO}}>{c.date}</div>
                   </div>
                 </div>
@@ -526,19 +526,19 @@ export default function Portfolio() {
                     <div>
                       <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8,flexWrap:'wrap'}}>
                         <span style={{background:`${p.badgeColor}15`,border:`1px solid ${p.badgeColor}35`,color:p.badgeColor,fontSize:'0.65rem',fontWeight:600,padding:'3px 9px',borderRadius:4,...MONO}}>{p.badge}</span>
-                        <span style={{fontSize:'0.68rem',color:'#6F7A8F',...MONO}}>{p.period}</span>
+                        <span style={{fontSize:'0.68rem',color:'#787878',...MONO}}>{p.period}</span>
                       </div>
                       <div style={{fontWeight:700,fontSize:'0.95rem'}}>{p.title}</div>
                     </div>
-                    {p.link&&<a href={p.link} target="_blank" rel="noreferrer" style={{color:'#6F7A8F',textDecoration:'none'}} onMouseEnter={e=>e.currentTarget.style.color='#F5F7FA'} onMouseLeave={e=>e.currentTarget.style.color='#6F7A8F'}><Github size={15}/></a>}
+                    {p.link&&<a href={p.link} target="_blank" rel="noreferrer" style={{color:'#787878',textDecoration:'none'}} onMouseEnter={e=>e.currentTarget.style.color='#EBEBEB'} onMouseLeave={e=>e.currentTarget.style.color='#787878'}><Github size={15}/></a>}
                     {!p.link&&p.highlight&&<span style={{fontSize:'0.65rem',color:'#4A8EDB',...MONO}}>aegistrace.io</span>}
                   </div>
                   <div style={{display:'grid',gridTemplateColumns:p.features?'1fr 1fr':'1fr',gap:16,alignItems:'start'}}>
                     <div>
-                      <div style={{fontSize:'0.8rem',color:'#8A95A8',lineHeight:1.7,marginBottom:12}}>{p.desc}</div>
+                      <div style={{fontSize:'0.8rem',color:'#787878',lineHeight:1.7,marginBottom:12}}>{p.desc}</div>
                       <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
                         {p.tags.map(t=>(
-                          <span key={t} style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.07)',color:'#6F7A8F',fontSize:'0.67rem',padding:'2px 7px',borderRadius:3,...MONO}}>{t}</span>
+                          <span key={t} style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.07)',color:'#787878',fontSize:'0.67rem',padding:'2px 7px',borderRadius:3,...MONO}}>{t}</span>
                         ))}
                       </div>
                     </div>
@@ -559,16 +559,16 @@ export default function Portfolio() {
 
           {/* ── PUBLIC CASES ── */}
           {publicCases.length>0&&(
-            <section className="port-section" style={{padding:'52px 48px',background:'#060A16',borderTop:'1px solid rgba(255,255,255,0.05)'}}>
+            <section className="port-section" style={{padding:'52px 48px',background:'#0A0A0A',borderTop:'1px solid rgba(255,255,255,0.05)'}}>
               <SectionHead label="Published Investigations" title="Real cases." accent="Real analysis."/>
               <div className="port-grid-2" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))',gap:14}}>
                 {publicCases.map(c=>(
                   <div key={c.id} className="case-card">
                     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                      <span style={{fontSize:'0.68rem',color:'#6F7A8F',...MONO}}>{c.case_number}</span>
+                      <span style={{fontSize:'0.68rem',color:'#787878',...MONO}}>{c.case_number}</span>
                     </div>
                     <div style={{fontWeight:600,fontSize:'0.9rem',marginBottom:8}}>{c.title}</div>
-                    {c.ai_executive_summary&&<div style={{fontSize:'0.77rem',color:'#8A95A8',lineHeight:1.7,marginBottom:14}}>{c.ai_executive_summary.slice(0,160)}…</div>}
+                    {c.ai_executive_summary&&<div style={{fontSize:'0.77rem',color:'#787878',lineHeight:1.7,marginBottom:14}}>{c.ai_executive_summary.slice(0,160)}…</div>}
                     <button onClick={()=>navigate(`/public/${c.share_token}`)} style={{display:'inline-flex',alignItems:'center',gap:5,background:'none',border:'1px solid rgba(74,142,219,0.2)',color:'#4A8EDB',borderRadius:5,padding:'6px 12px',fontSize:'0.74rem',cursor:'pointer',...MONO}}>
                       Read Full Case <ArrowRight size={11}/>
                     </button>
@@ -594,25 +594,25 @@ export default function Portfolio() {
                 <div key={e.degree} style={{background:'rgba(12,18,32,0.5)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:10,padding:'22px',borderLeft:`2px solid ${e.color}`}}>
                   <div style={{fontWeight:600,fontSize:'0.9rem',marginBottom:5}}>{e.degree}</div>
                   <div style={{fontSize:'0.78rem',color:e.color,...MONO,marginBottom:4}}>{e.school}</div>
-                  <div style={{fontSize:'0.7rem',color:'#6F7A8F',...MONO,marginBottom:10}}>{e.year}</div>
-                  <div style={{fontSize:'0.76rem',color:'#8A95A8',lineHeight:1.6}}>{e.note}</div>
+                  <div style={{fontSize:'0.7rem',color:'#787878',...MONO,marginBottom:10}}>{e.year}</div>
+                  <div style={{fontSize:'0.76rem',color:'#787878',lineHeight:1.6}}>{e.note}</div>
                 </div>
               ))}
             </div>
           </section>
 
           {/* ── CONTACT ── */}
-          <section id="contact" className="port-section" style={{padding:'52px 48px',background:'#060A16',borderTop:'1px solid rgba(255,255,255,0.05)'}}>
+          <section id="contact" className="port-section" style={{padding:'52px 48px',background:'#0A0A0A',borderTop:'1px solid rgba(255,255,255,0.05)'}}>
             <div style={{maxWidth:680,margin:'0 auto',textAlign:'center'}}>
               <SectionHead label="Let's Connect" title="Actively seeking" accent="the right role."/>
-              <p style={{fontSize:'0.88rem',color:'#A6AFBF',lineHeight:1.8,marginBottom:32}}>
+              <p style={{fontSize:'0.88rem',color:'#909090',lineHeight:1.8,marginBottom:32}}>
                 Seeking SOC Analyst, Blue Team, or Cybersecurity roles in Dublin and internationally. Available immediately. All enquiries responded to within 24 hours.
               </p>
               <div style={{display:'flex',flexDirection:'column',gap:10,maxWidth:360,margin:'0 auto'}}>
                 <a href="mailto:Prasanna80564@gmail.com" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:'#4A8EDB',color:'white',borderRadius:8,padding:'13px',fontSize:'0.85rem',fontWeight:600,textDecoration:'none'}}><Mail size={15}/> Prasanna80564@gmail.com</a>
-                <a href="tel:+353899582880" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:'rgba(255,255,255,0.05)',color:'#D7DCE6',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'12px',fontSize:'0.85rem',textDecoration:'none'}}><Phone size={15}/> +353 089 958 2880</a>
-                <a href="https://www.linkedin.com/in/prasannakumarsurendran" target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:'rgba(255,255,255,0.05)',color:'#D7DCE6',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'12px',fontSize:'0.85rem',textDecoration:'none'}}><Linkedin size={15}/> LinkedIn Profile</a>
-                <a href="https://github.com/Prasanna-27eng" target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:'rgba(255,255,255,0.05)',color:'#D7DCE6',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'12px',fontSize:'0.85rem',textDecoration:'none'}}><Github size={15}/> GitHub Profile</a>
+                <a href="tel:+353899582880" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:'rgba(255,255,255,0.05)',color:'#A8A8A8',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'12px',fontSize:'0.85rem',textDecoration:'none'}}><Phone size={15}/> +353 089 958 2880</a>
+                <a href="https://www.linkedin.com/in/prasannakumarsurendran" target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:'rgba(255,255,255,0.05)',color:'#A8A8A8',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'12px',fontSize:'0.85rem',textDecoration:'none'}}><Linkedin size={15}/> LinkedIn Profile</a>
+                <a href="https://github.com/Prasanna-27eng" target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:'rgba(255,255,255,0.05)',color:'#A8A8A8',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'12px',fontSize:'0.85rem',textDecoration:'none'}}><Github size={15}/> GitHub Profile</a>
               </div>
             </div>
           </section>
@@ -620,11 +620,11 @@ export default function Portfolio() {
           {/* ── FOOTER ── */}
           <footer style={{borderTop:'1px solid rgba(255,255,255,0.06)',padding:'22px 48px',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:12}}>
             <Logo size={18} showText/>
-            <div style={{fontSize:'0.7rem',color:'#3A4556',...MONO}}>Prasanna Kumar Surendran · Dublin, Ireland · 2025–2026</div>
+            <div style={{fontSize:'0.7rem',color:'#404040',...MONO}}>Prasanna Kumar Surendran · Dublin, Ireland · 2025–2026</div>
             <div style={{display:'flex',gap:16}}>
-              <a href="/" style={{fontSize:'0.7rem',color:'#3A4556',textDecoration:'none',...MONO}} onMouseEnter={e=>e.currentTarget.style.color='#6F7A8F'} onMouseLeave={e=>e.currentTarget.style.color='#3A4556'}>Home</a>
-              <a href="/mission" style={{fontSize:'0.7rem',color:'#3A4556',textDecoration:'none',...MONO}} onMouseEnter={e=>e.currentTarget.style.color='#6F7A8F'} onMouseLeave={e=>e.currentTarget.style.color='#3A4556'}>Mission</a>
-              <a href="/app/login" style={{fontSize:'0.7rem',color:'#3A4556',textDecoration:'none',...MONO}} onMouseEnter={e=>e.currentTarget.style.color='#6F7A8F'} onMouseLeave={e=>e.currentTarget.style.color='#3A4556'}>App</a>
+              <a href="/" style={{fontSize:'0.7rem',color:'#404040',textDecoration:'none',...MONO}} onMouseEnter={e=>e.currentTarget.style.color='#787878'} onMouseLeave={e=>e.currentTarget.style.color='#404040'}>Home</a>
+              <a href="/mission" style={{fontSize:'0.7rem',color:'#404040',textDecoration:'none',...MONO}} onMouseEnter={e=>e.currentTarget.style.color='#787878'} onMouseLeave={e=>e.currentTarget.style.color='#404040'}>Mission</a>
+              <a href="/app/login" style={{fontSize:'0.7rem',color:'#404040',textDecoration:'none',...MONO}} onMouseEnter={e=>e.currentTarget.style.color='#787878'} onMouseLeave={e=>e.currentTarget.style.color='#404040'}>App</a>
             </div>
           </footer>
 

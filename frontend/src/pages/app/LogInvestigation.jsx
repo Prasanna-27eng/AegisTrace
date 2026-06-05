@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 const LOG_TYPES = ['auto','syslog','windows_event','apache_access','nginx_access','firewall','cloudtrail','auth_log','generic'];
 const SEVERITY_COLOR = { high:'#EF4444', medium:'#EAB308', low:'#A78BFA' };
-const VERDICT_COLOR  = { Malicious:'#EF4444', Suspicious:'#EAB308', Clean:'#22C55E', Unknown:'#71717A' };
+const VERDICT_COLOR  = { Malicious:'#EF4444', Suspicious:'#EAB308', Clean:'#22C55E', Unknown:'#888888' };
 
 const EXAMPLES = {
   syslog: `Jun  2 14:32:01 server01 sshd[12345]: Failed password for root from 185.220.101.34 port 22 ssh2
@@ -107,7 +107,7 @@ export default function LogInvestigation() {
     <div style={{ padding:'24px 28px' }}>
       <div style={{ marginBottom:20 }}>
         <h1 style={{ fontSize:'1.3rem', fontWeight:600 }}>Log Investigation</h1>
-        <div style={{ fontSize:'0.72rem', color:'#71717A', marginTop:2 }}>Paste any log — AI parses, extracts IOCs, maps to MITRE</div>
+        <div style={{ fontSize:'0.72rem', color:'#787878', marginTop:2 }}>Paste any log — AI parses, extracts IOCs, maps to MITRE</div>
       </div>
 
       <div style={{ display:'flex', borderBottom:'1px solid rgba(255,255,255,0.07)', marginBottom:20 }}>
@@ -126,9 +126,9 @@ export default function LogInvestigation() {
               style={{ border:'2px dashed rgba(255,255,255,0.1)', borderRadius:8, padding:'16px', textAlign:'center', cursor:'pointer', transition:'border-color 0.15s' }}
               onMouseEnter={e => e.currentTarget.style.borderColor='rgba(77,163,255,0.3)'}
               onMouseLeave={e => e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'}>
-              <Upload size={20} style={{ color:'#71717A', margin:'0 auto 8px' }}/>
-              <div style={{ fontSize:'0.8rem', color:'#71717A', marginBottom:6 }}>Drop a log file or <label style={{ color:'#4DA3FF', cursor:'pointer' }}>browse<input type="file" accept=".log,.txt,.json,.csv" style={{ display:'none' }} onChange={handleFile}/></label></div>
-              <div style={{ fontSize:'0.68rem', color:'#71717A', fontFamily:'JetBrains Mono' }}>.log .txt .json .csv</div>
+              <Upload size={20} style={{ color:'#787878', margin:'0 auto 8px' }}/>
+              <div style={{ fontSize:'0.8rem', color:'#787878', marginBottom:6 }}>Drop a log file or <label style={{ color:'#4DA3FF', cursor:'pointer' }}>browse<input type="file" accept=".log,.txt,.json,.csv" style={{ display:'none' }} onChange={handleFile}/></label></div>
+              <div style={{ fontSize:'0.68rem', color:'#787878', fontFamily:'JetBrains Mono' }}>.log .txt .json .csv</div>
             </div>
 
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
@@ -149,7 +149,7 @@ export default function LogInvestigation() {
                 <label className="at-label" style={{ margin:0 }}>Paste Log Content</label>
                 <div style={{ display:'flex', gap:6 }}>
                   {Object.keys(EXAMPLES).map(k => (
-                    <button key={k} onClick={() => { setContent(EXAMPLES[k]); setLogType(k); setLabel(`example_${k}`); }} style={{ fontSize:'0.62rem', color:'#71717A', background:'none', border:'1px solid rgba(255,255,255,0.08)', borderRadius:3, padding:'2px 6px', cursor:'pointer', fontFamily:'JetBrains Mono' }}>{k}</button>
+                    <button key={k} onClick={() => { setContent(EXAMPLES[k]); setLogType(k); setLabel(`example_${k}`); }} style={{ fontSize:'0.62rem', color:'#787878', background:'none', border:'1px solid rgba(255,255,255,0.08)', borderRadius:3, padding:'2px 6px', cursor:'pointer', fontFamily:'JetBrains Mono' }}>{k}</button>
                   ))}
                 </div>
               </div>
@@ -166,7 +166,7 @@ export default function LogInvestigation() {
           {/* Results */}
           <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
             {!result && !loading && (
-              <div className="at-card" style={{ padding:40, textAlign:'center', color:'#71717A' }}>
+              <div className="at-card" style={{ padding:40, textAlign:'center', color:'#787878' }}>
                 <Brain size={28} style={{ margin:'0 auto 12px', color:'rgba(167,139,250,0.3)' }}/>
                 <div>Paste a log and click Analyse.</div>
                 <div style={{ fontSize:'0.78rem', marginTop:6 }}>AI detects the format, extracts IOCs, maps MITRE techniques, and scores the threat level.</div>
@@ -176,21 +176,21 @@ export default function LogInvestigation() {
             {result && (
               <>
                 {/* Verdict */}
-                <div className="at-card" style={{ padding:16, borderLeft:`2px solid ${VERDICT_COLOR[result.verdict]||'#71717A'}` }}>
+                <div className="at-card" style={{ padding:16, borderLeft:`2px solid ${VERDICT_COLOR[result.verdict]||'#888888'}` }}>
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:10 }}>
                     <div>
                       <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:4 }}>
-                        <span style={{ fontSize:'1.1rem', fontWeight:700, color:VERDICT_COLOR[result.verdict]||'#71717A' }}>{result.verdict}</span>
+                        <span style={{ fontSize:'1.1rem', fontWeight:700, color:VERDICT_COLOR[result.verdict]||'#787878' }}>{result.verdict}</span>
                         <span className="ai-badge">AI</span>
-                        <span style={{ fontSize:'0.72rem', color:VERDICT_COLOR[result.verdict]||'#71717A', fontFamily:'JetBrains Mono', background:`${VERDICT_COLOR[result.verdict]||'#71717A'}18`, padding:'1px 8px', borderRadius:4 }}>{result.threat_score}/100</span>
+                        <span style={{ fontSize:'0.72rem', color:VERDICT_COLOR[result.verdict]||'#787878', fontFamily:'JetBrains Mono', background:`${VERDICT_COLOR[result.verdict]||'#787878'}18`, padding:'1px 8px', borderRadius:4 }}>{result.threat_score}/100</span>
                       </div>
-                      <div style={{ fontSize:'0.68rem', color:'#71717A', fontFamily:'JetBrains Mono' }}>
+                      <div style={{ fontSize:'0.68rem', color:'#787878', fontFamily:'JetBrains Mono' }}>
                         {result.log_type} · {result.total_entries} lines · {result.suspicious_entries} suspicious
                         {result.attack_type && ` · ${result.attack_type.replace(/_/g,' ')}`}
                       </div>
                     </div>
                   </div>
-                  <p style={{ fontSize:'0.82rem', color:'#B0B0C0', lineHeight:1.65 }}>{result.summary}</p>
+                  <p style={{ fontSize:'0.82rem', color:'#909090', lineHeight:1.65 }}>{result.summary}</p>
                 </div>
 
                 {/* Key Findings */}
@@ -199,7 +199,7 @@ export default function LogInvestigation() {
                     <div className="section-label">Key Findings</div>
                     {result.key_findings.map((f,i) => (
                       <div key={i} style={{ fontSize:'0.8rem', padding:'4px 0', display:'flex', gap:8, borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
-                        <span style={{ color:'#4DA3FF', flexShrink:0 }}>→</span><span style={{ color:'#F0F0F8' }}>{f}</span>
+                        <span style={{ color:'#4DA3FF', flexShrink:0 }}>→</span><span style={{ color:'#EBEBEB' }}>{f}</span>
                       </div>
                     ))}
                   </div>
@@ -211,9 +211,9 @@ export default function LogInvestigation() {
                     <div className="section-label">Suspicious Log Lines</div>
                     <div style={{ display:'flex', flexDirection:'column', gap:6, maxHeight:180, overflowY:'auto' }}>
                       {result.suspicious_entries.map((e,i) => (
-                        <div key={i} style={{ background:'#0D111C', borderRadius:5, padding:'7px 10px', borderLeft:`2px solid ${SEVERITY_COLOR[e.severity]||'#71717A'}` }}>
-                          <code style={{ fontSize:'0.7rem', color:'#B0B0C0', fontFamily:'JetBrains Mono', display:'block', marginBottom:3 }}>{e.line?.slice(0,100)}</code>
-                          <div style={{ fontSize:'0.68rem', color:SEVERITY_COLOR[e.severity]||'#71717A' }}>{e.reason}</div>
+                        <div key={i} style={{ background:'#111111', borderRadius:5, padding:'7px 10px', borderLeft:`2px solid ${SEVERITY_COLOR[e.severity]||'#888888'}` }}>
+                          <code style={{ fontSize:'0.7rem', color:'#909090', fontFamily:'JetBrains Mono', display:'block', marginBottom:3 }}>{e.line?.slice(0,100)}</code>
+                          <div style={{ fontSize:'0.68rem', color:SEVERITY_COLOR[e.severity]||'#787878' }}>{e.reason}</div>
                         </div>
                       ))}
                     </div>
@@ -231,7 +231,7 @@ export default function LogInvestigation() {
                       {result.iocs.slice(0,20).map((ioc,i) => (
                         <span key={i} className="ioc-pill" style={{ cursor:'pointer' }} title={ioc.type} onClick={() => { navigator.clipboard.writeText(ioc.ioc); addToast('Copied!','success'); }}>{ioc.ioc}</span>
                       ))}
-                      {result.iocs.length > 20 && <span style={{ fontSize:'0.7rem', color:'#71717A', padding:'2px 6px' }}>+{result.iocs.length-20} more</span>}
+                      {result.iocs.length > 20 && <span style={{ fontSize:'0.7rem', color:'#787878', padding:'2px 6px' }}>+{result.iocs.length-20} more</span>}
                     </div>
                   </div>
                 )}
@@ -244,7 +244,7 @@ export default function LogInvestigation() {
                       <div key={i} style={{ display:'flex', gap:10, padding:'5px 0', borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
                         <span style={{ fontSize:'0.72rem', color:'#A78BFA', fontFamily:'JetBrains Mono', minWidth:80 }}>{m.id}</span>
                         <span style={{ fontSize:'0.78rem' }}>{m.name}</span>
-                        <span style={{ fontSize:'0.68rem', color:'#71717A', marginLeft:'auto' }}>{m.tactic}</span>
+                        <span style={{ fontSize:'0.68rem', color:'#787878', marginLeft:'auto' }}>{m.tactic}</span>
                       </div>
                     ))}
                   </div>
@@ -271,7 +271,7 @@ export default function LogInvestigation() {
       {tab === 'history' && (
         <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
           {history.length === 0 ? (
-            <div className="at-card" style={{ padding:40, textAlign:'center', color:'#71717A' }}>No log analyses yet.</div>
+            <div className="at-card" style={{ padding:40, textAlign:'center', color:'#787878' }}>No log analyses yet.</div>
           ) : history.map(h => (
             <div key={h.id} className="at-card" style={{ padding:'12px 16px', cursor:'pointer', transition:'border-color 0.15s' }}
               onMouseEnter={e => e.currentTarget.style.borderColor='rgba(77,163,255,0.25)'}
@@ -280,13 +280,13 @@ export default function LogInvestigation() {
               <div style={{ display:'flex', alignItems:'center', gap:12 }}>
                 <div style={{ flex:1 }}>
                   <div style={{ fontWeight:500, fontSize:'0.84rem' }}>{h.source_label}</div>
-                  <div style={{ fontSize:'0.7rem', color:'#71717A', fontFamily:'JetBrains Mono', marginTop:2 }}>{h.log_type} · {h.total_entries} lines</div>
-                  {h.ai_summary && <div style={{ fontSize:'0.72rem', color:'#71717A', marginTop:4, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{h.ai_summary}</div>}
+                  <div style={{ fontSize:'0.7rem', color:'#787878', fontFamily:'JetBrains Mono', marginTop:2 }}>{h.log_type} · {h.total_entries} lines</div>
+                  {h.ai_summary && <div style={{ fontSize:'0.72rem', color:'#787878', marginTop:4, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{h.ai_summary}</div>}
                 </div>
                 <div style={{ textAlign:'right', flexShrink:0 }}>
-                  <div style={{ fontSize:'0.78rem', fontWeight:700, color:VERDICT_COLOR[h.ai_verdict]||'#71717A' }}>{h.ai_verdict}</div>
-                  <div style={{ fontSize:'0.65rem', color:'#71717A', fontFamily:'JetBrains Mono', marginTop:2 }}>{h.threat_score}/100</div>
-                  <div style={{ fontSize:'0.62rem', color:'#71717A', marginTop:2 }}>{new Date(h.created_at).toLocaleDateString()}</div>
+                  <div style={{ fontSize:'0.78rem', fontWeight:700, color:VERDICT_COLOR[h.ai_verdict]||'#787878' }}>{h.ai_verdict}</div>
+                  <div style={{ fontSize:'0.65rem', color:'#787878', fontFamily:'JetBrains Mono', marginTop:2 }}>{h.threat_score}/100</div>
+                  <div style={{ fontSize:'0.62rem', color:'#787878', marginTop:2 }}>{new Date(h.created_at).toLocaleDateString()}</div>
                 </div>
                 {h.case_id && <span style={{ fontSize:'0.65rem', background:'rgba(77,163,255,0.1)', border:'1px solid rgba(77,163,255,0.25)', color:'#4DA3FF', padding:'2px 6px', borderRadius:3, fontFamily:'JetBrains Mono' }}>CASE</span>}
               </div>

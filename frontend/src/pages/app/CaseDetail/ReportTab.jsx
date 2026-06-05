@@ -84,7 +84,7 @@ export default function ReportTab({ caseId, caseData }) {
               {r.title}
               {r.badge && <span style={{ marginLeft: 8, fontSize: '0.62rem', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', color: '#22C55E', padding: '1px 6px', borderRadius: 3, fontFamily: 'JetBrains Mono', verticalAlign: 'middle' }}>{r.badge}</span>}
             </div>
-            <div style={{ fontSize: '0.78rem', color: '#71717A', marginBottom: 16, lineHeight: 1.65 }}>
+            <div style={{ fontSize: '0.78rem', color: '#787878', marginBottom: 16, lineHeight: 1.65 }}>
               {r.desc}
               {r.warn && <div style={{ color: '#EAB308', marginTop: 6 }}>{r.warn}</div>}
             </div>
@@ -148,8 +148,8 @@ export default function ReportTab({ caseId, caseData }) {
                   {s.done
                     ? <CheckCircle size={13} style={{ color: '#22C55E', flexShrink: 0 }} />
                     : <XCircle size={13} style={{ color: '#EF4444', opacity: 0.5, flexShrink: 0 }} />}
-                  <span style={{ flex: 1, fontSize: '0.78rem', color: s.done ? '#D7DCE6' : '#6F7A8F' }}>{s.label}</span>
-                  {!s.done && <span style={{ fontSize: '0.65rem', color: '#3A4556', ...MONO }}>{s.hint}</span>}
+                  <span style={{ flex: 1, fontSize: '0.78rem', color: s.done ? '#A8A8A8' : '#787878' }}>{s.label}</span>
+                  {!s.done && <span style={{ fontSize: '0.65rem', color: '#404040', ...MONO }}>{s.hint}</span>}
                 </div>
               ))}
             </div>

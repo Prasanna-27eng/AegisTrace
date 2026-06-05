@@ -34,7 +34,7 @@ function ResultRenderer({ toolKey, result }) {
           ))}
         </div>
       )}
-      <div style={{ background: '#0a0b12', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: 16, fontFamily: 'JetBrains Mono', fontSize: '0.75rem', color: '#b8c1cc', overflow: 'auto', maxHeight: 600, whiteSpace: 'pre-wrap', wordBreak: 'break-all', lineHeight: 1.7 }}>
+      <div style={{ background: '#0A0A0A', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: 16, fontFamily: 'JetBrains Mono', fontSize: '0.75rem', color: '#A8A8A8', overflow: 'auto', maxHeight: 600, whiteSpace: 'pre-wrap', wordBreak: 'break-all', lineHeight: 1.7 }}>
         {JSON.stringify(result, null, 2)}
       </div>
     </div>
@@ -61,9 +61,9 @@ export default function ToolResult() {
   }, [runId]);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#070B14', color: '#F0F0F8' }}>
+    <div style={{ minHeight: '100vh', background: '#080808', color: '#EBEBEB' }}>
       {/* Header */}
-      <header style={{ background: '#0D111C', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '14px 32px', display: 'flex', alignItems: 'center', gap: 20, position: 'sticky', top: 0, zIndex: 10 }}>
+      <header style={{ background: '#111111', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '14px 32px', display: 'flex', alignItems: 'center', gap: 20, position: 'sticky', top: 0, zIndex: 10 }}>
         <Logo size={20} showText />
         <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.1)' }} />
         <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', fontFamily: 'JetBrains Mono' }}>Hardware Tools</span>
@@ -72,7 +72,7 @@ export default function ToolResult() {
         {run && <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.68rem', color: 'rgba(255,255,255,0.35)', marginLeft: 4 }}>Run #{runId}</span>}
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 10, alignItems: 'center' }}>
           {run && <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)' }}>{new Date(run.executed_at).toLocaleString()}</span>}
-          <button onClick={() => navigate('/app/hardware/tools')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#F0F0F8', padding: '7px 14px', cursor: 'pointer', fontSize: '0.78rem', fontFamily: 'JetBrains Mono' }}>
+          <button onClick={() => navigate('/app/hardware/tools')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#EBEBEB', padding: '7px 14px', cursor: 'pointer', fontSize: '0.78rem', fontFamily: 'JetBrains Mono' }}>
             <ChevronLeft size={13} />Back to Tools
           </button>
         </div>

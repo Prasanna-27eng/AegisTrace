@@ -14,8 +14,8 @@ export default function PublicGallery() {
   }, []);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#07080F', color: '#F0F0F8' }}>
-      <nav style={{ background: '#0F1018', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 32px' }}>
+    <div style={{ minHeight: '100vh', background: '#050505', color: '#EBEBEB' }}>
+      <nav style={{ background: '#111111', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 32px' }}>
         <Logo size={24} showText />
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn-ghost" onClick={() => navigate('/')} style={{ fontSize: '0.8rem' }}>Home</button>
@@ -26,17 +26,17 @@ export default function PublicGallery() {
 
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 32px' }}>
         <div style={{ marginBottom: 36 }}>
-          <div style={{ fontSize: '0.68rem', color: '#71717A', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'JetBrains Mono', marginBottom: 8 }}>Public Case Library</div>
+          <div style={{ fontSize: '0.68rem', color: '#787878', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'JetBrains Mono', marginBottom: 8 }}>Public Case Library</div>
           <h1 style={{ fontSize: '2rem', fontWeight: 600, letterSpacing: '-0.02em' }}>Investigation Case Studies</h1>
-          <p style={{ color: '#71717A', fontSize: '0.88rem', marginTop: 8 }}>Real-world SOC investigations published as public case studies. Read-only, anonymised where required.</p>
+          <p style={{ color: '#787878', fontSize: '0.88rem', marginTop: 8 }}>Real-world SOC investigations published as public case studies. Read-only, anonymised where required.</p>
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 60, color: '#71717A' }}>Loading cases…</div>
+          <div style={{ textAlign: 'center', padding: 60, color: '#787878' }}>Loading cases…</div>
         ) : cases.length === 0 ? (
           <div style={{ textAlign: 'center', padding: 60 }}>
-            <Lock size={32} style={{ color: '#71717A', margin: '0 auto 12px' }} />
-            <div style={{ color: '#71717A' }}>No public cases yet.</div>
+            <Lock size={32} style={{ color: '#787878', margin: '0 auto 12px' }} />
+            <div style={{ color: '#787878' }}>No public cases yet.</div>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
@@ -47,17 +47,17 @@ export default function PublicGallery() {
                 onClick={() => navigate(`/public/${c.share_token}`)}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                  <span style={{ fontSize: '0.7rem', color: '#71717A', fontFamily: 'JetBrains Mono' }}>{c.case_number}</span>
+                  <span style={{ fontSize: '0.7rem', color: '#787878', fontFamily: 'JetBrains Mono' }}>{c.case_number}</span>
                   <span className={`badge sev-${c.severity}`}>{c.severity?.toUpperCase()}</span>
                 </div>
                 <h3 style={{ fontWeight: 600, fontSize: '0.92rem', marginBottom: 8, lineHeight: 1.4 }}>{c.title}</h3>
                 {c.ai_executive_summary && (
-                  <p style={{ fontSize: '0.78rem', color: '#71717A', lineHeight: 1.65, marginBottom: 14 }}>
+                  <p style={{ fontSize: '0.78rem', color: '#787878', lineHeight: 1.65, marginBottom: 14 }}>
                     {c.ai_executive_summary.slice(0, 140)}…
                   </p>
                 )}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-                  <div style={{ display: 'flex', gap: 12, fontSize: '0.72rem', color: '#71717A' }}>
+                  <div style={{ display: 'flex', gap: 12, fontSize: '0.72rem', color: '#787878' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><User size={11} />{c.analyst_name}</span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Calendar size={11} />{new Date(c.created_at).toLocaleDateString()}</span>
                   </div>

@@ -101,15 +101,15 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(4,8,18,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 24 }}>
-      <div style={{ background: '#0D1117', border: '1px solid rgba(148,163,184,0.1)', borderRadius: 16, width: '100%', maxWidth: 900, maxHeight: '90vh', overflow: 'auto', boxShadow: '0 24px 64px rgba(0,0,0,0.7)' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 24 }}>
+      <div style={{ background: '#111111', border: '1px solid rgba(148,163,184,0.1)', borderRadius: 16, width: '100%', maxWidth: 900, maxHeight: '90vh', overflow: 'auto', boxShadow: '0 24px 64px rgba(0,0,0,0.7)' }}>
         {/* Header */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: 4 }}>Investigation Templates</div>
-            <div style={{ fontSize: '0.72rem', color: '#6F7A8F', ...MONO }}>Pick a scaffold to pre-fill your case — you can edit everything after</div>
+            <div style={{ fontSize: '0.72rem', color: '#787878', ...MONO }}>Pick a scaffold to pre-fill your case — you can edit everything after</div>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#6F7A8F', cursor: 'pointer', padding: 4 }}><X size={16} /></button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', padding: 4 }}><X size={16} /></button>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
@@ -134,11 +134,11 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
                   </div>
                   <div>
                     <div style={{ fontWeight: 600, fontSize: '0.86rem' }}>{t.label}</div>
-                    <div style={{ fontSize: '0.68rem', color: '#6F7A8F', ...MONO }}>
+                    <div style={{ fontSize: '0.68rem', color: '#787878', ...MONO }}>
                       Default: <span style={{ color: t.severity === 'critical' ? '#EF4444' : t.severity === 'high' ? '#F97316' : '#EAB308' }}>{t.severity}</span>
                     </div>
                   </div>
-                  <ChevronRight size={14} style={{ color: '#6F7A8F', marginLeft: 'auto' }} />
+                  <ChevronRight size={14} style={{ color: '#787878', marginLeft: 'auto' }} />
                 </div>
               </div>
             ))}
@@ -147,7 +147,7 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
           {/* Preview */}
           <div style={{ padding: '16px' }}>
             {!preview ? (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#3A4556', fontSize: '0.8rem', ...MONO, flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#404040', fontSize: '0.8rem', ...MONO, flexDirection: 'column', gap: 8 }}>
                 <AlertTriangle size={24} style={{ opacity: 0.3 }} />
                 Select a template to preview
               </div>
@@ -155,11 +155,11 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div style={{ padding: '12px 14px', background: `${preview.color}08`, border: `1px solid ${preview.color}20`, borderRadius: 10 }}>
                   <div style={{ fontSize: '0.62rem', color: preview.color, ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Default Title</div>
-                  <div style={{ fontSize: '0.8rem', color: '#D7DCE6', lineHeight: 1.5 }}>{preview.title}</div>
+                  <div style={{ fontSize: '0.8rem', color: '#A8A8A8', lineHeight: 1.5 }}>{preview.title}</div>
                 </div>
 
                 <div>
-                  <div style={{ fontSize: '0.62rem', color: '#6F7A8F', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>MITRE Techniques</div>
+                  <div style={{ fontSize: '0.62rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>MITRE Techniques</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                     {preview.mitre.map(m => (
                       <span key={m} style={{ fontSize: '0.65rem', ...MONO, background: 'rgba(239,68,68,0.08)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.18)', padding: '2px 7px', borderRadius: 3 }}>{m}</span>
@@ -168,10 +168,10 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
                 </div>
 
                 <div>
-                  <div style={{ fontSize: '0.62rem', color: '#6F7A8F', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Evidence to Collect</div>
+                  <div style={{ fontSize: '0.62rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Evidence to Collect</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                     {preview.evidence.map(e => (
-                      <div key={e} style={{ display: 'flex', gap: 6, fontSize: '0.74rem', color: '#A6AFBF' }}>
+                      <div key={e} style={{ display: 'flex', gap: 6, fontSize: '0.74rem', color: '#909090' }}>
                         <span style={{ color: '#4A8EDB', flexShrink: 0 }}>→</span> {e}
                       </div>
                     ))}
@@ -179,10 +179,10 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
                 </div>
 
                 <div>
-                  <div style={{ fontSize: '0.62rem', color: '#6F7A8F', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>First Steps</div>
+                  <div style={{ fontSize: '0.62rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>First Steps</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                     {preview.steps.map((s, i) => (
-                      <div key={i} style={{ display: 'flex', gap: 7, fontSize: '0.74rem', color: '#A6AFBF' }}>
+                      <div key={i} style={{ display: 'flex', gap: 7, fontSize: '0.74rem', color: '#909090' }}>
                         <span style={{ color: '#22C55E', ...MONO, flexShrink: 0 }}>{i + 1}.</span> {s}
                       </div>
                     ))}

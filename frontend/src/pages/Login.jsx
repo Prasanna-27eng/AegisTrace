@@ -75,7 +75,7 @@ function IrisScanner() {
       last = ts;
       t += dt;
 
-      ctx.fillStyle = '#070A12';
+      ctx.fillStyle = '#080808';
       ctx.fillRect(0, 0, W, H);
 
       const cx = W / 2, cy = H / 2;
@@ -242,7 +242,7 @@ function IrisScanner() {
       // ── Radial vignette ───────────────────────────────────────────────
       const vig = ctx.createRadialGradient(cx, cy, R * 0.45, cx, cy, Math.max(W, H) * 0.72);
       vig.addColorStop(0, 'transparent');
-      vig.addColorStop(1, 'rgba(7,10,18,0.90)');
+      vig.addColorStop(1, 'rgba(8,8,8,0.90)');
       ctx.fillStyle = vig; ctx.fillRect(0, 0, W, H);
 
       raf = requestAnimationFrame(frame);
@@ -286,7 +286,7 @@ export default function Login() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#07080F', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: '#050505', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
 
       {/* Iris Scanner animation fills the whole background */}
       <IrisScanner />
@@ -294,7 +294,7 @@ export default function Login() {
       {/* Centre vignette so card reads clearly over the animation */}
       <div style={{
         position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
-        background: 'radial-gradient(ellipse 48% 55% at 50% 50%, rgba(7,8,15,0.72) 0%, rgba(7,8,15,0.3) 50%, transparent 100%)',
+        background: 'radial-gradient(ellipse 48% 55% at 50% 50%, rgba(5,5,5,0.72) 0%, rgba(5,5,5,0.3) 50%, transparent 100%)',
       }} />
 
       {/* Login card */}
@@ -304,7 +304,7 @@ export default function Login() {
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
             <Logo size={44} showText={false} />
           </div>
-          <div style={{ fontSize: '1.45rem', fontWeight: 700, letterSpacing: '-0.02em', color: '#F0F0F8', marginBottom: 4 }}>
+          <div style={{ fontSize: '1.45rem', fontWeight: 700, letterSpacing: '-0.02em', color: '#EBEBEB', marginBottom: 4 }}>
             AegisTrace
           </div>
           <div style={{ fontSize: '0.65rem', color: 'rgba(240,240,248,0.28)', letterSpacing: '0.18em', textTransform: 'uppercase', ...mono }}>
@@ -313,7 +313,7 @@ export default function Login() {
         </div>
 
         <div style={{
-          background: 'rgba(8,12,22,0.92)',
+          background: 'rgba(5,5,5,0.92)',
           border: '1px solid rgba(77,163,255,0.13)',
           borderRadius: 14,
           padding: '30px 28px',

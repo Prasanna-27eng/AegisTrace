@@ -84,13 +84,13 @@ export default function AppShell() {
 
         <header style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', flexShrink: 0 }}>
           <button onClick={() => setMobileOpen(true)} className="mobile-only"
-            style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer', padding: 4, display: 'none' }}>
+            style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', padding: 4, display: 'none' }}>
             <Menu size={18} />
           </button>
 
           {/* Search bar with Cmd+K hint */}
           <div style={{ flex: 1, maxWidth: 400, position: 'relative' }}>
-            <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#71717A' }} />
+            <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#787878' }} />
             <input className="at-input"
               placeholder="Search cases…"
               value={searchQuery}
@@ -100,7 +100,7 @@ export default function AppShell() {
             <button
               onClick={() => setPaletteOpen(true)}
               title={`Command palette (${isMac ? '⌘' : 'Ctrl'}+K)`}
-              style={{ position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4, padding: '2px 7px', cursor: 'pointer', fontSize: '0.58rem', color: '#71717A', fontFamily: 'JetBrains Mono', letterSpacing: 0, lineHeight: 1.8 }}>
+              style={{ position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4, padding: '2px 7px', cursor: 'pointer', fontSize: '0.58rem', color: '#787878', fontFamily: 'JetBrains Mono', letterSpacing: 0, lineHeight: 1.8 }}>
               {isMac ? '⌘K' : 'Ctrl K'}
             </button>
           </div>
@@ -114,13 +114,13 @@ export default function AppShell() {
               onMouseLeave={e => { if (!dropdownOpen) e.currentTarget.style.background = 'none'; }}
             >
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: 500, color: '#F0F0F8' }}>{user?.name}</div>
-                <div style={{ fontSize: '0.62rem', color: '#71717A', fontFamily: 'JetBrains Mono' }}>{user?.role}</div>
+                <div style={{ fontSize: '0.75rem', fontWeight: 500, color: '#EBEBEB' }}>{user?.name}</div>
+                <div style={{ fontSize: '0.62rem', color: '#787878', fontFamily: 'JetBrains Mono' }}>{user?.role}</div>
               </div>
               <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(77,163,255,0.15)', border: '1px solid rgba(77,163,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 600, color: '#60A5FA', flexShrink: 0 }}>
                 {user?.name?.[0] || 'A'}
               </div>
-              <ChevronDown size={12} style={{ color: '#71717A', transition: 'transform 0.2s', transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+              <ChevronDown size={12} style={{ color: '#787878', transition: 'transform 0.2s', transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
             </button>
 
             {dropdownOpen && (

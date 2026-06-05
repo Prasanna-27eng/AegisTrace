@@ -21,7 +21,7 @@ function CopyBlock({ code, label, lang = 'shell' }) {
       {label&&<div style={{fontSize:10,color:'rgba(240,240,248,0.4)',marginBottom:6,...mono,textTransform:'uppercase',letterSpacing:'0.08em',display:'flex',alignItems:'center',gap:6}}>
         <div style={{width:2,height:10,background:'#4DA3FF',borderRadius:1}}/>{label}
       </div>}
-      <pre style={{background:'rgba(0,0,0,0.55)',border:'1px solid rgba(255,255,255,0.09)',borderRadius:10,padding:'16px 48px 16px 18px',margin:0,...mono,fontSize:13,color:'#e2e8f0',overflowX:'auto',whiteSpace:'pre-wrap',wordBreak:'break-all',lineHeight:1.7}}>{code}</pre>
+      <pre style={{background:'rgba(0,0,0,0.55)',border:'1px solid rgba(255,255,255,0.09)',borderRadius:10,padding:'16px 48px 16px 18px',margin:0,...mono,fontSize:13,color:'#A8A8A8',overflowX:'auto',whiteSpace:'pre-wrap',wordBreak:'break-all',lineHeight:1.7}}>{code}</pre>
       <button onClick={copy} style={{position:'absolute',top:label?44:10,right:10,background:copied?'rgba(34,197,94,0.1)':'rgba(255,255,255,0.07)',border:`1px solid ${copied?'rgba(34,197,94,0.3)':'rgba(255,255,255,0.12)'}`,borderRadius:6,padding:'5px 10px',cursor:'pointer',color:copied?'#22C55E':'rgba(240,240,248,0.55)',fontSize:11,display:'flex',alignItems:'center',gap:4,...mono,transition:'all 0.15s'}}>
         {copied?<><Check size={10}/>Copied</>:<><Copy size={10}/>Copy</>}
       </button>
@@ -44,7 +44,7 @@ function Step({ n, title, status = 'default', children }) {
       </div>
       {/* Content */}
       <div style={{flex:1,paddingBottom:0}}>
-        <div style={{fontWeight:700,fontSize:15,color:'#F0F0F8',marginBottom:12,paddingTop:6}}>{title}</div>
+        <div style={{fontWeight:700,fontSize:15,color:'#EBEBEB',marginBottom:12,paddingTop:6}}>{title}</div>
         {children}
       </div>
     </div>
@@ -110,12 +110,12 @@ python3 aegistrace_agent.py`;
   },[]);
 
   return (
-    <div style={{minHeight:'100vh',background:'#07080F',color:'#F0F0F8'}}>
+    <div style={{minHeight:'100vh',background:'#050505',color:'#EBEBEB'}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&display=swap');
         ::selection{background:rgba(77,163,255,0.3);color:#fff}
-        .agent-sidebar-link{display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:0.72rem;color:#71717A;text-decoration:none;border-radius:7px;transition:all 0.15s;font-family:'JetBrains Mono',monospace;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;background:none;border:none;text-align:left;width:100%}
-        .agent-sidebar-link:hover{color:#F0F0F8;background:rgba(255,255,255,0.05)}
+        .agent-sidebar-link{display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:0.72rem;color:#787878;text-decoration:none;border-radius:7px;transition:all 0.15s;font-family:'JetBrains Mono',monospace;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;background:none;border:none;text-align:left;width:100%}
+        .agent-sidebar-link:hover{color:#EBEBEB;background:rgba(255,255,255,0.05)}
         .agent-sidebar-link.active{color:#4DA3FF;background:rgba(77,163,255,0.08);border-left:2px solid #4DA3FF;padding-left:12px}
         .mobile-nav-drawer{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(3,4,10,0.97);z-index:200;display:flex;flex-direction:column;padding:24px;backdrop-filter:blur(20px)}
         @media(max-width:860px){
@@ -127,7 +127,7 @@ python3 aegistrace_agent.py`;
       `}</style>
 
       {/* ── TOP NAV ── */}
-      <nav style={{borderBottom:'1px solid rgba(255,255,255,0.07)',padding:'0 28px',display:'flex',alignItems:'center',height:56,gap:16,position:'sticky',top:0,zIndex:100,background:'rgba(7,8,15,0.95)',backdropFilter:'blur(12px)'}}>
+      <nav style={{borderBottom:'1px solid rgba(255,255,255,0.07)',padding:'0 28px',display:'flex',alignItems:'center',height:56,gap:16,position:'sticky',top:0,zIndex:100,background:'rgba(5,5,5,0.95)',backdropFilter:'blur(12px)'}}>
         <a href="/" style={{display:'flex',alignItems:'center',gap:8,textDecoration:'none',color:'inherit'}}>
           <Logo size={22}/>
           <span style={{fontWeight:700,fontSize:13,...mono,letterSpacing:'0.06em'}}>AEGISTRACE</span>
@@ -139,7 +139,7 @@ python3 aegistrace_agent.py`;
         <button onClick={()=>navigate('/app/login')} style={{background:'#4DA3FF',color:'#fff',border:'none',borderRadius:6,padding:'7px 16px',fontSize:11,fontWeight:600,cursor:'pointer',...mono,letterSpacing:'0.08em',textTransform:'uppercase'}}>
           Sign In
         </button>
-        <button className="mobile-menu-btn" onClick={()=>setMobileNav(true)} style={{background:'none',border:'1px solid rgba(240,240,248,0.15)',borderRadius:6,padding:'7px 9px',cursor:'pointer',color:'#F0F0F8',display:'flex',alignItems:'center'}}>
+        <button className="mobile-menu-btn" onClick={()=>setMobileNav(true)} style={{background:'none',border:'1px solid rgba(240,240,248,0.15)',borderRadius:6,padding:'7px 9px',cursor:'pointer',color:'#EBEBEB',display:'flex',alignItems:'center'}}>
           <Menu size={16}/>
         </button>
       </nav>
@@ -168,7 +168,7 @@ python3 aegistrace_agent.py`;
           {/* Download card */}
           <div style={{margin:'0 0 20px',padding:'14px',background:'rgba(77,163,255,0.06)',border:'1px solid rgba(77,163,255,0.2)',borderRadius:10}}>
             <div style={{fontSize:11,color:'rgba(240,240,248,0.6)',...mono,marginBottom:8}}>aegistrace_agent.py</div>
-            <div style={{fontSize:9,color:'#71717A',...mono,marginBottom:12}}>Python 3.7+ · Zero deps</div>
+            <div style={{fontSize:9,color:'#787878',...mono,marginBottom:12}}>Python 3.7+ · Zero deps</div>
             <a href={AGENT_RAW_URL} download="aegistrace_agent.py" target="_blank" rel="noreferrer"
               style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,background:'#4DA3FF',color:'#fff',textDecoration:'none',padding:'8px',borderRadius:6,fontSize:11,fontWeight:700,...mono,letterSpacing:'0.06em',textTransform:'uppercase'}}>
               <Download size={12}/> Download
@@ -190,7 +190,7 @@ python3 aegistrace_agent.py`;
             <div style={{fontSize:9,color:'rgba(240,240,248,0.3)',letterSpacing:'0.12em',textTransform:'uppercase',...mono,marginBottom:8}}>Quick Links</div>
             {[['/',<ArrowLeft size={9}/>,'Home'],['https://github.com/Prasanna-27eng/AegisTrace',<ExternalLink size={9}/>,'GitHub']].map(([href,icon,label])=>(
               <a key={label} href={href} style={{display:'flex',alignItems:'center',gap:6,fontSize:10,color:'rgba(240,240,248,0.35)',textDecoration:'none',...mono,padding:'3px 0',transition:'color 0.15s'}}
-                onMouseEnter={e=>e.currentTarget.style.color='#F0F0F8'}
+                onMouseEnter={e=>e.currentTarget.style.color='#FFFFFF'}
                 onMouseLeave={e=>e.currentTarget.style.color='rgba(240,240,248,0.35)'}>
                 {icon}{label}
               </a>
@@ -214,14 +214,14 @@ python3 aegistrace_agent.py`;
                 </div>
               </div>
               <p style={{fontSize:14,color:'rgba(240,240,248,0.6)',lineHeight:1.8,maxWidth:620,margin:'0 0 24px',...mono,fontWeight:300}}>
-                Production-grade EDR agent for Windows, Linux, and macOS. Ships security telemetry to your AegisTrace dashboard, detects threats locally, and responds in under 1 second. One dependency: <strong style={{color:'#F0F0F8'}}>psutil</strong>. Single Python file.
+                Production-grade EDR agent for Windows, Linux, and macOS. Ships security telemetry to your AegisTrace dashboard, detects threats locally, and responds in under 1 second. One dependency: <strong style={{color:'#EBEBEB'}}>psutil</strong>. Single Python file.
               </p>
 
               {/* Download card */}
               <div style={{display:'flex',gap:16,alignItems:'center',padding:'20px 24px',background:'rgba(77,163,255,0.05)',border:'1px solid rgba(77,163,255,0.2)',borderRadius:12,flexWrap:'wrap'}}>
                 <div style={{flex:1,minWidth:200}}>
-                  <div style={{fontWeight:700,fontSize:14,marginBottom:3,...mono,color:'#F0F0F8'}}>aegistrace_agent.py</div>
-                  <div style={{fontSize:11,color:'#71717A',...mono}}>Python 3.7+ · Zero dependencies · Windows / Linux / Mac</div>
+                  <div style={{fontWeight:700,fontSize:14,marginBottom:3,...mono,color:'#EBEBEB'}}>aegistrace_agent.py</div>
+                  <div style={{fontSize:11,color:'#787878',...mono}}>Python 3.7+ · Zero dependencies · Windows / Linux / Mac</div>
                 </div>
                 <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
                   <a href={AGENT_RAW_URL} download="aegistrace_agent.py" target="_blank" rel="noreferrer"
@@ -248,8 +248,8 @@ python3 aegistrace_agent.py`;
                   <div key={label} style={{display:'flex',gap:10,alignItems:'center',padding:'12px 14px',background:'rgba(255,255,255,0.02)',border:'1px solid rgba(255,255,255,0.06)',borderRadius:9}}>
                     <Icon size={14} style={{color,flexShrink:0}}/>
                     <div>
-                      <div style={{fontSize:12,fontWeight:600,color:'#F0F0F8'}}>{label}</div>
-                      <div style={{fontSize:10,color:'#71717A',...mono,marginTop:1}}>{sub}</div>
+                      <div style={{fontSize:12,fontWeight:600,color:'#EBEBEB'}}>{label}</div>
+                      <div style={{fontSize:10,color:'#787878',...mono,marginTop:1}}>{sub}</div>
                     </div>
                   </div>
                 ))}
@@ -267,7 +267,7 @@ python3 aegistrace_agent.py`;
 
               <Step n="1" title="Get your Ingest Key">
                 <p style={{fontSize:13,color:'rgba(240,240,248,0.6)',margin:'0 0 12px',lineHeight:1.7,...mono,fontWeight:300}}>
-                  Log into AegisTrace, go to <strong style={{color:'#F0F0F8'}}>Endpoints</strong> and click <strong style={{color:'#F0F0F8'}}>Get Ingest Key</strong>. Copy the key — you'll paste it in the next step.
+                  Log into AegisTrace, go to <strong style={{color:'#EBEBEB'}}>Endpoints</strong> and click <strong style={{color:'#EBEBEB'}}>Get Ingest Key</strong>. Copy the key — you'll paste it in the next step.
                 </p>
                 <InfoPill color="#A78BFA">
                   <Shield size={12}/> Admin → Endpoints → Get Ingest Key
@@ -281,7 +281,7 @@ python3 aegistrace_agent.py`;
                 <CopyBlock code={configSnippet} label="aegistrace_agent.py — edit these two lines"/>
                 <a href={AGENT_RAW_URL} download="aegistrace_agent.py" target="_blank" rel="noreferrer"
                   style={{display:'inline-flex',alignItems:'center',gap:6,fontSize:12,color:'rgba(240,240,248,0.45)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:6,padding:'6px 12px',textDecoration:'none',...mono,transition:'color 0.15s'}}
-                  onMouseEnter={e=>e.currentTarget.style.color='#F0F0F8'} onMouseLeave={e=>e.currentTarget.style.color='rgba(240,240,248,0.45)'}>
+                  onMouseEnter={e=>e.currentTarget.style.color='#FFFFFF'} onMouseLeave={e=>e.currentTarget.style.color='rgba(240,240,248,0.45)'}>
                   <Download size={12}/> Download aegistrace_agent.py
                 </a>
               </Step>
@@ -290,7 +290,7 @@ python3 aegistrace_agent.py`;
                 <CopyBlock code="python3 aegistrace_agent.py" label="Terminal"/>
                 <div style={{padding:'12px 16px',background:'rgba(34,197,94,0.05)',border:'1px solid rgba(34,197,94,0.18)',borderRadius:8,fontSize:13,color:'rgba(240,240,248,0.7)',display:'flex',alignItems:'center',gap:9,...mono}}>
                   <CheckCircle size={13} style={{color:'#22C55E',flexShrink:0}}/>
-                  Logs appear in your <strong style={{color:'#F0F0F8',margin:'0 4px'}}>Endpoints</strong> page within 5 minutes.
+                  Logs appear in your <strong style={{color:'#EBEBEB',margin:'0 4px'}}>Endpoints</strong> page within 5 minutes.
                 </div>
               </Step>
 
@@ -349,7 +349,7 @@ python3 aegistrace_agent.py`;
                       <div key={n} style={{display:'flex',gap:14,padding:'12px 16px',background:'rgba(255,255,255,0.02)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:8,alignItems:'flex-start'}}>
                         <div style={{width:22,height:22,borderRadius:'50%',background:'rgba(77,163,255,0.12)',border:'1px solid rgba(77,163,255,0.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:'#4DA3FF',flexShrink:0,...mono}}>{n}</div>
                         <div>
-                          <div style={{fontWeight:600,fontSize:13,color:'#F0F0F8',marginBottom:3}}>{t}</div>
+                          <div style={{fontWeight:600,fontSize:13,color:'#EBEBEB',marginBottom:3}}>{t}</div>
                           <div style={{fontSize:12,color:'rgba(240,240,248,0.5)',...mono,fontWeight:300}}>{d}</div>
                         </div>
                       </div>
@@ -473,7 +473,7 @@ python3 aegistrace_agent.py`;
                   {q:'AI analysis not running on new batches',a:'Verify that GROQ_API_KEY is set as an environment variable in your Render dashboard. Check with GET /api/health — it should return {"groq": true}.',icon:'🤖'},
                 ].map(({q,a,icon})=>(
                   <div key={q} style={{padding:'16px 18px',background:'rgba(255,255,255,0.02)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:10,borderLeft:'2px solid rgba(234,179,8,0.4)'}}>
-                    <div style={{fontWeight:600,fontSize:13,marginBottom:6,color:'#F0F0F8',display:'flex',alignItems:'center',gap:7}}><span>{icon}</span>{q}</div>
+                    <div style={{fontWeight:600,fontSize:13,marginBottom:6,color:'#EBEBEB',display:'flex',alignItems:'center',gap:7}}><span>{icon}</span>{q}</div>
                     <div style={{fontSize:12,color:'rgba(240,240,248,0.55)',lineHeight:1.7,...mono,fontWeight:300}}>{a}</div>
                   </div>
                 ))}
@@ -493,10 +493,10 @@ python3 aegistrace_agent.py`;
 
             {/* Footer nav */}
             <div style={{marginTop:36,paddingTop:20,borderTop:'1px solid rgba(255,255,255,0.06)',display:'flex',gap:16,flexWrap:'wrap',fontSize:11,color:'rgba(240,240,248,0.3)',...mono}}>
-              <a href="/" style={{color:'inherit',textDecoration:'none'}} onMouseEnter={e=>e.currentTarget.style.color='#F0F0F8'} onMouseLeave={e=>e.currentTarget.style.color='rgba(240,240,248,0.3)'}>← Home</a>
-              <a href="/public" style={{color:'inherit',textDecoration:'none'}} onMouseEnter={e=>e.currentTarget.style.color='#F0F0F8'} onMouseLeave={e=>e.currentTarget.style.color='rgba(240,240,248,0.3)'}>Case Library</a>
-              <a href="https://github.com/Prasanna-27eng/AegisTrace" target="_blank" rel="noreferrer" style={{color:'inherit',textDecoration:'none',display:'flex',alignItems:'center',gap:4}} onMouseEnter={e=>e.currentTarget.style.color='#F0F0F8'} onMouseLeave={e=>e.currentTarget.style.color='rgba(240,240,248,0.3)'}>GitHub <ExternalLink size={10}/></a>
-              <a href={AGENT_RAW_URL} target="_blank" rel="noreferrer" download="aegistrace_agent.py" style={{color:'inherit',textDecoration:'none',display:'flex',alignItems:'center',gap:4}} onMouseEnter={e=>e.currentTarget.style.color='#F0F0F8'} onMouseLeave={e=>e.currentTarget.style.color='rgba(240,240,248,0.3)'}>Download Agent <Download size={10}/></a>
+              <a href="/" style={{color:'inherit',textDecoration:'none'}} onMouseEnter={e=>e.currentTarget.style.color='#EBEBEB'} onMouseLeave={e=>e.currentTarget.style.color='rgba(240,240,248,0.3)'}>← Home</a>
+              <a href="/public" style={{color:'inherit',textDecoration:'none'}} onMouseEnter={e=>e.currentTarget.style.color='#EBEBEB'} onMouseLeave={e=>e.currentTarget.style.color='rgba(240,240,248,0.3)'}>Case Library</a>
+              <a href="https://github.com/Prasanna-27eng/AegisTrace" target="_blank" rel="noreferrer" style={{color:'inherit',textDecoration:'none',display:'flex',alignItems:'center',gap:4}} onMouseEnter={e=>e.currentTarget.style.color='#EBEBEB'} onMouseLeave={e=>e.currentTarget.style.color='rgba(240,240,248,0.3)'}>GitHub <ExternalLink size={10}/></a>
+              <a href={AGENT_RAW_URL} target="_blank" rel="noreferrer" download="aegistrace_agent.py" style={{color:'inherit',textDecoration:'none',display:'flex',alignItems:'center',gap:4}} onMouseEnter={e=>e.currentTarget.style.color='#EBEBEB'} onMouseLeave={e=>e.currentTarget.style.color='rgba(240,240,248,0.3)'}>Download Agent <Download size={10}/></a>
             </div>
           </div>
         </main>

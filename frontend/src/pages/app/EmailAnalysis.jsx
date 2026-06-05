@@ -28,7 +28,7 @@ export default function EmailAnalysis() {
     setLoading(false);
   };
 
-  const authColor = (v) => v === 'pass' ? '#22C55E' : v === 'fail' ? '#EF4444' : '#71717A';
+  const authColor = (v) => v === 'pass' ? '#22C55E' : v === 'fail' ? '#EF4444' : '#787878';
 
   const aiData = (() => { try { return JSON.parse(result?.ai_analysis || '{}'); } catch { return {}; } })();
 
@@ -36,7 +36,7 @@ export default function EmailAnalysis() {
     <div style={{ padding: '24px 28px' }}>
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontSize: '1.3rem', fontWeight: 600 }}>Email Analysis</h1>
-        <div style={{ fontSize: '0.75rem', color: '#71717A', marginTop: 2 }}>Header analysis · SPF/DKIM/DMARC · Phishing detection</div>
+        <div style={{ fontSize: '0.75rem', color: '#787878', marginTop: 2 }}>Header analysis · SPF/DKIM/DMARC · Phishing detection</div>
       </div>
 
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)', marginBottom: 20 }}>
@@ -51,12 +51,12 @@ export default function EmailAnalysis() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div>
-              <label style={{ fontSize: '0.75rem', color: '#71717A', display: 'block', marginBottom: 6 }}>Raw Email Headers</label>
+              <label style={{ fontSize: '0.75rem', color: '#787878', display: 'block', marginBottom: 6 }}>Raw Email Headers</label>
               <textarea className="at-textarea" rows={tab === 'full' ? 8 : 14} value={headers} onChange={e => setHeaders(e.target.value)} placeholder="Received: from mail.evil-domain.com...&#10;From: cfo@company.com&#10;Subject: URGENT: Wire Transfer&#10;..." style={{ fontFamily: 'JetBrains Mono', fontSize: '0.75rem' }} />
             </div>
             {tab === 'full' && (
               <div>
-                <label style={{ fontSize: '0.75rem', color: '#71717A', display: 'block', marginBottom: 6 }}>Email Body</label>
+                <label style={{ fontSize: '0.75rem', color: '#787878', display: 'block', marginBottom: 6 }}>Email Body</label>
                 <textarea className="at-textarea" rows={8} value={body} onChange={e => setBody(e.target.value)} placeholder="Paste email body here…" style={{ fontSize: '0.8rem' }} />
               </div>
             )}
@@ -68,7 +68,7 @@ export default function EmailAnalysis() {
           {/* Results */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {!result ? (
-              <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#71717A', fontSize: '0.82rem' }}>
+              <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#787878', fontSize: '0.82rem' }}>
                 Paste email headers and click "Analyse Email" to extract sender info, auth results, IOCs, and AI verdict.
               </div>
             ) : (
@@ -79,9 +79,9 @@ export default function EmailAnalysis() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                       <div style={{ fontWeight: 700, fontSize: '1.1rem', color: aiData.verdict === 'Phishing' || aiData.verdict === 'BEC' ? '#4DA3FF' : aiData.verdict === 'Legitimate' ? '#22C55E' : '#EAB308' }}>{aiData.verdict}</div>
                       <span className="ai-badge">AI</span>
-                      {aiData.confidence && <span style={{ fontSize: '0.75rem', color: '#71717A' }}>{aiData.confidence}% confidence</span>}
+                      {aiData.confidence && <span style={{ fontSize: '0.75rem', color: '#787878' }}>{aiData.confidence}% confidence</span>}
                     </div>
-                    {aiData.analysis && <p style={{ fontSize: '0.8rem', color: '#B0B0C0', lineHeight: 1.65 }}>{aiData.analysis}</p>}
+                    {aiData.analysis && <p style={{ fontSize: '0.8rem', color: '#909090', lineHeight: 1.65 }}>{aiData.analysis}</p>}
                     {aiData.indicators?.length > 0 && (
                       <div style={{ marginTop: 8 }}>
                         {aiData.indicators.map((ind, i) => <div key={i} style={{ fontSize: '0.78rem', color: '#EAB308', padding: '2px 0', display: 'flex', gap: 6 }}><span>→</span>{ind}</div>)}
@@ -95,8 +95,8 @@ export default function EmailAnalysis() {
                   <div className="section-label">Authentication</div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, textAlign: 'center' }}>
                     {[['SPF', result.spf_result], ['DKIM', result.dkim_result], ['DMARC', result.dmarc_result]].map(([name, val]) => (
-                      <div key={name} style={{ padding: '10px', background: '#0D111C', borderRadius: 6 }}>
-                        <div style={{ fontSize: '0.68rem', color: '#71717A', marginBottom: 4 }}>{name}</div>
+                      <div key={name} style={{ padding: '10px', background: '#111111', borderRadius: 6 }}>
+                        <div style={{ fontSize: '0.68rem', color: '#787878', marginBottom: 4 }}>{name}</div>
                         <div style={{ fontSize: '0.85rem', fontWeight: 700, color: authColor(val), fontFamily: 'JetBrains Mono' }}>{val?.toUpperCase() || 'NONE'}</div>
                       </div>
                     ))}
@@ -109,15 +109,15 @@ export default function EmailAnalysis() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: '0.8rem' }}>
                     {result.sender_ip && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ color: '#71717A', minWidth: 80 }}>Sender IP:</span>
-                        <span style={{ fontFamily: 'JetBrains Mono', color: '#F0F0F8' }}>{result.sender_ip}</span>
+                        <span style={{ color: '#787878', minWidth: 80 }}>Sender IP:</span>
+                        <span style={{ fontFamily: 'JetBrains Mono', color: '#EBEBEB' }}>{result.sender_ip}</span>
                         <button onClick={() => navigator.clipboard.writeText(result.sender_ip)} className="btn-ghost" style={{ padding: '2px 6px' }}><Copy size={10} /></button>
                       </div>
                     )}
                     {result.sender_domain && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ color: '#71717A', minWidth: 80 }}>Domain:</span>
-                        <span style={{ fontFamily: 'JetBrains Mono', color: '#F0F0F8' }}>{result.sender_domain}</span>
+                        <span style={{ color: '#787878', minWidth: 80 }}>Domain:</span>
+                        <span style={{ fontFamily: 'JetBrains Mono', color: '#EBEBEB' }}>{result.sender_domain}</span>
                       </div>
                     )}
                   </div>
@@ -137,7 +137,7 @@ export default function EmailAnalysis() {
                 {(() => { try { const hops = JSON.parse(result.routing_hops || '[]'); return hops.length > 0 && (
                   <div className="at-card" style={{ padding: 14 }}>
                     <div className="section-label">Routing Hops ({hops.length})</div>
-                    {hops.map((h, i) => <div key={i} style={{ fontSize: '0.72rem', fontFamily: 'JetBrains Mono', color: '#71717A', padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', lineHeight: 1.5 }}>{h.slice(0, 120)}</div>)}
+                    {hops.map((h, i) => <div key={i} style={{ fontSize: '0.72rem', fontFamily: 'JetBrains Mono', color: '#787878', padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', lineHeight: 1.5 }}>{h.slice(0, 120)}</div>)}
                   </div>
                 ); } catch { return null; } })()}
               </>
@@ -149,7 +149,7 @@ export default function EmailAnalysis() {
       {tab === 'saved' && (
         <div>
           {history.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 40, color: '#71717A' }}>No saved analyses yet.</div>
+            <div style={{ textAlign: 'center', padding: 40, color: '#787878' }}>No saved analyses yet.</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {history.map(h => {
@@ -159,11 +159,11 @@ export default function EmailAnalysis() {
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                       <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                         <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.8rem' }}>{h.sender_ip || 'Unknown sender'}</span>
-                        {h.sender_domain && <span style={{ fontSize: '0.75rem', color: '#71717A' }}>{h.sender_domain}</span>}
+                        {h.sender_domain && <span style={{ fontSize: '0.75rem', color: '#787878' }}>{h.sender_domain}</span>}
                       </div>
                       {ai.verdict && <span style={{ fontSize: '0.72rem', fontWeight: 700, color: ai.verdict === 'Phishing' || ai.verdict === 'BEC' ? '#EF4444' : ai.verdict === 'Legitimate' ? '#22C55E' : '#EAB308' }}>{ai.verdict}</span>}
                     </div>
-                    <div style={{ display: 'flex', gap: 12, fontSize: '0.72rem', color: '#71717A' }}>
+                    <div style={{ display: 'flex', gap: 12, fontSize: '0.72rem', color: '#787878' }}>
                       <span>SPF: <span style={{ color: authColor(h.spf_result) }}>{h.spf_result?.toUpperCase()}</span></span>
                       <span>DKIM: <span style={{ color: authColor(h.dkim_result) }}>{h.dkim_result?.toUpperCase()}</span></span>
                       <span>DMARC: <span style={{ color: authColor(h.dmarc_result) }}>{h.dmarc_result?.toUpperCase()}</span></span>

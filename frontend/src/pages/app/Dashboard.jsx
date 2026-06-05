@@ -9,8 +9,8 @@ import { SeverityBadge, StatusBadge } from '../../components/SeverityBadge';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 
-const SEV_COLOR  = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'#A78BFA', info:'#71717A' };
-const STAT_COLOR = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'#A78BFA', info:'#71717A' };
+const SEV_COLOR  = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'#A78BFA', info:'#888888' };
+const STAT_COLOR = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'#A78BFA', info:'#787878' };
 
 function timeAgo(dateStr) {
   if (!dateStr) return '';
@@ -35,7 +35,7 @@ function ageColor(dateStr, severity) {
   const limit = thresholds[severity] || 48;
   if (diff > limit) return '#EF4444';
   if (diff > limit * 0.8) return '#EAB308';
-  return '#71717A';
+  return '#888888';
 }
 
 function AttentionRow({ c, navigate }) {
@@ -44,14 +44,14 @@ function AttentionRow({ c, navigate }) {
   return (
     <div
       onClick={() => navigate(`/app/cases/${c.id}`)}
-      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 6, cursor: 'pointer', background: '#0D111C', transition: 'background 0.15s', position: 'relative', overflow: 'hidden' }}
+      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 6, cursor: 'pointer', background: '#111111', transition: 'background 0.15s', position: 'relative', overflow: 'hidden' }}
       onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
-      onMouseLeave={e => e.currentTarget.style.background = '#0D111C'}
+      onMouseLeave={e => e.currentTarget.style.background = '#111111'}
     >
       {c.severity === 'critical' && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, background: '#4DA3FF' }} />}
       <div style={{ flex: 1, minWidth: 0, paddingLeft: c.severity === 'critical' ? 6 : 0 }}>
         <div style={{ fontSize: '0.83rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
-        <div style={{ fontSize: '0.67rem', color: '#71717A', fontFamily: 'JetBrains Mono', marginTop: 1 }}>
+        <div style={{ fontSize: '0.67rem', color: '#787878', fontFamily: 'JetBrains Mono', marginTop: 1 }}>
           {c.case_number} · {c.analyst_name || 'Unassigned'}
         </div>
       </div>
@@ -73,11 +73,11 @@ function StatTile({ icon: Icon, label, value, sub, subColor, color, onClick }) {
       onMouseLeave={e => onClick && (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)')}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-        <span style={{ fontSize: '0.68rem', color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
-        <Icon size={13} style={{ color: color || '#71717A' }} />
+        <span style={{ fontSize: '0.68rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
+        <Icon size={13} style={{ color: color || '#787878' }} />
       </div>
-      <div style={{ fontSize: '1.7rem', fontWeight: 700, color: color || '#F0F0F8', fontFamily: 'JetBrains Mono', lineHeight: 1 }}>{value}</div>
-      {sub && <div style={{ fontSize: '0.68rem', marginTop: 5, color: subColor || '#71717A' }}>{sub}</div>}
+      <div style={{ fontSize: '1.7rem', fontWeight: 700, color: color || '#EBEBEB', fontFamily: 'JetBrains Mono', lineHeight: 1 }}>{value}</div>
+      {sub && <div style={{ fontSize: '0.68rem', marginTop: 5, color: subColor || '#787878' }}>{sub}</div>}
     </div>
   );
 }
@@ -150,7 +150,7 @@ export default function Dashboard() {
   ].slice(0, 6);
 
   if (loading) return (
-    <div style={{ padding: 40, color: '#71717A', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+    <div style={{ padding: 40, color: '#787878', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
       <Activity size={20} style={{ animation: 'spin 1s linear infinite' }} />
       <div style={{ fontSize: '0.82rem' }}>Loading dashboard…</div>
     </div>
@@ -163,7 +163,7 @@ export default function Dashboard() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
         <div>
           <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Dashboard</h1>
-          <div style={{ fontSize: '0.7rem', color: '#71717A', fontFamily: 'JetBrains Mono', marginTop: 2 }}>
+          <div style={{ fontSize: '0.7rem', color: '#787878', fontFamily: 'JetBrains Mono', marginTop: 2 }}>
             {new Date().toLocaleDateString('en-IE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </div>
         </div>
@@ -180,7 +180,7 @@ export default function Dashboard() {
             <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#4DA3FF', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'JetBrains Mono' }}>
               Needs attention now
             </span>
-            <span style={{ marginLeft: 'auto', fontSize: '0.68rem', color: '#71717A', cursor: 'pointer' }} onClick={() => navigate('/app/cases')}>
+            <span style={{ marginLeft: 'auto', fontSize: '0.68rem', color: '#787878', cursor: 'pointer' }} onClick={() => navigate('/app/cases')}>
               View all →
             </span>
           </div>
@@ -194,12 +194,12 @@ export default function Dashboard() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, marginBottom: 20 }}>
         <StatTile icon={AlertTriangle} label="Critical Open"   value={critical.length}     color="#4DA3FF"  sub={critical.length ? 'Act now' : 'None active'} subColor={critical.length ? '#EF4444' : '#22C55E'} onClick={() => navigate('/app/cases?severity=critical&status=open')} />
         <StatTile icon={Clock}        label="Pending Closure"  value={pending.length}      color="#EAB308"  sub={pending.length ? 'Awaiting review' : 'Queue clear'} subColor={pending.length ? '#EAB308' : '#22C55E'} onClick={() => navigate('/app/cases?status=pending_closure')} />
-        <StatTile icon={Activity}     label="In Progress"      value={inProgress.length}   color="#A78BFA"  sub={`${openCases.length} open`} subColor="#71717A" onClick={() => navigate('/app/cases?status=in_progress')} />
+        <StatTile icon={Activity}     label="In Progress"      value={inProgress.length}   color="#A78BFA"  sub={`${openCases.length} open`} subColor="#888888" onClick={() => navigate('/app/cases?status=in_progress')} />
         <StatTile icon={TrendingUp}   label="SLA Breach"       value={slaBreach.length}    color={slaBreach.length ? '#EF4444' : '#22C55E'} sub={slaBreach.length ? 'Overdue' : 'All within SLA'} subColor={slaBreach.length ? '#EF4444' : '#22C55E'} />
         <StatTile icon={CheckCircle}  label="Closed Today"     value={closedToday.length}  color="#22C55E"  sub="Cases resolved" />
-        <StatTile icon={Shield}       label="VT Today"         value={vtHistory.length}    color="#A78BFA"  sub={maliciousVt ? `${maliciousVt} malicious` : 'None malicious'} subColor={maliciousVt ? '#EF4444' : '#71717A'} onClick={() => navigate('/app/vt-lookup')} />
+        <StatTile icon={Shield}       label="VT Today"         value={vtHistory.length}    color="#A78BFA"  sub={maliciousVt ? `${maliciousVt} malicious` : 'None malicious'} subColor={maliciousVt ? '#EF4444' : '#888888'} onClick={() => navigate('/app/vt-lookup')} />
         <StatTile icon={GitMerge}     label="Total IOCs"       value={stats.total_iocs || 0} color="#22C55E" sub="Correlated" />
-        <StatTile icon={BarChart2}    label="Total Cases"      value={stats.total_cases || cases.length} color="#F0F0F8" sub={`${stats.closed_cases || closedToday.length} closed`} subColor="#71717A" />
+        <StatTile icon={BarChart2}    label="Total Cases"      value={stats.total_cases || cases.length} color="#FFFFFF" sub={`${stats.closed_cases || closedToday.length} closed`} subColor="#888888" />
       </div>
 
       {/* ── ANALYTICS TRENDS ── */}
@@ -210,12 +210,12 @@ export default function Dashboard() {
           <div className="at-card" style={{ padding: '14px 16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div className="section-label" style={{ margin: 0 }}>Severity Breakdown</div>
-              <button onClick={() => navigate('/app/analytics')} style={{ fontSize: '0.68rem', color: '#71717A', background: 'none', border: 'none', cursor: 'pointer' }}>Full analytics →</button>
+              <button onClick={() => navigate('/app/analytics')} style={{ fontSize: '0.68rem', color: '#787878', background: 'none', border: 'none', cursor: 'pointer' }}>Full analytics →</button>
             </div>
             {(() => {
               const sevData = analytics.severity || {};
               const order = ['critical', 'high', 'medium', 'low', 'info'];
-              const colors = { critical: '#EF4444', high: '#F97316', medium: '#EAB308', low: '#A78BFA', info: '#71717A' };
+              const colors = { critical: '#EF4444', high: '#F97316', medium: '#EAB308', low: '#A78BFA', info: '#888888' };
               const total = order.reduce((s, k) => s + (sevData[k] || 0), 0) || 1;
               return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -228,7 +228,7 @@ export default function Dashboard() {
                         <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,0.05)', borderRadius: 3, overflow: 'hidden' }}>
                           <div style={{ height: '100%', width: `${pct}%`, background: colors[sev], borderRadius: 3, transition: 'width 0.6s ease', opacity: count ? 1 : 0 }} />
                         </div>
-                        <span style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono', color: count ? colors[sev] : '#71717A', width: 20, textAlign: 'right', flexShrink: 0 }}>{count}</span>
+                        <span style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono', color: count ? colors[sev] : '#787878', width: 20, textAlign: 'right', flexShrink: 0 }}>{count}</span>
                       </div>
                     );
                   })}
@@ -260,12 +260,12 @@ export default function Dashboard() {
                     <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 6, background: bg, border: `1px solid ${color}22` }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                         <div style={{ width: 7, height: 7, borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}66` }} />
-                        <span style={{ fontSize: '0.76rem', color: '#B0B0C0' }}>{label}</span>
+                        <span style={{ fontSize: '0.76rem', color: '#909090' }}>{label}</span>
                       </div>
                       <span style={{ fontSize: '1rem', fontWeight: 700, color, fontFamily: 'JetBrains Mono' }}>{count}</span>
                     </div>
                   ))}
-                  <div style={{ paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.05)', fontSize: '0.65rem', color: '#71717A', fontFamily: 'JetBrains Mono', textAlign: 'right' }}>
+                  <div style={{ paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.05)', fontSize: '0.65rem', color: '#787878', fontFamily: 'JetBrains Mono', textAlign: 'right' }}>
                     {activeCases.length} active cases total
                   </div>
                 </div>
@@ -291,7 +291,7 @@ export default function Dashboard() {
             <div style={{ padding: '32px 0', textAlign: 'center' }}>
               <FolderOpen size={28} style={{ color: 'rgba(77,163,255,0.2)', margin: '0 auto 10px' }} />
               <div style={{ fontSize: '0.84rem', fontWeight: 500, marginBottom: 6 }}>No cases yet</div>
-              <div style={{ fontSize: '0.76rem', color: '#71717A', marginBottom: 14 }}>Start your first investigation to build your SOC queue.</div>
+              <div style={{ fontSize: '0.76rem', color: '#787878', marginBottom: 14 }}>Start your first investigation to build your SOC queue.</div>
               <button className="btn-accent" onClick={() => navigate('/app/cases')} style={{ fontSize: '0.78rem' }}>
                 <Plus size={13} /> Create First Case
               </button>
@@ -302,14 +302,14 @@ export default function Dashboard() {
                 <div
                   key={c.id}
                   onClick={() => navigate(`/app/cases/${c.id}`)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', background: '#0D111C', borderRadius: 6, cursor: 'pointer', transition: 'background 0.15s', position: 'relative', overflow: 'hidden' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', background: '#111111', borderRadius: 6, cursor: 'pointer', transition: 'background 0.15s', position: 'relative', overflow: 'hidden' }}
                   onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
-                  onMouseLeave={e => e.currentTarget.style.background = '#0D111C'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#111111'}
                 >
                   {c.severity === 'critical' && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, background: '#4DA3FF' }} />}
                   <div style={{ flex: 1, minWidth: 0, paddingLeft: c.severity === 'critical' ? 6 : 0 }}>
                     <div style={{ fontSize: '0.82rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
-                    <div style={{ fontSize: '0.67rem', color: '#71717A', fontFamily: 'JetBrains Mono', marginTop: 1, display: 'flex', gap: 8 }}>
+                    <div style={{ fontSize: '0.67rem', color: '#787878', fontFamily: 'JetBrains Mono', marginTop: 1, display: 'flex', gap: 8 }}>
                       <span>{c.case_number}</span>
                       {c.analyst_name && <span>· {c.analyst_name}</span>}
                       <span style={{ color: ageColor(c.created_at, c.severity) }}>· {caseAge(c.created_at)} old</span>
@@ -319,7 +319,7 @@ export default function Dashboard() {
                     <SeverityBadge severity={c.severity} />
                     <StatusBadge status={c.status} />
                   </div>
-                  <div style={{ fontSize: '0.65rem', color: '#71717A', fontFamily: 'JetBrains Mono', flexShrink: 0, minWidth: 40, textAlign: 'right' }}>
+                  <div style={{ fontSize: '0.65rem', color: '#787878', fontFamily: 'JetBrains Mono', flexShrink: 0, minWidth: 40, textAlign: 'right' }}>
                     {timeAgo(c.updated_at)}
                   </div>
                 </div>
@@ -338,7 +338,7 @@ export default function Dashboard() {
                 <AlertTriangle size={12} /> {pending.length} case{pending.length > 1 ? 's' : ''} pending closure
               </div>
               {pending.slice(0, 3).map(c => (
-                <div key={c.id} onClick={() => navigate(`/app/cases/${c.id}`)} style={{ fontSize: '0.76rem', color: '#71717A', cursor: 'pointer', padding: '4px 0', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div key={c.id} onClick={() => navigate(`/app/cases/${c.id}`)} style={{ fontSize: '0.76rem', color: '#787878', cursor: 'pointer', padding: '4px 0', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>{c.title}</span>
                   <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.65rem', flexShrink: 0 }}>{caseAge(c.created_at)}</span>
                 </div>
@@ -350,10 +350,10 @@ export default function Dashboard() {
           <div className="at-card" style={{ padding: '14px 16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <div className="section-label" style={{ margin: 0 }}>Recent VT Lookups</div>
-              <button onClick={() => navigate('/app/vt-lookup')} style={{ fontSize: '0.68rem', color: '#71717A', background: 'none', border: 'none', cursor: 'pointer' }}>All →</button>
+              <button onClick={() => navigate('/app/vt-lookup')} style={{ fontSize: '0.68rem', color: '#787878', background: 'none', border: 'none', cursor: 'pointer' }}>All →</button>
             </div>
             {vtHistory.length === 0 ? (
-              <div style={{ padding: '16px 0', textAlign: 'center', color: '#71717A', fontSize: '0.78rem' }}>
+              <div style={{ padding: '16px 0', textAlign: 'center', color: '#787878', fontSize: '0.78rem' }}>
                 No lookups yet.{' '}
                 <span style={{ color: '#A78BFA', cursor: 'pointer' }} onClick={() => navigate('/app/vt-lookup')}>Run one →</span>
               </div>
@@ -361,7 +361,7 @@ export default function Dashboard() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                 {vtHistory.map(v => (
                   <div key={v.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.76rem', padding: '3px 0' }}>
-                    <span style={{ fontFamily: 'JetBrains Mono', color: '#B0B0C0', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 150, fontSize: '0.72rem' }}>{v.ioc}</span>
+                    <span style={{ fontFamily: 'JetBrains Mono', color: '#909090', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 150, fontSize: '0.72rem' }}>{v.ioc}</span>
                     <span className={`verdict-${v.verdict}`} style={{ fontSize: '0.65rem', fontWeight: 600, fontFamily: 'JetBrains Mono', flexShrink: 0 }}>{v.verdict?.toUpperCase()}</span>
                   </div>
                 ))}
@@ -391,7 +391,7 @@ export default function Dashboard() {
                   }}>
                     <span style={{
                       width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
-                      background: info.connected ? '#22C55E' : (info.configured ? '#EF4444' : '#71717A'),
+                      background: info.connected ? '#22C55E' : (info.configured ? '#EF4444' : '#888888'),
                       boxShadow: info.connected ? '0 0 5px #22C55E44' : 'none',
                     }} />
                     <span style={{ fontFamily: 'JetBrains Mono', textTransform: 'uppercase', fontSize: '0.62rem' }}>{name}</span>
@@ -399,13 +399,13 @@ export default function Dashboard() {
                 ))}
               </div>
             ) : (
-              <div style={{ fontSize: '0.72rem', color: '#71717A', marginBottom: 8 }}>Loading EDR status…</div>
+              <div style={{ fontSize: '0.72rem', color: '#787878', marginBottom: 8 }}>Loading EDR status…</div>
             )}
 
             {/* Recent EDR Actions */}
             {edrRecent.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <div style={{ fontSize: '0.62rem', color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>Recent Actions</div>
+                <div style={{ fontSize: '0.62rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>Recent Actions</div>
                 {edrRecent.map(a => {
                   const ActionIcon = { isolate: Lock, un_isolate: Unlock, kill_process: XCircle, run_command: Terminal, list_processes: Cpu }[a.action] || Shield;
                   return (
@@ -418,9 +418,9 @@ export default function Dashboard() {
                       }}
                     >
                       <ActionIcon size={11} style={{ color: a.status === 'success' ? '#22C55E' : a.status === 'failed' ? '#EF4444' : '#EAB308', flexShrink: 0 }} />
-                      <span style={{ fontFamily: 'JetBrains Mono', color: '#71717A', fontSize: '0.62rem', flexShrink: 0, textTransform: 'uppercase' }}>{a.platform}</span>
-                      <span style={{ color: '#F0F0F8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.hostname || a.endpoint_id}</span>
-                      <span style={{ marginLeft: 'auto', color: '#71717A', fontSize: '0.62rem', fontFamily: 'JetBrains Mono', flexShrink: 0 }}>
+                      <span style={{ fontFamily: 'JetBrains Mono', color: '#787878', fontSize: '0.62rem', flexShrink: 0, textTransform: 'uppercase' }}>{a.platform}</span>
+                      <span style={{ color: '#EBEBEB', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.hostname || a.endpoint_id}</span>
+                      <span style={{ marginLeft: 'auto', color: '#787878', fontSize: '0.62rem', fontFamily: 'JetBrains Mono', flexShrink: 0 }}>
                         {a.action.replace('_', ' ')}
                       </span>
                     </div>
@@ -430,7 +430,7 @@ export default function Dashboard() {
             )}
 
             {edrStatus && !edrStatus.any_configured && (
-              <div style={{ fontSize: '0.7rem', color: '#71717A', marginTop: 4 }}>
+              <div style={{ fontSize: '0.7rem', color: '#787878', marginTop: 4 }}>
                 No EDR configured.{' '}
                 <span style={{ color: '#A78BFA', cursor: 'pointer' }} onClick={() => navigate('/app/admin?tab=integrations')}>Configure integrations →</span>
               </div>
@@ -449,7 +449,7 @@ export default function Dashboard() {
                 { label: 'Identity Graph', path: '/app/identity-graph', color: '#A78BFA' },
                 { label: 'Threat Hunt',    path: '/app/hunt',           color: '#4DA3FF' },
                 { label: 'Log Invest.',    path: '/app/logs',           color: '#EAB308' },
-                { label: 'Tools Hub',      path: '/app/tools',          color: '#71717A' },
+                { label: 'Tools Hub',      path: '/app/tools',          color: '#787878' },
               ].map(({ label, path, color }) => (
                 <button key={path} onClick={() => navigate(path)} className="btn-ghost"
                   style={{ fontSize: '0.76rem', padding: '7px 10px', justifyContent: 'flex-start', gap: 6 }}>

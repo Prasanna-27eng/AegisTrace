@@ -12,7 +12,7 @@ const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 
 const TYPE_COLOR = {
   ip: '#EF4444', domain: '#EAB308', hash: '#A78BFA',
-  url: '#22C55E', email: '#4DA3FF', port: '#71717A',
+  url: '#22C55E', email: '#4DA3FF', port: '#888888',
 };
 
 const TOOL_PRESETS = [
@@ -43,16 +43,16 @@ function timeAgo(d) {
 // ── Session Sidebar ──────────────────────────────────────────────────────────
 function SessionSidebar({ sessions, activeId, onSelect, onCreate, onDelete }) {
   return (
-    <div style={{ width: 220, flexShrink: 0, background: '#070B14', borderRight: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ width: 220, flexShrink: 0, background: '#080808', borderRight: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '14px 14px 10px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: '0.7rem', color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.1em', ...MONO }}>Sessions</div>
+        <div style={{ fontSize: '0.7rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.1em', ...MONO }}>Sessions</div>
         <button className="btn-accent" onClick={onCreate} style={{ padding: '4px 8px', fontSize: '0.7rem' }}>
           <Plus size={11} /> New
         </button>
       </div>
       <div style={{ flex: 1, overflowY: 'auto', padding: '6px' }}>
         {sessions.length === 0 && (
-          <div style={{ padding: '20px 10px', textAlign: 'center', color: '#71717A', fontSize: '0.72rem', ...MONO }}>
+          <div style={{ padding: '20px 10px', textAlign: 'center', color: '#787878', fontSize: '0.72rem', ...MONO }}>
             No sessions yet.<br />Click New to start.
           </div>
         )}
@@ -75,11 +75,11 @@ function SessionSidebar({ sessions, activeId, onSelect, onCreate, onDelete }) {
               </div>
               <button
                 onClick={e => { e.stopPropagation(); onDelete(s.id); }}
-                style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer', padding: '2px', flexShrink: 0, opacity: 0.6 }}
+                style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', padding: '2px', flexShrink: 0, opacity: 0.6 }}
               ><Trash2 size={10} /></button>
             </div>
             <div style={{ display: 'flex', gap: 6, marginTop: 3 }}>
-              <span style={{ fontSize: '0.62rem', color: '#71717A', ...MONO }}>
+              <span style={{ fontSize: '0.62rem', color: '#787878', ...MONO }}>
                 {s.command_count || 0} cmds
               </span>
               {s.mode === 'sandbox' && (
@@ -97,7 +97,7 @@ function SessionSidebar({ sessions, activeId, onSelect, onCreate, onDelete }) {
 function OutputPane({ command, onPushIOCs, onSaveToCase, caseId }) {
   const [showParsed, setShowParsed] = useState(true);
   if (!command) return (
-    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#71717A' }}>
+    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#787878' }}>
       <div style={{ textAlign: 'center' }}>
         <Terminal size={28} style={{ margin: '0 auto 12px', opacity: 0.2 }} />
         <div style={{ fontSize: '0.8rem', ...MONO }}>Run a command to see output here</div>
@@ -112,7 +112,7 @@ function OutputPane({ command, onPushIOCs, onSaveToCase, caseId }) {
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Output toolbar */}
       <div style={{ padding: '8px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-        <span style={{ fontSize: '0.68rem', color: '#71717A', ...MONO, flex: 1 }}>
+        <span style={{ fontSize: '0.68rem', color: '#787878', ...MONO, flex: 1 }}>
           {command.tool_name} · {timeAgo(command.created_at)}
           <span style={{ marginLeft: 8, padding: '1px 6px', borderRadius: 3, fontSize: '0.6rem', background: command.mode === 'sandbox' ? 'rgba(167,139,250,0.15)' : 'rgba(34,197,94,0.1)', color: command.mode === 'sandbox' ? '#A78BFA' : '#22C55E' }}>
             {command.mode?.toUpperCase()}
@@ -132,7 +132,7 @@ function OutputPane({ command, onPushIOCs, onSaveToCase, caseId }) {
       <div style={{ flex: 1, overflow: 'auto', display: 'flex' }}>
         {/* Raw output */}
         <div style={{ flex: showParsed ? '0 0 50%' : '1', borderRight: showParsed ? '1px solid rgba(255,255,255,0.06)' : 'none', padding: 14, overflow: 'auto' }}>
-          <div style={{ fontSize: '0.62rem', color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, ...MONO }}>Raw Output</div>
+          <div style={{ fontSize: '0.62rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, ...MONO }}>Raw Output</div>
           <pre style={{ margin: 0, fontSize: '0.75rem', color: '#22C55E', ...MONO, lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
             {command.raw_output || '(no output)'}
           </pre>
@@ -183,7 +183,7 @@ function OutputPane({ command, onPushIOCs, onSaveToCase, caseId }) {
             {iocs.length > 0 && (
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <div style={{ fontSize: '0.62rem', color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.08em', ...MONO }}>
+                  <div style={{ fontSize: '0.62rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.08em', ...MONO }}>
                     Extracted IOCs ({iocs.length})
                   </div>
                   {caseId && (
@@ -194,10 +194,10 @@ function OutputPane({ command, onPushIOCs, onSaveToCase, caseId }) {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   {iocs.map((ioc, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 8px', background: '#070B14', borderRadius: 4, borderLeft: `2px solid ${TYPE_COLOR[ioc.type] || '#71717A'}` }}>
-                      <span style={{ fontSize: '0.6rem', color: TYPE_COLOR[ioc.type] || '#71717A', textTransform: 'uppercase', ...MONO, minWidth: 40 }}>{ioc.type}</span>
-                      <span style={{ fontSize: '0.72rem', color: '#F0F0F8', ...MONO, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ioc.ioc}</span>
-                      <button onClick={() => navigator.clipboard.writeText(ioc.ioc)} style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer', marginLeft: 'auto', flexShrink: 0, padding: 2 }}>
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 8px', background: '#080808', borderRadius: 4, borderLeft: `2px solid ${TYPE_COLOR[ioc.type] || '#888888'}` }}>
+                      <span style={{ fontSize: '0.6rem', color: TYPE_COLOR[ioc.type] || '#787878', textTransform: 'uppercase', ...MONO, minWidth: 40 }}>{ioc.type}</span>
+                      <span style={{ fontSize: '0.72rem', color: '#EBEBEB', ...MONO, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ioc.ioc}</span>
+                      <button onClick={() => navigator.clipboard.writeText(ioc.ioc)} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', marginLeft: 'auto', flexShrink: 0, padding: 2 }}>
                         <Copy size={9} />
                       </button>
                     </div>
@@ -366,7 +366,7 @@ export default function TerminalLab() {
   const commands = sessionData?.commands || [];
 
   return (
-    <div style={{ display: 'flex', height: '100%', background: '#070B14', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '100%', background: '#080808', overflow: 'hidden' }}>
 
       {/* Session Sidebar */}
       <SessionSidebar
@@ -381,11 +381,11 @@ export default function TerminalLab() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
         {/* Header */}
-        <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: '#070B14' }}>
+        <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: '#080808' }}>
           <Terminal size={15} style={{ color: '#22C55E' }} />
           <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>Terminal Lab</div>
           {sessionData && (
-            <span style={{ fontSize: '0.72rem', color: '#71717A', ...MONO }}>
+            <span style={{ fontSize: '0.72rem', color: '#787878', ...MONO }}>
               {sessionData.session_name} · {commands.length} commands
             </span>
           )}
@@ -414,7 +414,7 @@ export default function TerminalLab() {
 
         {/* Body: command input + output */}
         {!activeId ? (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#71717A' }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#787878' }}>
             <div style={{ textAlign: 'center' }}>
               <Terminal size={36} style={{ margin: '0 auto 16px', opacity: 0.15 }} />
               <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 8 }}>No active session</div>
@@ -428,9 +428,9 @@ export default function TerminalLab() {
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
             {/* Terminal transcript */}
-            <div style={{ flex: 1, overflow: 'auto', padding: '10px 16px', background: '#080A10' }} ref={outputRef}>
+            <div style={{ flex: 1, overflow: 'auto', padding: '10px 16px', background: '#0A0A0A' }} ref={outputRef}>
               {commands.length === 0 ? (
-                <div style={{ padding: '24px 0', color: '#71717A', fontSize: '0.78rem', ...MONO }}>
+                <div style={{ padding: '24px 0', color: '#787878', fontSize: '0.78rem', ...MONO }}>
                   <span style={{ color: '#4DA3FF' }}>aegistrace@lab:~$</span> _
                   <div style={{ marginTop: 16, opacity: 0.5 }}>Session ready. Type a command or choose a tool preset below.</div>
                 </div>
@@ -448,8 +448,8 @@ export default function TerminalLab() {
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                       <span style={{ color: '#4DA3FF', ...MONO, fontSize: '0.72rem' }}>aegistrace@lab:~$</span>
-                      <span style={{ color: '#F0F0F8', ...MONO, fontSize: '0.78rem' }}>{cmd.command}</span>
-                      <span style={{ marginLeft: 'auto', fontSize: '0.62rem', color: '#71717A', ...MONO }}>
+                      <span style={{ color: '#EBEBEB', ...MONO, fontSize: '0.78rem' }}>{cmd.command}</span>
+                      <span style={{ marginLeft: 'auto', fontSize: '0.62rem', color: '#787878', ...MONO }}>
                         {timeAgo(cmd.created_at)}
                       </span>
                       <span style={{ fontSize: '0.6rem', padding: '1px 5px', borderRadius: 2, background: cmd.mode === 'sandbox' ? 'rgba(167,139,250,0.12)' : 'rgba(34,197,94,0.08)', color: cmd.mode === 'sandbox' ? '#A78BFA' : '#22C55E', ...MONO }}>
@@ -465,7 +465,7 @@ export default function TerminalLab() {
             </div>
 
             {/* Tool presets */}
-            <div style={{ padding: '8px 14px', borderTop: '1px solid rgba(255,255,255,0.05)', background: '#09090F', display: 'flex', gap: 5, flexWrap: 'wrap', flexShrink: 0 }}>
+            <div style={{ padding: '8px 14px', borderTop: '1px solid rgba(255,255,255,0.05)', background: '#090909', display: 'flex', gap: 5, flexWrap: 'wrap', flexShrink: 0 }}>
               {TOOL_PRESETS.map(p => (
                 <button
                   key={p.name}
@@ -478,7 +478,7 @@ export default function TerminalLab() {
             </div>
 
             {/* Command input row */}
-            <div style={{ padding: '10px 14px', borderTop: '1px solid rgba(255,255,255,0.07)', background: '#070B14', flexShrink: 0 }}>
+            <div style={{ padding: '10px 14px', borderTop: '1px solid rgba(255,255,255,0.07)', background: '#080808', flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: showPaste ? 8 : 0 }}>
                 <span style={{ color: '#4DA3FF', ...MONO, fontSize: '0.8rem', flexShrink: 0 }}>aegistrace@lab:~$</span>
                 <input
@@ -489,7 +489,7 @@ export default function TerminalLab() {
                   placeholder={`${tool} command…`}
                   style={{
                     flex: 1, background: 'transparent', border: 'none', outline: 'none',
-                    color: '#F0F0F8', ...MONO, fontSize: '0.82rem',
+                    color: '#EBEBEB', ...MONO, fontSize: '0.82rem',
                   }}
                 />
                 <button
@@ -516,7 +516,7 @@ export default function TerminalLab() {
                   onChange={e => setPasteOutput(e.target.value)}
                   placeholder="Paste real tool output here — AI will analyse it…"
                   rows={5}
-                  style={{ width: '100%', background: '#080A10', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#22C55E', ...MONO, fontSize: '0.73rem', padding: '8px 10px', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
+                  style={{ width: '100%', background: '#0A0A0A', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#22C55E', ...MONO, fontSize: '0.73rem', padding: '8px 10px', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
                 />
               )}
             </div>
@@ -526,7 +526,7 @@ export default function TerminalLab() {
 
       {/* Right panel: output details */}
       <div style={{ width: 380, flexShrink: 0, borderLeft: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }} ref={outputRef}>
-        <div style={{ padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)', fontSize: '0.7rem', color: '#71717A', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)', fontSize: '0.7rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
           <Brain size={11} style={{ color: '#A78BFA' }} />
           AI Analysis
           {activeCmd && <span style={{ marginLeft: 'auto', opacity: 0.5, fontWeight: 400 }}>{activeCmd.tool_name}</span>}

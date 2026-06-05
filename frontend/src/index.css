@@ -1,66 +1,65 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
 
-/* ── AegisTrace Premium Dark — v3.0 ───────────────────────────────────────── */
-/* Direction: premium control room, cinematic intelligence, alive + serious   */
-/* Reference: enterprise security platform, not generic SaaS, not cyberpunk  */
+/* ── AegisTrace — Black Edition v4.0 ──────────────────────────────────────── */
+/* Direction: pure black modern — no blue tint, maximum contrast, surgical    */
 :root {
-  /* ── Backgrounds — True deep dark, not grey ─────────────────────────────── */
-  --bg:             #040812;   /* Deepest — near black with blue tint         */
-  --surface:        #080D1A;   /* Surface — still very dark                   */
-  --card:           #0C1220;   /* Card — readable contrast                    */
-  --card-hover:     #101829;   /* Card hover                                  */
-  --elevated:       #141F30;   /* Modals, drawers                             */
-  --surface-2:      #1A2740;   /* Higher elevation                            */
-  --inset:          #030609;   /* Insets, code blocks                         */
+  /* ── Backgrounds — True black hierarchy ─────────────────────────────────── */
+  --bg:             #000000;   /* Absolute black                              */
+  --surface:        #080808;   /* Primary surface                             */
+  --card:           #101010;   /* Card background                             */
+  --card-hover:     #161616;   /* Card hover                                  */
+  --elevated:       #1A1A1A;   /* Modals, drawers                             */
+  --surface-2:      #202020;   /* Higher elevation                            */
+  --inset:          #050505;   /* Insets, code blocks                         */
 
-  /* ── Primary — Classic enterprise blue (refined, not electric) ──────────── */
-  --accent:         #4A8EDB;   /* Classic steel blue — timeless, trustworthy  */
+  /* ── Primary — Electric blue on pure black ───────────────────────────────── */
+  --accent:         #4A8EDB;   /* Steel blue accent                           */
   --accent-hover:   #3A7AC8;   /* Deeper on hover                             */
-  --accent-light:   #6BABEC;   /* Lighter for labels on dark                  */
+  --accent-light:   #6BABEC;   /* Lighter labels on dark                      */
   --accent-soft:    rgba(74, 142, 219, 0.12);
-  --accent-border:  rgba(77, 163, 255, 0.22);
-  --accent-glow:    0 0 28px rgba(77, 163, 255, 0.2);
+  --accent-border:  rgba(77, 163, 255, 0.2);
+  --accent-glow:    0 0 28px rgba(77, 163, 255, 0.25);
 
-  /* ── Cyan (secondary accent — analytics, enrichment) ────────────────────── */
+  /* ── Cyan (secondary accent) ─────────────────────────────────────────────── */
   --accent-cyan:    #2EE6D6;
   --accent-cyan-soft: rgba(46, 230, 214, 0.1);
 
-  /* ── Purple (AI / Intelligence / Trust features) ─────────────────────────── */
-  --accent2:        #9C7CFF;   /* Violet — AI badges, trust indicators        */
+  /* ── Purple (AI / Intelligence) ─────────────────────────────────────────── */
+  --accent2:        #9C7CFF;
   --accent2-light:  #B9A4FF;
   --accent2-soft:   rgba(156, 124, 255, 0.12);
   --accent2-border: rgba(156, 124, 255, 0.2);
 
-  /* ── Status / severity ──────────────────────────────────────────────────── */
+  /* ── Status / severity ───────────────────────────────────────────────────── */
   --success:        #4BE38A;
   --warning:        #F5B84B;
   --error:          #FF667C;
   --info:           #4DA3FF;
 
-  /* ── Text — Calibrated readability ──────────────────────────────────────── */
-  --text-primary:   #F5F7FA;
-  --text-secondary: #D7DCE6;
-  --text-muted:     #6F7A8F;
-  --text-disabled:  #3A4556;
+  /* ── Text — Subtle layered grey hierarchy on black ──────────────────────── */
+  --text-primary:   #EBEBEB;   /* Headings / emphasis — slightly off-white    */
+  --text-secondary: #A8A8A8;   /* Body text — comfortable warm grey           */
+  --text-muted:     #686868;   /* Labels, metadata — mid grey                 */
+  --text-disabled:  #383838;   /* Disabled — dark grey                        */
 
-  /* ── Borders — Controlled depth ─────────────────────────────────────────── */
-  --border:         rgba(255, 255, 255, 0.07);
-  --border-light:   rgba(255, 255, 255, 0.12);
-  --border-medium:  rgba(255, 255, 255, 0.16);
+  /* ── Borders — Crisp on black ────────────────────────────────────────────── */
+  --border:         rgba(255, 255, 255, 0.08);
+  --border-light:   rgba(255, 255, 255, 0.13);
+  --border-medium:  rgba(255, 255, 255, 0.20);
 
   /* ── Shadows ─────────────────────────────────────────────────────────────── */
-  --shadow-sm:   0 2px 8px rgba(0,0,0,0.4);
-  --shadow-md:   0 8px 24px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3);
-  --shadow-lg:   0 16px 48px rgba(0,0,0,0.6), 0 4px 12px rgba(0,0,0,0.4);
-  --shadow-soft: 0 10px 30px rgba(0,0,0,0.35);
-  --shadow-card: 0 0 0 1px rgba(255,255,255,0.05), 0 6px 24px rgba(0,0,0,0.4);
-  --glow-blue:   0 0 24px rgba(77,163,255,0.18);
-  --glow-purple: 0 0 24px rgba(156,124,255,0.16);
-  --glow-cyan:   0 0 24px rgba(46,230,214,0.14);
+  --shadow-sm:   0 2px 8px rgba(0,0,0,0.6);
+  --shadow-md:   0 8px 24px rgba(0,0,0,0.7), 0 2px 6px rgba(0,0,0,0.5);
+  --shadow-lg:   0 16px 48px rgba(0,0,0,0.8), 0 4px 12px rgba(0,0,0,0.6);
+  --shadow-soft: 0 10px 30px rgba(0,0,0,0.55);
+  --shadow-card: 0 0 0 1px rgba(255,255,255,0.06), 0 6px 24px rgba(0,0,0,0.6);
+  --glow-blue:   0 0 24px rgba(77,163,255,0.22);
+  --glow-purple: 0 0 24px rgba(156,124,255,0.18);
+  --glow-cyan:   0 0 24px rgba(46,230,214,0.16);
 
   /* ── Glassmorphism ───────────────────────────────────────────────────────── */
-  --glass-bg:     rgba(12, 16, 28, 0.72);
-  --glass-border: rgba(255, 255, 255, 0.07);
+  --glass-bg:     rgba(5, 5, 5, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.08);
 
   /* ── Radius ──────────────────────────────────────────────────────────────── */
   --radius-sm: 0.375rem;
@@ -137,13 +136,13 @@ h1,h2,h3,h4,h5,h6 {
 /* ── Code blocks ───────────────────────────────────────────────────────────── */
 pre, code { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
 pre {
-  background: #0D1117;
+  background: #0C0C0C;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 1rem;
   overflow-x: auto;
   line-height: 1.6;
-  color: #b8c1cc;
+  color: #A8A8A8;
 }
 
 /* ── AI badge ──────────────────────────────────────────────────────────────── */
@@ -191,7 +190,7 @@ pre {
 /* ── IOC pill ──────────────────────────────────────────────────────────────── */
 .ioc-pill {
   display: inline-block;
-  background: rgba(30,41,59,1);
+  background: rgba(18,18,18,1);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
   padding: 2px 8px;
@@ -389,7 +388,7 @@ pre {
 }
 .at-select:hover { border-color: var(--border-medium); }
 .at-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
-.at-select option { background: #0D1117; color: var(--text-primary); padding: 8px; }
+.at-select option { background: #111111; color: var(--text-primary); padding: 8px; }
 
 /* ── Form label ────────────────────────────────────────────────────────────── */
 .at-label {
@@ -413,7 +412,7 @@ input[type="checkbox"] {
 
 /* ── Card — glassmorphism ──────────────────────────────────────────────────── */
 .at-card {
-  background: rgba(13, 17, 23, 0.65);
+  background: rgba(10, 10, 10, 0.75);
   border: 1px solid rgba(148, 163, 184, 0.08);
   border-radius: var(--radius-lg);
   backdrop-filter: blur(8px);

@@ -68,11 +68,11 @@ const TOOL_MAP = {};
 CATEGORIES.forEach(cat => cat.tools.forEach(t => { TOOL_MAP[t.key] = { ...t, category: cat }; }));
 
 // ── Severity colour ───────────────────────────────────────────────────────────
-const SEV_COLOR = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'#A78BFA', info:'#71717A' };
+const SEV_COLOR = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'#A78BFA', info:'#787878' };
 const sevStyle = (s) => ({
-  color: SEV_COLOR[s] || '#71717A',
-  background: `${SEV_COLOR[s] || '#71717A'}18`,
-  border: `1px solid ${SEV_COLOR[s] || '#71717A'}40`,
+  color: SEV_COLOR[s] || '#787878',
+  background: `${SEV_COLOR[s] || '#888888'}18`,
+  border: `1px solid ${SEV_COLOR[s] || '#888888'}40`,
 });
 
 function SevBadge({ s }) {
@@ -101,7 +101,7 @@ function KVPairs({ data, skip = [] }) {
 
 // ── Table renderer ────────────────────────────────────────────────────────────
 function DataTable({ rows, cols }) {
-  if (!rows || !rows.length) return <div style={{ padding: 16, color: '#71717A', fontSize: '0.8rem' }}>No data.</div>;
+  if (!rows || !rows.length) return <div style={{ padding: 16, color: '#787878', fontSize: '0.8rem' }}>No data.</div>;
   const keys = cols || Object.keys(rows[0]).slice(0, 6);
   return (
     <div style={{ overflowX: 'auto' }}>

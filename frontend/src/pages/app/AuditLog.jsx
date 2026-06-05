@@ -11,7 +11,7 @@ const CAT_COLOR = {
   intel:    '#06B6D4',
   import:   '#F97316',
   admin:    '#EC4899',
-  system:   '#71717A',
+  system:   '#888888',
 };
 
 const CAT_LABELS = {
@@ -27,12 +27,12 @@ const ACTION_ICON = {
 };
 
 /* ── Stat card ────────────────────────────────────────────────────────────── */
-function StatCard({ label, value, color = '#F0F0F8', sub }) {
+function StatCard({ label, value, color = '#EBEBEB', sub }) {
   return (
     <div className="at-card" style={{ padding: '14px 16px', flex: '1 1 120px' }}>
       <div style={{ fontSize: '1.7rem', fontWeight: 700, color, fontFamily: 'JetBrains Mono' }}>{value ?? '—'}</div>
-      <div style={{ fontSize: '0.68rem', color: '#71717A', marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
-      {sub && <div style={{ fontSize: '0.65rem', color: '#71717A', marginTop: 2, fontFamily: 'JetBrains Mono' }}>{sub}</div>}
+      <div style={{ fontSize: '0.68rem', color: '#787878', marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
+      {sub && <div style={{ fontSize: '0.65rem', color: '#787878', marginTop: 2, fontFamily: 'JetBrains Mono' }}>{sub}</div>}
     </div>
   );
 }
@@ -53,7 +53,7 @@ function ActivityChart({ data }) {
               height: `${Math.max(4, (d.count / max) * 56)}px`,
               transition: 'height 0.4s ease',
             }} />
-            <div style={{ fontSize: 8, color: '#71717A', fontFamily: 'JetBrains Mono' }}>
+            <div style={{ fontSize: 8, color: '#787878', fontFamily: 'JetBrains Mono' }}>
               {new Date(d.date).toLocaleDateString('en-IE', { weekday: 'short' })[0]}
             </div>
           </div>
@@ -65,12 +65,12 @@ function ActivityChart({ data }) {
 
 /* ── Log entry row ───────────────────────────────────────────────────────── */
 function LogRow({ log, isNew }) {
-  const color = CAT_COLOR[log.category] || '#71717A';
+  const color = CAT_COLOR[log.category] || '#787878';
   return (
     <div style={{
       display: 'flex', gap: 10, alignItems: 'flex-start',
       padding: '9px 14px',
-      background: isNew ? 'rgba(77,163,255,0.06)' : '#0D111C',
+      background: isNew ? 'rgba(77,163,255,0.06)' : '#111111',
       borderRadius: 6,
       borderLeft: `2px solid ${color}`,
       transition: 'background 1s ease',
@@ -81,28 +81,28 @@ function LogRow({ log, isNew }) {
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.82rem', fontWeight: 500, color: '#F0F0F8' }}>{log.label}</span>
+          <span style={{ fontSize: '0.82rem', fontWeight: 500, color: '#EBEBEB' }}>{log.label}</span>
           <span style={{ fontSize: '0.65rem', color, fontFamily: 'JetBrains Mono', background: `${color}15`, padding: '1px 6px', borderRadius: 3 }}>
             {CAT_LABELS[log.category] || log.category}
           </span>
           {log.entity_id && (
-            <span style={{ fontSize: '0.7rem', color: '#71717A', fontFamily: 'JetBrains Mono' }}>{log.entity_id}</span>
+            <span style={{ fontSize: '0.7rem', color: '#787878', fontFamily: 'JetBrains Mono' }}>{log.entity_id}</span>
           )}
         </div>
         {log.detail && (
-          <div style={{ fontSize: '0.72rem', color: '#71717A', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {String(log.detail).slice(0, 90)}
           </div>
         )}
         {log.user_email && (
-          <div style={{ fontSize: '0.68rem', color: '#71717A', marginTop: 2, fontFamily: 'JetBrains Mono' }}>
+          <div style={{ fontSize: '0.68rem', color: '#787878', marginTop: 2, fontFamily: 'JetBrains Mono' }}>
             by {log.user_email}
           </div>
         )}
       </div>
-      <div style={{ fontSize: '0.68rem', color: '#71717A', fontFamily: 'JetBrains Mono', flexShrink: 0, whiteSpace: 'nowrap' }}>
+      <div style={{ fontSize: '0.68rem', color: '#787878', fontFamily: 'JetBrains Mono', flexShrink: 0, whiteSpace: 'nowrap' }}>
         {new Date(log.timestamp).toLocaleTimeString('en-IE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-        <div style={{ fontSize: '0.6rem', color: '#4a4a55' }}>
+        <div style={{ fontSize: '0.6rem', color: '#444444' }}>
           {new Date(log.timestamp).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
         </div>
       </div>
@@ -200,7 +200,7 @@ export default function AuditLog() {
               </span>
             )}
           </div>
-          <div style={{ fontSize: '0.72rem', color: '#71717A' }}>
+          <div style={{ fontSize: '0.72rem', color: '#787878' }}>
             Every action in AegisTrace — updated every 4 seconds
           </div>
         </div>
@@ -221,7 +221,7 @@ export default function AuditLog() {
       {/* Stats row */}
       {stats && (
         <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-          <StatCard label="Total Cases"   value={stats.total_cases}    color="#F0F0F8" />
+          <StatCard label="Total Cases"   value={stats.total_cases}    color="#FFFFFF" />
           <StatCard label="Logins (24h)"  value={stats.logins_24h}     color="#22C55E" />
           <StatCard label="Cases (7d)"    value={stats.cases_7d}       color="#A78BFA" />
           <StatCard label="AI Calls (7d)" value={stats.ai_calls_7d}    color="#EAB308" />
@@ -241,7 +241,7 @@ export default function AuditLog() {
                 fontFamily: 'JetBrains Mono', border: '1px solid',
                 background: category === cat ? `${CAT_COLOR[cat] || 'rgba(77,163,255,1)'}18` : 'transparent',
                 borderColor: category === cat ? `${CAT_COLOR[cat] || '#4DA3FF'}50` : 'rgba(255,255,255,0.08)',
-                color: category === cat ? (CAT_COLOR[cat] || '#4DA3FF') : '#71717A',
+                color: category === cat ? (CAT_COLOR[cat] || '#4DA3FF') : '#787878',
               }}>
               {cat === '' ? 'All' : CAT_LABELS[cat]}
             </button>
@@ -255,7 +255,7 @@ export default function AuditLog() {
       </div>
 
       {/* Count */}
-      <div style={{ fontSize: '0.72rem', color: '#71717A', marginBottom: 10, fontFamily: 'JetBrains Mono' }}>
+      <div style={{ fontSize: '0.72rem', color: '#787878', marginBottom: 10, fontFamily: 'JetBrains Mono' }}>
         {filteredLogs.length} event{filteredLogs.length !== 1 ? 's' : ''}
         {category ? ` · filtered by ${CAT_LABELS[category]}` : ''}
         {!paused && <span style={{ color: '#4DA3FF' }}> · auto-refreshing</span>}
@@ -264,7 +264,7 @@ export default function AuditLog() {
       {/* Log list */}
       <div ref={listRef} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         {filteredLogs.length === 0 ? (
-          <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#71717A' }}>
+          <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#787878' }}>
             No events in this period.
           </div>
         ) : (

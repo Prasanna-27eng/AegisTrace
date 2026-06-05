@@ -94,7 +94,7 @@ export default function CommentsTab({ caseId }) {
                     padding: '3px 10px', borderRadius: 4, fontSize: '0.68rem', cursor: 'pointer',
                     border: `1px solid ${type === k ? v.border : 'rgba(255,255,255,0.08)'}`,
                     background: type === k ? v.bg : 'transparent',
-                    color: type === k ? v.color : '#71717A',
+                    color: type === k ? v.color : '#787878',
                     ...MONO,
                   }}
                 >
@@ -108,22 +108,22 @@ export default function CommentsTab({ caseId }) {
               placeholder="Add a note, handoff, escalation, or decision record…"
               rows={3}
               onKeyDown={e => { if (e.key === 'Enter' && e.ctrlKey) addComment(); }}
-              style={{ background: '#070B14', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#F0F0F8', fontSize: '0.82rem', padding: '10px 12px', resize: 'vertical', outline: 'none', lineHeight: 1.6 }}
+              style={{ background: '#080808', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#EBEBEB', fontSize: '0.82rem', padding: '10px 12px', resize: 'vertical', outline: 'none', lineHeight: 1.6 }}
             />
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <button className="btn-accent" onClick={addComment} disabled={saving} style={{ fontSize: '0.78rem' }}>
                 {saving ? <Loader2 size={12} className="spinner" /> : <Plus size={12} />} Add Comment
               </button>
-              <span style={{ fontSize: '0.68rem', color: '#71717A', ...MONO }}>Ctrl+Enter to submit</span>
+              <span style={{ fontSize: '0.68rem', color: '#787878', ...MONO }}>Ctrl+Enter to submit</span>
             </div>
           </div>
         </div>
       </div>
 
       {loading ? (
-        <div style={{ padding: 40, textAlign: 'center', color: '#71717A' }}><Loader2 size={18} className="spinner" /></div>
+        <div style={{ padding: 40, textAlign: 'center', color: '#787878' }}><Loader2 size={18} className="spinner" /></div>
       ) : comments.length === 0 ? (
-        <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#71717A' }}>
+        <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#787878' }}>
           <MessageSquare size={28} style={{ margin: '0 auto 12px', opacity: 0.25 }} />
           <div style={{ fontSize: '0.82rem' }}>No comments yet. Add investigation notes, handoff context, or decision records.</div>
         </div>
@@ -151,13 +151,13 @@ function CommentCard({ c, editing, setEditing, saveEdit, togglePin, deleteCommen
         </div>
         <div style={{ flex: 1 }}>
           <span style={{ fontWeight: 600, fontSize: '0.82rem' }}>{c.author_name || c.author_email}</span>
-          <span style={{ fontSize: '0.7rem', color: '#71717A', marginLeft: 8, ...MONO }}>{timeAgo(c.created_at)}</span>
+          <span style={{ fontSize: '0.7rem', color: '#787878', marginLeft: 8, ...MONO }}>{timeAgo(c.created_at)}</span>
         </div>
         <span style={{ fontSize: '0.62rem', padding: '2px 7px', borderRadius: 3, background: meta.bg, color: meta.color, border: `1px solid ${meta.border}`, ...MONO }}>{meta.label}</span>
         {c.is_pinned && <Pin size={11} style={{ color: '#EAB308' }} />}
         <div style={{ display: 'flex', gap: 4 }}>
-          <button onClick={() => togglePin(c)} style={{ background: 'none', border: 'none', color: c.is_pinned ? '#EAB308' : '#71717A', cursor: 'pointer', padding: 3 }} title="Pin"><Pin size={11} /></button>
-          <button onClick={() => setEditing({ id: c.id, body: c.body })} style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer', padding: 3 }}><Edit size={11} /></button>
+          <button onClick={() => togglePin(c)} style={{ background: 'none', border: 'none', color: c.is_pinned ? '#EAB308' : '#787878', cursor: 'pointer', padding: 3 }} title="Pin"><Pin size={11} /></button>
+          <button onClick={() => setEditing({ id: c.id, body: c.body })} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', padding: 3 }}><Edit size={11} /></button>
           <button onClick={() => deleteComment(c.id)} style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', padding: 3 }}><Trash2 size={11} /></button>
         </div>
       </div>
@@ -167,7 +167,7 @@ function CommentCard({ c, editing, setEditing, saveEdit, togglePin, deleteCommen
             value={editing.body}
             onChange={e => setEditing(p => ({ ...p, body: e.target.value }))}
             rows={3}
-            style={{ background: '#070B14', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: '#F0F0F8', fontSize: '0.8rem', padding: '8px 10px', resize: 'vertical', outline: 'none' }}
+            style={{ background: '#080808', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: '#EBEBEB', fontSize: '0.8rem', padding: '8px 10px', resize: 'vertical', outline: 'none' }}
           />
           <div style={{ display: 'flex', gap: 7 }}>
             <button className="btn-accent" onClick={saveEdit} style={{ fontSize: '0.72rem' }}><Check size={11} /> Save</button>

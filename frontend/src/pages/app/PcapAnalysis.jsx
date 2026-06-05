@@ -11,7 +11,7 @@ const VERDICT_COLOR = {
   Malicious:   '#4DA3FF',
   Suspicious:  '#EAB308',
   Clean:       '#22C55E',
-  Unknown:     '#71717A',
+  Unknown:     '#888888',
 };
 
 function ScoreBar({ score }) {
@@ -37,7 +37,7 @@ function Section({ title, icon: Icon, children, defaultOpen = true }) {
         <Icon size={13} style={{ color: '#A78BFA' }} />
         <span style={{ fontSize: '0.76rem', fontWeight: 600 }}>{title}</span>
         <span style={{ marginLeft: 'auto' }}>
-          {open ? <ChevronDown size={12} style={{ color: '#71717A' }} /> : <ChevronRight size={12} style={{ color: '#71717A' }} />}
+          {open ? <ChevronDown size={12} style={{ color: '#787878' }} /> : <ChevronRight size={12} style={{ color: '#787878' }} />}
         </span>
       </div>
       {open && children}
@@ -97,7 +97,7 @@ export default function PcapAnalysis() {
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>PCAP / Network Traffic Analysis</h1>
-        <div style={{ fontSize: '0.72rem', color: '#71717A', marginTop: 3 }}>
+        <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 3 }}>
           Upload a packet capture for forensic analysis — protocols, top talkers, DNS, HTTP, C2 detection, IOC extraction
         </div>
       </div>
@@ -123,7 +123,7 @@ export default function PcapAnalysis() {
             <input ref={fileRef} type="file" accept=".pcap,.pcapng,.cap" style={{ display: 'none' }}
               onChange={e => handleFile(e.target.files[0])} />
             {uploading ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, color: '#71717A' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, color: '#787878' }}>
                 <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', color: '#A78BFA' }} />
                 <div style={{ fontSize: '0.82rem' }}>Parsing packets and running AI analysis…</div>
                 <div style={{ fontSize: '0.72rem' }}>Large captures may take up to 2 minutes</div>
@@ -132,7 +132,7 @@ export default function PcapAnalysis() {
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
                 <Upload size={28} style={{ color: 'rgba(167,139,250,0.4)' }} />
                 <div style={{ fontSize: '0.84rem', fontWeight: 500 }}>Drop a .pcap file here or click to browse</div>
-                <div style={{ fontSize: '0.72rem', color: '#71717A' }}>Supports .pcap · .pcapng · .cap &nbsp;|&nbsp; Max 50 MB</div>
+                <div style={{ fontSize: '0.72rem', color: '#787878' }}>Supports .pcap · .pcapng · .cap &nbsp;|&nbsp; Max 50 MB</div>
                 <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                   <input
                     value={caseId}
@@ -140,9 +140,9 @@ export default function PcapAnalysis() {
                     onClick={e => e.stopPropagation()}
                     placeholder="Link to case ID (optional)"
                     style={{
-                      padding: '5px 10px', background: '#0D111C',
+                      padding: '5px 10px', background: '#111111',
                       border: '1px solid rgba(255,255,255,0.1)', borderRadius: 5,
-                      color: '#F0F0F8', fontSize: '0.75rem', fontFamily: 'JetBrains Mono', width: 200,
+                      color: '#EBEBEB', fontSize: '0.75rem', fontFamily: 'JetBrains Mono', width: 200,
                     }}
                   />
                 </div>
@@ -157,23 +157,23 @@ export default function PcapAnalysis() {
               {/* Verdict banner */}
               <div style={{
                 padding: '14px 18px', borderRadius: 8,
-                background: `${VERDICT_COLOR[result.ai_verdict] || '#71717A'}11`,
-                border: `1px solid ${VERDICT_COLOR[result.ai_verdict] || '#71717A'}33`,
+                background: `${VERDICT_COLOR[result.ai_verdict] || '#888888'}11`,
+                border: `1px solid ${VERDICT_COLOR[result.ai_verdict] || '#888888'}33`,
                 display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap',
               }}>
                 <div>
-                  <div style={{ fontSize: '0.68rem', color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>Verdict</div>
-                  <div style={{ fontSize: '1.3rem', fontWeight: 700, color: VERDICT_COLOR[result.ai_verdict] || '#F0F0F8', fontFamily: 'JetBrains Mono' }}>
+                  <div style={{ fontSize: '0.68rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>Verdict</div>
+                  <div style={{ fontSize: '1.3rem', fontWeight: 700, color: VERDICT_COLOR[result.ai_verdict] || '#EBEBEB', fontFamily: 'JetBrains Mono' }}>
                     {result.ai_verdict}
                   </div>
                 </div>
                 <div style={{ flex: 1, minWidth: 140 }}>
-                  <div style={{ fontSize: '0.68rem', color: '#71717A', marginBottom: 4 }}>Threat Score</div>
+                  <div style={{ fontSize: '0.68rem', color: '#787878', marginBottom: 4 }}>Threat Score</div>
                   <ScoreBar score={result.ai_threat_score} />
                 </div>
                 <div style={{ flex: 2, minWidth: 200 }}>
-                  <div style={{ fontSize: '0.68rem', color: '#71717A', marginBottom: 3 }}>AI Summary</div>
-                  <div style={{ fontSize: '0.78rem', color: '#D0D0E0', lineHeight: 1.5 }}>{result.ai_summary}</div>
+                  <div style={{ fontSize: '0.68rem', color: '#787878', marginBottom: 3 }}>AI Summary</div>
+                  <div style={{ fontSize: '0.78rem', color: '#A8A8A8', lineHeight: 1.5 }}>{result.ai_summary}</div>
                 </div>
               </div>
 
@@ -188,8 +188,8 @@ export default function PcapAnalysis() {
                   { label: 'HTTP Hosts', value: result.http_hosts.length },
                 ].map(s => (
                   <div key={s.label} className="at-card" style={{ padding: '10px 12px' }}>
-                    <div style={{ fontSize: '0.62rem', color: '#71717A', textTransform: 'uppercase', marginBottom: 4 }}>{s.label}</div>
-                    <div style={{ fontSize: '1.3rem', fontWeight: 700, fontFamily: 'JetBrains Mono', color: s.color || '#F0F0F8' }}>{s.value}</div>
+                    <div style={{ fontSize: '0.62rem', color: '#787878', textTransform: 'uppercase', marginBottom: 4 }}>{s.label}</div>
+                    <div style={{ fontSize: '1.3rem', fontWeight: 700, fontFamily: 'JetBrains Mono', color: s.color || '#EBEBEB' }}>{s.value}</div>
                   </div>
                 ))}
               </div>
@@ -226,7 +226,7 @@ export default function PcapAnalysis() {
                         <div style={{ fontWeight: 600, color: f.severity === 'high' ? '#EF4444' : '#EAB308', marginBottom: 3 }}>
                           [{f.type.toUpperCase()}] {f.description}
                         </div>
-                        {f.src && <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.68rem', color: '#71717A' }}>{f.src} → {f.dst}{f.port ? ':' + f.port : ''}</span>}
+                        {f.src && <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.68rem', color: '#787878' }}>{f.src} → {f.dst}{f.port ? ':' + f.port : ''}</span>}
                       </div>
                     ))}
                   </div>
@@ -243,7 +243,7 @@ export default function PcapAnalysis() {
                       fontFamily: 'JetBrains Mono',
                     }}>
                       <span style={{ color: '#A78BFA' }}>{proto}</span>
-                      <span style={{ color: '#71717A' }}> · {count.toLocaleString()}</span>
+                      <span style={{ color: '#787878' }}> · {count.toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
@@ -255,13 +255,13 @@ export default function PcapAnalysis() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {result.top_talkers.slice(0, 10).map((t, i) => (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.72rem' }}>
-                        <span style={{ fontFamily: 'JetBrains Mono', color: t.is_private ? '#71717A' : '#EF4444', minWidth: 120 }}>{t.ip}</span>
+                        <span style={{ fontFamily: 'JetBrains Mono', color: t.is_private ? '#787878' : '#EF4444', minWidth: 120 }}>{t.ip}</span>
                         <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
                           <div style={{ width: `${Math.min((t.bytes / (result.top_talkers[0]?.bytes || 1)) * 100, 100)}%`, height: '100%', background: t.is_private ? '#A78BFA' : '#EF4444', borderRadius: 2 }} />
                         </div>
-                        <span style={{ color: '#71717A', minWidth: 60, textAlign: 'right' }}>{(t.bytes / 1024).toFixed(1)} KB</span>
-                        <span style={{ color: '#71717A', minWidth: 55, textAlign: 'right' }}>{t.packets} pkts</span>
-                        {!t.is_private && <ExternalLink size={10} style={{ color: '#71717A', cursor: 'pointer' }} onClick={() => window.open(`https://www.virustotal.com/gui/ip-address/${t.ip}`, '_blank')} />}
+                        <span style={{ color: '#787878', minWidth: 60, textAlign: 'right' }}>{(t.bytes / 1024).toFixed(1)} KB</span>
+                        <span style={{ color: '#787878', minWidth: 55, textAlign: 'right' }}>{t.packets} pkts</span>
+                        {!t.is_private && <ExternalLink size={10} style={{ color: '#787878', cursor: 'pointer' }} onClick={() => window.open(`https://www.virustotal.com/gui/ip-address/${t.ip}`, '_blank')} />}
                       </div>
                     ))}
                   </div>
@@ -293,7 +293,7 @@ export default function PcapAnalysis() {
                           background: 'rgba(167,139,250,0.12)', color: '#A78BFA',
                         }}>{ioc.type}</span>
                         <span style={{ fontFamily: 'JetBrains Mono', flex: 1 }}>{ioc.ioc}</span>
-                        <span style={{ color: '#71717A', fontSize: '0.62rem' }}>{ioc.source}</span>
+                        <span style={{ color: '#787878', fontSize: '0.62rem' }}>{ioc.source}</span>
                       </div>
                     ))}
                   </div>
@@ -321,7 +321,7 @@ export default function PcapAnalysis() {
         <div className="at-card" style={{ padding: '14px 16px', position: 'sticky', top: 20 }}>
           <div className="section-label">Recent Analyses</div>
           {history.length === 0 ? (
-            <div style={{ fontSize: '0.75rem', color: '#71717A' }}>No analyses yet</div>
+            <div style={{ fontSize: '0.75rem', color: '#787878' }}>No analyses yet</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {history.map(h => (
@@ -334,11 +334,11 @@ export default function PcapAnalysis() {
                     <span style={{ fontSize: '0.72rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 150 }}>{h.filename}</span>
                     <span style={{
                       fontSize: '0.62rem', fontFamily: 'JetBrains Mono', padding: '1px 5px', borderRadius: 3,
-                      background: `${VERDICT_COLOR[h.ai_verdict] || '#71717A'}22`,
-                      color: VERDICT_COLOR[h.ai_verdict] || '#71717A',
+                      background: `${VERDICT_COLOR[h.ai_verdict] || '#888888'}22`,
+                      color: VERDICT_COLOR[h.ai_verdict] || '#787878',
                     }}>{h.ai_verdict}</span>
                   </div>
-                  <div style={{ fontSize: '0.62rem', color: '#71717A', fontFamily: 'JetBrains Mono', marginTop: 2 }}>
+                  <div style={{ fontSize: '0.62rem', color: '#787878', fontFamily: 'JetBrains Mono', marginTop: 2 }}>
                     {h.packet_count.toLocaleString()} pkts · {new Date(h.created_at).toLocaleDateString()}
                   </div>
                 </div>

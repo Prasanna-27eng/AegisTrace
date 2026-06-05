@@ -15,17 +15,17 @@ const CATEGORY_META = {
   rejection:       { label: 'Rejected',          color: '#EF4444',  Icon: X },
   policy_override: { label: 'Policy Override',   color: '#F97316',  Icon: AlertTriangle },
   response_action: { label: 'Response Action',   color: '#4DA3FF',  Icon: Zap },
-  action:          { label: 'Action',            color: '#71717A',  Icon: Activity },
+  action:          { label: 'Action',            color: '#787878',  Icon: Activity },
 };
 
 const TRUST_COLOR = {
   verified:   '#22C55E',
   unverified: '#EAB308',
   suspicious: '#EF4444',
-  revoked:    '#71717A',
+  revoked:    '#888888',
 };
 
-const ACTOR_TYPE_COLOR = { human: '#F0F0F8', ai: '#A78BFA', agent: '#00BFFF', system: '#71717A' };
+const ACTOR_TYPE_COLOR = { human: '#EBEBEB', ai: '#A78BFA', agent: '#00BFFF', system: '#787878' };
 
 function timeLabel(d) {
   if (!d) return '';
@@ -71,7 +71,7 @@ export default function TrustTimelineTab({ caseId }) {
           <GitBranch size={17} style={{ color: '#A78BFA' }} />
           <div>
             <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>Trust Timeline</div>
-            <div style={{ fontSize: '0.7rem', color: '#71717A', marginTop: 1 }}>Chain of trust events — logins, token use, privilege changes, agent actions, approvals</div>
+            <div style={{ fontSize: '0.7rem', color: '#787878', marginTop: 1 }}>Chain of trust events — logins, token use, privilege changes, agent actions, approvals</div>
           </div>
         </div>
         <button className="btn-ghost" onClick={() => setShowAdd(p => !p)} style={{ fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -124,9 +124,9 @@ export default function TrustTimelineTab({ caseId }) {
       )}
 
       {loading ? (
-        <div style={{ padding: 40, textAlign: 'center', color: '#71717A' }}><Loader2 size={18} className="spinner" /></div>
+        <div style={{ padding: 40, textAlign: 'center', color: '#787878' }}><Loader2 size={18} className="spinner" /></div>
       ) : events.length === 0 ? (
-        <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#71717A' }}>
+        <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#787878' }}>
           <GitBranch size={28} style={{ margin: '0 auto 12px', opacity: 0.2 }} />
           <div style={{ fontSize: '0.82rem', marginBottom: 12 }}>No trust events recorded yet.</div>
           <div style={{ fontSize: '0.74rem', ...MONO, color: '#555' }}>Trust events are automatically recorded when AI analysis runs, or you can add them manually.</div>
@@ -145,9 +145,9 @@ export default function TrustTimelineTab({ caseId }) {
                 <div style={{
                   position: 'absolute', left: -17, top: 6,
                   width: 14, height: 14, borderRadius: '50%',
-                  background: TRUST_COLOR[ev.trust_level] || '#71717A',
-                  border: `2px solid #0F1018`,
-                  boxShadow: `0 0 8px ${TRUST_COLOR[ev.trust_level] || '#71717A'}66`,
+                  background: TRUST_COLOR[ev.trust_level] || '#888888',
+                  border: `2px solid #111111`,
+                  boxShadow: `0 0 8px ${TRUST_COLOR[ev.trust_level] || '#888888'}66`,
                 }} />
 
                 <div style={{ background: 'rgba(240,240,248,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '12px 14px' }}>
@@ -155,12 +155,12 @@ export default function TrustTimelineTab({ caseId }) {
                     <Icon size={13} style={{ color: meta.color, flexShrink: 0 }} />
                     <span style={{ fontSize: '0.72rem', fontWeight: 600, color: meta.color, ...MONO }}>{meta.label}</span>
                     <span style={{ fontSize: '0.65rem', padding: '1px 6px', borderRadius: 3, background: `${TRUST_COLOR[ev.trust_level]}18`, color: TRUST_COLOR[ev.trust_level], ...MONO }}>{ev.trust_level}</span>
-                    <span style={{ marginLeft: 'auto', fontSize: '0.65rem', color: '#71717A', ...MONO }}>{timeLabel(ev.timestamp)}</span>
+                    <span style={{ marginLeft: 'auto', fontSize: '0.65rem', color: '#787878', ...MONO }}>{timeLabel(ev.timestamp)}</span>
                   </div>
                   <div style={{ fontSize: '0.82rem', color: 'rgba(240,240,248,0.85)', marginBottom: 6, lineHeight: 1.5 }}>{ev.description}</div>
-                  <div style={{ display: 'flex', gap: 12, fontSize: '0.68rem', color: '#71717A', ...MONO }}>
-                    {ev.actor && <span>Actor: <span style={{ color: ACTOR_TYPE_COLOR[ev.actor_type] || '#F0F0F8' }}>{ev.actor}</span></span>}
-                    {ev.actor_type && <span style={{ color: ACTOR_TYPE_COLOR[ev.actor_type] || '#71717A' }}>[{ev.actor_type}]</span>}
+                  <div style={{ display: 'flex', gap: 12, fontSize: '0.68rem', color: '#787878', ...MONO }}>
+                    {ev.actor && <span>Actor: <span style={{ color: ACTOR_TYPE_COLOR[ev.actor_type] || '#EBEBEB' }}>{ev.actor}</span></span>}
+                    {ev.actor_type && <span style={{ color: ACTOR_TYPE_COLOR[ev.actor_type] || '#787878' }}>[{ev.actor_type}]</span>}
                     {ev.evidence_ref && <span>Ref: <span style={{ color: '#A78BFA' }}>{ev.evidence_ref}</span></span>}
                   </div>
                 </div>

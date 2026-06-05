@@ -5,10 +5,10 @@ import api from '../../api/client';
 import useStore from '../../store/useStore';
 
 const C = {
-  bg: '#080C14', card: '#0D1421', border: '#1A2540',
+  bg: '#0A0A0A', card: '#111111', border: '#181818',
   blue: '#4DA3FF', purple: '#A78BFA', green: '#34D399',
-  amber: '#FBBF24', red: '#F87171', muted: '#8899BB',
-  text: '#E2E8F0',
+  amber: '#FBBF24', red: '#F87171', muted: '#888888',
+  text: '#E5E5E5',
 };
 
 const WELL_KNOWN_AI = [

@@ -26,14 +26,14 @@ function PolicyCard({ policy, onEdit, onDelete, onToggle }) {
 
   return (
     <div style={{
-      background: 'rgba(13,17,23,0.7)', border: `1px solid ${policy.is_active ? 'rgba(74,142,219,0.15)' : 'rgba(148,163,184,0.06)'}`,
+      background: 'rgba(8,8,8,0.7)', border: `1px solid ${policy.is_active ? 'rgba(74,142,219,0.15)' : 'rgba(148,163,184,0.06)'}`,
       borderRadius: 12, padding: '16px 18px', backdropFilter: 'blur(8px)',
       opacity: policy.is_active ? 1 : 0.65, transition: 'all 0.2s',
     }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <div style={{ width: 7, height: 7, borderRadius: '50%', background: policy.is_active ? '#22C55E' : '#6F7A8F', boxShadow: policy.is_active ? '0 0 6px #22C55E' : 'none' }} />
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: policy.is_active ? '#22C55E' : '#888888', boxShadow: policy.is_active ? '0 0 6px #22C55E' : 'none' }} />
             <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{policy.name}</span>
             {policy.identity_type && (
               <span style={{ fontSize: '0.62rem', ...MONO, background: 'rgba(74,142,219,0.1)', color: '#4A8EDB', padding: '1px 7px', borderRadius: 3 }}>
@@ -41,7 +41,7 @@ function PolicyCard({ policy, onEdit, onDelete, onToggle }) {
               </span>
             )}
           </div>
-          {policy.description && <div style={{ fontSize: '0.76rem', color: '#8A95A8', lineHeight: 1.5 }}>{policy.description}</div>}
+          {policy.description && <div style={{ fontSize: '0.76rem', color: '#787878', lineHeight: 1.5 }}>{policy.description}</div>}
         </div>
         <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
           <button onClick={() => onToggle(policy)} className="btn-ghost" style={{ padding: '4px 8px', fontSize: '0.7rem' }}>
@@ -111,7 +111,7 @@ function PolicyForm({ initial, onSave, onClose }) {
     <div className="at-card" style={{ padding: 20, borderColor: 'rgba(74,142,219,0.2)', marginBottom: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{initial?.id ? 'Edit Policy' : 'New Policy'}</div>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#6F7A8F', cursor: 'pointer' }}><X size={15} /></button>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={15} /></button>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         <div style={{ gridColumn: '1/-1' }}>
@@ -195,10 +195,10 @@ function ValidationPanel() {
   };
 
   return (
-    <div style={{ background: 'rgba(13,17,23,0.7)', border: '1px solid rgba(148,163,184,0.08)', borderRadius: 12, padding: 20 }}>
+    <div style={{ background: 'rgba(8,8,8,0.7)', border: '1px solid rgba(148,163,184,0.08)', borderRadius: 12, padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
         <Zap size={14} style={{ color: '#EAB308' }} />
-        <span style={{ fontSize: '0.68rem', color: '#6F7A8F', textTransform: 'uppercase', letterSpacing: '0.1em', ...MONO }}>Test Policy Validation</span>
+        <span style={{ fontSize: '0.68rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.1em', ...MONO }}>Test Policy Validation</span>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 12 }}>
         <div>
@@ -227,7 +227,7 @@ function ValidationPanel() {
               {result.allowed ? 'Action Permitted' : 'Action Denied'}
             </span>
             {result.node_risk_score != null && (
-              <span style={{ ...MONO, fontSize: '0.7rem', color: '#6F7A8F', marginLeft: 'auto' }}>Node risk: {result.node_risk_score}</span>
+              <span style={{ ...MONO, fontSize: '0.7rem', color: '#787878', marginLeft: 'auto' }}>Node risk: {result.node_risk_score}</span>
             )}
           </div>
           {result.violations?.length > 0 && (
@@ -292,7 +292,7 @@ export default function Policies() {
             <Shield size={20} style={{ color: '#4A8EDB' }} />
             <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Policy Engine</h1>
           </div>
-          <div style={{ fontSize: '0.7rem', color: '#6F7A8F', ...MONO }}>
+          <div style={{ fontSize: '0.7rem', color: '#787878', ...MONO }}>
             {active} active · {inactive} inactive · Define access control rules per identity type
           </div>
         </div>
@@ -319,10 +319,10 @@ export default function Policies() {
       {loading ? (
         <div style={{ textAlign: 'center', padding: 60 }}><Loader2 size={20} className="spinner" style={{ color: '#4A8EDB' }} /></div>
       ) : policies.length === 0 ? (
-        <div className="at-card" style={{ padding: 60, textAlign: 'center', color: '#6F7A8F' }}>
+        <div className="at-card" style={{ padding: 60, textAlign: 'center', color: '#787878' }}>
           <Shield size={32} style={{ margin: '0 auto 14px', opacity: 0.2 }} />
           <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: 8 }}>No policies yet</div>
-          <div style={{ fontSize: '0.78rem', ...MONO, marginBottom: 20, color: '#3A4556' }}>
+          <div style={{ fontSize: '0.78rem', ...MONO, marginBottom: 20, color: '#404040' }}>
             Create policies to enforce access control rules for your identity nodes.
           </div>
           <button className="btn-accent" onClick={handleNewClick} style={{ fontSize: '0.8rem' }}><Plus size={13} /> Create First Policy</button>

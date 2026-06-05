@@ -96,7 +96,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           {collapsed ? <Logo size={22} showText={false} /> : <Logo size={22} showText />}
         </div>
         <button onClick={() => setCollapsed(!collapsed)}
-          style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer', padding: 4 }}
+          style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', padding: 4 }}
           title={collapsed ? 'Expand' : 'Collapse'}>
           {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
@@ -107,7 +107,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         {NAV_GROUPS.map(group => (
           <div key={group.label}>
             {!collapsed && (
-              <div style={{ fontSize: '0.58rem', fontWeight: 600, color: 'rgba(113,113,122,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '10px 12px 4px', fontFamily: 'JetBrains Mono' }}>
+              <div style={{ fontSize: '0.58rem', fontWeight: 600, color: 'rgba(136,136,136,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '10px 12px 4px', fontFamily: 'JetBrains Mono' }}>
                 {group.label}
               </div>
             )}

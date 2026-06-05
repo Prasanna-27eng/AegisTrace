@@ -26,7 +26,7 @@ export default function Toasts() {
           className={`toast-slide at-card flex items-center gap-3 px-4 py-3 ${borders[t.type] || borders.info}`}
         >
           {icons[t.type] || icons.info}
-          <span style={{ fontSize: '0.82rem', color: '#F0F0F8', flex: 1 }}>{t.message}</span>
+          <span style={{ fontSize: '0.82rem', color: '#EBEBEB', flex: 1 }}>{t.message}</span>
         </div>
       ))}
     </div>

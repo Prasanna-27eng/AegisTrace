@@ -35,7 +35,7 @@ export default function InvestigationTab({ caseData, updateCase, caseId }) {
     } catch {}
   };
 
-  const scoreColor = { confirmed: '#22C55E', strong: '#A78BFA', weak: '#EAB308', hypothesis: '#71717A' };
+  const scoreColor = { confirmed: '#22C55E', strong: '#A78BFA', weak: '#EAB308', hypothesis: '#787878' };
 
   return (
     <div style={{ padding: '20px 24px' }}>
@@ -69,27 +69,27 @@ export default function InvestigationTab({ caseData, updateCase, caseId }) {
             </div>
 
             {evidence.length === 0 ? (
-              <div style={{ color: '#71717A', fontSize: '0.8rem', textAlign: 'center', padding: '20px 0' }}>No evidence yet.</div>
+              <div style={{ color: '#787878', fontSize: '0.8rem', textAlign: 'center', padding: '20px 0' }}>No evidence yet.</div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {evidence.map(ev => (
-                  <div key={ev.id} style={{ background: '#0D111C', borderRadius: 6, padding: '10px 12px', border: `1px solid ${ev.analyst_confirmed ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.05)'}` }}>
+                  <div key={ev.id} style={{ background: '#111111', borderRadius: 6, padding: '10px 12px', border: `1px solid ${ev.analyst_confirmed ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.05)'}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#F0F0F8' }}>{ev.artifact_type}</span>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#EBEBEB' }}>{ev.artifact_type}</span>
                       <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                         <span style={{ fontSize: '0.65rem', fontWeight: 600, color: scoreColor[ev.evidence_score], fontFamily: 'JetBrains Mono', padding: '1px 6px', background: `${scoreColor[ev.evidence_score]}18`, borderRadius: 3 }}>{ev.evidence_score}</span>
-                        <span style={{ fontSize: '0.65rem', color: '#71717A' }}>{ev.confidence}%</span>
-                        <button onClick={() => confirmEvidence(ev)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: ev.analyst_confirmed ? '#22C55E' : '#71717A', padding: 2 }} title={ev.analyst_confirmed ? 'Confirmed' : 'Confirm'}>
+                        <span style={{ fontSize: '0.65rem', color: '#787878' }}>{ev.confidence}%</span>
+                        <button onClick={() => confirmEvidence(ev)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: ev.analyst_confirmed ? '#22C55E' : '#787878', padding: 2 }} title={ev.analyst_confirmed ? 'Confirmed' : 'Confirm'}>
                           {ev.analyst_confirmed ? <Check size={12} /> : <Check size={12} />}
                         </button>
                       </div>
                     </div>
-                    {ev.verdict && <div style={{ fontSize: '0.72rem', color: '#71717A' }}>Verdict: <span style={{ color: ev.verdict === 'malicious' ? '#EF4444' : '#EAB308' }}>{ev.verdict}</span></div>}
-                    {ev.normalized_output && <div style={{ fontSize: '0.72rem', color: '#71717A', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.normalized_output.slice(0,80)}</div>}
+                    {ev.verdict && <div style={{ fontSize: '0.72rem', color: '#787878' }}>Verdict: <span style={{ color: ev.verdict === 'malicious' ? '#EF4444' : '#EAB308' }}>{ev.verdict}</span></div>}
+                    {ev.normalized_output && <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.normalized_output.slice(0,80)}</div>}
                     {ev.ai_analysis && (
                       <div style={{ marginTop: 6, padding: '6px 8px', background: 'rgba(167,139,250,0.06)', borderRadius: 4, borderLeft: '2px solid rgba(167,139,250,0.3)' }}>
                         <span className="ai-badge" style={{ marginBottom: 4, display: 'inline-block' }}>AI</span>
-                        <div style={{ fontSize: '0.72rem', color: '#B0B0C0', marginTop: 2 }}>{ev.ai_analysis.slice(0, 120)}…</div>
+                        <div style={{ fontSize: '0.72rem', color: '#909090', marginTop: 2 }}>{ev.ai_analysis.slice(0, 120)}…</div>
                       </div>
                     )}
                   </div>
@@ -109,38 +109,38 @@ export default function InvestigationTab({ caseData, updateCase, caseId }) {
             <div className="at-card" style={{ padding: 16, borderColor: 'rgba(77,163,255,0.25)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
                 <div className="section-label" style={{ margin: 0 }}>Add Evidence</div>
-                <button onClick={() => setShowAddEv(false)} style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer' }}><X size={14} /></button>
+                <button onClick={() => setShowAddEv(false)} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={14} /></button>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   <div>
-                    <label style={{ fontSize: '0.7rem', color: '#71717A', display: 'block', marginBottom: 4 }}>Type</label>
+                    <label style={{ fontSize: '0.7rem', color: '#787878', display: 'block', marginBottom: 4 }}>Type</label>
                     <select className="at-select" value={newEv.artifact_type} onChange={e => setNewEv(p => ({ ...p, artifact_type: e.target.value }))} style={{ width: '100%', fontSize: '0.8rem' }}>
                       {['email','network','file','log','manual','tool_output'].map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label style={{ fontSize: '0.7rem', color: '#71717A', display: 'block', marginBottom: 4 }}>Score</label>
+                    <label style={{ fontSize: '0.7rem', color: '#787878', display: 'block', marginBottom: 4 }}>Score</label>
                     <select className="at-select" value={newEv.evidence_score} onChange={e => setNewEv(p => ({ ...p, evidence_score: e.target.value }))} style={{ width: '100%', fontSize: '0.8rem' }}>
                       {EVIDENCE_SCORES.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.7rem', color: '#71717A', display: 'block', marginBottom: 4 }}>Raw Input</label>
+                  <label style={{ fontSize: '0.7rem', color: '#787878', display: 'block', marginBottom: 4 }}>Raw Input</label>
                   <textarea className="at-textarea" rows={3} value={newEv.raw_input} onChange={e => setNewEv(p => ({ ...p, raw_input: e.target.value }))} placeholder="Paste raw evidence…" style={{ fontSize: '0.78rem' }} />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.7rem', color: '#71717A', display: 'block', marginBottom: 4 }}>Normalized Output / Notes</label>
+                  <label style={{ fontSize: '0.7rem', color: '#787878', display: 'block', marginBottom: 4 }}>Normalized Output / Notes</label>
                   <input className="at-input" value={newEv.normalized_output} onChange={e => setNewEv(p => ({ ...p, normalized_output: e.target.value }))} placeholder="Summarised finding…" style={{ fontSize: '0.8rem' }} />
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   <div>
-                    <label style={{ fontSize: '0.7rem', color: '#71717A', display: 'block', marginBottom: 4 }}>Verdict</label>
+                    <label style={{ fontSize: '0.7rem', color: '#787878', display: 'block', marginBottom: 4 }}>Verdict</label>
                     <input className="at-input" value={newEv.verdict} onChange={e => setNewEv(p => ({ ...p, verdict: e.target.value }))} placeholder="malicious / suspicious / clean" style={{ fontSize: '0.8rem' }} />
                   </div>
                   <div>
-                    <label style={{ fontSize: '0.7rem', color: '#71717A', display: 'block', marginBottom: 4 }}>Confidence %</label>
+                    <label style={{ fontSize: '0.7rem', color: '#787878', display: 'block', marginBottom: 4 }}>Confidence %</label>
                     <input type="number" min="0" max="100" className="at-input" value={newEv.confidence} onChange={e => setNewEv(p => ({ ...p, confidence: parseInt(e.target.value) }))} style={{ fontSize: '0.8rem' }} />
                   </div>
                 </div>

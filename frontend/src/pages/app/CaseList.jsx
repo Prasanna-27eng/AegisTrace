@@ -18,7 +18,7 @@ function ageColor(dateStr, severity) {
   const limit = { critical: 4, high: 8, medium: 48, low: 168 }[severity] || 48;
   if (hrs > limit) return '#EF4444';
   if (hrs > limit * 0.8) return '#EAB308';
-  return '#71717A';
+  return '#888888';
 }
 
 function timeAgo(dateStr) {
@@ -145,7 +145,7 @@ export default function CaseList() {
         <div>
           <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Cases</h1>
           <div style={{ display: 'flex', gap: 12, marginTop: 4, fontSize: '0.7rem', fontFamily: 'JetBrains Mono' }}>
-            <span style={{ color: '#71717A' }}>{cases.length} total</span>
+            <span style={{ color: '#787878' }}>{cases.length} total</span>
             {open > 0 && <span style={{ color: '#EF4444' }}>{open} open</span>}
             {critical > 0 && <span style={{ color: '#4DA3FF' }}>{critical} critical</span>}
             {pending > 0 && <span style={{ color: '#EAB308' }}>{pending} pending</span>}
@@ -178,7 +178,7 @@ export default function CaseList() {
             style={{
               padding: '4px 12px', borderRadius: 20, fontSize: '0.72rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: activeChip === idx ? 600 : 400, transition: 'all 0.15s',
               background: activeChip === idx ? '#4DA3FF' : 'rgba(255,255,255,0.04)',
-              color: activeChip === idx ? '#fff' : '#71717A',
+              color: activeChip === idx ? '#fff' : '#787878',
               border: activeChip === idx ? '1px solid #4DA3FF' : '1px solid rgba(255,255,255,0.08)',
             }}
           >
@@ -190,7 +190,7 @@ export default function CaseList() {
       {/* Search + filters row */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
         <div style={{ position: 'relative', flex: '1 1 200px' }}>
-          <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#71717A' }} />
+          <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#787878' }} />
           <input className="at-input" placeholder="Search title, case number, analyst, findings…" value={q}
             onChange={e => setQ(e.target.value)} onKeyDown={handleSearch}
             style={{ paddingLeft: 30, fontSize: '0.8rem' }} />
@@ -207,14 +207,14 @@ export default function CaseList() {
 
       {/* List */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 60, color: '#71717A', fontSize: '0.82rem' }}>Loading cases…</div>
+        <div style={{ textAlign: 'center', padding: 60, color: '#787878', fontSize: '0.82rem' }}>Loading cases…</div>
       ) : cases.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 20px' }}>
           <FolderOpen size={36} style={{ color: 'rgba(77,163,255,0.2)', margin: '0 auto 14px', display: 'block' }} />
           <div style={{ fontWeight: 600, fontSize: '0.92rem', marginBottom: 8 }}>
             {q || severity || status ? 'No cases match your filters' : 'No cases yet'}
           </div>
-          <div style={{ fontSize: '0.78rem', color: '#71717A', marginBottom: 16, maxWidth: 340, margin: '0 auto 16px' }}>
+          <div style={{ fontSize: '0.78rem', color: '#787878', marginBottom: 16, maxWidth: 340, margin: '0 auto 16px' }}>
             {q || severity || status
               ? 'Try adjusting your filters or clearing the search.'
               : 'Create your first investigation case to start building your SOC queue.'}
@@ -251,7 +251,7 @@ export default function CaseList() {
                 onClick={() => navigate(`/app/cases/${c.id}`)}
                 style={{
                   padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer',
-                  background: '#1E293B', border: `1px solid ${isSlaBreached ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.07)'}`,
+                  background: '#1E1E1E', border: `1px solid ${isSlaBreached ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.07)'}`,
                   borderRadius: 8, transition: 'border-color 0.15s', position: 'relative', overflow: 'hidden'
                 }}
               >
@@ -270,7 +270,7 @@ export default function CaseList() {
                     {c.is_public && <Globe size={10} style={{ color: '#22C55E', flexShrink: 0 }} title="Public" />}
                     {isSlaBreached && <span title="SLA breach"><AlertTriangle size={11} style={{ color: '#EF4444', flexShrink: 0 }} /></span>}
                   </div>
-                  <div style={{ display: 'flex', gap: 8, fontSize: '0.67rem', color: '#71717A', fontFamily: 'JetBrains Mono', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: 8, fontSize: '0.67rem', color: '#787878', fontFamily: 'JetBrains Mono', flexWrap: 'wrap' }}>
                     <span>{c.case_number}</span>
                     {c.analyst_name && <span>· {c.analyst_name}</span>}
                     {c.incident_type && <span style={{ textTransform: 'capitalize' }}>· {c.incident_type.replace(/_/g,' ')}</span>}
@@ -283,7 +283,7 @@ export default function CaseList() {
                     <Clock size={10} />
                     <span>{age}</span>
                   </div>
-                  <div style={{ fontSize: '0.62rem', color: '#71717A', fontFamily: 'JetBrains Mono' }}>{updated}</div>
+                  <div style={{ fontSize: '0.62rem', color: '#787878', fontFamily: 'JetBrains Mono' }}>{updated}</div>
                 </div>
 
                 {/* Badges */}
@@ -299,7 +299,7 @@ export default function CaseList() {
 
                 {/* Actions */}
                 <div style={{ display: 'flex', gap: 3, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-                  <button className="btn-ghost" style={{ padding: '3px 7px', color: c.is_public ? '#22C55E' : '#71717A' }}
+                  <button className="btn-ghost" style={{ padding: '3px 7px', color: c.is_public ? '#22C55E' : '#787878' }}
                     onClick={e => handleTogglePublic(e, c.id)} title={c.is_public ? 'Public' : 'Private'}>
                     {c.is_public ? <Globe size={11} /> : <Lock size={11} />}
                   </button>

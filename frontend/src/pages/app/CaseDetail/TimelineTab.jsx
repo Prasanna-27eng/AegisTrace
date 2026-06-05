@@ -11,7 +11,7 @@ const TYPE_CONFIG = {
   escalation:  { color: '#EF4444', bg: 'rgba(239,68,68,0.12)',   Icon: TrendingUp,    label: 'Escalation'  },
   closure:     { color: '#22C55E', bg: 'rgba(34,197,94,0.12)',   Icon: CheckCircle,   label: 'Closure'     },
   intel:       { color: '#EAB308', bg: 'rgba(234,179,8,0.12)',   Icon: Search,        label: 'Intel'       },
-  remediation: { color: '#71717A', bg: 'rgba(113,113,122,0.12)', Icon: Shield,        label: 'Remediation' },
+  remediation: { color: '#787878', bg: 'rgba(136,136,136,0.12)', Icon: Shield,        label: 'Remediation' },
 };
 
 function timeDiff(a, b) {
@@ -51,7 +51,7 @@ export default function TimelineTab({ caseId }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22 }}>
         <div>
           <h3 style={{ fontSize: '0.92rem', fontWeight: 600 }}>Investigation Timeline</h3>
-          <div style={{ fontSize: '0.7rem', color: '#71717A', marginTop: 2 }}>
+          <div style={{ fontSize: '0.7rem', color: '#787878', marginTop: 2 }}>
             {events.length} event{events.length !== 1 ? 's' : ''}
             {events.length > 1 && (() => { const d = timeDiff(events[0]?.timestamp, events[events.length-1]?.timestamp); return d ? <span style={{ marginLeft: 8, fontFamily: 'JetBrains Mono' }}>· span {d}</span> : null; })()}
           </div>
@@ -65,7 +65,7 @@ export default function TimelineTab({ caseId }) {
         <div className="at-card" style={{ padding: 14, marginBottom: 24, borderColor: 'rgba(77,163,255,0.25)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
             <div className="section-label" style={{ margin: 0 }}>New Timeline Event</div>
-            <button onClick={() => setShowAdd(false)} style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer' }}><X size={14} /></button>
+            <button onClick={() => setShowAdd(false)} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={14} /></button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 10, marginBottom: 10 }}>
             <div>
@@ -98,7 +98,7 @@ export default function TimelineTab({ caseId }) {
         <div className="at-card" style={{ padding: '40px 20px', textAlign: 'center' }}>
           <Clock size={28} style={{ color: 'rgba(167,139,250,0.25)', margin: '0 auto 12px', display: 'block' }} />
           <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 6 }}>No timeline events yet</div>
-          <div style={{ fontSize: '0.78rem', color: '#71717A', marginBottom: 16 }}>
+          <div style={{ fontSize: '0.78rem', color: '#787878', marginBottom: 16 }}>
             Document detections, actions taken, escalations, and findings as the investigation unfolds.
           </div>
           <button className="btn-ghost" onClick={() => setShowAdd(true)} style={{ fontSize: '0.8rem' }}>
@@ -119,13 +119,13 @@ export default function TimelineTab({ caseId }) {
               <div key={ev.id || i} style={{ position: 'relative', marginBottom: 20 }}>
                 {/* Time gap label */}
                 {diff && (
-                  <div style={{ marginBottom: 8, marginLeft: 0, fontSize: '0.62rem', color: 'rgba(113,113,122,0.5)', fontFamily: 'JetBrains Mono', paddingLeft: 0 }}>
+                  <div style={{ marginBottom: 8, marginLeft: 0, fontSize: '0.62rem', color: 'rgba(136,136,136,0.5)', fontFamily: 'JetBrains Mono', paddingLeft: 0 }}>
                     <span style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3, padding: '1px 6px' }}>{diff}</span>
                   </div>
                 )}
 
                 {/* Node */}
-                <div style={{ position: 'absolute', left: -36, top: 10, width: 24, height: 24, borderRadius: '50%', background: cfg.bg, border: `2px solid ${cfg.color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 0 3px #07080F, 0 0 10px ${cfg.color}30` }}>
+                <div style={{ position: 'absolute', left: -36, top: 10, width: 24, height: 24, borderRadius: '50%', background: cfg.bg, border: `2px solid ${cfg.color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 0 3px #050505, 0 0 10px ${cfg.color}30` }}>
                   <Icon size={11} style={{ color: cfg.color }} />
                 </div>
 
@@ -139,12 +139,12 @@ export default function TimelineTab({ caseId }) {
                     <span style={{ fontSize: '0.62rem', fontWeight: 700, color: cfg.color, fontFamily: 'JetBrains Mono', padding: '1px 7px', background: cfg.bg, borderRadius: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                       {cfg.label}
                     </span>
-                    <span style={{ fontSize: '0.67rem', color: '#71717A', fontFamily: 'JetBrains Mono', marginLeft: 'auto' }}>
+                    <span style={{ fontSize: '0.67rem', color: '#787878', fontFamily: 'JetBrains Mono', marginLeft: 'auto' }}>
                       {new Date(ev.timestamp).toLocaleString('en-IE', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })}
                     </span>
                   </div>
-                  <div style={{ fontSize: '0.84rem', color: '#C8C8D8', lineHeight: 1.65 }}>{ev.description}</div>
-                  <div style={{ marginTop: 5, fontSize: '0.6rem', color: 'rgba(113,113,122,0.35)', fontFamily: 'JetBrains Mono' }}>Event {i+1} of {events.length}</div>
+                  <div style={{ fontSize: '0.84rem', color: '#A8A8A8', lineHeight: 1.65 }}>{ev.description}</div>
+                  <div style={{ marginTop: 5, fontSize: '0.6rem', color: 'rgba(136,136,136,0.35)', fontFamily: 'JetBrains Mono' }}>Event {i+1} of {events.length}</div>
                 </div>
               </div>
             );
@@ -152,10 +152,10 @@ export default function TimelineTab({ caseId }) {
 
           {/* End cap */}
           <div style={{ position: 'relative' }}>
-            <div style={{ position: 'absolute', left: -36, top: 0, width: 24, height: 24, borderRadius: '50%', background: 'rgba(113,113,122,0.08)', border: '2px solid rgba(113,113,122,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#71717A', opacity: 0.4 }} />
+            <div style={{ position: 'absolute', left: -36, top: 0, width: 24, height: 24, borderRadius: '50%', background: 'rgba(136,136,136,0.08)', border: '2px solid rgba(136,136,136,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#888888', opacity: 0.4 }} />
             </div>
-            <div style={{ paddingTop: 4, fontSize: '0.68rem', color: 'rgba(113,113,122,0.4)', fontFamily: 'JetBrains Mono' }}>
+            <div style={{ paddingTop: 4, fontSize: '0.68rem', color: 'rgba(136,136,136,0.4)', fontFamily: 'JetBrains Mono' }}>
               Last: {new Date(events[events.length-1]?.timestamp).toLocaleString('en-IE')}
             </div>
           </div>

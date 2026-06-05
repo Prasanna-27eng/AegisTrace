@@ -30,7 +30,7 @@ const AI_SERVICE = {
 };
 
 function getService(domain) {
-  return AI_SERVICE[domain] ?? { label: domain, color: '#71717A' };
+  return AI_SERVICE[domain] ?? { label: domain, color: '#787878' };
 }
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
@@ -62,7 +62,7 @@ function StatCard({ label, value, accent, sub }) {
         {value ?? '—'}
       </div>
       <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 5 }}>{label}</div>
-      {sub && <div style={{ fontSize: '0.65rem', color: 'rgba(113,113,122,0.6)', marginTop: 2, ...MONO }}>{sub}</div>}
+      {sub && <div style={{ fontSize: '0.65rem', color: 'rgba(136,136,136,0.6)', marginTop: 2, ...MONO }}>{sub}</div>}
     </div>
   );
 }
@@ -95,7 +95,7 @@ function FilterTab({ label, active, count, onClick }) {
       {label}
       {count != null && (
         <span style={{
-          background: active ? COLOR : 'rgba(113,113,122,0.25)',
+          background: active ? COLOR : 'rgba(136,136,136,0.25)',
           color: active ? '#fff' : 'var(--text-muted)',
           borderRadius: 10, padding: '1px 6px', fontSize: '0.65rem', fontWeight: 700,
         }}>
@@ -116,7 +116,7 @@ function EventRow({ ev, onReview, onCreateCase }) {
     <div style={{
       background: 'var(--surface)',
       border: `1px solid ${isNew ? 'rgba(239,68,68,0.22)' : 'var(--border)'}`,
-      borderLeft: `3px solid ${isNew ? '#EF4444' : 'rgba(113,113,122,0.25)'}`,
+      borderLeft: `3px solid ${isNew ? '#EF4444' : 'rgba(136,136,136,0.25)'}`,
       borderRadius: 9, overflow: 'hidden',
       transition: 'border-color 0.15s',
     }}>
@@ -411,7 +411,7 @@ export default function ShadowAI() {
           <div style={{ fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
             {filter === 'unreviewed' ? 'No unreviewed events' : filter === 'reviewed' ? 'No reviewed events yet' : 'No shadow AI events detected'}
           </div>
-          <div style={{ fontSize: '0.78rem', color: 'rgba(113,113,122,0.6)', ...MONO }}>
+          <div style={{ fontSize: '0.78rem', color: 'rgba(136,136,136,0.6)', ...MONO }}>
             {filter === 'all'
               ? 'Events appear here when the endpoint agent detects a process contacting an unapproved AI API'
               : 'Switch to "All" to see every event'}

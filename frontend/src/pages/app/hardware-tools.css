@@ -30,7 +30,7 @@
   padding: 8px 14px 4px;
   font-size: 0.6rem;
   font-weight: 600;
-  color: rgba(113,113,122,0.6);
+  color: rgba(136,136,136,0.6);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   font-family: 'JetBrains Mono', monospace;
@@ -137,7 +137,7 @@
 .verdict-detected { color: #EF4444; background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.25); }
 .verdict-suspicious { color: #EAB308; background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.3); }
 .verdict-clean { color: #22C55E; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25); }
-.verdict-unknown { color: #71717A; background: rgba(113,113,122,0.1); border: 1px solid rgba(113,113,122,0.2); }
+.verdict-unknown { color: #787878; background: rgba(136,136,136,0.1); border: 1px solid rgba(136,136,136,0.2); }
 .hw-alert-banner {
   display: flex;
   align-items: center;
@@ -158,7 +158,7 @@
   padding: 12px 14px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.76rem;
-  color: #b8c1cc;
+  color: #A8A8A8;
   overflow-x: auto;
   white-space: pre-wrap;
   word-break: break-all;

@@ -91,7 +91,7 @@ function HexFortress() {
       const dt = Math.min(ts - last, 40);
       last = ts;
 
-      ctx.fillStyle = '#040812';
+      ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, W, H);
 
       const cx = W / 2, cy = H / 2;
@@ -181,7 +181,7 @@ function HexFortress() {
       // ── Radial vignette ───────────────────────────────────────────────
       const vig = ctx.createRadialGradient(cx, cy, H * 0.08, cx, cy, H * 0.88);
       vig.addColorStop(0, 'transparent');
-      vig.addColorStop(1, 'rgba(4,8,18,0.86)');
+      vig.addColorStop(1, 'rgba(0,0,0,0.86)');
       ctx.fillStyle = vig; ctx.fillRect(0, 0, W, H);
 
       raf = requestAnimationFrame(frame);
@@ -214,8 +214,8 @@ function AIDemo() {
     catch(e){ setResult({error:true,summary:e.response?.data?.detail||'Analysis failed'}); }
     setLoading(false);
   };
-  const riskColor={Critical:'#EF4444',High:'#4DA3FF',Medium:'#EAB308',Low:'#22C55E',Clean:'#22C55E',Unknown:'#71717A'};
-  const verdictColor={Malicious:'#EF4444',Suspicious:'#EAB308',Clean:'#22C55E',Unknown:'#71717A'};
+  const riskColor={Critical:'#EF4444',High:'#4DA3FF',Medium:'#EAB308',Low:'#22C55E',Clean:'#22C55E',Unknown:'#888888'};
+  const verdictColor={Malicious:'#EF4444',Suspicious:'#EAB308',Clean:'#22C55E',Unknown:'#888888'};
   const mono={fontFamily:'JetBrains Mono,monospace'};
   return (
     <div style={{background:'rgba(240,240,248,0.02)',border:'1px solid rgba(240,240,248,0.08)',borderRadius:10,padding:24}}>
@@ -225,7 +225,7 @@ function AIDemo() {
         ))}
       </div>
       <div style={{display:'flex',gap:10}}>
-        <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&analyse()} placeholder="Paste any IOC — IP, domain, URL, hash…" style={{flex:1,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:6,padding:'10px 14px',color:'#F0F0F8',outline:'none',fontSize:13,...mono}} />
+        <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&analyse()} placeholder="Paste any IOC — IP, domain, URL, hash…" style={{flex:1,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:6,padding:'10px 14px',color:'#EBEBEB',outline:'none',fontSize:13,...mono}} />
         <button onClick={()=>analyse()} disabled={loading} style={{background:'#4DA3FF',color:'#fff',border:'none',borderRadius:6,padding:'10px 20px',fontSize:12,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:8,...mono,whiteSpace:'nowrap'}}>
           {loading?<Loader2 size={14} style={{animation:'spin 1s linear infinite'}}/>:<Zap size={14}/>}
           {loading?'Analysing…':'Analyse'}
@@ -235,12 +235,12 @@ function AIDemo() {
         <div style={{marginTop:16,display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
           <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:8,padding:16}}>
             <div style={{fontSize:10,color:'rgba(240,240,248,0.4)',letterSpacing:'0.12em',textTransform:'uppercase',...mono,marginBottom:8}}>Verdict</div>
-            <div style={{fontSize:'1.4rem',fontWeight:700,color:verdictColor[result.verdict]||'#71717A',...mono}}>{result.verdict}</div>
+            <div style={{fontSize:'1.4rem',fontWeight:700,color:verdictColor[result.verdict]||'#787878',...mono}}>{result.verdict}</div>
             <div style={{marginTop:4,fontSize:11,color:'rgba(240,240,248,0.5)',...mono}}>{result.type}</div>
           </div>
           <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:8,padding:16}}>
             <div style={{fontSize:10,color:'rgba(240,240,248,0.4)',letterSpacing:'0.12em',textTransform:'uppercase',...mono,marginBottom:8}}>Risk Level</div>
-            <div style={{fontSize:'1.4rem',fontWeight:700,color:riskColor[result.risk_level]||'#71717A',...mono}}>{result.risk_level}</div>
+            <div style={{fontSize:'1.4rem',fontWeight:700,color:riskColor[result.risk_level]||'#787878',...mono}}>{result.risk_level}</div>
             <div style={{marginTop:4,fontSize:11,color:'rgba(240,240,248,0.5)',...mono}}>Confidence: {result.confidence}%</div>
           </div>
           <div style={{gridColumn:'1/-1',background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:8,padding:16}}>
@@ -257,7 +257,7 @@ function AIDemo() {
 function Ticker() {
   const items='◇ Trust Operating System · Identity · Provenance · Control · ◇ ITDR — Credential Stuffing · Impossible Travel · Privilege Escalation · ◇ Identity Graph · Trust Timeline · Provenance Ledger · Pluggable Risk Engine · ◇ Endpoint Agent v5 · Honey Token Trap · DNS/DGA Detection · Auto-Block · YARA-lite · Guardian Process · ◇ 18 Hardware Analysis Tools · WiFi Pineapple · HackRF One · Flipper Zero · Proxmark3 · ◇ AI Case Analysis · MITRE ATT&CK · IOC Correlation · Explainable AI · ◇ VirusTotal v3 · Shodan · MalwareBazaar · URLhaus · ThreatFox · GreyNoise · ◇ Email Forensics · DORA Article 19 · Webhook Alerting · ◇ Terminal Lab · Log Parsing · IOC Extraction · ◇ AI Agent Security · Bounded Autonomy · Human Approval Queue · ◇ Policy Engine · Trust Validation · Anomaly Detection · ◇ Free. Open. Deployable. · ';
   return (
-    <div style={{position:'absolute',bottom:0,left:0,right:0,zIndex:10,height:32,overflow:'hidden',background:'rgba(7,8,15,0.7)',borderTop:'1px solid rgba(255,255,255,0.06)',display:'flex',alignItems:'center'}}>
+    <div style={{position:'absolute',bottom:0,left:0,right:0,zIndex:10,height:32,overflow:'hidden',background:'rgba(5,5,5,0.7)',borderTop:'1px solid rgba(255,255,255,0.06)',display:'flex',alignItems:'center'}}>
       <div style={{display:'flex',animation:'marquee 60s linear infinite',whiteSpace:'nowrap'}}>
         {[items,items].map((s,i)=><span key={i} style={{fontFamily:'JetBrains Mono,monospace',fontSize:10,color:'rgba(240,240,248,0.3)',letterSpacing:'0.1em',paddingRight:0}}>{s}</span>)}
       </div>
@@ -358,7 +358,7 @@ function BentoFeatures({ mono }) {
       <div className="bento-card" style={{gridColumn:'span 5',gridRow:'span 2',background:'rgba(239,68,68,0.04)',border:'1px solid rgba(239,68,68,0.18)',borderRadius:14,padding:26,position:'relative',overflow:'hidden'}}>
         <div style={{position:'absolute',top:-30,right:-30,width:120,height:120,borderRadius:'50%',background:'rgba(239,68,68,0.07)',filter:'blur(20px)'}}/>
         <ShieldAlert size={26} style={{color:'#EF4444',marginBottom:14}}/>
-        <div style={{fontWeight:700,fontSize:'1rem',marginBottom:8,color:'#F0F0F8'}}>ITDR — Identity Threat Detection</div>
+        <div style={{fontWeight:700,fontSize:'1rem',marginBottom:8,color:'#EBEBEB'}}>ITDR — Identity Threat Detection</div>
         <div style={{fontSize:12,color:'rgba(240,240,248,0.5)',lineHeight:1.75,...mono,fontWeight:300,marginBottom:18}}>Four real-time detectors: credential stuffing, impossible travel, new device login, unapproved privilege escalation. Paste auth logs or enter events manually.</div>
         <div style={{display:'flex',flexDirection:'column',gap:8}}>
           {['Credential stuffing detector','Impossible travel (continents < 4h)','New device login alert','Privilege escalation detector'].map(d=>(
@@ -374,7 +374,7 @@ function BentoFeatures({ mono }) {
       <div className="bento-card" style={{gridColumn:'span 7',background:'rgba(34,197,94,0.04)',border:'1px solid rgba(34,197,94,0.14)',borderRadius:14,padding:22,display:'flex',gap:18,alignItems:'center'}}>
         <Brain size={26} style={{color:'#22C55E',flexShrink:0}}/>
         <div>
-          <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#F0F0F8'}}>Explainable AI — No Black Boxes</div>
+          <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#EBEBEB'}}>Explainable AI — No Black Boxes</div>
           <div style={{fontSize:11,color:'rgba(240,240,248,0.45)',lineHeight:1.7,...mono,fontWeight:300}}>Multi-model Groq routing. Every verdict shows evidence used, reasoning steps, what-could-be-wrong, and confidence. Provenance ledger records every AI action.</div>
         </div>
       </div>
@@ -382,42 +382,42 @@ function BentoFeatures({ mono }) {
       {/* Case Management */}
       <div className="bento-card" style={{gridColumn:'span 4',background:'rgba(167,139,250,0.04)',border:'1px solid rgba(167,139,250,0.14)',borderRadius:14,padding:22}}>
         <FolderSearch size={20} style={{color:'#A78BFA',marginBottom:10}}/>
-        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#F0F0F8'}}>Case Management</div>
+        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#EBEBEB'}}>Case Management</div>
         <div style={{fontSize:11,color:'rgba(240,240,248,0.45)',lineHeight:1.7,...mono,fontWeight:300}}>13-tab lifecycle: IOCs, terminal, timeline, trust timeline, playbook, AI analysis, AI chat, provenance, report, EDR. Autosave + MITRE mapping.</div>
       </div>
 
       {/* Identity Graph */}
       <div className="bento-card" style={{gridColumn:'span 3',background:'rgba(234,179,8,0.04)',border:'1px solid rgba(234,179,8,0.16)',borderRadius:14,padding:22}}>
         <GitMerge size={20} style={{color:'#EAB308',marginBottom:10}}/>
-        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#F0F0F8'}}>Identity Graph</div>
+        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#EBEBEB'}}>Identity Graph</div>
         <div style={{fontSize:11,color:'rgba(240,240,248,0.45)',lineHeight:1.7,...mono,fontWeight:300}}>Force-directed canvas of users, service accounts, API keys, tokens, devices, AI agents.</div>
       </div>
 
       {/* IOC Intel */}
       <div className="bento-card" style={{gridColumn:'span 4',background:'rgba(77,163,255,0.04)',border:'1px solid rgba(77,163,255,0.16)',borderRadius:14,padding:22}}>
         <Shield size={20} style={{color:'#4DA3FF',marginBottom:10}}/>
-        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#F0F0F8'}}>7-Source IOC Intel</div>
+        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#EBEBEB'}}>7-Source IOC Intel</div>
         <div style={{fontSize:11,color:'rgba(240,240,248,0.45)',lineHeight:1.7,...mono,fontWeight:300}}>VirusTotal v3 · Shodan · MalwareBazaar · URLhaus · ThreatFox · GreyNoise · IPInfo — all in parallel.</div>
       </div>
 
       {/* Terminal Lab */}
       <div className="bento-card" style={{gridColumn:'span 3',background:'rgba(34,197,94,0.03)',border:'1px solid rgba(34,197,94,0.12)',borderRadius:14,padding:22}}>
         <Terminal size={20} style={{color:'#22C55E',marginBottom:10}}/>
-        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#F0F0F8'}}>Terminal Lab</div>
+        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#EBEBEB'}}>Terminal Lab</div>
         <div style={{fontSize:11,color:'rgba(240,240,248,0.45)',lineHeight:1.7,...mono,fontWeight:300}}>Private analyst workspace. 20+ commands. AI parses every output + saves to cases.</div>
       </div>
 
       {/* Email Forensics */}
       <div className="bento-card" style={{gridColumn:'span 5',background:'rgba(167,139,250,0.03)',border:'1px solid rgba(167,139,250,0.1)',borderRadius:14,padding:22}}>
         <Mail size={20} style={{color:'#A78BFA',marginBottom:10}}/>
-        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#F0F0F8'}}>Email Forensics</div>
+        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#EBEBEB'}}>Email Forensics</div>
         <div style={{fontSize:11,color:'rgba(240,240,248,0.45)',lineHeight:1.7,...mono,fontWeight:300}}>Full RFC header parsing, SPF/DKIM/DMARC validation, routing hop extraction, AI phishing verdict with MITRE ATT&CK mapping.</div>
       </div>
 
       {/* Endpoint Agent */}
       <div className="bento-card" style={{gridColumn:'span 4',background:'rgba(234,179,8,0.03)',border:'1px solid rgba(234,179,8,0.1)',borderRadius:14,padding:22}}>
         <Monitor size={20} style={{color:'#EAB308',marginBottom:10}}/>
-        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#F0F0F8'}}>Endpoint Agent v5 <span style={{fontSize:9,background:'rgba(234,179,8,0.15)',border:'1px solid rgba(234,179,8,0.3)',color:'#EAB308',borderRadius:3,padding:'1px 5px',marginLeft:4,verticalAlign:'middle'}}>NEW</span></div>
+        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#EBEBEB'}}>Endpoint Agent v5 <span style={{fontSize:9,background:'rgba(234,179,8,0.15)',border:'1px solid rgba(234,179,8,0.3)',color:'#EAB308',borderRadius:3,padding:'1px 5px',marginLeft:4,verticalAlign:'middle'}}>NEW</span></div>
         <div style={{fontSize:11,color:'rgba(240,240,248,0.45)',lineHeight:1.7,...mono,fontWeight:300}}>🍯 Honey Token Trap · DNS/DGA · Auto-Block · YARA-lite · USB + Registry · Guardian Process · Multi-backend failover. Linux/macOS/Windows.</div>
       </div>
 
@@ -426,7 +426,7 @@ function BentoFeatures({ mono }) {
         <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#4DA3FF" strokeWidth={2} style={{marginBottom:10}}>
           <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
         </svg>
-        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#F0F0F8'}}>Identity Auto-Discovery</div>
+        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#EBEBEB'}}>Identity Auto-Discovery</div>
         <div style={{fontSize:11,color:'rgba(240,240,248,0.45)',lineHeight:1.7,...mono,fontWeight:300}}>Connect Azure AD, Okta, or Google. Your entire identity surface discovered in 5 minutes. No spreadsheets.</div>
       </div>
 
@@ -435,7 +435,7 @@ function BentoFeatures({ mono }) {
         <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth={2} style={{marginBottom:10}}>
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
         </svg>
-        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#F0F0F8'}}>NHI Health Monitor</div>
+        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#EBEBEB'}}>NHI Health Monitor</div>
         <div style={{fontSize:11,color:'rgba(240,240,248,0.45)',lineHeight:1.7,...mono,fontWeight:300}}>Stale tokens. Orphaned accounts. Over-privileged service accounts. Surfaced automatically before attackers find them.</div>
       </div>
     </div>
@@ -461,7 +461,7 @@ export default function Landing() {
   const NAV_LINKS = [['#problem','Problem'],['#vision','Vision'],['#features','Features'],['#hardware','Hardware'],['#demo','Demo'],['#roadmap','Roadmap'],['#certs','About']];
 
   return (
-    <div style={{background:'#080C14',color:'#F0F0F8',minHeight:'100vh',cursor:'default',overflowX:'hidden'}}>
+    <div style={{background:'#0A0A0A',color:'#EBEBEB',minHeight:'100vh',cursor:'default',overflowX:'hidden'}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500&display=swap');
         @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
@@ -490,7 +490,7 @@ export default function Landing() {
         .problem-card:hover{transform:translateY(-2px)}
         .stat-float{animation:floatY 3s ease-in-out infinite}
         /* Mobile nav drawer */
-        .mobile-nav-drawer{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(4,8,18,0.97);z-index:200;display:flex;flex-direction:column;padding:24px;backdrop-filter:blur(20px)}
+        .mobile-nav-drawer{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.97);z-index:200;display:flex;flex-direction:column;padding:24px;backdrop-filter:blur(20px)}
         @media(max-width:900px){
           .lp-rails{display:none!important}
           .desktop-nav{display:none!important}
@@ -527,7 +527,7 @@ export default function Landing() {
           <Clock/>
           <button onClick={openApp} style={{background:'#4DA3FF',color:'white',border:'none',borderRadius:6,padding:'8px 18px',fontSize:11,fontWeight:600,cursor:'pointer',...mono,letterSpacing:'0.08em',textTransform:'uppercase'}}>Launch App</button>
           {/* Mobile menu toggle */}
-          <button className="mobile-menu-btn" onClick={()=>setMobileNav(true)} style={{background:'none',border:'1px solid rgba(240,240,248,0.15)',borderRadius:6,padding:'7px 9px',cursor:'pointer',color:'#F0F0F8',display:'flex',alignItems:'center'}}>
+          <button className="mobile-menu-btn" onClick={()=>setMobileNav(true)} style={{background:'none',border:'1px solid rgba(240,240,248,0.15)',borderRadius:6,padding:'7px 9px',cursor:'pointer',color:'#EBEBEB',display:'flex',alignItems:'center'}}>
             <Menu size={16}/>
           </button>
         </div>
@@ -575,7 +575,7 @@ export default function Landing() {
                 Trust · Identity · Provenance · Control Plane
               </div>
               <h1 style={{fontFamily:'Instrument Serif,Georgia,serif',lineHeight:0.92,letterSpacing:'-0.015em',marginBottom:28}}>
-                <div style={{fontSize:'clamp(2.8rem,7vw,8.5rem)',color:'#F0F0F8',fontWeight:400}}>Attackers no longer break in.</div>
+                <div style={{fontSize:'clamp(2.8rem,7vw,8.5rem)',color:'#EBEBEB',fontWeight:400}}>Attackers no longer break in.</div>
                 <div style={{fontSize:'clamp(2.8rem,7vw,8.5rem)',color:'#4DA3FF',fontStyle:'italic',fontWeight:400}}>They become trusted.</div>
               </h1>
               <p style={{maxWidth:520,fontSize:13,color:'rgba(240,240,248,0.5)',lineHeight:1.8,...mono,fontWeight:300,marginBottom:14}}>
@@ -595,7 +595,7 @@ export default function Landing() {
             {/* Right: floating stat cards */}
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
               {[
-                {val:stats.total_cases,    label:'Cases Investigated', color:'#F0F0F8', sub:'Platform data', delay:'0s'},
+                {val:stats.total_cases,    label:'Cases Investigated', color:'#EBEBEB', sub:'Platform data', delay:'0s'},
                 {val:stats.total_iocs,     label:'IOCs Correlated',    color:'#4DA3FF',  sub:'Cross-case intel', delay:'0.4s'},
                 {val:stats.critical_cases, label:'Critical Incidents', color:'#EAB308',  sub:'High-severity', delay:'0.8s'},
                 {val:stats.vt_lookups,     label:'VT Lookups Run',     color:'#A78BFA',  sub:'Enrichment queries', delay:'1.2s'},
@@ -613,7 +613,7 @@ export default function Landing() {
       </section>
 
       {/* ══ THE PROBLEM ══ */}
-      <section id="problem" className="lp-section" style={{padding:'90px 48px',background:'#080C14',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
+      <section id="problem" className="lp-section" style={{padding:'90px 48px',background:'#0A0A0A',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
         <div style={{maxWidth:1200,margin:'0 auto'}}>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:56,alignItems:'start',marginBottom:52}} className="lp-2col">
             <div>
@@ -644,7 +644,7 @@ export default function Landing() {
             {PROBLEMS.map(({Icon,title,desc,color})=>(
               <div key={title} className="problem-card" style={{borderLeft:`2px solid ${color}`,borderTop:'1px solid rgba(255,255,255,0.07)',borderRight:'1px solid rgba(255,255,255,0.07)',borderBottom:'1px solid rgba(255,255,255,0.07)'}}>
                 <Icon size={22} style={{color,marginBottom:14}}/>
-                <div style={{fontWeight:600,fontSize:'0.92rem',marginBottom:10,color:'#F0F0F8'}}>{title}</div>
+                <div style={{fontWeight:600,fontSize:'0.92rem',marginBottom:10,color:'#EBEBEB'}}>{title}</div>
                 <div style={{fontSize:12,color:'rgba(240,240,248,0.5)',lineHeight:1.8,...mono,fontWeight:300}}>{desc}</div>
               </div>
             ))}
@@ -653,7 +653,7 @@ export default function Landing() {
       </section>
 
       {/* ══ FUTURE VISION ══ */}
-      <section id="vision" className="lp-section" style={{padding:'90px 48px',background:'#0D1117',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
+      <section id="vision" className="lp-section" style={{padding:'90px 48px',background:'#111111',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
         <div style={{maxWidth:1200,margin:'0 auto'}}>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:64,alignItems:'start',marginBottom:56}} className="lp-2col">
             <div>
@@ -686,7 +686,7 @@ export default function Landing() {
             {PILLARS.map(({Icon,label,desc})=>(
               <div key={label} className="pillar-card">
                 <Icon size={20} style={{color:'#A78BFA',marginBottom:12}}/>
-                <div style={{fontWeight:700,fontSize:13,marginBottom:8,color:'#F0F0F8'}}>{label}</div>
+                <div style={{fontWeight:700,fontSize:13,marginBottom:8,color:'#EBEBEB'}}>{label}</div>
                 <div style={{fontSize:11,color:'rgba(240,240,248,0.45)',lineHeight:1.7,...mono,fontWeight:300}}>{desc}</div>
               </div>
             ))}
@@ -695,7 +695,7 @@ export default function Landing() {
       </section>
 
       {/* ══ HARDWARE PLATFORM ══ */}
-      <section id="hardware" className="lp-section" style={{padding:'90px 48px',background:'#0D1117',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
+      <section id="hardware" className="lp-section" style={{padding:'90px 48px',background:'#111111',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
         <div style={{maxWidth:1200,margin:'0 auto'}}>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:56,alignItems:'center',marginBottom:52}} className="lp-2col">
             <div>
@@ -720,7 +720,7 @@ export default function Landing() {
               <div key={cat} className="hw-cat-card">
                 <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14}}>
                   <div style={{width:8,height:8,borderRadius:'50%',background:color}}/>
-                  <div style={{fontWeight:700,fontSize:'0.88rem',color:'#F0F0F8'}}>{cat}</div>
+                  <div style={{fontWeight:700,fontSize:'0.88rem',color:'#EBEBEB'}}>{cat}</div>
                   <div style={{marginLeft:'auto',fontSize:10,color:'rgba(240,240,248,0.35)',...mono}}>{tools.length} tools</div>
                 </div>
                 {tools.map(t=>(
@@ -738,7 +738,7 @@ export default function Landing() {
       </section>
 
       {/* ══ BENTO FEATURES ══ */}
-      <section id="features" className="lp-section" style={{padding:'80px 48px',background:'#080C14',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
+      <section id="features" className="lp-section" style={{padding:'80px 48px',background:'#0A0A0A',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
         <div style={{maxWidth:1200,margin:'0 auto'}}>
           <div style={{marginBottom:48}}>
             <div style={{fontSize:10,color:'#4DA3FF',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:10}}>◇ Platform Capabilities</div>
@@ -749,7 +749,7 @@ export default function Landing() {
       </section>
 
       {/* ══ LIVE DEMO ══ */}
-      <section id="demo" className="lp-section" style={{padding:'80px 48px',background:'#0D1117',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
+      <section id="demo" className="lp-section" style={{padding:'80px 48px',background:'#111111',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
         <div style={{maxWidth:1100,margin:'0 auto'}}>
           <div style={{marginBottom:40,display:'grid',gridTemplateColumns:'1fr 1fr',gap:32,alignItems:'flex-end'}} className="lp-2col">
             <div>
@@ -763,7 +763,7 @@ export default function Landing() {
       </section>
 
       {/* ══ ROADMAP ══ */}
-      <section id="roadmap" className="lp-section" style={{padding:'90px 48px',background:'#080C14',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
+      <section id="roadmap" className="lp-section" style={{padding:'90px 48px',background:'#0A0A0A',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
         <div style={{maxWidth:1200,margin:'0 auto'}}>
           <div style={{marginBottom:52}}>
             <div style={{fontSize:10,color:'#A78BFA',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:12}}>◇ Product Roadmap</div>
@@ -777,7 +777,7 @@ export default function Landing() {
                 <div style={{position:'absolute',top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,${color}88,transparent)`}}/>
                 <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:20}}>
                   <div style={{width:8,height:8,borderRadius:'50%',background:color,animation:status==='live'?'pulse-dot 2s ease-in-out infinite':status==='building'?'shimmer 2s ease-in-out infinite':undefined}}/>
-                  <div style={{fontWeight:700,fontSize:'0.88rem',color:'#F0F0F8'}}>{phase}</div>
+                  <div style={{fontWeight:700,fontSize:'0.88rem',color:'#EBEBEB'}}>{phase}</div>
                   <div style={{marginLeft:'auto',fontSize:10,...mono,padding:'2px 8px',borderRadius:3,background:`${color}18`,color,border:`1px solid ${color}30`,textTransform:'uppercase',letterSpacing:'0.08em'}}>
                     {status==='live'?'Live':status==='building'?'In Progress':'Planned'}
                   </div>
@@ -795,7 +795,7 @@ export default function Landing() {
       </section>
 
       {/* ══ COMPETITIVE COMPARISON ══ */}
-      <section style={{padding:'80px 48px',background:'#0D1117',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
+      <section style={{padding:'80px 48px',background:'#111111',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
         <div style={{maxWidth:1100,margin:'0 auto'}}>
           <div style={{marginBottom:44}}>
             <div style={{fontSize:10,color:'#4DA3FF',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:10}}>◇ Competitive Benchmark</div>
@@ -820,7 +820,7 @@ export default function Landing() {
                     <td style={{padding:'10px 16px',fontSize:13,color:'rgba(240,240,248,0.7)',...mono}}>{feature}</td>
                     {[at,cs,sp].map((v,i)=>(
                       <td key={i} style={{textAlign:'center',padding:'10px 24px'}}>
-                        {v?<Check size={15} style={{color:'#22C55E'}}/>:<X size={14} style={{color:'rgba(113,113,122,0.4)'}}/>}
+                        {v?<Check size={15} style={{color:'#22C55E'}}/>:<X size={14} style={{color:'rgba(136,136,136,0.4)'}}/>}
                       </td>
                     ))}
                   </tr>
@@ -832,7 +832,7 @@ export default function Landing() {
       </section>
 
       {/* ══ AI MODELS ══ */}
-      <section style={{padding:'80px 48px',background:'#080C14',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
+      <section style={{padding:'80px 48px',background:'#0A0A0A',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
         <div style={{maxWidth:1200,margin:'0 auto'}}>
           <div style={{marginBottom:40}}>
             <div style={{fontSize:10,color:'#4DA3FF',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:10}}>◇ AI Engine — 100% Free via Groq</div>
@@ -858,7 +858,7 @@ export default function Landing() {
       </section>
 
       {/* ══ HOW IT WORKS ══ */}
-      <section style={{padding:'80px 48px',background:'#0D1117',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
+      <section style={{padding:'80px 48px',background:'#111111',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
         <div style={{maxWidth:1200,margin:'0 auto'}}>
           <div style={{marginBottom:48}}>
             <div style={{fontSize:10,color:'#4DA3FF',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:10}}>◇ Investigation Workflow</div>
@@ -874,7 +874,7 @@ export default function Landing() {
               {n:'04',title:'Report + Close',       desc:'AI writes executive summary and technical analysis with a full reasoning chain. Generate PDF, DOCX, or DORA Article 19 report. Closure checklist enforced before sealing.'},
             ].map(({n,title,desc},i)=>(
               <div key={n} style={{padding:'0 24px 0',position:'relative',zIndex:1}}>
-                <div style={{width:56,height:56,borderRadius:'50%',background:'#080C14',border:'2px solid rgba(77,163,255,0.4)',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:20,...mono,fontSize:13,fontWeight:700,color:'#4DA3FF'}}>{n}</div>
+                <div style={{width:56,height:56,borderRadius:'50%',background:'#0A0A0A',border:'2px solid rgba(77,163,255,0.4)',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:20,...mono,fontSize:13,fontWeight:700,color:'#4DA3FF'}}>{n}</div>
                 <div style={{fontWeight:600,fontSize:15,marginBottom:8}}>{title}</div>
                 <div style={{fontSize:12,color:'rgba(240,240,248,0.45)',lineHeight:1.75,...mono,fontWeight:300}}>{desc}</div>
               </div>
@@ -884,7 +884,7 @@ export default function Landing() {
       </section>
 
       {/* ══ TECH STACK ══ */}
-      <section style={{padding:'72px 48px',background:'#080C14',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
+      <section style={{padding:'72px 48px',background:'#0A0A0A',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
         <div style={{maxWidth:1200,margin:'0 auto'}}>
           <div style={{marginBottom:40}}>
             <div style={{fontSize:10,color:'#4DA3FF',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:10}}>◇ Technology Stack — All Free Tier</div>
@@ -902,7 +902,7 @@ export default function Landing() {
               {name:'JetBrains Mono',    role:'Terminal typography',  note:'All code, output, IOC values'},
             ].map(({name,role,note})=>(
               <div key={name} style={{background:'rgba(240,240,248,0.02)',border:'1px solid rgba(240,240,248,0.07)',borderRadius:8,padding:'14px 16px'}}>
-                <div style={{fontWeight:700,fontSize:13,color:'#F0F0F8',...mono,marginBottom:4}}>{name}</div>
+                <div style={{fontWeight:700,fontSize:13,color:'#EBEBEB',...mono,marginBottom:4}}>{name}</div>
                 <div style={{fontSize:11,color:'#4DA3FF',...mono,marginBottom:4}}>{role}</div>
                 <div style={{fontSize:10,color:'rgba(240,240,248,0.35)',...mono}}>{note}</div>
               </div>
@@ -912,7 +912,7 @@ export default function Landing() {
       </section>
 
       {/* ══ ABOUT / CERTS ══ */}
-      <section id="certs" style={{padding:'80px 48px',background:'#0D1117',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
+      <section id="certs" style={{padding:'80px 48px',background:'#111111',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
         <div style={{maxWidth:1200,margin:'0 auto',display:'grid',gridTemplateColumns:'1fr 1fr',gap:64,alignItems:'start'}} className="lp-2col">
           <div>
             <div style={{fontSize:10,color:'#4DA3FF',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:16}}>◇ About the Builder</div>
@@ -924,8 +924,8 @@ export default function Landing() {
               The platform is entirely self-funded, free to use, and open in philosophy. The goal is to prove that a solo analyst can build SOC tooling that rivals commercial products — built around identity, trust, and explainability from the ground up.
             </p>
             <div style={{display:'flex',gap:12}}>
-              <a href="https://github.com/Prasanna-27eng" target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:6,color:'rgba(240,240,248,0.5)',textDecoration:'none',fontSize:12,...mono,transition:'color 0.2s'}} onMouseEnter={e=>e.currentTarget.style.color='#F0F0F8'} onMouseLeave={e=>e.currentTarget.style.color='rgba(240,240,248,0.5)'}><Github size={14}/> GitHub</a>
-              <a href="https://www.linkedin.com/in/prasannakumarsurendran" target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:6,color:'rgba(240,240,248,0.5)',textDecoration:'none',fontSize:12,...mono,transition:'color 0.2s'}} onMouseEnter={e=>e.currentTarget.style.color='#F0F0F8'} onMouseLeave={e=>e.currentTarget.style.color='rgba(240,240,248,0.5)'}><Linkedin size={14}/> LinkedIn</a>
+              <a href="https://github.com/Prasanna-27eng" target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:6,color:'rgba(240,240,248,0.5)',textDecoration:'none',fontSize:12,...mono,transition:'color 0.2s'}} onMouseEnter={e=>e.currentTarget.style.color='#EBEBEB'} onMouseLeave={e=>e.currentTarget.style.color='rgba(240,240,248,0.5)'}><Github size={14}/> GitHub</a>
+              <a href="https://www.linkedin.com/in/prasannakumarsurendran" target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:6,color:'rgba(240,240,248,0.5)',textDecoration:'none',fontSize:12,...mono,transition:'color 0.2s'}} onMouseEnter={e=>e.currentTarget.style.color='#EBEBEB'} onMouseLeave={e=>e.currentTarget.style.color='rgba(240,240,248,0.5)'}><Linkedin size={14}/> LinkedIn</a>
             </div>
           </div>
           <div>
@@ -933,7 +933,7 @@ export default function Landing() {
             <div style={{display:'flex',flexDirection:'column',gap:10}}>
               {CERTS.map(({name,full,color,done})=>(
                 <div key={name} style={{display:'flex',alignItems:'center',gap:14,padding:'12px 16px',background:'rgba(255,255,255,0.02)',border:`1px solid ${done?`${color}30`:'rgba(255,255,255,0.06)'}`,borderRadius:8,opacity:done?1:0.65}}>
-                  <div style={{width:8,height:8,borderRadius:'50%',background:done?color:'rgba(113,113,122,0.4)',flexShrink:0}}/>
+                  <div style={{width:8,height:8,borderRadius:'50%',background:done?color:'rgba(136,136,136,0.4)',flexShrink:0}}/>
                   <div style={{flex:1}}>
                     <div style={{fontWeight:700,fontSize:13,color:done?color:'rgba(240,240,248,0.4)',...mono}}>{name}</div>
                     <div style={{fontSize:11,color:'rgba(240,240,248,0.4)',marginTop:2,...mono}}>{full}</div>
@@ -947,7 +947,7 @@ export default function Landing() {
       </section>
 
       {/* ══ CTA + FOOTER ══ */}
-      <section style={{padding:'80px 48px 48px',borderTop:'1px solid rgba(240,240,248,0.05)',background:'#080C14'}}>
+      <section style={{padding:'80px 48px 48px',borderTop:'1px solid rgba(240,240,248,0.05)',background:'#0A0A0A'}}>
         <div style={{maxWidth:1200,margin:'0 auto'}}>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:32,marginBottom:64}}>
             <div>

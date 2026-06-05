@@ -88,9 +88,9 @@ export default function PlaybookTab({ caseData, updateCase }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
           <div>
             <h3 style={{ fontSize: '0.92rem', fontWeight: 600, textTransform: 'capitalize' }}>{incidentType.replace('_',' ')} Playbook</h3>
-            <div style={{ fontSize: '0.72rem', color: '#71717A', marginTop: 2 }}>{completed}/{playbook.length} tasks complete</div>
+            <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 2 }}>{completed}/{playbook.length} tasks complete</div>
           </div>
-          <div style={{ fontSize: '1.2rem', fontWeight: 700, color: progress === 100 ? '#22C55E' : '#F0F0F8' }}>{progress}%</div>
+          <div style={{ fontSize: '1.2rem', fontWeight: 700, color: progress === 100 ? '#22C55E' : '#EBEBEB' }}>{progress}%</div>
         </div>
         {/* Progress bar */}
         <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
@@ -102,11 +102,11 @@ export default function PlaybookTab({ caseData, updateCase }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {playbook.map(task => (
             <div key={task.id} onClick={() => toggle(task.id)} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 0', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-              <div style={{ color: checked[task.id] ? '#22C55E' : '#71717A', flexShrink: 0, marginTop: 1 }}>
+              <div style={{ color: checked[task.id] ? '#22C55E' : '#787878', flexShrink: 0, marginTop: 1 }}>
                 {checked[task.id] ? <CheckSquare size={16} /> : <Square size={16} />}
               </div>
               <div>
-                <span style={{ fontSize: '0.84rem', color: checked[task.id] ? '#71717A' : '#F0F0F8', textDecoration: checked[task.id] ? 'line-through' : 'none', transition: 'all 0.2s' }}>{task.task}</span>
+                <span style={{ fontSize: '0.84rem', color: checked[task.id] ? '#787878' : '#EBEBEB', textDecoration: checked[task.id] ? 'line-through' : 'none', transition: 'all 0.2s' }}>{task.task}</span>
                 {task.milestone && <div style={{ fontSize: '0.65rem', color: '#4DA3FF', fontFamily: 'JetBrains Mono', marginTop: 2 }}>MILESTONE</div>}
               </div>
             </div>
@@ -122,10 +122,10 @@ export default function PlaybookTab({ caseData, updateCase }) {
         <div className="at-card" style={{ padding: '14px 16px', borderColor: 'rgba(234,179,8,0.2)' }}>
           {closureRequired.map(item => (
             <div key={item.id} onClick={() => setClosureChecked(p => ({ ...p, [item.id]: !p[item.id] }))} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-              <div style={{ color: closureChecked[item.id] ? '#22C55E' : '#71717A', flexShrink: 0 }}>
+              <div style={{ color: closureChecked[item.id] ? '#22C55E' : '#787878', flexShrink: 0 }}>
                 {closureChecked[item.id] ? <CheckSquare size={15} /> : <Square size={15} />}
               </div>
-              <span style={{ fontSize: '0.82rem', color: closureChecked[item.id] ? '#71717A' : '#F0F0F8' }}>{item.task}</span>
+              <span style={{ fontSize: '0.82rem', color: closureChecked[item.id] ? '#787878' : '#EBEBEB' }}>{item.task}</span>
             </div>
           ))}
         </div>

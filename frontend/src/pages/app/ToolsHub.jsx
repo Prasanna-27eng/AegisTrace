@@ -40,7 +40,7 @@ export default function ToolsHub() {
     <div style={{ padding: '24px 28px' }}>
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontSize: '1.3rem', fontWeight: 600 }}>Tools Hub</h1>
-        <div style={{ fontSize: '0.75rem', color: '#71717A', marginTop: 2 }}>Free tools and public intelligence sources</div>
+        <div style={{ fontSize: '0.75rem', color: '#787878', marginTop: 2 }}>Free tools and public intelligence sources</div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
@@ -51,12 +51,12 @@ export default function ToolsHub() {
             onClick={() => tool.internal && setActiveInternal(activeInternal === tool.id ? null : tool.id)}
           >
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
-              <div style={{ fontWeight: 600, fontSize: '0.85rem', color: '#F0F0F8' }}>{tool.name}</div>
+              <div style={{ fontWeight: 600, fontSize: '0.85rem', color: '#EBEBEB' }}>{tool.name}</div>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: tool.color, flexShrink: 0, marginTop: 3 }} />
             </div>
-            <div style={{ fontSize: '0.78rem', color: '#71717A', marginBottom: 10, lineHeight: 1.5 }}>{tool.desc}</div>
+            <div style={{ fontSize: '0.78rem', color: '#787878', marginBottom: 10, lineHeight: 1.5 }}>{tool.desc}</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }}>
-              {tool.inputs.map(inp => <span key={inp} style={{ fontSize: '0.65rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#71717A', padding: '2px 6px', borderRadius: 3, fontFamily: 'JetBrains Mono' }}>{inp}</span>)}
+              {tool.inputs.map(inp => <span key={inp} style={{ fontSize: '0.65rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#787878', padding: '2px 6px', borderRadius: 3, fontFamily: 'JetBrains Mono' }}>{inp}</span>)}
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
               {tool.link && (
@@ -78,7 +78,7 @@ export default function ToolsHub() {
                 <button className="btn-accent" onClick={extractIOCs} style={{ width: '100%', justifyContent: 'center', fontSize: '0.78rem', marginBottom: 8 }}>Extract IOCs</button>
                 {iocResult && (
                   <div>
-                    <div style={{ fontSize: '0.72rem', color: '#71717A', marginBottom: 6 }}>{iocResult.count} IOCs found</div>
+                    <div style={{ fontSize: '0.72rem', color: '#787878', marginBottom: 6 }}>{iocResult.count} IOCs found</div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                       {iocResult.iocs.map((ioc, i) => (
                         <span key={i} className="ioc-pill" style={{ cursor: 'pointer' }} onClick={() => { navigator.clipboard.writeText(ioc.ioc); addToast('Copied!', 'success'); }}>{ioc.ioc}</span>
@@ -97,7 +97,7 @@ export default function ToolsHub() {
                   <button className="btn-ghost" onClick={refang} style={{ flex: 1, justifyContent: 'center', fontSize: '0.78rem' }}>Refang</button>
                 </div>
                 {defangResult && (
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', background: '#0D111C', padding: '6px 10px', borderRadius: 5 }}>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', background: '#111111', padding: '6px 10px', borderRadius: 5 }}>
                     <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.78rem', flex: 1, color: '#22C55E' }}>{defangResult}</span>
                     <button onClick={() => { navigator.clipboard.writeText(defangResult); addToast('Copied!', 'success'); }} className="btn-ghost" style={{ padding: '2px 6px' }}><Copy size={11} /></button>
                   </div>

@@ -19,7 +19,7 @@ const DETECTOR_META = {
 const EVENT_TYPE_LABELS = {
   login:            { label: 'Login',             color: '#22C55E' },
   failed_login:     { label: 'Failed Login',      color: '#EF4444' },
-  logout:           { label: 'Logout',            color: '#6F7A8F' },
+  logout:           { label: 'Logout',            color: '#787878' },
   privilege_change: { label: 'Privilege Change',  color: '#F97316' },
   mfa_challenge:    { label: 'MFA Challenge',     color: '#EAB308' },
   password_reset:   { label: 'Password Reset',    color: '#A78BFA' },
@@ -75,7 +75,7 @@ function AddEventPanel({ onCreated, onClose }) {
         <div style={{ fontWeight: 600, fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: 7 }}>
           <Plus size={14} style={{ color: '#4A8EDB' }} /> Add Auth Event
         </div>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#6F7A8F', cursor: 'pointer' }}><X size={14} /></button>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={14} /></button>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
         <div>
@@ -177,12 +177,12 @@ function ParseLogPanel({ onParsed, onClose }) {
         <div style={{ fontWeight: 600, fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: 7 }}>
           <FileText size={14} style={{ color: '#A78BFA' }} /> Parse Log Text
         </div>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#6F7A8F', cursor: 'pointer' }}><X size={14} /></button>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={14} /></button>
       </div>
       <input className="at-input" value={identity} onChange={e => setIdentity(e.target.value)} placeholder="Default identity label (optional)" style={{ fontSize: '0.8rem', marginBottom: 10, ...MONO }} />
       <textarea value={logText} onChange={e => setLogText(e.target.value)}
         placeholder="Paste auth log lines here — AI will extract structured events..."
-        rows={6} style={{ width: '100%', background: '#070B14', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#22C55E', fontSize: '0.75rem', padding: '10px 12px', resize: 'vertical', outline: 'none', lineHeight: 1.6, ...MONO, boxSizing: 'border-box', marginBottom: 10 }} />
+        rows={6} style={{ width: '100%', background: '#080808', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#22C55E', fontSize: '0.75rem', padding: '10px 12px', resize: 'vertical', outline: 'none', lineHeight: 1.6, ...MONO, boxSizing: 'border-box', marginBottom: 10 }} />
       <div style={{ display: 'flex', gap: 8 }}>
         <button className="btn-accent" onClick={parse} disabled={parsing} style={{ fontSize: '0.8rem' }}>
           {parsing ? <Loader2 size={13} className="spinner" /> : <Zap size={13} />}
@@ -197,7 +197,7 @@ function ParseLogPanel({ onParsed, onClose }) {
         <button className="btn-ghost" onClick={onClose} style={{ fontSize: '0.8rem' }}>Cancel</button>
       </div>
       {parsed?.events?.length > 0 && (
-        <div style={{ marginTop: 12, fontSize: '0.72rem', color: '#6F7A8F', ...MONO }}>
+        <div style={{ marginTop: 12, fontSize: '0.72rem', color: '#787878', ...MONO }}>
           Extracted: {parsed.events.map(e => `${e.event_type}@${e.identity_label}`).slice(0, 5).join(', ')}{parsed.events.length > 5 ? '…' : ''}
         </div>
       )}
@@ -256,7 +256,7 @@ export default function ITDRPage() {
             <Shield size={20} style={{ color: '#4A8EDB' }} />
             <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Identity Threat Detection & Response</h1>
           </div>
-          <div style={{ fontSize: '0.72rem', color: '#6F7A8F', ...MONO }}>
+          <div style={{ fontSize: '0.72rem', color: '#787878', ...MONO }}>
             4 detectors: credential stuffing · impossible travel · new device · privilege escalation
           </div>
         </div>
@@ -280,7 +280,7 @@ export default function ITDRPage() {
       {/* Run Analysis */}
       <div className="at-card" style={{ padding: '14px 18px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <AlertTriangle size={15} style={{ color: '#4A8EDB', flexShrink: 0 }} />
-        <div style={{ fontSize: '0.78rem', color: '#A6AFBF', flex: 1 }}>Run all 4 ITDR detectors for a specific identity</div>
+        <div style={{ fontSize: '0.78rem', color: '#909090', flex: 1 }}>Run all 4 ITDR detectors for a specific identity</div>
         <input className="at-input" value={analyseForm.identity_label} onChange={e => setAnalyseForm(p => ({...p, identity_label: e.target.value}))}
           placeholder="user@company.com" style={{ width: 220, fontSize: '0.78rem', ...MONO }} />
         <button className="btn-accent" onClick={runAnalysis} disabled={analysing} style={{ fontSize: '0.8rem' }}>
@@ -294,25 +294,25 @@ export default function ITDRPage() {
         {/* Auth Event Log */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <div style={{ fontSize: '0.7rem', color: '#6F7A8F', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <div style={{ fontSize: '0.7rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Auth Events ({events.length})
             </div>
           </div>
 
           {loading ? (
-            <div style={{ textAlign: 'center', padding: 40 }}><Loader2 size={18} className="spinner" style={{ color: '#6F7A8F' }} /></div>
+            <div style={{ textAlign: 'center', padding: 40 }}><Loader2 size={18} className="spinner" style={{ color: '#787878' }} /></div>
           ) : events.length === 0 ? (
-            <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#6F7A8F' }}>
+            <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#787878' }}>
               <User size={28} style={{ margin: '0 auto 12px', opacity: 0.2 }} />
               <div style={{ fontSize: '0.82rem', marginBottom: 8 }}>No auth events yet</div>
-              <div style={{ fontSize: '0.74rem', ...MONO, color: '#3A4556' }}>Add events manually or paste log text to get started</div>
+              <div style={{ fontSize: '0.74rem', ...MONO, color: '#404040' }}>Add events manually or paste log text to get started</div>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
               {events.map(ev => {
-                const meta = EVENT_TYPE_LABELS[ev.event_type] || { label: ev.event_type, color: '#6F7A8F' };
+                const meta = EVENT_TYPE_LABELS[ev.event_type] || { label: ev.event_type, color: '#787878' };
                 return (
-                  <div key={ev.id} style={{ background: 'rgba(13,17,23,0.65)', border: '1px solid rgba(148,163,184,0.08)', borderRadius: 8, padding: '10px 14px', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                  <div key={ev.id} style={{ background: 'rgba(8,8,8,0.65)', border: '1px solid rgba(148,163,184,0.08)', borderRadius: 8, padding: '10px 14px', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                     <div style={{ width: 7, height: 7, borderRadius: '50%', background: meta.color, marginTop: 5, flexShrink: 0 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3, flexWrap: 'wrap' }}>
@@ -320,7 +320,7 @@ export default function ITDRPage() {
                         <span style={{ fontSize: '0.65rem', color: meta.color, background: `${meta.color}15`, padding: '1px 7px', borderRadius: 3, ...MONO, flexShrink: 0 }}>{meta.label}</span>
                         {!ev.success && <span style={{ fontSize: '0.62rem', color: '#EF4444', ...MONO }}>FAILED</span>}
                       </div>
-                      <div style={{ fontSize: '0.68rem', color: '#6F7A8F', ...MONO, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                      <div style={{ fontSize: '0.68rem', color: '#787878', ...MONO, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                         {ev.source_ip && <span>{ev.source_ip}</span>}
                         {ev.country && <span>{ev.country}</span>}
                         {ev.device_name && <span>{ev.device_name}</span>}
@@ -336,15 +336,15 @@ export default function ITDRPage() {
 
         {/* Detections */}
         <div>
-          <div style={{ fontSize: '0.7rem', color: '#6F7A8F', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+          <div style={{ fontSize: '0.7rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
             Active Detections ({anomalies.length})
           </div>
 
           {anomalies.length === 0 ? (
-            <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#6F7A8F' }}>
+            <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#787878' }}>
               <CheckCircle size={28} style={{ margin: '0 auto 12px', color: '#22C55E', opacity: 0.4 }} />
               <div style={{ fontSize: '0.82rem' }}>No active threats detected</div>
-              <div style={{ fontSize: '0.72rem', ...MONO, color: '#3A4556', marginTop: 6 }}>Run Analysis on an identity to check</div>
+              <div style={{ fontSize: '0.72rem', ...MONO, color: '#404040', marginTop: 6 }}>Run Analysis on an identity to check</div>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -358,8 +358,8 @@ export default function ITDRPage() {
                       <span style={{ fontWeight: 700, fontSize: '0.84rem', color: dm.color }}>{dm.label}</span>
                       <span style={{ marginLeft: 'auto', fontSize: '0.65rem', color: SEV[a.severity], ...MONO }}>{a.severity?.toUpperCase()}</span>
                     </div>
-                    <div style={{ fontSize: '0.78rem', color: '#A6AFBF', lineHeight: 1.6, marginBottom: 8 }}>{a.description}</div>
-                    <div style={{ fontSize: '0.65rem', color: '#6F7A8F', ...MONO }}>
+                    <div style={{ fontSize: '0.78rem', color: '#909090', lineHeight: 1.6, marginBottom: 8 }}>{a.description}</div>
+                    <div style={{ fontSize: '0.65rem', color: '#787878', ...MONO }}>
                       Confidence: {Math.round(a.confidence * 100)}% · {timeAgo(a.detected_at)}
                     </div>
                   </div>
@@ -370,11 +370,11 @@ export default function ITDRPage() {
 
           {/* Detector reference */}
           <div className="at-card" style={{ padding: '14px 16px', marginTop: 16 }}>
-            <div style={{ fontSize: '0.65rem', color: '#6F7A8F', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Detectors Active</div>
+            <div style={{ fontSize: '0.65rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Detectors Active</div>
             {Object.entries(DETECTOR_META).map(([k, v]) => (
               <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: '0.74rem' }}>
                 <v.Icon size={12} style={{ color: v.color, flexShrink: 0 }} />
-                <span style={{ color: '#A6AFBF' }}>{v.label}</span>
+                <span style={{ color: '#909090' }}>{v.label}</span>
                 <div style={{ marginLeft: 'auto', width: 7, height: 7, borderRadius: '50%', background: '#22C55E', boxShadow: '0 0 5px #22C55E' }} />
               </div>
             ))}

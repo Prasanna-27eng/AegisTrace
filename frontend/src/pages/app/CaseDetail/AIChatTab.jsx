@@ -36,7 +36,7 @@ export default function AIChatTab({ caseId, caseData }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: 'calc(100vh - 200px)' }}>
       {/* Disclaimer */}
-      <div style={{ padding: '10px 20px', background: 'rgba(234,179,8,0.04)', borderBottom: '1px solid rgba(234,179,8,0.12)', display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.72rem', color: '#71717A', flexShrink: 0 }}>
+      <div style={{ padding: '10px 20px', background: 'rgba(234,179,8,0.04)', borderBottom: '1px solid rgba(234,179,8,0.12)', display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.72rem', color: '#787878', flexShrink: 0 }}>
         <AlertTriangle size={12} style={{ color: '#EAB308', flexShrink: 0 }} />
         AI responses are scoped to case evidence only. No automatic writes without analyst approval.
       </div>
@@ -58,7 +58,7 @@ export default function AIChatTab({ caseId, caseData }) {
               border: `1px solid ${msg.role === 'user' ? 'rgba(77,163,255,0.25)' : 'rgba(255,255,255,0.07)'}`,
               fontSize: '0.84rem',
               lineHeight: 1.65,
-              color: '#F0F0F8',
+              color: '#EBEBEB',
               whiteSpace: 'pre-wrap',
             }}>
               {msg.content}

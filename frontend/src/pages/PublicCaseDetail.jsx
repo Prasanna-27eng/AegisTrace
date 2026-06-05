@@ -22,7 +22,7 @@ function StoryStep({ n, label, icon: Icon, color, children }) {
       <div style={{ flex: 1, paddingBottom: 8, paddingTop: 6 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
           <span style={{ fontSize: '0.6rem', fontFamily: 'JetBrains Mono', color, textTransform: 'uppercase', letterSpacing: '0.12em', background: `${color}14`, border: `1px solid ${color}30`, padding: '2px 8px', borderRadius: 3 }}>Step {n}</span>
-          <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#F0F0F8' }}>{label}</span>
+          <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#EBEBEB' }}>{label}</span>
         </div>
         {children}
       </div>
@@ -33,9 +33,9 @@ function StoryStep({ n, label, icon: Icon, color, children }) {
 /* ── IOC pill ─────────────────────────────────────────────────────────── */
 function IocPill({ ioc }) {
   const verdictColor = { malicious: '#EF4444', suspicious: '#EAB308', clean: '#22C55E' };
-  const color = verdictColor[ioc.verdict?.toLowerCase()] || '#71717A';
+  const color = verdictColor[ioc.verdict?.toLowerCase()] || '#787878';
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', fontFamily: 'JetBrains Mono', background: 'rgba(255,255,255,0.04)', border: `1px solid ${color}30`, color: '#B0B0C0', padding: '3px 10px', borderRadius: 4, margin: '0 4px 4px 0' }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', fontFamily: 'JetBrains Mono', background: 'rgba(255,255,255,0.04)', border: `1px solid ${color}30`, color: '#909090', padding: '3px 10px', borderRadius: 4, margin: '0 4px 4px 0' }}>
       <span style={{ width: 5, height: 5, borderRadius: '50%', background: color, flexShrink: 0 }} />
       {ioc.ioc}
       {ioc.verdict && <span style={{ color, fontSize: '0.62rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{ioc.verdict}</span>}
@@ -63,12 +63,12 @@ export default function PublicCaseDetail() {
   };
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#07080F', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#71717A', fontFamily: 'JetBrains Mono', fontSize: '0.82rem' }}>
+    <div style={{ minHeight: '100vh', background: '#050505', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#787878', fontFamily: 'JetBrains Mono', fontSize: '0.82rem' }}>
       Loading investigation…
     </div>
   );
   if (!c) return (
-    <div style={{ minHeight: '100vh', background: '#07080F', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#71717A', flexDirection: 'column', gap: 12 }}>
+    <div style={{ minHeight: '100vh', background: '#050505', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#787878', flexDirection: 'column', gap: 12 }}>
       <Lock size={28} style={{ color: 'rgba(77,163,255,0.2)' }} />
       <div style={{ fontSize: '0.88rem' }}>Case not found or not public.</div>
       <button onClick={() => navigate('/public')} style={{ fontSize: '0.8rem', color: '#4DA3FF', background: 'none', border: '1px solid rgba(77,163,255,0.25)', borderRadius: 6, padding: '7px 16px', cursor: 'pointer' }}>← Case Library</button>
@@ -81,7 +81,7 @@ export default function PublicCaseDetail() {
   const malicious = iocs.filter(i => i.verdict?.toLowerCase() === 'malicious');
 
   return (
-    <div style={{ minHeight: '100vh', background: '#07080F', color: '#F0F0F8' }}>
+    <div style={{ minHeight: '100vh', background: '#050505', color: '#EBEBEB' }}>
 
       {/* ── NAV ── */}
       <nav style={{ background: 'rgba(15,16,24,0.95)', backdropFilter: 'blur(14px)', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 32px', position: 'sticky', top: 0, zIndex: 50 }}>
@@ -110,7 +110,7 @@ export default function PublicCaseDetail() {
           <div style={{ display: 'flex', gap: 7, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
             <SeverityBadge severity={c.severity} />
             <StatusBadge status={c.status} />
-            <span style={{ fontSize: '0.68rem', color: '#71717A', fontFamily: 'JetBrains Mono', padding: '2px 8px', background: 'rgba(255,255,255,0.04)', borderRadius: 4, border: '1px solid rgba(255,255,255,0.07)' }}>{c.case_number}</span>
+            <span style={{ fontSize: '0.68rem', color: '#787878', fontFamily: 'JetBrains Mono', padding: '2px 8px', background: 'rgba(255,255,255,0.04)', borderRadius: 4, border: '1px solid rgba(255,255,255,0.07)' }}>{c.case_number}</span>
             {c.incident_type && (
               <span style={{ fontSize: '0.68rem', color: '#A78BFA', fontFamily: 'JetBrains Mono', padding: '2px 8px', background: 'rgba(167,139,250,0.08)', borderRadius: 4, border: '1px solid rgba(167,139,250,0.2)', textTransform: 'capitalize' }}>
                 {c.incident_type.replace(/_/g, ' ')}
@@ -124,7 +124,7 @@ export default function PublicCaseDetail() {
           <h1 style={{ fontSize: '1.9rem', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 16, lineHeight: 1.2 }}>{c.title}</h1>
 
           {/* Analyst + date row */}
-          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', fontSize: '0.8rem', color: '#71717A', marginBottom: 20 }}>
+          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', fontSize: '0.8rem', color: '#787878', marginBottom: 20 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><User size={12} /> {c.analyst_name}</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Clock size={12} /> {new Date(c.created_at).toLocaleDateString('en-IE', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
             {iocs.length > 0 && <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Target size={12} /> {iocs.length} IOCs tracked</span>}
@@ -160,9 +160,9 @@ export default function PublicCaseDetail() {
           {/* Step 1: Trigger */}
           <StoryStep n={1} label="Trigger — What Was Detected" icon={AlertTriangle} color="#EF4444">
             {c.description ? (
-              <div style={{ fontSize: '0.88rem', color: '#A0AABB', lineHeight: 1.8 }}>{c.description}</div>
+              <div style={{ fontSize: '0.88rem', color: '#909090', lineHeight: 1.8 }}>{c.description}</div>
             ) : (
-              <div style={{ fontSize: '0.82rem', color: '#71717A', fontStyle: 'italic' }}>No initial trigger description provided.</div>
+              <div style={{ fontSize: '0.82rem', color: '#787878', fontStyle: 'italic' }}>No initial trigger description provided.</div>
             )}
             {malicious.length > 0 && (
               <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.18)', borderRadius: 8 }}>
@@ -185,11 +185,11 @@ export default function PublicCaseDetail() {
                       {i < timeline.length - 1 && <div style={{ width: 1, flex: 1, background: 'rgba(255,255,255,0.06)', marginTop: 5, minHeight: 10 }} />}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '0.65rem', color: '#71717A', fontFamily: 'JetBrains Mono', marginBottom: 4, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                      <div style={{ fontSize: '0.65rem', color: '#787878', fontFamily: 'JetBrains Mono', marginBottom: 4, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                         <span>{new Date(ev.timestamp).toLocaleString('en-IE')}</span>
                         <span style={{ color: '#4DA3FF', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{ev.event_type?.replace(/_/g, ' ')}</span>
                       </div>
-                      <div style={{ fontSize: '0.84rem', color: '#B0B0C0', lineHeight: 1.65 }}>{ev.description}</div>
+                      <div style={{ fontSize: '0.84rem', color: '#909090', lineHeight: 1.65 }}>{ev.description}</div>
                     </div>
                   </div>
                 ))}
@@ -201,7 +201,7 @@ export default function PublicCaseDetail() {
           {c.findings && (
             <StoryStep n={timeline.length > 0 ? 3 : 2} label="Findings — What Was Discovered" icon={Flag} color="#EAB308">
               <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '14px 18px' }}>
-                <pre style={{ background: 'none', border: 'none', padding: 0, whiteSpace: 'pre-wrap', fontSize: '0.85rem', color: '#B0B0C0', lineHeight: 1.75, fontFamily: 'Inter, system-ui', margin: 0 }}>{c.findings}</pre>
+                <pre style={{ background: 'none', border: 'none', padding: 0, whiteSpace: 'pre-wrap', fontSize: '0.85rem', color: '#909090', lineHeight: 1.75, fontFamily: 'Inter, system-ui', margin: 0 }}>{c.findings}</pre>
               </div>
               {/* All IOCs */}
               {iocs.length > 0 && (
@@ -220,8 +220,8 @@ export default function PublicCaseDetail() {
                     {mitre.map((m, i) => (
                       <div key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: '0.72rem', background: 'rgba(167,139,250,0.07)', border: '1px solid rgba(167,139,250,0.18)', borderRadius: 5, padding: '4px 10px' }}>
                         <span style={{ color: '#A78BFA', fontFamily: 'JetBrains Mono', fontSize: '0.68rem' }}>{m.id}</span>
-                        <span style={{ color: '#D0D0E0' }}>{m.name}</span>
-                        {m.tactic && <span style={{ color: '#71717A', fontSize: '0.65rem' }}>{m.tactic}</span>}
+                        <span style={{ color: '#A8A8A8' }}>{m.name}</span>
+                        {m.tactic && <span style={{ color: '#787878', fontSize: '0.65rem' }}>{m.tactic}</span>}
                       </div>
                     ))}
                   </div>
@@ -234,7 +234,7 @@ export default function PublicCaseDetail() {
           {c.closure_notes && (
             <StoryStep n={[c.findings, timeline.length > 0].filter(Boolean).length + 2} label="Outcome — How It Was Resolved" icon={CheckCircle} color="#22C55E">
               <div style={{ background: 'rgba(34,197,94,0.04)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: 8, padding: '14px 18px' }}>
-                <pre style={{ background: 'none', border: 'none', padding: 0, whiteSpace: 'pre-wrap', fontSize: '0.85rem', color: '#B0B0C0', lineHeight: 1.75, fontFamily: 'Inter, system-ui', margin: 0 }}>{c.closure_notes}</pre>
+                <pre style={{ background: 'none', border: 'none', padding: 0, whiteSpace: 'pre-wrap', fontSize: '0.85rem', color: '#909090', lineHeight: 1.75, fontFamily: 'Inter, system-ui', margin: 0 }}>{c.closure_notes}</pre>
               </div>
             </StoryStep>
           )}
@@ -243,7 +243,7 @@ export default function PublicCaseDetail() {
           {c.recommendations && (
             <StoryStep n={[c.findings, timeline.length > 0, c.closure_notes].filter(Boolean).length + 2} label="Lessons Learned — Recommendations" icon={Lightbulb} color="#A78BFA">
               <div style={{ background: 'rgba(167,139,250,0.04)', border: '1px solid rgba(167,139,250,0.15)', borderRadius: 8, padding: '14px 18px' }}>
-                <pre style={{ background: 'none', border: 'none', padding: 0, whiteSpace: 'pre-wrap', fontSize: '0.85rem', color: '#B0B0C0', lineHeight: 1.75, fontFamily: 'Inter, system-ui', margin: 0 }}>{c.recommendations}</pre>
+                <pre style={{ background: 'none', border: 'none', padding: 0, whiteSpace: 'pre-wrap', fontSize: '0.85rem', color: '#909090', lineHeight: 1.75, fontFamily: 'Inter, system-ui', margin: 0 }}>{c.recommendations}</pre>
               </div>
             </StoryStep>
           )}
@@ -253,7 +253,7 @@ export default function PublicCaseDetail() {
 
         {/* ── FOOTER ── */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: '0.72rem', color: '#71717A' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: '0.72rem', color: '#787878' }}>
             <Logo size={16} showText={false} />
             <span>AegisTrace · Prasanna Kumar Surendran · Dublin, Ireland</span>
           </div>

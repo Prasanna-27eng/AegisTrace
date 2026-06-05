@@ -31,7 +31,7 @@ function HeroParticles() {
       const W=cv.offsetWidth,H=cv.offsetHeight;
       mx+=(mRef.current.x-mx)*0.03; my+=(mRef.current.y-my)*0.03;
       const ox=(mx-0.5)*20,oy=(my-0.5)*14;
-      ctx.clearRect(0,0,W,H); ctx.fillStyle='#040812'; ctx.fillRect(0,0,W,H);
+      ctx.clearRect(0,0,W,H); ctx.fillStyle='#000000'; ctx.fillRect(0,0,W,H);
       pts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; if(p.x<0)p.x=1; if(p.x>1)p.x=0; if(p.y<0)p.y=1; if(p.y>1)p.y=0; });
       const T=Math.min(W,H)*0.18;
       for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++) {
@@ -42,7 +42,7 @@ function HeroParticles() {
       }
       pts.forEach(p=>{ const px=p.x*W+ox,py=p.y*H+oy; ctx.beginPath();ctx.arc(px,py,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(74,142,219,${p.a})`;ctx.fill(); });
       const vig=ctx.createRadialGradient(W/2,H/2,H*0.1,W/2,H/2,H*0.85);
-      vig.addColorStop(0,'transparent'); vig.addColorStop(1,'rgba(4,8,18,0.8)');
+      vig.addColorStop(0,'transparent'); vig.addColorStop(1,'rgba(0,0,0,0.8)');
       ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
       aid=requestAnimationFrame(frame);
     }
@@ -58,7 +58,7 @@ function BigStat({ number, label, sub, color='#4A8EDB' }) {
     <div style={{borderLeft:`3px solid ${color}`,paddingLeft:20}}>
       <div style={{...SERIF,fontSize:'clamp(2.4rem,4vw,3rem)',fontWeight:400,color,fontStyle:'italic',lineHeight:1}}>{number}</div>
       <div style={{fontSize:'0.85rem',color:'rgba(245,247,250,0.85)',marginTop:8,fontWeight:500}}>{label}</div>
-      {sub&&<div style={{fontSize:'0.7rem',color:'#6F7A8F',marginTop:4,...MONO}}>{sub}</div>}
+      {sub&&<div style={{fontSize:'0.7rem',color:'#787878',marginTop:4,...MONO}}>{sub}</div>}
     </div>
   );
 }
@@ -74,7 +74,7 @@ function ContribCard({ Icon, title, desc, action, href, color='#4A8EDB' }) {
       </div>
       <div>
         <div style={{fontWeight:600,fontSize:'0.9rem',marginBottom:6}}>{title}</div>
-        <div style={{fontSize:'0.78rem',color:'#8A95A8',lineHeight:1.65}}>{desc}</div>
+        <div style={{fontSize:'0.78rem',color:'#787878',lineHeight:1.65}}>{desc}</div>
       </div>
       {action&&(
         <a href={href||`mailto:${CONTACT_EMAIL}`} style={{display:'inline-flex',alignItems:'center',gap:5,fontSize:'0.76rem',color,textDecoration:'none',marginTop:'auto',...MONO}}
@@ -94,7 +94,7 @@ function Pillar({ Icon, label, desc }) {
       onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(74,142,219,0.1)';e.currentTarget.style.transform='translateY(0)';}}>
       <Icon size={18} style={{color:'#4A8EDB',marginBottom:10}}/>
       <div style={{fontWeight:600,fontSize:'0.88rem',marginBottom:6}}>{label}</div>
-      <div style={{fontSize:'0.75rem',color:'#8A95A8',lineHeight:1.6}}>{desc}</div>
+      <div style={{fontSize:'0.75rem',color:'#787878',lineHeight:1.6}}>{desc}</div>
     </div>
   );
 }
@@ -114,7 +114,7 @@ export default function Mission() {
   const scrollTo = id => { document.getElementById(id)?.scrollIntoView({behavior:'smooth'}); setMobileNav(false); };
 
   return (
-    <div style={{background:'#040812',color:'#F5F7FA',minHeight:'100vh',overflowX:'hidden'}}>
+    <div style={{background:'#000000',color:'#EBEBEB',minHeight:'100vh',overflowX:'hidden'}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600;700&display=swap');
         ::selection{background:rgba(74,142,219,0.3);color:#fff}
@@ -122,9 +122,9 @@ export default function Mission() {
         @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
         .mission-label{font-size:10px;color:#4A8EDB;letter-spacing:0.25em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:14px;display:flex;align-items:center;gap:8px}
         .mission-label::before{content:'';display:block;width:22px;height:1px;background:#4A8EDB}
-        .mission-body{font-size:0.9rem;color:#A6AFBF;line-height:1.85;max-width:680px;margin-bottom:16px}
+        .mission-body{font-size:0.9rem;color:#909090;line-height:1.85;max-width:680px;margin-bottom:16px}
         .mission-section{padding:90px 48px;border-top:1px solid rgba(255,255,255,0.05)}
-        .mobile-nav-drawer{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(4,8,18,0.97);z-index:200;display:flex;flex-direction:column;padding:24px;backdrop-filter:blur(20px)}
+        .mobile-nav-drawer{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.97);z-index:200;display:flex;flex-direction:column;padding:24px;backdrop-filter:blur(20px)}
         .nav-tab{color:rgba(245,247,250,0.45);text-decoration:none;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;transition:color 0.2s;cursor:pointer;background:none;border:none;padding:4px 0}
         .nav-tab:hover{color:#4A8EDB}
         @media(max-width:860px){
@@ -138,9 +138,9 @@ export default function Mission() {
       `}</style>
 
       {/* ── STICKY NAV ── */}
-      <nav style={{position:'sticky',top:0,zIndex:50,background:'rgba(4,8,18,0.92)',backdropFilter:'blur(14px)',borderBottom:'1px solid rgba(255,255,255,0.06)',padding:'14px 48px',display:'flex',alignItems:'center',gap:20}}>
+      <nav style={{position:'sticky',top:0,zIndex:50,background:'rgba(0,0,0,0.92)',backdropFilter:'blur(14px)',borderBottom:'1px solid rgba(255,255,255,0.06)',padding:'14px 48px',display:'flex',alignItems:'center',gap:20}}>
         <Logo size={22} showText/>
-        <button onClick={()=>navigate('/')} style={{display:'flex',alignItems:'center',gap:5,background:'none',border:'none',color:'#6F7A8F',cursor:'pointer',fontSize:'0.72rem',...MONO,marginLeft:4}}>
+        <button onClick={()=>navigate('/')} style={{display:'flex',alignItems:'center',gap:5,background:'none',border:'none',color:'#787878',cursor:'pointer',fontSize:'0.72rem',...MONO,marginLeft:4}}>
           <ArrowLeft size={12}/> Back
         </button>
 
@@ -152,15 +152,15 @@ export default function Mission() {
         </div>
 
         <div style={{marginLeft:'auto',display:'flex',gap:12,alignItems:'center'}}>
-          <a href={`mailto:${CONTACT_EMAIL}`} style={{fontSize:'0.75rem',color:'#6F7A8F',textDecoration:'none',...MONO,display:'flex',alignItems:'center',gap:5}}
-            onMouseEnter={e=>e.currentTarget.style.color='#F5F7FA'} onMouseLeave={e=>e.currentTarget.style.color='#6F7A8F'}>
+          <a href={`mailto:${CONTACT_EMAIL}`} style={{fontSize:'0.75rem',color:'#787878',textDecoration:'none',...MONO,display:'flex',alignItems:'center',gap:5}}
+            onMouseEnter={e=>e.currentTarget.style.color='#FFFFFF'} onMouseLeave={e=>e.currentTarget.style.color='#888888'}>
             <Mail size={12}/> Contact
           </a>
-          <a href="https://github.com/Prasanna-27eng" target="_blank" rel="noreferrer" style={{fontSize:'0.75rem',color:'#6F7A8F',textDecoration:'none',...MONO,display:'flex',alignItems:'center',gap:5}}
-            onMouseEnter={e=>e.currentTarget.style.color='#F5F7FA'} onMouseLeave={e=>e.currentTarget.style.color='#6F7A8F'}>
+          <a href="https://github.com/Prasanna-27eng" target="_blank" rel="noreferrer" style={{fontSize:'0.75rem',color:'#787878',textDecoration:'none',...MONO,display:'flex',alignItems:'center',gap:5}}
+            onMouseEnter={e=>e.currentTarget.style.color='#FFFFFF'} onMouseLeave={e=>e.currentTarget.style.color='#888888'}>
             <Github size={12}/> GitHub
           </a>
-          <button className="mobile-menu-btn" onClick={()=>setMobileNav(true)} style={{background:'none',border:'1px solid rgba(240,240,248,0.15)',borderRadius:6,padding:'7px 9px',cursor:'pointer',color:'#F0F0F8',display:'flex',alignItems:'center'}}>
+          <button className="mobile-menu-btn" onClick={()=>setMobileNav(true)} style={{background:'none',border:'1px solid rgba(240,240,248,0.15)',borderRadius:6,padding:'7px 9px',cursor:'pointer',color:'#EBEBEB',display:'flex',alignItems:'center'}}>
             <Menu size={16}/>
           </button>
         </div>
@@ -192,12 +192,12 @@ export default function Mission() {
           </div>
 
           <h1 style={{...SERIF,fontSize:'clamp(2.8rem,7vw,5.5rem)',fontWeight:400,lineHeight:0.96,letterSpacing:'-0.015em',marginBottom:24}}>
-            <div style={{color:'#F5F7FA'}}>The Trust Layer</div>
+            <div style={{color:'#EBEBEB'}}>The Trust Layer</div>
             <div style={{color:'#4A8EDB',fontStyle:'italic'}}>for the AI-Agent Era.</div>
           </h1>
 
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:48,alignItems:'flex-end',maxWidth:900}} className="lp-2col">
-            <p style={{fontSize:'0.95rem',color:'#A6AFBF',lineHeight:1.85,...MONO,fontWeight:300,margin:0}}>
+            <p style={{fontSize:'0.95rem',color:'#909090',lineHeight:1.85,...MONO,fontWeight:300,margin:0}}>
               Attackers no longer break in. They become trusted. AegisTrace is the operating layer that tracks every identity, audits every AI decision, and ensures every automated action has a human approval behind it.
             </p>
             <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
@@ -206,17 +206,17 @@ export default function Mission() {
                 <Mail size={15}/> Join the Mission
               </a>
               <button onClick={()=>scrollTo('vision')}
-                style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(255,255,255,0.05)',color:'#D7DCE6',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'12px 24px',fontSize:'0.85rem',cursor:'pointer'}}>
+                style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(255,255,255,0.05)',color:'#A8A8A8',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'12px 24px',fontSize:'0.85rem',cursor:'pointer'}}>
                 <BookOpen size={15}/> Read the Vision
               </button>
             </div>
           </div>
         </div>
-        <div style={{position:'absolute',bottom:0,left:0,right:0,height:'28%',background:'linear-gradient(to top,#040812 0%,transparent 100%)'}}/>
+        <div style={{position:'absolute',bottom:0,left:0,right:0,height:'28%',background:'linear-gradient(to top,#000000 0%,transparent 100%)'}}/>
       </section>
 
       {/* ── THE PROBLEM ── */}
-      <section id="problem" className="mission-section" style={{padding:'90px 48px',background:'#040812'}}>
+      <section id="problem" className="mission-section" style={{padding:'90px 48px',background:'#000000'}}>
         <div style={{maxWidth:1100,margin:'0 auto'}}>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:56,alignItems:'start'}} className="lp-2col">
             <div>
@@ -225,7 +225,7 @@ export default function Mission() {
                 The world is changing.<br/><span style={{color:'#4A8EDB',fontStyle:'italic'}}>Security isn't keeping up.</span>
               </h2>
               <p className="mission-body">
-                The SOC model built in the 2000s was designed for a world of firewalls and malware. That world still exists. But the dominant attack vector is now compromised trust — stolen credentials, hijacked tokens, abused service accounts, and AI agents operating outside their intended scope. The question is no longer <em style={{color:'#F5F7FA'}}>"what machine was attacked?"</em> — it's <em style={{color:'#F5F7FA'}}>"which identity was trusted that shouldn't have been?"</em>
+                The SOC model built in the 2000s was designed for a world of firewalls and malware. That world still exists. But the dominant attack vector is now compromised trust — stolen credentials, hijacked tokens, abused service accounts, and AI agents operating outside their intended scope. The question is no longer <em style={{color:'#EBEBEB'}}>"what machine was attacked?"</em> — it's <em style={{color:'#EBEBEB'}}>"which identity was trusted that shouldn't have been?"</em>
               </p>
               {/* Problem tiles */}
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:24}}>
@@ -238,7 +238,7 @@ export default function Mission() {
                   <div key={label} style={{padding:'14px 16px',background:'rgba(255,255,255,0.02)',border:'1px solid rgba(255,255,255,0.06)',borderRadius:10,borderTop:'2px solid rgba(74,142,219,0.35)'}}>
                     <Icon size={14} style={{color:'#4A8EDB',marginBottom:6}}/>
                     <div style={{fontWeight:600,fontSize:'0.82rem',marginBottom:4}}>{label}</div>
-                    <div style={{fontSize:'0.72rem',color:'#8A95A8',lineHeight:1.55}}>{desc}</div>
+                    <div style={{fontSize:'0.72rem',color:'#787878',lineHeight:1.55}}>{desc}</div>
                   </div>
                 ))}
               </div>
@@ -259,7 +259,7 @@ export default function Mission() {
       </section>
 
       {/* ── OUR VISION ── */}
-      <section id="vision" className="mission-section" style={{padding:'90px 48px',background:'#060A16'}}>
+      <section id="vision" className="mission-section" style={{padding:'90px 48px',background:'#0A0A0A'}}>
         <div style={{maxWidth:1100,margin:'0 auto'}}>
           <div className="mission-label" style={{color:'#9C7CFF'}}>
             <span style={{display:'block',width:22,height:1,background:'#9C7CFF'}}/>Our Vision
@@ -279,7 +279,7 @@ export default function Mission() {
               {/* Pull quote */}
               <blockquote style={{margin:'24px 0 0',padding:'16px 20px',background:'rgba(74,142,219,0.04)',borderLeft:'3px solid rgba(74,142,219,0.5)',borderRadius:'0 8px 8px 0'}}>
                 <em style={{color:'rgba(245,247,250,0.85)',fontSize:'0.92rem',lineHeight:1.7}}>"Which identity caused this? Can I trust the AI's verdict? Was every automated action approved?"</em>
-                <div style={{fontSize:'0.68rem',color:'#6F7A8F',marginTop:8,...MONO}}>The question the next decade of security will be built around</div>
+                <div style={{fontSize:'0.68rem',color:'#787878',marginTop:8,...MONO}}>The question the next decade of security will be built around</div>
               </blockquote>
             </div>
 
@@ -314,7 +314,7 @@ export default function Mission() {
       </section>
 
       {/* ── HOW TO CONTRIBUTE ── */}
-      <section id="contribute" className="mission-section" style={{padding:'90px 48px',background:'#040812'}}>
+      <section id="contribute" className="mission-section" style={{padding:'90px 48px',background:'#000000'}}>
         <div style={{maxWidth:1100,margin:'0 auto'}}>
           <div className="mission-label">Contribute</div>
           <h2 style={{...SERIF,fontSize:'clamp(2rem,4vw,3.4rem)',fontWeight:400,letterSpacing:'-0.02em',lineHeight:1.1,marginBottom:16}}>
@@ -343,7 +343,7 @@ export default function Mission() {
           <div style={{marginTop:52,padding:'36px 44px',background:'rgba(74,142,219,0.04)',border:'1px solid rgba(74,142,219,0.18)',borderRadius:14,display:'grid',gridTemplateColumns:'1fr auto',gap:24,alignItems:'center',flexWrap:'wrap'}} className="lp-2col">
             <div>
               <div style={{fontWeight:700,fontSize:'1.05rem',marginBottom:8}}>Ready to contribute?</div>
-              <div style={{fontSize:'0.85rem',color:'#A6AFBF',maxWidth:480,lineHeight:1.7}}>
+              <div style={{fontSize:'0.85rem',color:'#909090',maxWidth:480,lineHeight:1.7}}>
                 Send an email with a short intro — who you are, what you do, and how you'd like to be involved. Every message is read personally.
               </div>
               <div style={{marginTop:8,fontSize:'0.78rem',color:'#4A8EDB',...MONO}}>{CONTACT_EMAIL}</div>
@@ -357,7 +357,7 @@ export default function Mission() {
       </section>
 
       {/* ── ROADMAP ── */}
-      <section id="roadmap" className="mission-section" style={{padding:'90px 48px',background:'#060A16'}}>
+      <section id="roadmap" className="mission-section" style={{padding:'90px 48px',background:'#0A0A0A'}}>
         <div style={{maxWidth:1100,margin:'0 auto'}}>
           <div className="mission-label" style={{color:'#9C7CFF'}}>
             <span style={{display:'block',width:22,height:1,background:'#9C7CFF'}}/>Roadmap
@@ -394,23 +394,23 @@ export default function Mission() {
       </section>
 
       {/* ── ABOUT ── */}
-      <section id="about" className="mission-section" style={{padding:'80px 48px',background:'#040812'}}>
+      <section id="about" className="mission-section" style={{padding:'80px 48px',background:'#000000'}}>
         <div style={{maxWidth:1100,margin:'0 auto',display:'grid',gridTemplateColumns:'1fr 1fr',gap:56,alignItems:'center'}} className="lp-2col">
           <div>
             <div className="mission-label">Who's Building This</div>
             <h2 style={{...SERIF,fontSize:'clamp(1.8rem,3.5vw,3rem)',fontWeight:400,letterSpacing:'-0.02em',lineHeight:1.15,marginBottom:20}}>
               One analyst.<br/><span style={{color:'#4A8EDB',fontStyle:'italic'}}>One ambitious mission.</span>
             </h2>
-            <p style={{fontSize:'0.9rem',color:'#A6AFBF',lineHeight:1.85,marginBottom:18}}>
+            <p style={{fontSize:'0.9rem',color:'#909090',lineHeight:1.85,marginBottom:18}}>
               Prasanna Kumar Surendran — Blue Team analyst and security tooling developer, Dublin, Ireland. AegisTrace started as a personal investigation platform and grew into a full SOC control plane benchmarked against commercial products.
             </p>
-            <p style={{fontSize:'0.9rem',color:'#A6AFBF',lineHeight:1.85,marginBottom:28}}>
+            <p style={{fontSize:'0.9rem',color:'#909090',lineHeight:1.85,marginBottom:28}}>
               The platform is self-funded, free to use, and open in philosophy. The goal is to prove that a solo analyst can build SOC tooling that rivals commercial products — and that the next generation of security platforms must be built around identity, trust, and explainability from the ground up.
             </p>
             <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
               <a href={`mailto:${CONTACT_EMAIL}`} style={{display:'inline-flex',alignItems:'center',gap:7,background:'#4A8EDB',color:'white',borderRadius:8,padding:'11px 22px',fontSize:'0.82rem',fontWeight:600,textDecoration:'none'}}><Mail size={14}/> Get in Touch</a>
-              <a href="https://github.com/Prasanna-27eng" target="_blank" rel="noreferrer" style={{display:'inline-flex',alignItems:'center',gap:7,background:'rgba(255,255,255,0.05)',color:'#D7DCE6',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'11px 22px',fontSize:'0.82rem',textDecoration:'none'}}><Github size={14}/> GitHub</a>
-              <a href="https://www.linkedin.com/in/prasannakumarsurendran" target="_blank" rel="noreferrer" style={{display:'inline-flex',alignItems:'center',gap:7,background:'rgba(255,255,255,0.05)',color:'#D7DCE6',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'11px 22px',fontSize:'0.82rem',textDecoration:'none'}}><Users size={14}/> LinkedIn</a>
+              <a href="https://github.com/Prasanna-27eng" target="_blank" rel="noreferrer" style={{display:'inline-flex',alignItems:'center',gap:7,background:'rgba(255,255,255,0.05)',color:'#A8A8A8',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'11px 22px',fontSize:'0.82rem',textDecoration:'none'}}><Github size={14}/> GitHub</a>
+              <a href="https://www.linkedin.com/in/prasannakumarsurendran" target="_blank" rel="noreferrer" style={{display:'inline-flex',alignItems:'center',gap:7,background:'rgba(255,255,255,0.05)',color:'#A8A8A8',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'11px 22px',fontSize:'0.82rem',textDecoration:'none'}}><Users size={14}/> LinkedIn</a>
             </div>
           </div>
 
@@ -437,8 +437,8 @@ export default function Mission() {
       {/* ── FOOTER ── */}
       <footer style={{padding:'28px 48px',borderTop:'1px solid rgba(255,255,255,0.05)',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:14}}>
         <Logo size={18} showText/>
-        <div style={{fontSize:'0.72rem',color:'#3A4556',...MONO}}>Prasanna Kumar Surendran · Dublin, Ireland · 2025–2026</div>
-        <button onClick={()=>navigate('/')} style={{fontSize:'0.75rem',color:'#6F7A8F',background:'none',border:'none',cursor:'pointer',...MONO}}>← Back to AegisTrace</button>
+        <div style={{fontSize:'0.72rem',color:'#404040',...MONO}}>Prasanna Kumar Surendran · Dublin, Ireland · 2025–2026</div>
+        <button onClick={()=>navigate('/')} style={{fontSize:'0.75rem',color:'#787878',background:'none',border:'none',cursor:'pointer',...MONO}}>← Back to AegisTrace</button>
       </footer>
     </div>
   );

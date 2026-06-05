@@ -102,24 +102,24 @@ export default function CaseDetail() {
     addToast('Share link copied!', 'success');
   };
 
-  if (loading) return <div style={{ padding: 40, color: '#71717A', textAlign: 'center' }}>Loading case…</div>;
-  if (!caseData && !isNew) return <div style={{ padding: 40, color: '#71717A' }}>Case not found.</div>;
+  if (loading) return <div style={{ padding: 40, color: '#787878', textAlign: 'center' }}>Loading case…</div>;
+  if (!caseData && !isNew) return <div style={{ padding: 40, color: '#787878' }}>Case not found.</div>;
 
   const tabProps = { caseData, updateCase, reload: loadCase, caseId: id };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Case header */}
-      <div style={{ background: '#0D111C', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '12px 20px' }}>
+      <div style={{ background: '#111111', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '12px 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-          <button onClick={() => navigate('/app/cases')} style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.78rem' }}>
+          <button onClick={() => navigate('/app/cases')} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.78rem' }}>
             <ChevronLeft size={14} /> Cases
           </button>
           <span style={{ color: 'rgba(255,255,255,0.2)' }}>/</span>
-          <span style={{ fontSize: '0.78rem', color: '#71717A', fontFamily: 'JetBrains Mono' }}>{caseData?.case_number}</span>
+          <span style={{ fontSize: '0.78rem', color: '#787878', fontFamily: 'JetBrains Mono' }}>{caseData?.case_number}</span>
 
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 6, alignItems: 'center' }}>
-            {autosaveStatus === 'saving' && <span style={{ fontSize: '0.7rem', color: '#71717A', display: 'flex', alignItems: 'center', gap: 4 }}><Loader2 size={11} className="spinner" /> Saving…</span>}
+            {autosaveStatus === 'saving' && <span style={{ fontSize: '0.7rem', color: '#787878', display: 'flex', alignItems: 'center', gap: 4 }}><Loader2 size={11} className="spinner" /> Saving…</span>}
             {autosaveStatus === 'saved' && <span style={{ fontSize: '0.7rem', color: '#22C55E' }}>✓ Saved</span>}
             <button className="btn-ghost" onClick={saveNow} disabled={saving} style={{ padding: '5px 10px', fontSize: '0.75rem' }}>
               {saving ? <Loader2 size={12} className="spinner" /> : <Save size={12} />}
@@ -140,7 +140,7 @@ export default function CaseDetail() {
       </div>
 
       {/* Tabs */}
-      <div style={{ background: '#0D111C', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', overflowX: 'auto', flexShrink: 0 }}>
+      <div style={{ background: '#111111', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', overflowX: 'auto', flexShrink: 0 }}>
         {TABS.map(t => (
           <button
             key={t.id}

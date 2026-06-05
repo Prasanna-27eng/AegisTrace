@@ -17,12 +17,12 @@ const TABS = [
   { id: 'system',       label: 'System',           Icon: Activity },
 ];
 
-const ROLE_COLOR = { admin: '#4DA3FF', analyst: '#A78BFA', viewer: '#71717A' };
+const ROLE_COLOR = { admin: '#4DA3FF', analyst: '#A78BFA', viewer: '#787878' };
 const ACTION_COLOR = {
   login: '#22C55E', case_created: '#A78BFA', case_closed: '#22C55E',
   case_deleted: '#EF4444', user_created: '#A78BFA', user_deleted: '#EF4444',
-  ai_generated: '#EAB308', alert_imported: '#4DA3FF', share_toggled: '#71717A',
-  password_changed: '#EAB308', status_changed: '#F0F0F8',
+  ai_generated: '#EAB308', alert_imported: '#4DA3FF', share_toggled: '#888888',
+  password_changed: '#EAB308', status_changed: '#FFFFFF',
 };
 
 // ── Users Tab ─────────────────────────────────────────────────────────────────
@@ -87,7 +87,7 @@ function UsersTab({ user, addToast }) {
           <div style={{ width:40, height:40, borderRadius:'50%', background:'rgba(77,163,255,0.15)', border:'1px solid rgba(77,163,255,0.3)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:600, color:'#4DA3FF' }}>{user?.name?.[0]}</div>
           <div>
             <div style={{ fontWeight:600, fontSize:'0.88rem' }}>{user?.name}</div>
-            <div style={{ fontSize:'0.72rem', color:'#71717A' }}>{user?.email}</div>
+            <div style={{ fontSize:'0.72rem', color:'#787878' }}>{user?.email}</div>
             <span style={{ fontSize:'0.65rem', fontWeight:600, color:ROLE_COLOR[user?.role], fontFamily:'JetBrains Mono', padding:'1px 6px', background:`${ROLE_COLOR[user?.role]}18`, borderRadius:3 }}>{user?.role?.toUpperCase()}</span>
           </div>
         </div>
@@ -122,7 +122,7 @@ function UsersTab({ user, addToast }) {
             <div style={{ padding:14, marginBottom:14, background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:8 }}>
               <div style={{ display:'flex', justifyContent:'space-between', marginBottom:10 }}>
                 <div style={{ fontSize:'0.82rem', fontWeight:600 }}>New User</div>
-                <button onClick={() => setShowAdd(false)} style={{ background:'none', border:'none', color:'#71717A', cursor:'pointer' }}><X size={14}/></button>
+                <button onClick={() => setShowAdd(false)} style={{ background:'none', border:'none', color:'#787878', cursor:'pointer' }}><X size={14}/></button>
               </div>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:10 }}>
                 {[['Full Name','name','text'],['Email','email','email'],['Password','password','password']].map(([lbl,key,type]) => (
@@ -166,7 +166,7 @@ function UsersTab({ user, addToast }) {
                     </div>
                     <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
                       <input type="checkbox" id="active" checked={editUser.is_active} onChange={e => setEdit(p => ({...p,is_active:e.target.checked}))}/>
-                      <label htmlFor="active" style={{ fontSize:'0.78rem', color:'#F0F0F8' }}>Active</label>
+                      <label htmlFor="active" style={{ fontSize:'0.78rem', color:'#EBEBEB' }}>Active</label>
                     </div>
                     <div style={{ display:'flex', gap:8 }}>
                       <button className="btn-accent" onClick={saveEdit} style={{ fontSize:'0.78rem' }}>Save</button>
@@ -174,11 +174,11 @@ function UsersTab({ user, addToast }) {
                     </div>
                   </div>
                 ) : (
-                  <div style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 14px', background:'#0D111C', borderRadius:6, border:'1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 14px', background:'#111111', borderRadius:6, border:'1px solid rgba(255,255,255,0.05)' }}>
                     <div style={{ width:32, height:32, borderRadius:'50%', background:`${ROLE_COLOR[u.role]}18`, border:`1px solid ${ROLE_COLOR[u.role]}40`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.72rem', fontWeight:600, color:ROLE_COLOR[u.role], flexShrink:0 }}>{u.name?.[0]}</div>
                     <div style={{ flex:1 }}>
                       <div style={{ fontWeight:500, fontSize:'0.84rem' }}>{u.name}</div>
-                      <div style={{ fontSize:'0.72rem', color:'#71717A' }}>{u.email}</div>
+                      <div style={{ fontSize:'0.72rem', color:'#787878' }}>{u.email}</div>
                     </div>
                     <span style={{ fontSize:'0.65rem', fontWeight:600, color:ROLE_COLOR[u.role], fontFamily:'JetBrains Mono', padding:'1px 6px', background:`${ROLE_COLOR[u.role]}15`, borderRadius:3 }}>{u.role?.toUpperCase()}</span>
                     {!u.is_active && <span style={{ fontSize:'0.65rem', color:'#EF4444', fontFamily:'JetBrains Mono' }}>INACTIVE</span>}
@@ -253,7 +253,7 @@ function WebhooksTab({ addToast }) {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
       <div className="at-card" style={{ padding:16, borderColor:'rgba(77,163,255,0.15)' }}>
-        <div style={{ fontSize:'0.78rem', color:'#71717A', lineHeight:1.65, marginBottom:8 }}>
+        <div style={{ fontSize:'0.78rem', color:'#787878', lineHeight:1.65, marginBottom:8 }}>
           Webhooks fire HTTP POST requests to your URL when SOC events occur. Supports Slack, Microsoft Teams, and any generic JSON endpoint. HMAC-SHA256 signed if secret is configured.
         </div>
         <button className="btn-accent" onClick={() => setShowAdd(true)} style={{ fontSize:'0.78rem' }}><Plus size={12}/> Add Webhook</button>
@@ -263,7 +263,7 @@ function WebhooksTab({ addToast }) {
         <div className="at-card" style={{ padding:16, borderColor:'rgba(77,163,255,0.2)' }}>
           <div style={{ display:'flex', justifyContent:'space-between', marginBottom:12 }}>
             <div className="section-label" style={{ margin:0 }}>New Webhook</div>
-            <button onClick={() => setShowAdd(false)} style={{ background:'none', border:'none', color:'#71717A', cursor:'pointer' }}><X size={14}/></button>
+            <button onClick={() => setShowAdd(false)} style={{ background:'none', border:'none', color:'#787878', cursor:'pointer' }}><X size={14}/></button>
           </div>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:12 }}>
             <div><label className="at-label">Name *</label><input className="at-input" value={form.name} onChange={e => setForm(p => ({...p,name:e.target.value}))} placeholder="Slack Alerts" style={{ fontSize:'0.8rem' }}/></div>
@@ -274,7 +274,7 @@ function WebhooksTab({ addToast }) {
             <label className="at-label">Events to trigger</label>
             <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
               {EVENTS.map(ev => (
-                <button key={ev} onClick={() => toggleEvent(ev)} style={{ fontSize:'0.7rem', padding:'4px 10px', borderRadius:4, fontFamily:'JetBrains Mono', border:`1px solid ${form.events.includes(ev) ? 'rgba(77,163,255,0.5)' : 'rgba(255,255,255,0.1)'}`, background: form.events.includes(ev) ? 'rgba(77,163,255,0.12)' : 'transparent', color: form.events.includes(ev) ? '#4DA3FF' : '#71717A', cursor:'pointer' }}>
+                <button key={ev} onClick={() => toggleEvent(ev)} style={{ fontSize:'0.7rem', padding:'4px 10px', borderRadius:4, fontFamily:'JetBrains Mono', border:`1px solid ${form.events.includes(ev) ? 'rgba(77,163,255,0.5)' : 'rgba(255,255,255,0.1)'}`, background: form.events.includes(ev) ? 'rgba(77,163,255,0.12)' : 'transparent', color: form.events.includes(ev) ? '#4DA3FF' : '#787878', cursor:'pointer' }}>
                   {ev}
                 </button>
               ))}
@@ -285,7 +285,7 @@ function WebhooksTab({ addToast }) {
       )}
 
       {webhooks.length === 0 ? (
-        <div className="at-card" style={{ padding:40, textAlign:'center', color:'#71717A', fontSize:'0.82rem' }}>No webhooks configured yet. Add one to receive real-time SOC alerts.</div>
+        <div className="at-card" style={{ padding:40, textAlign:'center', color:'#787878', fontSize:'0.82rem' }}>No webhooks configured yet. Add one to receive real-time SOC alerts.</div>
       ) : (
         <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
           {webhooks.map(wh => {
@@ -293,10 +293,10 @@ function WebhooksTab({ addToast }) {
             return (
               <div key={wh.id} className="at-card" style={{ padding:'14px 16px' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:8 }}>
-                  <div style={{ width:8, height:8, borderRadius:'50%', background: wh.is_active ? '#22C55E' : '#71717A', flexShrink:0 }}/>
+                  <div style={{ width:8, height:8, borderRadius:'50%', background: wh.is_active ? '#22C55E' : '#888888', flexShrink:0 }}/>
                   <div style={{ flex:1 }}>
                     <div style={{ fontWeight:600, fontSize:'0.84rem' }}>{wh.name}</div>
-                    <div style={{ fontSize:'0.7rem', color:'#71717A', fontFamily:'JetBrains Mono', marginTop:2 }}>{wh.url.slice(0,60)}{wh.url.length>60?'…':''}</div>
+                    <div style={{ fontSize:'0.7rem', color:'#787878', fontFamily:'JetBrains Mono', marginTop:2 }}>{wh.url.slice(0,60)}{wh.url.length>60?'…':''}</div>
                   </div>
                   <div style={{ display:'flex', gap:6 }}>
                     <button className="btn-ghost" onClick={() => test(wh.id)} disabled={testing===wh.id} style={{ fontSize:'0.72rem', padding:'5px 10px' }}>
@@ -313,7 +313,7 @@ function WebhooksTab({ addToast }) {
                     <span key={ev} style={{ fontSize:'0.65rem', background:'rgba(77,163,255,0.08)', border:'1px solid rgba(77,163,255,0.2)', color:'#4DA3FF', padding:'2px 7px', borderRadius:3, fontFamily:'JetBrains Mono' }}>{ev}</span>
                   ))}
                   {wh.last_fired_at && (
-                    <span style={{ fontSize:'0.68rem', color:'#71717A', marginLeft:'auto', fontFamily:'JetBrains Mono' }}>
+                    <span style={{ fontSize:'0.68rem', color:'#787878', marginLeft:'auto', fontFamily:'JetBrains Mono' }}>
                       Last fired: {new Date(wh.last_fired_at).toLocaleString()} · HTTP {wh.last_status_code||'—'}
                     </span>
                   )}
@@ -353,23 +353,23 @@ function AuditTab() {
         </select>
       </div>
       {loading ? (
-        <div style={{ textAlign:'center', padding:40, color:'#71717A' }}>Loading…</div>
+        <div style={{ textAlign:'center', padding:40, color:'#787878' }}>Loading…</div>
       ) : logs.length === 0 ? (
-        <div style={{ textAlign:'center', padding:40, color:'#71717A', fontSize:'0.82rem' }}>No activity in this period.</div>
+        <div style={{ textAlign:'center', padding:40, color:'#787878', fontSize:'0.82rem' }}>No activity in this period.</div>
       ) : (
         <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
           {logs.map(l => (
-            <div key={l.id} style={{ display:'flex', gap:12, alignItems:'center', padding:'8px 12px', background:'#0D111C', borderRadius:6, borderLeft:`2px solid ${ACTION_COLOR[l.action]||'#71717A'}` }}>
+            <div key={l.id} style={{ display:'flex', gap:12, alignItems:'center', padding:'8px 12px', background:'#111111', borderRadius:6, borderLeft:`2px solid ${ACTION_COLOR[l.action]||'#888888'}` }}>
               <div style={{ flex:1 }}>
-                <div style={{ fontSize:'0.78rem', fontWeight:500, color:'#F0F0F8', display:'flex', gap:8, alignItems:'center' }}>
-                  <span style={{ color:ACTION_COLOR[l.action]||'#71717A', fontFamily:'JetBrains Mono', fontSize:'0.7rem' }}>{l.action}</span>
-                  <span style={{ color:'#71717A' }}>·</span>
+                <div style={{ fontSize:'0.78rem', fontWeight:500, color:'#EBEBEB', display:'flex', gap:8, alignItems:'center' }}>
+                  <span style={{ color:ACTION_COLOR[l.action]||'#787878', fontFamily:'JetBrains Mono', fontSize:'0.7rem' }}>{l.action}</span>
+                  <span style={{ color:'#787878' }}>·</span>
                   <span>{l.entity_type} {l.entity_id}</span>
-                  {l.new_value && l.entity_type !== 'user_pw' && <span style={{ color:'#71717A', fontSize:'0.7rem' }}>{l.new_value.slice(0,60)}</span>}
+                  {l.new_value && l.entity_type !== 'user_pw' && <span style={{ color:'#787878', fontSize:'0.7rem' }}>{l.new_value.slice(0,60)}</span>}
                 </div>
-                {l.user_email && <div style={{ fontSize:'0.68rem', color:'#71717A', marginTop:2 }}>by {l.user_email}</div>}
+                {l.user_email && <div style={{ fontSize:'0.68rem', color:'#787878', marginTop:2 }}>by {l.user_email}</div>}
               </div>
-              <div style={{ fontSize:'0.68rem', color:'#71717A', fontFamily:'JetBrains Mono', flexShrink:0 }}>
+              <div style={{ fontSize:'0.68rem', color:'#787878', fontFamily:'JetBrains Mono', flexShrink:0 }}>
                 {new Date(l.timestamp).toLocaleString()}
               </div>
             </div>
@@ -408,10 +408,10 @@ function SystemTab({ addToast }) {
             <RefreshCw size={12}/> Refresh
           </button>
         </div>
-        {loading ? <div style={{ color:'#71717A', fontSize:'0.8rem' }}>Checking…</div> : (
+        {loading ? <div style={{ color:'#787878', fontSize:'0.8rem' }}>Checking…</div> : (
           <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
             {checks.map(c => (
-              <div key={c.label} style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 14px', background:'#0D111C', borderRadius:6 }}>
+              <div key={c.label} style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 14px', background:'#111111', borderRadius:6 }}>
                 {c.ok ? <CheckCircle size={16} style={{ color:'#22C55E', flexShrink:0 }}/> : <XCircle size={16} style={{ color:'#EF4444', flexShrink:0 }}/>}
                 <div style={{ flex:1 }}>
                   <div style={{ fontSize:'0.84rem', fontWeight:500 }}>{c.label}</div>
@@ -434,8 +434,8 @@ function SystemTab({ addToast }) {
             ['Database', 'SQLite · /var/data/aegistrace.db'],
           ].map(([k,v]) => (
             <div key={k} style={{ display:'flex', gap:12, padding:'6px 0', borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
-              <span style={{ color:'#71717A', minWidth:110 }}>{k}</span>
-              <span style={{ fontFamily:'JetBrains Mono', color:'#F0F0F8', fontSize:'0.75rem' }}>{v}</span>
+              <span style={{ color:'#787878', minWidth:110 }}>{k}</span>
+              <span style={{ fontFamily:'JetBrains Mono', color:'#EBEBEB', fontSize:'0.75rem' }}>{v}</span>
             </div>
           ))}
         </div>
@@ -446,7 +446,7 @@ function SystemTab({ addToast }) {
           <AlertTriangle size={14} style={{ color:'#EF4444' }}/>
           <div style={{ fontSize:'0.8rem', fontWeight:600, color:'#EF4444' }}>Danger Zone</div>
         </div>
-        <div style={{ fontSize:'0.78rem', color:'#71717A', marginBottom:10 }}>
+        <div style={{ fontSize:'0.78rem', color:'#787878', marginBottom:10 }}>
           These actions affect live data on the server.
         </div>
         <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
@@ -500,7 +500,7 @@ function SchedulesTab({ addToast }) {
     addToast(sched.is_active ? 'Schedule paused' : 'Schedule activated','success'); load();
   };
 
-  const inp = { background:'#0D111C', border:'1px solid rgba(255,255,255,0.1)', borderRadius:5, color:'#F0F0F8', fontSize:'0.78rem', padding:'6px 10px' };
+  const inp = { background:'#111111', border:'1px solid rgba(255,255,255,0.1)', borderRadius:5, color:'#EBEBEB', fontSize:'0.78rem', padding:'6px 10px' };
   const sel = { ...inp, cursor:'pointer' };
 
   return (
@@ -533,7 +533,7 @@ function SchedulesTab({ addToast }) {
             <option value="open_cases">Open Cases Only</option>
           </select>
           <div style={{ display:'flex', gap:6, alignItems:'center' }}>
-            <span style={{ fontSize:'0.72rem', color:'#71717A' }}>
+            <span style={{ fontSize:'0.72rem', color:'#787878' }}>
               {form.schedule_type === 'weekly' ? 'Day of week:' : form.schedule_type === 'monthly' ? 'Day of month:' : ''}
             </span>
             {form.schedule_type === 'weekly' && (
@@ -546,9 +546,9 @@ function SchedulesTab({ addToast }) {
             )}
           </div>
           <div style={{ display:'flex', gap:6, alignItems:'center' }}>
-            <span style={{ fontSize:'0.72rem', color:'#71717A' }}>Send at (UTC):</span>
+            <span style={{ fontSize:'0.72rem', color:'#787878' }}>Send at (UTC):</span>
             <input type="number" min="0" max="23" style={{...inp, width:60}} value={form.schedule_hour} onChange={e => setForm(f => ({...f, schedule_hour: parseInt(e.target.value)}))} />
-            <span style={{ fontSize:'0.72rem', color:'#71717A' }}>:00 UTC</span>
+            <span style={{ fontSize:'0.72rem', color:'#787878' }}>:00 UTC</span>
           </div>
         </div>
         <button className="btn-accent" onClick={handleCreate} style={{ marginTop:10, fontSize:'0.78rem' }}>
@@ -558,7 +558,7 @@ function SchedulesTab({ addToast }) {
 
       {/* Existing schedules */}
       {schedules.length === 0 ? (
-        <div className="at-card" style={{ padding:32, textAlign:'center', color:'#71717A', fontSize:'0.82rem' }}>
+        <div className="at-card" style={{ padding:32, textAlign:'center', color:'#787878', fontSize:'0.82rem' }}>
           No report schedules yet. Create one to receive automated PDF digests.
         </div>
       ) : (
@@ -569,7 +569,7 @@ function SchedulesTab({ addToast }) {
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:6 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                   <span style={{ fontWeight:600, fontSize:'0.84rem' }}>{s.name}</span>
-                  <span style={{ fontSize:'0.65rem', fontFamily:'JetBrains Mono', padding:'2px 6px', borderRadius:3, background:s.is_active?'rgba(34,197,94,0.12)':'rgba(113,113,122,0.12)', color:s.is_active?'#22C55E':'#71717A' }}>
+                  <span style={{ fontSize:'0.65rem', fontFamily:'JetBrains Mono', padding:'2px 6px', borderRadius:3, background:s.is_active?'rgba(34,197,94,0.12)':'rgba(136,136,136,0.12)', color:s.is_active?'#22C55E':'#787878' }}>
                     {s.is_active ? 'ACTIVE' : 'PAUSED'}
                   </span>
                 </div>
@@ -579,7 +579,7 @@ function SchedulesTab({ addToast }) {
                   <button onClick={() => handleDelete(s.id)} style={{ background:'none', border:'none', color:'#EF4444', cursor:'pointer', padding:'4px 6px' }}><Trash2 size={13}/></button>
                 </div>
               </div>
-              <div style={{ fontSize:'0.7rem', color:'#71717A', display:'flex', gap:14, flexWrap:'wrap' }}>
+              <div style={{ fontSize:'0.7rem', color:'#787878', display:'flex', gap:14, flexWrap:'wrap' }}>
                 <span>📬 {emails.join(', ')}</span>
                 <span>🗓 {s.schedule_type} · {s.report_type.replace('_',' ')}</span>
                 <span>🕐 {s.schedule_hour}:00 UTC</span>
@@ -699,7 +699,7 @@ function IntegrationsTab({ addToast }) {
           <Terminal size={15} style={{ color: '#A78BFA', marginTop: 2, flexShrink: 0 }} />
           <div>
             <div style={{ fontWeight: 600, fontSize: '0.86rem', marginBottom: 4 }}>EDR Integration — Environment Variables</div>
-            <div style={{ fontSize: '0.78rem', color: '#71717A', lineHeight: 1.65 }}>
+            <div style={{ fontSize: '0.78rem', color: '#787878', lineHeight: 1.65 }}>
               AegisTrace connects to EDR platforms via API credentials stored as environment variables — not in the database.
               On Render, add them at <strong style={{ color: '#A78BFA' }}>Dashboard → Your Service → Environment</strong> then redeploy.
               Credentials are never logged or stored in SQLite.
@@ -711,7 +711,7 @@ function IntegrationsTab({ addToast }) {
       {/* Render quick link */}
       <div style={{ display: 'flex', gap: 10 }}>
         <a href="https://dashboard.render.com" target="_blank" rel="noreferrer"
-          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0F8', fontSize: '0.78rem', textDecoration: 'none', ...mono }}>
+          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#EBEBEB', fontSize: '0.78rem', textDecoration: 'none', ...mono }}>
           <ExternalLink size={12} style={{ color: '#A78BFA' }} /> Open Render Dashboard
         </a>
         <button className="btn-ghost" onClick={load} style={{ fontSize: '0.78rem', padding: '8px 14px' }}>
@@ -724,10 +724,10 @@ function IntegrationsTab({ addToast }) {
         const status = edrStatus?.platforms?.[platform.id];
         const isOpen = expanded[platform.id];
 
-        const statusColor = !status ? '#71717A'
+        const statusColor = !status ? '#787878'
           : status.connected ? '#22C55E'
           : status.configured ? '#EF4444'
-          : '#71717A';
+          : '#888888';
 
         const statusLabel = loading ? 'Checking…'
           : !status ? 'Unknown'
@@ -759,7 +759,7 @@ function IntegrationsTab({ addToast }) {
                 >
                   {testing === platform.id ? <Loader2 size={11} className="spinner" /> : 'Test Connection'}
                 </button>
-                {isOpen ? <ChevronDown size={13} style={{ color: '#71717A' }} /> : <ChevronRight size={13} style={{ color: '#71717A' }} />}
+                {isOpen ? <ChevronDown size={13} style={{ color: '#787878' }} /> : <ChevronRight size={13} style={{ color: '#787878' }} />}
               </div>
             </div>
 
@@ -768,15 +768,15 @@ function IntegrationsTab({ addToast }) {
               <div style={{ padding: '0 18px 18px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                 {/* Env vars */}
                 <div style={{ marginTop: 14, marginBottom: 12 }}>
-                  <div style={{ fontSize: '0.72rem', color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, ...mono }}>Required Environment Variables</div>
+                  <div style={{ fontSize: '0.72rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, ...mono }}>Required Environment Variables</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {platform.envVars.map(({ key, desc }) => (
-                      <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', background: '#070B14', borderRadius: 6, border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', background: '#080808', borderRadius: 6, border: '1px solid rgba(255,255,255,0.06)' }}>
                         <code style={{ flex: '0 0 auto', fontSize: '0.75rem', color: platform.color, ...mono, minWidth: 260 }}>{key}</code>
-                        <div style={{ flex: 1, fontSize: '0.72rem', color: '#71717A' }}>{desc}</div>
+                        <div style={{ flex: 1, fontSize: '0.72rem', color: '#787878' }}>{desc}</div>
                         <button
                           onClick={() => copyEnvKey(key)}
-                          style={{ background: 'none', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4, padding: '3px 8px', color: '#71717A', cursor: 'pointer', fontSize: '0.68rem', ...mono, display: 'flex', alignItems: 'center', gap: 4 }}
+                          style={{ background: 'none', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4, padding: '3px 8px', color: '#787878', cursor: 'pointer', fontSize: '0.68rem', ...mono, display: 'flex', alignItems: 'center', gap: 4 }}
                         >
                           <Copy size={10} /> Copy
                         </button>
@@ -787,10 +787,10 @@ function IntegrationsTab({ addToast }) {
 
                 {/* Setup steps */}
                 <div style={{ marginBottom: 12 }}>
-                  <div style={{ fontSize: '0.72rem', color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, ...mono }}>Setup Steps</div>
+                  <div style={{ fontSize: '0.72rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, ...mono }}>Setup Steps</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {platform.steps.map((step, i) => (
-                      <div key={i} style={{ display: 'flex', gap: 10, fontSize: '0.78rem', color: '#F0F0F8', padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <div key={i} style={{ display: 'flex', gap: 10, fontSize: '0.78rem', color: '#EBEBEB', padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                         <span style={{ color: platform.color, ...mono, minWidth: 18 }}>{i + 1}.</span>
                         <span style={{ color: 'rgba(240,240,248,0.7)' }}>{step}</span>
                       </div>
@@ -829,7 +829,7 @@ export default function Admin() {
     <div style={{ padding:'24px 28px' }}>
       <div style={{ marginBottom:20 }}>
         <h1 style={{ fontSize:'1.3rem', fontWeight:600 }}>Admin Settings</h1>
-        <div style={{ fontSize:'0.72rem', color:'#71717A', marginTop:2 }}>Full system control · User management · Webhooks · Audit log</div>
+        <div style={{ fontSize:'0.72rem', color:'#787878', marginTop:2 }}>Full system control · User management · Webhooks · Audit log</div>
       </div>
 
       <div style={{ display:'flex', gap:8, marginBottom:20, flexWrap:'wrap' }}>
@@ -838,7 +838,7 @@ export default function Admin() {
             style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 16px', borderRadius:6, fontSize:'0.8rem', cursor:'pointer', border:'1px solid', fontFamily:'Inter', transition:'all 0.15s',
               background: tab === id ? 'rgba(77,163,255,0.12)' : 'rgba(255,255,255,0.03)',
               borderColor: tab === id ? 'rgba(77,163,255,0.4)' : 'rgba(255,255,255,0.08)',
-              color: tab === id ? '#F0F0F8' : '#71717A',
+              color: tab === id ? '#EBEBEB' : '#787878',
             }}>
             <Icon size={14}/> {label}
           </button>

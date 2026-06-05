@@ -22,20 +22,20 @@ export default function EDRPage() {
   }, [caseId]);
 
   if (loading) return (
-    <div style={{ padding: 40, color: '#71717A', textAlign: 'center' }}>Loading…</div>
+    <div style={{ padding: 40, color: '#787878', textAlign: 'center' }}>Loading…</div>
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: '#07080E', color: '#F0F0F8' }}>
+    <div style={{ minHeight: '100vh', background: '#050505', color: '#EBEBEB' }}>
 
       {/* Header */}
       <div style={{
-        background: '#0D111C', borderBottom: '1px solid rgba(255,255,255,0.07)',
+        background: '#111111', borderBottom: '1px solid rgba(255,255,255,0.07)',
         padding: '12px 24px', display: 'flex', alignItems: 'center', gap: 12,
       }}>
         <button
           onClick={() => window.close()}
-          style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.78rem' }}
+          style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.78rem' }}
         >
           <ChevronLeft size={14} /> Close
         </button>
@@ -58,7 +58,7 @@ export default function EDRPage() {
         {caseData ? (
           <EDRTab caseData={caseData} />
         ) : (
-          <div style={{ padding: '40px 0', textAlign: 'center', color: '#71717A' }}>
+          <div style={{ padding: '40px 0', textAlign: 'center', color: '#787878' }}>
             {caseId ? 'Case not found.' : 'No case context. Use the EDR tab from inside a case.'}
           </div>
         )}

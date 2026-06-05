@@ -19,7 +19,7 @@ const ACTION_COLORS = {
   threat_score:     '#F97316',
   case_close:       '#EF4444',
   auto_enrich:      '#EAB308',
-  default:          '#71717A',
+  default:          '#888888',
 };
 
 const ACTION_ICONS = {
@@ -69,10 +69,10 @@ function ActionCard({ action, onApprove, onReject, processing }) {
           <Icon size={15} style={{ color }} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: '0.86rem', fontWeight: 600, color: '#F0F0F8', marginBottom: 2 }}>
+          <div style={{ fontSize: '0.86rem', fontWeight: 600, color: '#EBEBEB', marginBottom: 2 }}>
             {(action.action_type || 'unknown').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
           </div>
-          <div style={{ fontSize: '0.65rem', color: '#71717A', ...MONO, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <div style={{ fontSize: '0.65rem', color: '#787878', ...MONO, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             {action.model_used && <span style={{ color: '#A78BFA' }}>{action.model_used}</span>}
             {action.actor && <span>by {action.actor}</span>}
             <span>{timeAgo(action.timestamp)}</span>
@@ -98,7 +98,7 @@ function ActionCard({ action, onApprove, onReject, processing }) {
 
       {/* Evidence / summary */}
       {action.evidence_used && (
-        <div style={{ fontSize: '0.78rem', color: '#A0AABB', lineHeight: 1.65, marginBottom: 10, padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 6 }}>
+        <div style={{ fontSize: '0.78rem', color: '#909090', lineHeight: 1.65, marginBottom: 10, padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 6 }}>
           {action.evidence_used.length > 200 ? action.evidence_used.slice(0, 200) + '…' : action.evidence_used}
         </div>
       )}
@@ -111,16 +111,16 @@ function ActionCard({ action, onApprove, onReject, processing }) {
           </span>
         )}
         {action.approved_by && (
-          <span style={{ fontSize: '0.65rem', ...MONO, color: '#71717A' }}>
+          <span style={{ fontSize: '0.65rem', ...MONO, color: '#787878' }}>
             {action.approval_status === 'approved' ? '✓' : '✗'} by {action.approved_by}
           </span>
         )}
         {action.reasoning && (
-          <details style={{ fontSize: '0.65rem', color: '#71717A', cursor: 'pointer' }}>
+          <details style={{ fontSize: '0.65rem', color: '#787878', cursor: 'pointer' }}>
             <summary style={{ ...MONO, listStyle: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
               <Info size={10} /> View reasoning
             </summary>
-            <div style={{ marginTop: 6, padding: '8px 10px', background: 'rgba(255,255,255,0.02)', borderRadius: 5, fontSize: '0.72rem', color: '#A0AABB', lineHeight: 1.6 }}>
+            <div style={{ marginTop: 6, padding: '8px 10px', background: 'rgba(255,255,255,0.02)', borderRadius: 5, fontSize: '0.72rem', color: '#909090', lineHeight: 1.6 }}>
               {action.reasoning}
             </div>
           </details>
@@ -153,14 +153,14 @@ function ActionCard({ action, onApprove, onReject, processing }) {
                 onChange={e => setReason(e.target.value)}
                 placeholder="Reason for rejection…"
                 autoFocus
-                style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 6, padding: '6px 10px', color: '#F0F0F8', fontSize: '0.76rem', outline: 'none', ...MONO }}
+                style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 6, padding: '6px 10px', color: '#EBEBEB', fontSize: '0.76rem', outline: 'none', ...MONO }}
               />
               <button onClick={() => { onReject(action.id, reason); setShowReason(false); setReason(''); }}
                 style={{ background: '#EF4444', border: 'none', color: '#fff', borderRadius: 6, padding: '6px 12px', fontSize: '0.76rem', cursor: 'pointer', ...MONO }}>
                 Confirm
               </button>
               <button onClick={() => setShowReason(false)}
-                style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#71717A', borderRadius: 6, padding: '6px 10px', fontSize: '0.76rem', cursor: 'pointer' }}>
+                style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#787878', borderRadius: 6, padding: '6px 10px', fontSize: '0.76rem', cursor: 'pointer' }}>
                 Cancel
               </button>
             </div>
@@ -175,26 +175,26 @@ function ActionCard({ action, onApprove, onReject, processing }) {
 function SettingsPanel({ settings, onChange }) {
   return (
     <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: '16px 18px' }}>
-      <div style={{ fontSize: '0.7rem', fontWeight: 600, color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.08em', ...MONO, marginBottom: 14 }}>Approval Settings</div>
+      <div style={{ fontSize: '0.7rem', fontWeight: 600, color: '#787878', textTransform: 'uppercase', letterSpacing: '0.08em', ...MONO, marginBottom: 14 }}>Approval Settings</div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {/* Auto-approve threshold */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-            <label style={{ fontSize: '0.76rem', color: '#B0B0C0' }}>Auto-approve threshold</label>
+            <label style={{ fontSize: '0.76rem', color: '#909090' }}>Auto-approve threshold</label>
             <span style={{ fontSize: '0.76rem', color: '#4DA3FF', ...MONO, fontWeight: 600 }}>{settings.threshold}%</span>
           </div>
           <input type="range" min={50} max={99} value={settings.threshold}
             onChange={e => onChange({ ...settings, threshold: parseInt(e.target.value) })}
             style={{ width: '100%', accentColor: '#4DA3FF' }} />
-          <div style={{ fontSize: '0.65rem', color: '#71717A', ...MONO, marginTop: 3 }}>
+          <div style={{ fontSize: '0.65rem', color: '#787878', ...MONO, marginTop: 3 }}>
             Actions with confidence ≥ {settings.threshold}% will auto-approve without human review
           </div>
         </div>
 
         {/* Require approval for */}
         <div>
-          <div style={{ fontSize: '0.72rem', color: '#B0B0C0', marginBottom: 8 }}>Always require approval for</div>
+          <div style={{ fontSize: '0.72rem', color: '#909090', marginBottom: 8 }}>Always require approval for</div>
           {['case_close', 'report_generate', 'auto_enrich'].map(type => (
             <label key={type} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, cursor: 'pointer' }}>
               <input type="checkbox"
@@ -204,7 +204,7 @@ function SettingsPanel({ settings, onChange }) {
                   onChange({ ...settings, required_types: e.target.checked ? [...types, type] : types.filter(t => t !== type) });
                 }}
                 style={{ accentColor: '#4DA3FF' }} />
-              <span style={{ fontSize: '0.76rem', color: '#B0B0C0', ...MONO }}>{type.replace(/_/g, ' ')}</span>
+              <span style={{ fontSize: '0.76rem', color: '#909090', ...MONO }}>{type.replace(/_/g, ' ')}</span>
             </label>
           ))}
         </div>
@@ -290,16 +290,16 @@ export default function AgentSecurity() {
               </span>
             )}
           </div>
-          <div style={{ fontSize: '0.76rem', color: '#71717A', ...MONO }}>
+          <div style={{ fontSize: '0.76rem', color: '#787878', ...MONO }}>
             Human approval queue for all AI-generated actions. Every action requires analyst sign-off before executing.
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => setShowSettings(!showSettings)}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, background: showSettings ? 'rgba(77,163,255,0.1)' : 'rgba(255,255,255,0.04)', border: `1px solid ${showSettings ? 'rgba(77,163,255,0.3)' : 'rgba(255,255,255,0.1)'}`, color: showSettings ? '#4DA3FF' : '#71717A', borderRadius: 7, padding: '7px 14px', fontSize: '0.78rem', cursor: 'pointer' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 6, background: showSettings ? 'rgba(77,163,255,0.1)' : 'rgba(255,255,255,0.04)', border: `1px solid ${showSettings ? 'rgba(77,163,255,0.3)' : 'rgba(255,255,255,0.1)'}`, color: showSettings ? '#4DA3FF' : '#787878', borderRadius: 7, padding: '7px 14px', fontSize: '0.78rem', cursor: 'pointer' }}>
             <Settings size={13} /> Settings
           </button>
-          <button onClick={load} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#71717A', borderRadius: 7, padding: '7px 14px', fontSize: '0.78rem', cursor: 'pointer' }}>
+          <button onClick={load} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#787878', borderRadius: 7, padding: '7px 14px', fontSize: '0.78rem', cursor: 'pointer' }}>
             <RefreshCw size={13} /> Refresh
           </button>
         </div>
@@ -308,9 +308,9 @@ export default function AgentSecurity() {
       {/* Stats row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: 10, marginBottom: 20 }}>
         {[
-          { label: 'Pending Review', val: pending.length,     color: pending.length ? '#EAB308' : '#71717A', Icon: Clock,        onClick: () => setTab('pending') },
+          { label: 'Pending Review', val: pending.length,     color: pending.length ? '#EAB308' : '#787878', Icon: Clock,        onClick: () => setTab('pending') },
           { label: 'Approved',       val: approved.length,    color: '#22C55E',                              Icon: CheckCircle,  onClick: () => setTab('approved') },
-          { label: 'Rejected',       val: rejected.length,    color: rejected.length ? '#EF4444' : '#71717A', Icon: XCircle,     onClick: () => setTab('rejected') },
+          { label: 'Rejected',       val: rejected.length,    color: rejected.length ? '#EF4444' : '#787878', Icon: XCircle,     onClick: () => setTab('rejected') },
           { label: 'Auto-Approved',  val: autoApproved.length,color: '#4DA3FF',                              Icon: Zap,          onClick: () => setTab('auto') },
         ].map(({ label, val, color, Icon, onClick }) => (
           <div key={label} className="at-card" onClick={onClick}
@@ -318,7 +318,7 @@ export default function AgentSecurity() {
             onMouseEnter={e => e.currentTarget.style.borderColor = `${color}35`}
             onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-              <span style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.06em', ...MONO }}>{label}</span>
+              <span style={{ fontSize: '0.65rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.06em', ...MONO }}>{label}</span>
               <Icon size={12} style={{ color }} />
             </div>
             <div style={{ fontSize: '1.6rem', fontWeight: 700, color, ...MONO, lineHeight: 1 }}>{val}</div>
@@ -336,8 +336,8 @@ export default function AgentSecurity() {
       {/* How it works callout */}
       <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(167,139,250,0.05)', border: '1px solid rgba(167,139,250,0.15)', borderRadius: 8, display: 'flex', gap: 10, alignItems: 'center' }}>
         <Shield size={14} style={{ color: '#A78BFA', flexShrink: 0 }} />
-        <div style={{ fontSize: '0.76rem', color: '#A0AABB', lineHeight: 1.6 }}>
-          <strong style={{ color: '#F0F0F8' }}>Bounded Autonomy:</strong> Every AI action is logged to the Provenance Ledger before executing. Actions above {settings.threshold}% confidence auto-approve. All others queue here for human review. You remain in control.
+        <div style={{ fontSize: '0.76rem', color: '#909090', lineHeight: 1.6 }}>
+          <strong style={{ color: '#EBEBEB' }}>Bounded Autonomy:</strong> Every AI action is logged to the Provenance Ledger before executing. Actions above {settings.threshold}% confidence auto-approve. All others queue here for human review. You remain in control.
         </div>
       </div>
 
@@ -350,7 +350,7 @@ export default function AgentSecurity() {
           { key: 'auto',     label: `Auto-approved (${autoApproved.length})` },
         ].map(({ key, label }) => (
           <button key={key} onClick={() => setTab(key)}
-            style={{ padding: '8px 16px', background: 'none', border: 'none', borderBottom: tab === key ? '2px solid #4DA3FF' : '2px solid transparent', color: tab === key ? '#F0F0F8' : '#71717A', cursor: 'pointer', fontSize: '0.78rem', fontWeight: tab === key ? 600 : 400, marginBottom: -1, ...MONO, transition: 'color 0.15s', whiteSpace: 'nowrap' }}>
+            style={{ padding: '8px 16px', background: 'none', border: 'none', borderBottom: tab === key ? '2px solid #4DA3FF' : '2px solid transparent', color: tab === key ? '#EBEBEB' : '#787878', cursor: 'pointer', fontSize: '0.78rem', fontWeight: tab === key ? 600 : 400, marginBottom: -1, ...MONO, transition: 'color 0.15s', whiteSpace: 'nowrap' }}>
             {label}
           </button>
         ))}
@@ -358,14 +358,14 @@ export default function AgentSecurity() {
 
       {/* Actions list */}
       {loading ? (
-        <div style={{ padding: 60, textAlign: 'center', color: '#71717A', fontSize: '0.82rem' }}>Loading actions…</div>
+        <div style={{ padding: 60, textAlign: 'center', color: '#787878', fontSize: '0.82rem' }}>Loading actions…</div>
       ) : visibleActions.length === 0 ? (
         <div style={{ padding: '48px 0', textAlign: 'center' }}>
           <Bot size={32} style={{ color: 'rgba(167,139,250,0.2)', margin: '0 auto 12px', display: 'block' }} />
           <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 6 }}>
             {tab === 'pending' ? 'No pending actions' : `No ${tab} actions`}
           </div>
-          <div style={{ fontSize: '0.76rem', color: '#71717A', maxWidth: 340, margin: '0 auto' }}>
+          <div style={{ fontSize: '0.76rem', color: '#787878', maxWidth: 340, margin: '0 auto' }}>
             {tab === 'pending'
               ? 'All AI actions have been reviewed. The queue is clear.'
               : 'Actions will appear here once AI generates them during investigations.'}
@@ -381,9 +381,9 @@ export default function AgentSecurity() {
 
       {/* Footer tip */}
       <div style={{ marginTop: 32, padding: '12px 16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-        <Info size={13} style={{ color: '#71717A', flexShrink: 0, marginTop: 1 }} />
-        <div style={{ fontSize: '0.72rem', color: '#71717A', lineHeight: 1.65, ...MONO }}>
-          All actions — approved, rejected, or auto — are recorded in the <strong style={{ color: '#B0B0C0' }}>Provenance Ledger</strong> with full audit trail: actor, model, confidence, timestamp, and reviewer. View the full ledger from any case's Provenance tab.
+        <Info size={13} style={{ color: '#787878', flexShrink: 0, marginTop: 1 }} />
+        <div style={{ fontSize: '0.72rem', color: '#787878', lineHeight: 1.65, ...MONO }}>
+          All actions — approved, rejected, or auto — are recorded in the <strong style={{ color: '#909090' }}>Provenance Ledger</strong> with full audit trail: actor, model, confidence, timestamp, and reviewer. View the full ledger from any case's Provenance tab.
         </div>
       </div>
     </div>

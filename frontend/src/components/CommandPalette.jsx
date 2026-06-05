@@ -44,7 +44,7 @@ function highlight(text, query) {
   return (
     <>
       {text.slice(0, idx)}
-      <mark style={{ background: 'rgba(192,57,43,0.3)', color: '#F0F0F8', borderRadius: 2 }}>
+      <mark style={{ background: 'rgba(192,57,43,0.3)', color: '#EBEBEB', borderRadius: 2 }}>
         {text.slice(idx, idx + query.length)}
       </mark>
       {text.slice(idx + query.length)}
@@ -139,7 +139,7 @@ export default function CommandPalette({ open, onClose, recentCases = [] }) {
 
   if (!open) return null;
 
-  const SEV_COLOR = { critical: '#C0392B', high: '#EF4444', medium: '#EAB308', low: '#A78BFA', info: '#71717A' };
+  const SEV_COLOR = { critical: '#C0392B', high: '#EF4444', medium: '#EAB308', low: '#A78BFA', info: '#787878' };
 
   let globalIdx = 0;
 
@@ -150,36 +150,36 @@ export default function CommandPalette({ open, onClose, recentCases = [] }) {
     >
       <div
         onClick={e => e.stopPropagation()}
-        style={{ width: '100%', maxWidth: 560, background: '#0F1018', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, boxShadow: '0 24px 64px rgba(0,0,0,0.7)', overflow: 'hidden' }}
+        style={{ width: '100%', maxWidth: 560, background: '#111111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, boxShadow: '0 24px 64px rgba(0,0,0,0.7)', overflow: 'hidden' }}
       >
         {/* Search input */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-          <Search size={16} style={{ color: '#71717A', flexShrink: 0 }} />
+          <Search size={16} style={{ color: '#787878', flexShrink: 0 }} />
           <input
             ref={inputRef}
             value={q}
             onChange={e => setQ(e.target.value)}
             placeholder="Search pages, cases, tools…"
-            style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: '#F0F0F8', fontSize: '0.9rem', fontFamily: 'Inter, sans-serif' }}
+            style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: '#EBEBEB', fontSize: '0.9rem', fontFamily: 'Inter, sans-serif' }}
           />
           {q && (
-            <button onClick={() => setQ('')} style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer', padding: 2 }}>
+            <button onClick={() => setQ('')} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', padding: 2 }}>
               <X size={14} />
             </button>
           )}
-          <kbd style={{ fontSize: '0.62rem', color: '#71717A', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, padding: '2px 6px', fontFamily: 'JetBrains Mono' }}>ESC</kbd>
+          <kbd style={{ fontSize: '0.62rem', color: '#787878', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, padding: '2px 6px', fontFamily: 'JetBrains Mono' }}>ESC</kbd>
         </div>
 
         {/* Results */}
         <div ref={listRef} style={{ maxHeight: 420, overflowY: 'auto', padding: '8px 0' }}>
           {flat.length === 0 ? (
-            <div style={{ padding: '24px 16px', textAlign: 'center', color: '#71717A', fontSize: '0.82rem' }}>
-              No results for "<span style={{ color: '#F0F0F8' }}>{q}</span>"
+            <div style={{ padding: '24px 16px', textAlign: 'center', color: '#787878', fontSize: '0.82rem' }}>
+              No results for "<span style={{ color: '#EBEBEB' }}>{q}</span>"
             </div>
           ) : (
             Object.entries(groups).map(([groupName, items]) => (
               <div key={groupName}>
-                <div style={{ padding: '6px 16px 3px', fontSize: '0.62rem', color: '#71717A', fontFamily: 'JetBrains Mono', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                <div style={{ padding: '6px 16px 3px', fontSize: '0.62rem', color: '#787878', fontFamily: 'JetBrains Mono', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                   {groupName}
                 </div>
                 {items.map((item) => {
@@ -198,15 +198,15 @@ export default function CommandPalette({ open, onClose, recentCases = [] }) {
                         borderLeft: isSelected ? '2px solid #C0392B' : '2px solid transparent',
                       }}
                     >
-                      <item.Icon size={15} style={{ color: isSelected ? '#C0392B' : '#71717A', flexShrink: 0 }} />
+                      <item.Icon size={15} style={{ color: isSelected ? '#C0392B' : '#787878', flexShrink: 0 }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: '0.84rem', color: '#F0F0F8' }}>{highlight(item.label, q)}</div>
+                        <div style={{ fontSize: '0.84rem', color: '#EBEBEB' }}>{highlight(item.label, q)}</div>
                         {item.sub && (
-                          <div style={{ fontSize: '0.68rem', color: '#71717A', fontFamily: 'JetBrains Mono', marginTop: 1 }}>{item.sub}</div>
+                          <div style={{ fontSize: '0.68rem', color: '#787878', fontFamily: 'JetBrains Mono', marginTop: 1 }}>{item.sub}</div>
                         )}
                       </div>
                       {item.severity && (
-                        <span style={{ fontSize: '0.62rem', color: SEV_COLOR[item.severity] || '#71717A', fontFamily: 'JetBrains Mono', flexShrink: 0 }}>
+                        <span style={{ fontSize: '0.62rem', color: SEV_COLOR[item.severity] || '#787878', fontFamily: 'JetBrains Mono', flexShrink: 0 }}>
                           {item.severity}
                         </span>
                       )}
@@ -220,7 +220,7 @@ export default function CommandPalette({ open, onClose, recentCases = [] }) {
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '8px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 16, fontSize: '0.65rem', color: '#71717A', fontFamily: 'JetBrains Mono' }}>
+        <div style={{ padding: '8px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 16, fontSize: '0.65rem', color: '#787878', fontFamily: 'JetBrains Mono' }}>
           <span><kbd style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 3, padding: '1px 5px' }}>↑↓</kbd> navigate</span>
           <span><kbd style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 3, padding: '1px 5px' }}>↵</kbd> open</span>
           <span><kbd style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 3, padding: '1px 5px' }}>esc</kbd> close</span>
