@@ -21,9 +21,26 @@ const openApp = () => window.open('/app/login', '_blank', 'noopener,noreferrer')
    Mouse cursor creates a live vortex that pulls nearby particles into orbit.
    Result: looks like aurora borealis / magnetic plasma — completely alive.
 ────────────────────────────────────────────────────────────────────────────── */
-function AuroraFlowField() {
+/* ─── Identity Constellation ──────────────────────────────────────────────────
+   AegisTrace's vision as a live scene: a force-directed graph of identity
+   entities — users, AI agents, services, devices, tokens — connected by
+   trust relationships. The graph breathes and self-organises via spring
+   physics. Move your cursor and nearby nodes scatter. Every ~8 seconds a
+   random node is compromised (turns red, edges flash), then resolved
+   (brief green pulse). The same story AegisTrace is built to tell.
+────────────────────────────────────────────────────────────────────────────── */
+
+const IC_TYPES = [
+  { label:'USR', r:77,  g:163, b:255 },   // human user   — blue
+  { label:'AGT', r:167, g:139, b:250 },   // AI agent     — purple
+  { label:'SVC', r:34,  g:197, b:94  },   // service      — green
+  { label:'DEV', r:234, g:179, b:8   },   // device       — amber
+  { label:'TKN', r:6,   g:182, b:212 },   // token        — teal
+];
+
+function IdentityConstellation() {
   const cvRef = useRef(null);
-  const mouse = useRef({ x: 0.5, y: 0.5 });
+  const mRef  = useRef({ x: -999, y: -999 });
 
   useEffect(() => {
     const cv = cvRef.current;
@@ -37,106 +54,160 @@ function AuroraFlowField() {
     }
     resize();
     window.addEventListener('resize', resize);
-    const onMouse = e => { mouse.current = { x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight }; };
+    const onMouse = e => { mRef.current = { x: e.clientX, y: e.clientY }; };
     window.addEventListener('mousemove', onMouse);
 
-    // ── Aurora orbs — large slow drifting blobs of coloured light ────────
-    const ORBS = [
-      { bx: 0.28, by: 0.32, r: 0.40, sx: 0.22, sy: 0.16, ph: 0.0, col: [77, 163, 255]  },
-      { bx: 0.72, by: 0.52, r: 0.34, sx: 0.17, sy: 0.24, ph: 1.3, col: [124, 58, 237]  },
-      { bx: 0.50, by: 0.74, r: 0.30, sx: 0.21, sy: 0.13, ph: 2.6, col: [6,  182, 212]  },
-      { bx: 0.14, by: 0.62, r: 0.26, sx: 0.14, sy: 0.19, ph: 0.9, col: [167, 139, 250] },
-      { bx: 0.86, by: 0.38, r: 0.28, sx: 0.19, sy: 0.22, ph: 2.0, col: [59,  130, 246] },
-      { bx: 0.58, by: 0.20, r: 0.22, sx: 0.25, sy: 0.18, ph: 3.4, col: [99,  214, 205] },
-    ];
+    // ── Build identity nodes ─────────────────────────────────────────────
+    const NODE_COUNT = 38;
+    const nodes = Array.from({ length: NODE_COUNT }, (_, i) => {
+      const t = IC_TYPES[i % IC_TYPES.length];
+      const a = (i / NODE_COUNT) * Math.PI * 2 + Math.random() * 0.5;
+      const d = 90 + Math.random() * 200;
+      return {
+        x: W / 2 + Math.cos(a) * d, y: H / 2 + Math.sin(a) * d,
+        vx: 0, vy: 0,
+        r: t.r, g: t.g, b: t.b,
+        sz: 3.5 + Math.random() * 2.8,
+        ph: Math.random() * Math.PI * 2,
+        state: 'normal',   // normal | compromised | resolving
+        stateT: 0,
+      };
+    });
 
-    // ── Micro-particles — follow an animated vector flow field ────────────
-    const PALETTE = [[77,163,255],[124,58,237],[6,182,212],[167,139,250]];
-    const N = 520;
-    const pts = Array.from({ length: N }, () => ({
-      x: Math.random(), y: Math.random(),
-      spd: 0.00018 + Math.random() * 0.00032,
-      life: Math.random() * 220,
-      maxLife: 100 + Math.random() * 220,
-      w: 0.28 + Math.random() * 0.62,
-      col: PALETTE[Math.floor(Math.random() * PALETTE.length)],
-    }));
-
-    // Layered-sine approximation of a Perlin flow field
-    function flowAngle(nx, ny, t, mx, my) {
-      const a =
-        Math.sin(nx * 4.1 + t * 0.26) * Math.PI +
-        Math.cos(ny * 3.0 + t * 0.19) * Math.PI * 0.55 +
-        Math.sin((nx + ny) * 2.7 + t * 0.34) * Math.PI * 0.38 +
-        Math.cos((nx - ny) * 1.8 - t * 0.14) * Math.PI * 0.22;
-      // Mouse vortex: perpendicular pull within radius 0.22
-      const dx = nx - mx, dy = ny - my, d = Math.sqrt(dx * dx + dy * dy);
-      if (d < 0.22) return a + (Math.atan2(dy, dx) + Math.PI / 2) * ((0.22 - d) / 0.22) * 3.2;
-      return a;
+    // Build edges: each node → 2–3 nearest neighbours
+    const edges = [];
+    for (let i = 0; i < NODE_COUNT; i++) {
+      const sorted = nodes
+        .map((n, j) => ({ j, d: Math.hypot(nodes[i].x - n.x, nodes[i].y - n.y) }))
+        .filter(e => e.j !== i)
+        .sort((a, b) => a.d - b.d);
+      const nc = 2 + (Math.random() < 0.38 ? 1 : 0);
+      for (let k = 0; k < nc; k++) {
+        const j = sorted[k].j;
+        if (!edges.some(e => (e[0]===i&&e[1]===j)||(e[0]===j&&e[1]===i)))
+          edges.push({ a: i, b: j, alert: false });
+      }
     }
 
-    let t = 0, last = 0;
+    let compromiseCD = 6000 + Math.random() * 5000;
+    let last = 0;
 
     function frame(ts) {
       const dt = Math.min(ts - last, 40);
       last = ts;
-      t += dt * 0.001;
+      const mx = mRef.current.x, my = mRef.current.y;
+      const cx = W / 2, cy = H / 2;
 
-      const mx = mouse.current.x, my = mouse.current.y;
+      // ── Force simulation ──────────────────────────────────────────────
+      // Node-node repulsion
+      for (let i = 0; i < NODE_COUNT; i++) {
+        for (let j = i + 1; j < NODE_COUNT; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const d2 = dx * dx + dy * dy;
+          if (d2 > 200 * 200 || d2 < 0.01) continue;
+          const d  = Math.sqrt(d2);
+          const f  = Math.min(4, 2200 / d2);
+          const fx = (dx / d) * f, fy = (dy / d) * f;
+          nodes[i].vx += fx; nodes[i].vy += fy;
+          nodes[j].vx -= fx; nodes[j].vy -= fy;
+        }
+      }
 
-      // Fade (creates particle trails; also fades previous orb positions)
-      ctx.fillStyle = 'rgba(4,8,18,0.28)';
+      // Edge springs (ideal 88 px)
+      edges.forEach(({ a: ai, b: bi }) => {
+        const na = nodes[ai], nb = nodes[bi];
+        const dx = nb.x - na.x, dy = nb.y - na.y;
+        const d  = Math.hypot(dx, dy) || 0.1;
+        const f  = (d - 88) * 0.004;
+        na.vx += (dx / d) * f; na.vy += (dy / d) * f;
+        nb.vx -= (dx / d) * f; nb.vy -= (dy / d) * f;
+      });
+
+      // Integrate
+      nodes.forEach(n => {
+        // Gentle center gravity
+        n.vx += (cx - n.x) * 0.0007;
+        n.vy += (cy - n.y) * 0.0007;
+
+        // Mouse repulsion
+        const mdx = n.x - mx, mdy = n.y - my, md2 = mdx * mdx + mdy * mdy;
+        if (md2 < 130 * 130 && md2 > 0.1) {
+          const md = Math.sqrt(md2);
+          const f  = Math.min(5, 9000 / md2);
+          n.vx += (mdx / md) * f; n.vy += (mdy / md) * f;
+        }
+
+        n.vx *= 0.90; n.vy *= 0.90;  // heavy damp → stable
+        n.x  += n.vx;  n.y  += n.vy;
+        n.ph += 0.0008 * dt;
+
+        // Soft bounds
+        if (n.x < 48)    n.vx += 1.4;
+        if (n.x > W - 48) n.vx -= 1.4;
+        if (n.y < 48)    n.vy += 1.4;
+        if (n.y > H - 48) n.vy -= 1.4;
+      });
+
+      // ── Compromise / resolve events ───────────────────────────────────
+      compromiseCD -= dt;
+      if (compromiseCD <= 0) {
+        const idx = Math.floor(Math.random() * NODE_COUNT);
+        nodes[idx].state = 'compromised'; nodes[idx].stateT = 0;
+        edges.forEach(e => { if (e.a === idx || e.b === idx) e.alert = true; });
+        compromiseCD = 7000 + Math.random() * 6000;
+      }
+      nodes.forEach((n, i) => {
+        if (n.state === 'compromised') {
+          n.stateT += dt;
+          if (n.stateT > 2600) { n.state = 'resolving'; n.stateT = 0; }
+        } else if (n.state === 'resolving') {
+          n.stateT += dt;
+          if (n.stateT > 1100) {
+            n.state = 'normal';
+            edges.forEach(e => { if (e.a === i || e.b === i) e.alert = false; });
+          }
+        }
+      });
+
+      // ── Render ────────────────────────────────────────────────────────
+      ctx.fillStyle = '#040812';
       ctx.fillRect(0, 0, W, H);
 
-      // ── Draw aurora orbs ──────────────────────────────────────────────
-      ORBS.forEach(o => {
-        const ox = (o.bx + 0.09 * Math.sin(t * o.sx + o.ph)) * W;
-        const oy = (o.by + 0.07 * Math.cos(t * o.sy + o.ph * 1.5)) * H;
-        const rad = o.r * Math.min(W, H) * (0.87 + 0.13 * Math.sin(t * 0.65 + o.ph));
-        // Slight attraction toward mouse
-        const mdx = mx * W - ox, mdy = my * H - oy, md = Math.sqrt(mdx*mdx+mdy*mdy);
-        const pull = Math.min(55, 2200 / (md + 1));
-        const fx = ox + (mdx / (md || 1)) * pull;
-        const fy = oy + (mdy / (md || 1)) * pull;
-        const g = ctx.createRadialGradient(fx, fy, 0, fx, fy, rad);
-        const [r, gg, b] = o.col;
-        g.addColorStop(0,    `rgba(${r},${gg},${b},0.14)`);
-        g.addColorStop(0.38, `rgba(${r},${gg},${b},0.07)`);
-        g.addColorStop(0.75, `rgba(${r},${gg},${b},0.02)`);
-        g.addColorStop(1,    `rgba(${r},${gg},${b},0)`);
-        ctx.fillStyle = g;
-        ctx.fillRect(0, 0, W, H);
+      // Edges
+      edges.forEach(({ a: ai, b: bi, alert }) => {
+        const na = nodes[ai], nb = nodes[bi];
+        const d  = Math.hypot(na.x - nb.x, na.y - nb.y);
+        if (d > 215) return;
+        ctx.beginPath(); ctx.moveTo(na.x, na.y); ctx.lineTo(nb.x, nb.y);
+        ctx.strokeStyle = alert
+          ? `rgba(239,68,68,${(1 - d/215) * 0.55})`
+          : `rgba(77,163,255,${(1 - d/215) * 0.18})`;
+        ctx.lineWidth = alert ? 0.85 : 0.5; ctx.stroke();
       });
 
-      // ── Draw flow particles ───────────────────────────────────────────
-      pts.forEach(p => {
-        p.life += dt * 0.075;
-        if (p.life >= p.maxLife) {
-          p.x = Math.random(); p.y = Math.random();
-          p.life = 0; p.maxLife = 100 + Math.random() * 220;
-          return;
-        }
-        const angle = flowAngle(p.x, p.y, t, mx, my);
-        const nx = p.x + Math.cos(angle) * p.spd;
-        const ny = p.y + Math.sin(angle) * p.spd;
-        const alpha = Math.sin((p.life / p.maxLife) * Math.PI) * 0.72;
-        const [r, gg, b] = p.col;
-        ctx.beginPath();
-        ctx.moveTo(p.x * W, p.y * H);
-        ctx.lineTo(nx * W, ny * H);
-        ctx.strokeStyle = `rgba(${r},${gg},${b},${alpha})`;
-        ctx.lineWidth = p.w;
-        ctx.stroke();
-        p.x = ((nx % 1) + 1) % 1;
-        p.y = ((ny % 1) + 1) % 1;
+      // Nodes
+      nodes.forEach(n => {
+        const p = 0.72 + 0.28 * Math.sin(n.ph);
+        let r = n.r, g = n.g, b = n.b;
+        if (n.state === 'compromised') { r = 239; g = 68;  b = 68; }
+        if (n.state === 'resolving')   { r = 34;  g = 197; b = 94; }
+
+        const gR = n.sz * 3.8;
+        const ng = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, gR);
+        ng.addColorStop(0, `rgba(${r},${g},${b},${p * 0.38})`);
+        ng.addColorStop(1, 'transparent');
+        ctx.beginPath(); ctx.arc(n.x, n.y, gR, 0, Math.PI * 2);
+        ctx.fillStyle = ng; ctx.fill();
+
+        ctx.beginPath(); ctx.arc(n.x, n.y, n.sz, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r},${g},${b},${0.76 + p * 0.24})`; ctx.fill();
       });
 
-      // Edge vignette
-      const vig = ctx.createRadialGradient(W/2, H/2, H*0.12, W/2, H/2, H*0.9);
+      // Vignette
+      const vig = ctx.createRadialGradient(W/2, H/2, H*0.1, W/2, H/2, H*0.88);
       vig.addColorStop(0, 'transparent');
       vig.addColorStop(1, 'rgba(4,8,18,0.82)');
-      ctx.fillStyle = vig;
-      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = vig; ctx.fillRect(0, 0, W, H);
 
       raf = requestAnimationFrame(frame);
     }
@@ -507,7 +578,7 @@ export default function Landing() {
 
       {/* ══ HERO — SPLIT LAYOUT ══ */}
       <section style={{position:'relative',width:'100%',height:'100vh',overflow:'hidden'}}>
-        <AuroraFlowField/>
+        <IdentityConstellation/>
         <div className="lp-rails" style={{position:'absolute',left:20,top:'50%',transform:'translateY(-50%)',zIndex:10,display:'flex',flexDirection:'column',alignItems:'center',gap:12}}>
           <span style={{writingMode:'vertical-rl',fontSize:10,color:'rgba(240,240,248,0.3)',letterSpacing:'0.15em',textTransform:'uppercase',...mono}}>Transmission № 01</span>
           <div style={{width:1,height:48,background:'rgba(77,163,255,0.3)'}}/>

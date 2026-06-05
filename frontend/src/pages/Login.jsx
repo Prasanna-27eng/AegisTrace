@@ -5,22 +5,33 @@ import Logo from '../components/Logo';
 import api from '../api/client';
 import useStore from '../store/useStore';
 
-/* ─── Signal Monitor ──────────────────────────────────────────────────────────
-   Five live security telemetry channels scrolling in real time.
-   PROC · NET · AUTH · FILE · DNS — each shows a calm baseline that spikes
-   red during simulated alert events. Like watching a real SOC console.
-   Completely different from any particle / orbital animation.
-───────────────────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   TRUST VERIFICATION
+   ─────────────────
+   AegisTrace's core mission, rendered as a living scene.
 
-const CH = [
-  { label: 'PROC', r: 77,  g: 163, b: 255, f1: 1.8, f2: 4.7,  f3: 9.2,  ph: 0.0  },
-  { label: 'NET',  r: 34,  g: 197, b: 94,  f1: 2.3, f2: 5.9,  f3: 11.4, ph: 1.4  },
-  { label: 'AUTH', r: 167, g: 139, b: 250, f1: 1.5, f2: 3.8,  f3: 8.6,  ph: 2.8  },
-  { label: 'FILE', r: 234, g: 179, b: 8,   f1: 2.1, f2: 4.9,  f3: 10.1, ph: 0.7  },
-  { label: 'DNS',  r: 6,   g: 182, b: 212, f1: 2.7, f2: 6.3,  f3: 12.5, ph: 2.1  },
+   · Identity nodes (USR · AGT · SVC · DEV) emerge from the darkness and
+     drift inward toward the central Trust Core.
+   · When close enough, a beam of light connects node to core → authenticated.
+     The node takes its orbit. A pulse ring confirms the grant.
+   · Orbiting nodes weave thin trust threads between each other — a living
+     mesh that grows and breathes.
+   · Every ~10 seconds, a red threat node approaches. The Core rejects it:
+     a red pulse ring fires, the threat is expelled back into the dark.
+   · Subtle dot grid, three concentric orbit guides, three micro-electrons
+     circling the core.
+
+   Clean. Geometric. Purposeful. Nothing funky.
+═══════════════════════════════════════════════════════════════════════════ */
+
+const ID_TYPES = [
+  { label: 'USR', r: 77,  g: 163, b: 255 },   // human user   — blue
+  { label: 'AGT', r: 167, g: 139, b: 250 },   // AI agent     — purple
+  { label: 'SVC', r: 34,  g: 197, b: 94  },   // service acct — green
+  { label: 'DEV', r: 234, g: 179, b: 8   },   // device       — amber
 ];
 
-function SignalMonitor() {
+function TrustVerification() {
   const cvRef = useRef(null);
 
   useEffect(() => {
@@ -29,132 +40,233 @@ function SignalMonitor() {
     const ctx = cv.getContext('2d');
     let W, H, raf;
 
-    function resize() { W = cv.offsetWidth; H = cv.offsetHeight; cv.width = W; cv.height = H; }
+    function resize() {
+      W = cv.offsetWidth;
+      H = cv.offsetHeight;
+      cv.width  = W;
+      cv.height = H;
+    }
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(cv);
 
-    const MAX_S = 1800;
-    const LBL = 52; // label column width
+    // ── State ────────────────────────────────────────────────────────────
+    const nodes  = [];
+    const pulses = [];     // expanding ring events from core
+    let spawnCD  = 1100;
+    let threatCD = 11000 + Math.random() * 6000;
+    let cPulseCD = 2800;
+    let last     = 0;
 
-    const state = CH.map(ch => ({
-      ...ch,
-      buf: [],
-      alert: 0,
-      nextAlert: 2500 + Math.random() * 7000,
-    }));
+    const MAX_NODES = 12;
+    const AUTH_R    = 54;   // within this radius → node authenticates
+    const ORB_MAX   = 132;  // max orbit radius
 
-    function sample(ch, t, al) {
-      return (
-        0.11 * Math.sin(t * ch.f1 + ch.ph) +
-        0.065 * Math.sin(t * ch.f2 + ch.ph * 1.4) +
-        0.032 * Math.sin(t * ch.f3 + ch.ph * 0.7) +
-        0.010 * (Math.random() - 0.5) +
-        (al > 0.3 ? (Math.random() - 0.5) * al * 1.9 : 0)
-      );
+    // ── Helpers ───────────────────────────────────────────────────────────
+    function edgePt() {
+      const e = Math.floor(Math.random() * 4);
+      if (e === 0) return { x: Math.random() * W, y: -18 };
+      if (e === 1) return { x: W + 18,             y: Math.random() * H };
+      if (e === 2) return { x: Math.random() * W,  y: H + 18 };
+      return              { x: -18,                y: Math.random() * H };
     }
 
-    let t = 0, last = 0;
+    function spawnNode(isThreat) {
+      const { x, y } = edgePt();
+      const cx = W / 2, cy = H / 2;
+      const t   = ID_TYPES[Math.floor(Math.random() * ID_TYPES.length)];
+      const ang = Math.random() * Math.PI * 2;
+      const od  = 40 + Math.random() * (ORB_MAX - 40);
 
+      nodes.push({
+        x, y,
+        tx: cx + Math.cos(ang) * od,
+        ty: cy + Math.sin(ang) * od,
+        oAng: ang,
+        oDist: od,
+        oSpd: (0.00024 + Math.random() * 0.00032) * (Math.random() < 0.5 ? 1 : -1),
+        spd:   0.031 + Math.random() * 0.038,
+        sz:    3.5 + Math.random() * 2.5,
+        ph:    Math.random() * Math.PI * 2,
+        r: isThreat ? 239 : t.r,
+        g: isThreat ? 68  : t.g,
+        b: isThreat ? 68  : t.b,
+        label: t.label,
+        isThreat,
+        rejected: false,
+        state:    'arriving',   // arriving | orbiting | leaving
+        alpha:    0,
+        lineB:    0,            // brightness of line to core
+        life:     0,
+        maxLife:  isThreat ? 0 : 10000 + Math.random() * 8000,
+      });
+    }
+
+    // Seed a few nodes so screen is not empty at start
+    for (let i = 0; i < 4; i++) spawnNode(false);
+
+    // ── Frame ─────────────────────────────────────────────────────────────
     function frame(ts) {
       const dt = Math.min(ts - last, 40);
-      last = ts; t += dt * 0.001;
+      last = ts;
+      const cx = W / 2, cy = H / 2;
 
       ctx.fillStyle = '#07080F';
       ctx.fillRect(0, 0, W, H);
 
-      const chH = H / state.length;
-
-      state.forEach((ch, i) => {
-        // Update alert state
-        ch.nextAlert -= dt;
-        if (ch.nextAlert <= 0) { ch.alert = 1; ch.nextAlert = 5000 + Math.random() * 9000; }
-        if (ch.alert > 0) ch.alert = Math.max(0, ch.alert - dt * 0.0014);
-
-        // Push ~2 samples per frame → smooth leftward scroll
-        for (let s = 0; s < 2; s++) { ch.buf.push(sample(ch, t + s * 0.001, ch.alert)); }
-        if (ch.buf.length > MAX_S) ch.buf.splice(0, ch.buf.length - MAX_S);
-
-        const cy  = (i + 0.5) * chH;
-        const amp = chH * 0.33;
-        const dW  = W - LBL;
-        const isAl = ch.alert > 0.26;
-        const r = isAl ? 239 : ch.r, g = isAl ? 68 : ch.g, b = isAl ? 68 : ch.b;
-        const startI = Math.max(0, ch.buf.length - dW);
-
-        // ── Divider ──────────────────────────────────────────────────────
-        if (i > 0) {
-          ctx.beginPath(); ctx.moveTo(0, i * chH); ctx.lineTo(W, i * chH);
-          ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 1; ctx.stroke();
+      // Subtle dot grid
+      ctx.fillStyle = 'rgba(77,163,255,0.048)';
+      for (let gx = 44; gx < W; gx += 44)
+        for (let gy = 44; gy < H; gy += 44) {
+          ctx.beginPath(); ctx.arc(gx, gy, 0.72, 0, Math.PI * 2); ctx.fill();
         }
 
-        // ── Label column ─────────────────────────────────────────────────
-        ctx.fillStyle = `rgba(${r},${g},${b},0.045)`;
-        ctx.fillRect(0, i * chH, LBL, chH);
-
-        ctx.font = 'bold 9px JetBrains Mono, monospace';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = `rgba(${r},${g},${b},${0.42 + ch.alert * 0.58})`;
-        ctx.fillText(ch.label, LBL / 2, cy + 3);
-
-        // Status dot
-        ctx.beginPath();
-        ctx.arc(LBL - 8, cy, isAl ? 3.5 : 2.2, 0, Math.PI * 2);
-        ctx.fillStyle = isAl
-          ? `rgba(239,68,68,${0.55 + ch.alert * 0.45})`
-          : `rgba(${ch.r},${ch.g},${ch.b},0.38)`;
-        ctx.fill();
-
-        // ── Baseline ─────────────────────────────────────────────────────
-        ctx.beginPath(); ctx.moveTo(LBL, cy); ctx.lineTo(W, cy);
-        ctx.strokeStyle = `rgba(${r},${g},${b},0.07)`; ctx.lineWidth = 0.5; ctx.stroke();
-
-        // ── Waveform fill (area, very faint) ─────────────────────────────
-        if (ch.buf.length > 1) {
-          ctx.beginPath();
-          let drawn = 0;
-          for (let x = 0; x < dW; x++) {
-            const si = startI + x;
-            if (si >= ch.buf.length) break;
-            const px = LBL + x, py = cy - ch.buf[si] * amp;
-            if (x === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-            drawn = x;
-          }
-          ctx.lineTo(LBL + drawn, cy);
-          ctx.lineTo(LBL, cy);
-          ctx.closePath();
-          ctx.fillStyle = `rgba(${r},${g},${b},${isAl ? 0.07 : 0.04})`;
-          ctx.fill();
-        }
-
-        // ── Waveform line ─────────────────────────────────────────────────
-        ctx.beginPath();
-        for (let x = 0; x < dW; x++) {
-          const si = startI + x;
-          if (si >= ch.buf.length) break;
-          const px = LBL + x, py = cy - ch.buf[si] * amp;
-          if (x === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-        }
-        ctx.strokeStyle = `rgba(${r},${g},${b},${0.48 + ch.alert * 0.48})`;
-        ctx.lineWidth = isAl ? 1.35 : 0.85; ctx.stroke();
-
-        // Alert glow pass
-        if (ch.alert > 0.1) {
-          ctx.beginPath();
-          for (let x = 0; x < dW; x++) {
-            const si = startI + x;
-            if (si >= ch.buf.length) break;
-            const px = LBL + x, py = cy - ch.buf[si] * amp;
-            if (x === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-          }
-          ctx.strokeStyle = `rgba(${r},${g},${b},${ch.alert * 0.2})`;
-          ctx.lineWidth = 6; ctx.stroke();
-        }
+      // Orbit guide rings (dashed)
+      ctx.setLineDash([2, 12]);
+      [50, 91, ORB_MAX].forEach((r, i) => {
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(77,163,255,${[0.07, 0.05, 0.035][i]})`;
+        ctx.lineWidth = 0.7; ctx.stroke();
       });
+      ctx.setLineDash([]);
 
-      // "Now" right edge line
-      ctx.beginPath(); ctx.moveTo(W - 1, 0); ctx.lineTo(W - 1, H);
-      ctx.strokeStyle = 'rgba(77,163,255,0.11)'; ctx.lineWidth = 1; ctx.stroke();
+      // ── Spawn timers ────────────────────────────────────────────────────
+      spawnCD  -= dt;
+      threatCD -= dt;
+      cPulseCD -= dt;
+      if (spawnCD  <= 0 && nodes.length < MAX_NODES) { spawnNode(false); spawnCD  = 1400 + Math.random() * 1900; }
+      if (threatCD <= 0)                              { spawnNode(true);  threatCD = 12000 + Math.random() * 8000; }
+      if (cPulseCD <= 0)                              { pulses.push({ r: 10, op: 0.3, red: false }); cPulseCD = 2700 + Math.random() * 1500; }
+
+      // ── Pulse rings ─────────────────────────────────────────────────────
+      for (let i = pulses.length - 1; i >= 0; i--) {
+        pulses[i].r  += 0.055 * dt;
+        pulses[i].op -= 0.0017 * dt;
+        if (pulses[i].op <= 0) { pulses.splice(i, 1); continue; }
+        ctx.beginPath(); ctx.arc(cx, cy, pulses[i].r, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(${pulses[i].red ? '239,68,68' : '77,163,255'},${pulses[i].op})`;
+        ctx.lineWidth = 1.3; ctx.stroke();
+      }
+
+      // ── Trust threads (orbiting nodes ↔ each other) ─────────────────────
+      const orb = nodes.filter(n => n.state === 'orbiting' && !n.rejected);
+      for (let i = 0; i < orb.length; i++)
+        for (let j = i + 1; j < orb.length; j++) {
+          const d = Math.sqrt((orb[i].x - orb[j].x) ** 2 + (orb[i].y - orb[j].y) ** 2);
+          if (d < 155) {
+            ctx.beginPath(); ctx.moveTo(orb[i].x, orb[i].y); ctx.lineTo(orb[j].x, orb[j].y);
+            ctx.strokeStyle = `rgba(77,163,255,${(1 - d / 155) * 0.17})`;
+            ctx.lineWidth = 0.45; ctx.stroke();
+          }
+        }
+
+      // ── Update + draw nodes ─────────────────────────────────────────────
+      for (let i = nodes.length - 1; i >= 0; i--) {
+        const n  = nodes[i];
+        n.life  += dt;
+        n.ph    += 0.0009 * dt;
+        const dc = Math.sqrt((n.x - cx) ** 2 + (n.y - cy) ** 2);
+
+        // Threat rejection
+        if (n.isThreat && !n.rejected && n.state === 'arriving' && dc < AUTH_R + 14) {
+          n.rejected = true;
+          n.state    = 'leaving';
+          const dx = n.x - cx, dy = n.y - cy, dn = Math.sqrt(dx * dx + dy * dy) || 1;
+          n.tx = cx + (dx / dn) * W * 0.86;
+          n.ty = cy + (dy / dn) * H * 0.86;
+          pulses.push({ r: 14, op: 0.82, red: true });
+        }
+
+        if (n.state === 'arriving') {
+          n.x    += (n.tx - n.x) * n.spd;
+          n.y    += (n.ty - n.y) * n.spd;
+          n.alpha = Math.min(1, n.alpha + dt * 0.003);
+          if (!n.isThreat && Math.sqrt((n.x - n.tx) ** 2 + (n.y - n.ty) ** 2) < 3) {
+            n.state = 'orbiting';
+            n.lineB = 1;
+            pulses.push({ r: 8, op: 0.42, red: false });
+          }
+        } else if (n.state === 'orbiting') {
+          n.oAng += n.oSpd * dt;
+          n.x = cx + Math.cos(n.oAng) * n.oDist + Math.sin(n.ph) * 2.5;
+          n.y = cy + Math.sin(n.oAng) * n.oDist + Math.cos(n.ph * 1.4) * 2.5;
+          n.lineB = Math.max(0, n.lineB - dt * 0.0006);
+          if (n.maxLife > 0 && n.life > n.maxLife) {
+            n.state = 'leaving';
+            const a = Math.random() * Math.PI * 2;
+            n.tx = cx + Math.cos(a) * W;
+            n.ty = cy + Math.sin(a) * H;
+          }
+        } else if (n.state === 'leaving') {
+          n.x    += (n.tx - n.x) * 0.022;
+          n.y    += (n.ty - n.y) * 0.022;
+          n.alpha = Math.max(0, n.alpha - dt * 0.0018);
+          if (n.alpha <= 0) { nodes.splice(i, 1); continue; }
+        }
+
+        // Line from node → core
+        const lA = n.state === 'orbiting'
+          ? Math.max(0.05, n.lineB * 0.62) * n.alpha
+          : (dc < ORB_MAX + 42 ? (1 - dc / (ORB_MAX + 42)) * 0.28 * n.alpha : 0);
+        if (lA > 0.018) {
+          ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(cx, cy);
+          ctx.strokeStyle = `rgba(${n.r},${n.g},${n.b},${lA})`;
+          ctx.lineWidth   = n.lineB > 0.4 ? 1.0 : 0.45;
+          ctx.stroke();
+        }
+
+        // Node glow
+        const gR = n.sz * 3.8 * (n.isThreat ? 1.5 : 1);
+        const ng = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, gR);
+        ng.addColorStop(0, `rgba(${n.r},${n.g},${n.b},${n.alpha * 0.42})`);
+        ng.addColorStop(1, 'transparent');
+        ctx.beginPath(); ctx.arc(n.x, n.y, gR, 0, Math.PI * 2);
+        ctx.fillStyle = ng; ctx.fill();
+
+        // Node core dot
+        ctx.beginPath(); ctx.arc(n.x, n.y, n.sz, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${n.r},${n.g},${n.b},${n.alpha})`; ctx.fill();
+
+        // Type label (very faint)
+        if (n.alpha > 0.5 && !n.isThreat) {
+          ctx.font      = '7px JetBrains Mono,monospace';
+          ctx.textAlign = 'center';
+          ctx.fillStyle = `rgba(240,240,248,${n.alpha * 0.28})`;
+          ctx.fillText(n.label, n.x, n.y - n.sz - 5);
+        }
+      }
+
+      // ── Central Trust Core ───────────────────────────────────────────────
+      const cp = 0.68 + 0.32 * Math.sin(ts * 0.00088);
+
+      // Outer glow
+      const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, 36);
+      cg.addColorStop(0,    `rgba(77,163,255,${cp * 0.88})`);
+      cg.addColorStop(0.45, `rgba(77,163,255,${cp * 0.28})`);
+      cg.addColorStop(1,    'transparent');
+      ctx.beginPath(); ctx.arc(cx, cy, 36, 0, Math.PI * 2);
+      ctx.fillStyle = cg; ctx.fill();
+
+      // Three orbiting micro-electrons
+      for (let i = 0; i < 3; i++) {
+        const a  = ts * 0.00078 + (i * Math.PI * 2) / 3;
+        const ex = cx + Math.cos(a) * 15;
+        const ey = cy + Math.sin(a) * 15;
+        ctx.beginPath(); ctx.arc(ex, ey, 1.8, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(77,163,255,0.72)'; ctx.fill();
+      }
+
+      // Core dot
+      ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+      ctx.fillStyle = '#4DA3FF'; ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff'; ctx.fill();
+
+      // Bottom fade
+      const bv = ctx.createLinearGradient(0, H * 0.52, 0, H);
+      bv.addColorStop(0, 'transparent');
+      bv.addColorStop(1, 'rgba(7,8,15,0.6)');
+      ctx.fillStyle = bv; ctx.fillRect(0, 0, W, H);
 
       raf = requestAnimationFrame(frame);
     }
@@ -199,19 +311,18 @@ export default function Login() {
   return (
     <div style={{ minHeight: '100vh', background: '#07080F', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
 
-      {/* Live signal monitor animation fills the whole background */}
-      <SignalMonitor />
+      {/* Trust Verification animation fills the whole background */}
+      <TrustVerification />
 
-      {/* Centre vignette — keeps form legible over moving channels */}
+      {/* Centre vignette so card reads clearly over the animation */}
       <div style={{
         position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
-        background: 'radial-gradient(ellipse 52% 60% at 50% 50%, rgba(7,8,15,0.78) 0%, rgba(7,8,15,0.45) 45%, rgba(7,8,15,0.1) 100%)',
+        background: 'radial-gradient(ellipse 48% 55% at 50% 50%, rgba(7,8,15,0.72) 0%, rgba(7,8,15,0.3) 50%, transparent 100%)',
       }} />
 
       {/* Login card */}
       <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 390, padding: '0 20px' }}>
 
-        {/* Brand */}
         <div style={{ textAlign: 'center', marginBottom: 30 }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
             <Logo size={44} showText={false} />
@@ -224,14 +335,13 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Card */}
         <div style={{
-          background: 'rgba(10,14,26,0.9)',
-          border: '1px solid rgba(77,163,255,0.12)',
+          background: 'rgba(8,12,22,0.92)',
+          border: '1px solid rgba(77,163,255,0.13)',
           borderRadius: 14,
           padding: '30px 28px',
           backdropFilter: 'blur(28px)',
-          boxShadow: '0 0 60px rgba(77,163,255,0.04), 0 24px 64px rgba(0,0,0,0.6)',
+          boxShadow: '0 0 60px rgba(77,163,255,0.05), 0 24px 64px rgba(0,0,0,0.65)',
         }}>
           <div style={{ fontSize: '0.62rem', textTransform: 'uppercase', letterSpacing: '0.16em', color: 'rgba(240,240,248,0.26)', ...mono, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 7 }}>
             <Lock size={10} style={{ color: '#4DA3FF' }} />
@@ -273,7 +383,8 @@ export default function Login() {
               style={{
                 background: loading ? 'rgba(77,163,255,0.45)' : '#4DA3FF',
                 color: '#fff', border: 'none', borderRadius: 8, padding: '11px', marginTop: 4,
-                fontSize: '0.82rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
+                fontSize: '0.82rem', fontWeight: 600,
+                cursor: loading ? 'not-allowed' : 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 transition: 'background 0.2s', ...mono, letterSpacing: '0.06em',
               }}>
@@ -285,8 +396,7 @@ export default function Login() {
         </div>
 
         <div style={{ textAlign: 'center', marginTop: 18 }}>
-          <a href="/"
-            style={{ fontSize: '0.7rem', color: 'rgba(240,240,248,0.18)', textDecoration: 'none', ...mono, transition: 'color 0.2s' }}
+          <a href="/" style={{ fontSize: '0.7rem', color: 'rgba(240,240,248,0.18)', textDecoration: 'none', ...mono, transition: 'color 0.2s' }}
             onMouseEnter={e => e.target.style.color = 'rgba(240,240,248,0.55)'}
             onMouseLeave={e => e.target.style.color = 'rgba(240,240,248,0.18)'}>
             ← Back to landing
