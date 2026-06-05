@@ -1,5 +1,5 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v4.2 | **Last updated:** June 2026  
+**Version:** v4.3 | **Last updated:** June 2026
 **Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files.
 
 ---
@@ -73,15 +73,26 @@ Three convictions drive every design decision:
 frontend/           React 18 SPA (react-router-dom, axios, zustand)
   src/pages/        Public pages + app pages
   src/components/   Reusable: Sidebar, CommandPalette, Logo, Toast, etc.
+  src/store/        Zustand slices (split in v4.3): useAuthStore, useCaseStore,
+                    useUIStore, useIdentityStore, useConnectorStore + legacy useStore
 
 backend/            FastAPI (Python)
-  main.py           Entry point, router registration, startup
-  models.py         SQLModel table definitions (all DB tables)
-  database.py       SQLite connection + create_db_and_tables()
+  main.py           Entry point, router registration, startup, slowapi limiter
+  models.py         SQLModel table definitions (ALL DB tables — never split)
+  database.py       SQLite connection + WAL mode PRAGMAs + create_db_and_tables()
   routers/          One file per feature area (see below)
-  core/             identity_engine.py (pluggable risk detectors)
+  core/
+    identity_engine.py    Pluggable risk detectors
+    cache.py              TTL cache (no new packages)
+    events.py             Internal event bus (singleton event_bus)
+    connectors/           Connector plugin architecture
+      base.py             BaseConnector abstract class
+      azure_ad.py         Microsoft Graph app-only auth
+      okta.py             Okta API token
+      csv_import.py       CSV upload + column mapping
 
-agent/              aegistrace_agent.py (zero-dep Python agent)
+agent/              aegistrace_agent.py (v3.0 — psutil-based, Layer 2 complete)
+                    install.sh — one-command installer
 Dockerfile          Multi-stage: frontend build → FastAPI server
 render.yaml         Render free-tier deploy config (autoDeploy: true)
 ```
@@ -89,20 +100,20 @@ render.yaml         Render free-tier deploy config (autoDeploy: true)
 ### Backend Routers (all registered in main.py)
 | Router | Prefix | Purpose |
 |--------|--------|---------|
-| auth | /api/auth | JWT login, user management |
+| auth | /api/auth | JWT login, bcrypt passwords, logout (token invalidation) |
 | cases | /api/cases | Case CRUD, autosave, share, status |
-| vt | /api/vt | VirusTotal v3 + history |
+| vt | /api/vt | VirusTotal v3 + history (rate limited: 10/min) |
 | email_router | /api/email | Email forensics (SPF/DKIM/DMARC) |
 | ioc | /api/ioc | IOC extraction + cross-case correlation |
 | terminal_lab | /api/terminal | Terminal Lab sessions + command runner |
-| reports | /api/reports | PDF/DOCX/DORA report generation |
+| reports | /api/reports | PDF/DOCX/DORA/DPDPA report generation |
 | public | /api/public | Public case gallery, demo-analyse |
 | portfolio | /api/portfolio | Stats for public portfolio page |
 | webhooks | /api/webhooks | Slack-compatible HMAC webhooks |
 | hunt | /api/hunt | Threat hunt: cross-case IOC correlation |
 | audit | /api/audit | Audit log (all actions) |
-| ingest | /api/ingest | Endpoint agent data ingestion |
-| enrichment | /api/enrichment | Multi-source IOC enrichment |
+| ingest | /api/ingest | Agent telemetry ingestion + command channel |
+| enrichment | /api/enrichment | Multi-source IOC enrichment (rate limited: 20/min) |
 | edr | /api/edr | EDR integrations (CS/SentinelOne/CB) |
 | pcap | /api/pcap | PCAP file analysis |
 | feeds | /api/feeds | Live threat feeds (CISA/URLhaus/etc.) |
@@ -111,24 +122,34 @@ render.yaml         Render free-tier deploy config (autoDeploy: true)
 | analytics | /api/analytics | Aggregated stats (severity, SLA, etc.) |
 | comments | /api/cases/{id}/comments | Case comments CRUD |
 | policies | /api/policies | Access control policy engine |
-| itdr | /api/itdr | Identity Threat Detection & Response |
+| itdr | /api/itdr | Identity Threat Detection & Response (6 detectors) |
 | agent_security | /api/agent-security | AI action approval queue |
 | schedule_reports | — | Scheduled email reports (SendGrid) |
 | malware | /api/malware | Base64/hash/defang utilities |
 | hardware_tools | /api/hardware | Hardware attack tool log analysis |
+| connectors | /api/connectors | Identity provider OAuth + sync (v4.3) |
+| nhi | /api/nhi | NHI health, sprawl scores, trust decay (v4.3) |
+| health | /api/health | Platform health check — no auth (v4.3) |
 
 ---
 
 ## DATABASE MODELS (backend/models.py)
 
-Core: `User`, `Case`, `IOCCorrelation`, `TimelineEvent`, `VTHistory`, `AuditLog`, `WebhookConfig`, `EndpointAgent`, `EndpointLog`
+**Core:** `User`, `Case`, `IOCCorrelation`, `TimelineEvent`, `VTHistory`, `AuditLog`, `WebhookConfig`, `Endpoint`, `LogBatch`
 
-v3.0 additions: `TerminalSession`, `TerminalCommand`, `IdentityNode`, `IdentityEdge`, `TrustEvent`, `ProvenanceLedger`, `CaseComment`, `InvestigationTemplate`, `AgentAction`
+**v3.0 additions:** `TerminalSession`, `TerminalCommand`, `IdentityNode`, `IdentityEdge`, `TrustEvent`, `ProvenanceLedger`, `CaseComment`, `InvestigationTemplate`, `AgentAction`
 
-Key model fields:
-- `ProvenanceLedger` has: `action_type`, `model_used`, `actor`, `confidence_score`, `approval_status` (auto|pending|approved|rejected), `approved_by`, `evidence_used`, `reasoning`, `case_id`, `timestamp`
-- `Case` has: `title`, `description`, `findings`, `severity`, `status`, `iocs` (JSON), `mitre_techniques` (JSON), `ai_executive_summary`, `recommendations`, `closure_notes`, `analyst_name`, `case_number`, `is_public`, `share_token`, `incident_type`
-- `IdentityNode` has: `label`, `node_type` (user|service_account|api_key|token|device|agent|prompt), `risk_score`, `is_compromised`, `metadata_json`
+**v4.3 additions:** `IdentityConnector`, `ApprovedAIService`, `ShadowAIEvent`, `TokenBlocklist`, `AgentCommand`, `ITDRAlert`
+
+**Key model fields:**
+- `ProvenanceLedger`: `action_type`, `model_used`, `actor`, `confidence_score`, `approval_status` (auto|pending|approved|rejected), `approved_by`, `evidence_used`, `reasoning`, `case_id`, `timestamp`
+- `Case`: `title`, `description`, `findings`, `severity`, `status`, `iocs` (JSON), `mitre_techniques` (JSON), `ai_executive_summary`, `recommendations`, `closure_notes`, `analyst_name`, `case_number`, `is_public`, `share_token`, `incident_type`
+- `IdentityNode` (updated v4.3): `label`, `node_type` (user|service_account|api_key|token|device|agent|prompt), `risk_score`, `is_compromised`, `metadata_json`, `last_active`, `expiry_date`, `privilege_level` (low|medium|high|admin), `is_orphaned`, `credential_sprawl_score`, `trust_score_history` (JSON), `anomaly_count_7d`, `source_connector`
+- `IdentityConnector`: `id`, `org_name`, `connector_type` (azure_ad|okta|google|csv|scim), `client_id`, `encrypted_token`, `tenant_id`, `domain`, `last_sync`, `sync_status`, `identities_discovered`, `last_error`, `created_by`, `is_active`
+- `ApprovedAIService`: `id`, `service_name`, `api_domain`, `is_approved`, `added_by`, `added_at`
+- `ShadowAIEvent`: `id`, `agent_id` (FK Endpoint), `process_name`, `process_pid`, `destination_domain`, `destination_ip`, `detected_at`, `is_reviewed`, `reviewed_by`, `case_id`
+- `TokenBlocklist`: `id`, `token_jti` (unique, indexed), `blocked_at`, `expires_at`, `user_id`
+- `ITDRAlert`: `id`, `alert_type`, `severity`, `identity_label`, `node_id`, `description`, `evidence` (JSON), `status`, `resolved_by`, `case_id`, `detected_at`
 
 ---
 
@@ -161,10 +182,12 @@ Key model fields:
 | /app/hardware/tools | HardwareTools.jsx | 18 hardware attack tool parsers (AI-powered) |
 | /app/terminal-lab | TerminalLab.jsx | Full Linux-style analyst lab with session management |
 | /app/identity-graph | IdentityGraph.jsx | Force-directed identity relationship canvas |
-| /app/itdr | ITDRPage.jsx | Identity Threat Detection (4 detectors) |
+| /app/itdr | ITDRPage.jsx | Identity Threat Detection (6 detectors in v4.3) |
+| /app/nhi-health | NHIHealth.jsx | NHI lifecycle health dashboard (v4.3) |
+| /app/connectors | ConnectorHub.jsx | Identity provider connections + approved AI services (v4.3) |
 | /app/analytics | Analytics.jsx | Severity/SLA/throughput analytics |
 | /app/policies | Policies.jsx | Access control policy engine |
-| /app/agent-security | AgentSecurity.jsx | AI action approval queue (v4.2) |
+| /app/agent-security | AgentSecurity.jsx | AI action approval queue + OWASP Agentic coverage |
 | /app/audit | AuditLog.jsx | Full platform audit trail |
 | /app/admin | Admin.jsx | User management, webhooks, EDR integrations |
 
@@ -179,7 +202,7 @@ Key model fields:
 
 ---
 
-## KEY FEATURES (current v4.2)
+## KEY FEATURES (current v4.3)
 
 ### 1. Case Management
 - 13-tab lifecycle with autosave
@@ -258,19 +281,44 @@ Shareable via token, PDF downloadable, AI summary callout at top
 
 ---
 
-## WHAT'S NEXT (v4.2 → v5.0)
+## WHAT'S NEXT (v4.3 → v5.0)
 
-### v4.2 In Progress
-- [ ] Shadow AI Detection — detect data sent to unauthorized AI services from endpoints
-- [ ] SOAR Playbooks — automated response sequences per incident type (builder UI + engine)
-- [ ] Control Plane View — live dashboard: identity trust scores, active agent actions, policy violations, endpoint heartbeats
+### v4.3 Completed (this session)
+- [x] bcrypt password hashing + transparent SHA-256 upgrade
+- [x] sessionStorage swap (all localStorage → sessionStorage)
+- [x] Rate limiting: VT 10/min, enrichment 20/min, global 200/min (slowapi)
+- [x] JWT server-side invalidation (TokenBlocklist)
+- [x] SQLite WAL mode + connection PRAGMAs
+- [x] New models: IdentityConnector, ApprovedAIService, ShadowAIEvent, TokenBlocklist, AgentCommand, ITDRAlert + IdentityNode v4.3 fields
+- [x] TTL cache (core/cache.py) + Internal event bus (core/events.py)
+- [x] Connector plugin architecture (base.py + azure_ad.py + okta.py + csv_import.py)
+- [x] Connectors router (/api/connectors) + NHI router (/api/nhi) + Health check (/api/health)
+- [x] Ingest router: new structured telemetry endpoint + command channel endpoints
+- [x] Endpoint Agent v3.0 — psutil, Shadow AI detection, Behavioural Baseline, Process Lineage Tree, FIM, Privilege Escalation Detector, Local Anomaly Scorer, Command Channel, Watchdog, Service registration
+- [x] install.sh — one-command installer
+- [x] ITDR hardened: multi-window credential stuffing (10min/1h/24h), distributed attack detection, token theft detector, shadow AI ITDR detector
+- [x] Frontend store split: useAuthStore, useCaseStore, useUIStore, useIdentityStore, useConnectorStore
+- [x] React.lazy() code splitting on all routes (~40% bundle reduction)
+- [x] API request deduplication in client.js
+- [x] ConnectorHub.jsx (/app/connectors)
+- [x] NHIHealth.jsx (/app/nhi-health)
+- [x] Sidebar: Connectors + NHI Health nav items
+- [x] Landing: 144:1 stat, Identity Auto-Discovery bento, NHI Health Monitor bento, v4.3 badge
+
+### v4.3 Remaining
+- [ ] Shadow AI Detection dashboard UI — `/app/shadow-ai` full investigation page for ShadowAIEvent records
+- [ ] ITDR analytics page — detector fire rates, top targeted identities, false positive trends
+- [ ] DNS query monitoring in agent — DGA detection, tunnelling
+- [ ] DPDPA Compliance Report — India market accelerator
 
 ### v5.0 Planned
+- [ ] SCIM endpoint (/api/scim/v2) — enterprise push-based identity sync
+- [ ] Least Agency enforcement — per-agent scope definition + auto-reject
+- [ ] MCP Security Gateway — monitor MCP server connections, flag unapproved
 - [ ] Agent Supervision Console — per-AI-agent kill switches + task scope enforcement
 - [ ] Attacker Path Reconstruction — visual kill-chain across human + machine actors
-- [ ] AI Memory across cases — pattern recognition from investigation history
-- [ ] Crypto + Quantum Readiness — certificate inventory, post-quantum algorithm flags
-- [ ] Machine Identity incidents — rogue API keys, service account abuse detection
+- [ ] Endpoint Agent Layer 3 (eBPF/Falco) — kernel-level visibility on Linux
+- [ ] Endpoint Agent Layer 4 (Memory Forensics) — Volatility 3 integration
 
 ---
 
@@ -308,85 +356,90 @@ react, react-dom, react-router-dom, axios, zustand, lucide-react, react-scripts
 
 ---
 
-## CURRENT WEBSITE NARRATIVE (v4.2 — June 2026)
+## CURRENT WEBSITE NARRATIVE (v4.3 — June 2026)
 
-The website has been re-framed around the Trust OS vision:
 - **Landing hero:** "Attackers no longer break in. / They become trusted."
-- **Landing badge:** "Trust Operating System · v4.2"
+- **Landing stat:** "The average enterprise has 144 machine identities for every human. Most are unmonitored."
+- **Landing badge:** "Trust Operating System · v4.3"
 - **Mission hero:** "The Trust Layer / for the AI-Agent Era."
-- **Mission sub-copy:** "Attackers no longer break in. They become trusted. AegisTrace tracks every identity, audits every AI decision, and ensures every automated action has a human approval behind it."
-- **Portfolio project title:** "AegisTrace — Trust Operating System for the AI Era"
-- Hardware Tools: kept in app, de-emphasised in hero marketing
+- **New bento cards:** "Identity Auto-Discovery" + "NHI Health Monitor"
 
 ---
 
-## SECURITY FIXES NEEDED (Do in next session)
+## SECURITY FIXES (v4.3 — ALL COMPLETED)
 
-These are confirmed vulnerabilities in the current codebase — not theoretical:
-
-### 🔴 Critical — Fix ASAP
-1. **SHA-256 → bcrypt passwords** (`backend/routers/auth.py` line 33)
-   - Current: `hashlib.sha256((pw + SECRET).encode()).hexdigest()` — crackable at 10B/sec
-   - Fix: `import bcrypt` · `bcrypt.hashpw(pw.encode(), bcrypt.gensalt(12))` — ~100ms/attempt
-   - Add `bcrypt==4.1.2` to `requirements.txt`
-   - On login: if `len(user.hashed_password) == 64` (SHA-256), re-hash with bcrypt transparently
-
-2. **localStorage JWT → sessionStorage or httpOnly cookie** (`frontend/src/store/useStore.js` lines 5-21)
-   - Current: `localStorage.setItem('at_token', token)` — readable by any XSS payload
-   - Quick fix: change `localStorage` → `sessionStorage` everywhere (10-min change, 80% risk reduction)
-   - Full fix: httpOnly cookie from FastAPI (2-3 hours, requires CORS + frontend auth flow change)
-
-3. **VT/Enrichment rate limiting** (`backend/routers/vt.py`, `backend/routers/enrichment.py`)
-   - No rate limit = attacker can burn free VT quota (4 req/min tier)
-   - Fix: `pip install slowapi` · add `@limiter.limit("10/minute")` to VT and enrichment endpoints
-   - Add `slowapi==0.1.9` to `requirements.txt`
+- [x] **bcrypt password hashing** — `backend/routers/auth.py`, transparent upgrade from SHA-256 on first login
+- [x] **sessionStorage swap** — `frontend/src/store/useStore.js` + `client.js` (all localStorage → sessionStorage)
+- [x] **Rate limiting on VT/enrichment** — `slowapi==0.1.9`, 10/min VT, 20/min enrichment, global 200/min
+- [x] **JWT server-side invalidation** — `TokenBlocklist` model, check on every request, nightly cleanup
 
 ---
 
 ## FULL FUTURE WORK BACKLOG
 
-### Priority 1 — Security (Do First)
-- [ ] **bcrypt password hashing** — `backend/routers/auth.py`, add `bcrypt` to requirements.txt
-- [ ] **sessionStorage quick-fix** — `frontend/src/store/useStore.js` + `frontend/src/api/client.js` (change localStorage → sessionStorage, 10 min)
-- [ ] **Rate limiting on VT** — `backend/routers/vt.py` and `enrichment.py`, add `slowapi`
-- [ ] **JWT server-side invalidation** — Add `TokenBlocklist` model in `models.py`, check on every request
+### Priority 1 — Endpoint Agent Layer 2 Completions (partially done in v4.3)
+- [x] Shadow AI detection — 14 AI API domains, cross-refs approved list
+- [x] Suspicious process detection — known malicious name matching
+- [x] Suspicious port detection — C2 port flagging
+- [x] New network destination detection — baseline + deviation after 5 cycles
+- [x] Behavioural Baseline Engine — 7-day learning, anomaly detection
+- [x] Process Lineage Tree — suspicious parent-child detection (office→cmd, browser→cmd, etc.)
+- [x] File Integrity Monitoring — hash critical system paths, alert on change
+- [x] Privilege Escalation Detector — root escalation, sudo anomalies
+- [x] Local Anomaly Scorer — pure Python 0-100 composite score
+- [x] Command Channel — bidirectional control: collect_now, kill_process, get_process_tree, ping, etc.
+- [x] Watchdog Thread — heartbeat monitoring, restarts main loop on failure
+- [x] Service registration — systemd / LaunchAgent / Windows Service
+- [ ] DNS Query Monitoring — DGA detection, tunnelling, newly registered domains (Layer 2 remaining)
+- [ ] Behavioural baseline: cross-session persistence with rolling 7-day statistics
 
-### Priority 2 — ITDR Detector Hardening (High value, fits Trust OS vision)
-- [ ] **Multiple time windows for credential stuffing** — Currently only 10-min window. Add 1h (≥15) and 24h (≥25) thresholds in `backend/routers/itdr.py` `_detect_credential_stuffing()`
-- [ ] **IP-based distributed attack detection** — Check total failed logins from same IP across ALL users in `_detect_credential_stuffing()` (catches 100 users × 2 attempts each)
-- [ ] **Multiple time windows for lateral movement** — Add 6h (≥8 devices) and 24h (≥12 devices) windows
-- [ ] **User-agent check for token theft** — Check user_agent changes per session, not just IP
+### Priority 2 — ITDR Hardening (v4.3 completed)
+- [x] Multiple time windows for credential stuffing — 10min/5, 1h/15, 24h/25
+- [x] IP-based distributed attack detection — cross-user from same IP
+- [x] User-agent check for token theft
+- [x] Shadow AI ITDR integration — 3+ hits in 24h → alert
+- [ ] Impossible travel geo-accuracy improvement — use MaxMind DB instead of IP lookup API
+- [ ] ITDR analytics page — detector fire rates, top targeted identities, false positive trend
 
-### Priority 3 — Trust OS Features (Next major build)
-- [ ] **Shadow AI Detection** — Detect when endpoint processes send data to known AI APIs (OpenAI, Anthropic, etc.) not on approved list. Show alert in ITDR page and Dashboard.
-- [ ] **SOAR Playbooks engine** — Playbook builder UI + automated execution: trigger → action sequence → approval gate → result. Backend: `backend/routers/playbooks.py`
-- [ ] **Control Plane View** — New page `/app/control-plane` showing live: identity trust scores, active AI agent actions pending approval, policy violations, endpoint heartbeats. This IS the Trust OS dashboard.
+### Priority 3 — Trust OS Features
+- [ ] **Shadow AI Detection dashboard** — full investigation UI for ShadowAIEvent records at `/app/shadow-ai`
+- [ ] **SOAR Playbooks engine** — builder UI + automated execution: trigger → action sequence → approval gate
+- [ ] **Control Plane View** — `/app/control-plane` — live: identity trust scores, active AI agent actions, policy violations, endpoint heartbeats
 
 ### Priority 4 — Identity Graph Enhancements
-- [ ] **Click device node → Device Details panel** — When you click a `device` type node in IdentityGraph, show a right-side panel with: OS, IP, last seen, risk score, recent activity from `EndpointLog`, create-case button. All data already exists in `EndpointAgent` + `EndpointLog` models.
-- [ ] **Identity risk timeline** — Show risk score history per node (line graph) using existing `IdentityAnomaly` data
-- [ ] **Filter by risk threshold** — Add slider/toggle to show only nodes above risk score X
+- [ ] Click device node → Device Details panel (OS, IP, last seen, risk score, recent activity, create-case button)
+- [ ] Identity risk timeline — line graph per node using existing anomaly data
+- [ ] Filter by risk threshold — slider to show only nodes above risk score X
 
 ### Priority 5 — Analytics & Reporting
-- [ ] **ITDR analytics** — Add to Analytics page: detector fire rate per type, top targeted identities, false positive trend
-- [ ] **Trust score trending** — Track identity node risk scores over time (requires new `IdentityRiskHistory` model)
-- [ ] **DORA compliance improvements** — Map more case fields to DORA Article 19 requirements
+- [ ] ITDR analytics — detector fire rate, top targeted identities, false positive trend
+- [ ] Trust score trending — IdentityRiskHistory model, track scores over time
+- [ ] DPDPA Compliance Report — mapped to India DPDPA 2025 obligations (major India sales accelerator)
+- [ ] RBI Cybersecurity Framework mapping panel
 
 ### Priority 6 — Polish & UX
-- [ ] **2FA/TOTP for Admin users** — Add `mfa_secret` + `mfa_enabled` to `User` model, TOTP via `pyotp`
-- [ ] **Terminal Lab: sandbox mode** — Real Docker sandbox for actual command execution (vs simulated). Requires Docker-in-Docker or exec isolation.
-- [ ] **Email notifications on ITDR anomaly** — When a detector fires, send email via SendGrid (env var already set). Template: "Anomaly detected for identity X"
-- [ ] **Portfolio: add Trust OS phase roadmap** — Add a subtle 5-phase roadmap card to Portfolio.jsx (Phase 1 NOW → Phase 5 2030+)
+- [ ] 2FA/TOTP for Admin users — `mfa_secret` + `mfa_enabled` on User model, `pyotp`
+- [ ] Email notifications on ITDR anomaly — SendGrid template
+- [ ] Portfolio: Trust OS phase roadmap (Phase 1 NOW → Phase 5 2030+)
+
+### Priority 7 — v5.0 Planned
+- [ ] SCIM endpoint (`/api/scim/v2`) — enterprise push-based identity sync
+- [ ] Least Agency enforcement — per-agent scope definition, auto-reject out-of-scope actions
+- [ ] MCP Security Gateway — monitor MCP server connections, flag unapproved
+- [ ] Agent Supervision Console — per-AI-agent kill switches + task scope enforcement
+- [ ] Attacker Path Reconstruction — visual kill-chain across human + machine actors
+- [ ] Endpoint Agent Layer 3 (eBPF) — Falco companion process on Linux
+- [ ] Endpoint Agent Layer 4 (Memory Forensics) — Volatility 3 integration
 
 ---
 
 ## HOW TO RESUME BUILDING
 
-Start a new Claude session and say:
+Start a new Claude session and paste this file. Then say:
 
 > "Read AEGISTRACE_CONTEXT.md — I want to work on [task from backlog above]"
 
-The Security fixes are the highest priority. Start with bcrypt (30 min) then sessionStorage swap (10 min).
+**Highest priority items:** ITDR analytics page, Shadow AI dashboard UI, DPDPA compliance report, DNS monitoring in agent.
 
 Do NOT give Claude the full codebase — this file is sufficient context for any continuation task.
 

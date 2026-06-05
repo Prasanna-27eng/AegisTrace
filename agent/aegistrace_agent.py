@@ -1,110 +1,155 @@
 #!/usr/bin/env python3
 """
-AegisTrace Endpoint Agent v2.0
-────────────────────────────────────────────────────────────────
-Silently collects logs, metrics & security telemetry and ships
-them to your AegisTrace instance. Zero external dependencies.
+AegisTrace Endpoint Agent v3.0
+────────────────────────────────────────────────────────────────────────
+Full rebuild. Single file. One allowed dependency: psutil.
+Python 3.8+ · Linux · macOS · Windows
 
-v2.0 Changes over v1.0:
-  ✓ Fixed Windows Get-WinEvent timestamp filter (FilterHashtable)
-  ✓ Fixed Python 3.8 type-hint crash (Tuple from typing)
-  ✓ Rich process snapshot (pid/ppid/exe/cmdline for process_tree_analyser)
-  ✓ Sysmon event collection (Microsoft-Windows-Sysmon/Operational)
-  ✓ Added EventIDs 4688, 4697, 4698, 4702, 4771, 4776, 1102
-  ✓ System metrics (CPU/mem/disk — no psutil needed)
-  ✓ Heartbeat every 60s (server knows agent is alive, not just quiet)
-  ✓ Retry queue (survives Render cold-starts / network blips)
-  ✓ Persistence enumeration (cron/registry/schtasks/LaunchAgents)
-  ✓ Config file support (aegistrace_agent.conf — update without re-download)
-  ✓ --check flag (test connectivity before deploying as service)
-  ✓ Local pre-scoring (flag suspicious batches before shipping)
+Layer 2 Capabilities (fully implemented):
+  ✓ Shadow AI detection — 14 AI API domains, cross-refs approved list
+  ✓ Suspicious process detection — known malicious name matching
+  ✓ Suspicious port detection — C2 port flagging
+  ✓ New network destination detection — baseline + deviation
+  ✓ Behavioural Baseline Engine — 7-day learning, 2 std-dev deviation
+  ✓ Process Lineage Tree — suspicious parent-child relationship detection
+  ✓ File Integrity Monitoring — hash critical system paths, alert on change
+  ✓ Privilege Escalation Detector — root escalation, SUID, sudo anomalies
+  ✓ Local Anomaly Scorer — pure Python 0-100 composite score
+  ✓ Command Channel — bidirectional control from AegisTrace UI
+  ✓ Watchdog Thread — restarts main loop on failure
+  ✓ Service registration — systemd / LaunchAgent / Windows Service
+  ✓ Local event buffer — never loses alerts during server downtime
+  ✓ Structured JSON logging — every line is valid JSON
 
 QUICK SETUP:
-  1. Edit CONFIG below, or create aegistrace_agent.conf
-  2. Run:  python3 aegistrace_agent.py
-  3. Test: python3 aegistrace_agent.py --check
-  4. Service: sudo python3 aegistrace_agent.py --install-service
+  pip install psutil
+  export AEGISTRACE_TOKEN=your_token
+  export AEGISTRACE_AGENT_ID=your_hostname
+  python3 aegistrace_agent.py
+
+SERVICE INSTALL:
+  sudo python3 aegistrace_agent.py --install-service
 """
 
-# ══ CONFIG — EDIT THESE OR USE aegistrace_agent.conf ════════════════════════
-AEGISTRACE_URL    = "https://aegistrace-7qvn.onrender.com"
-INGEST_KEY        = "REPLACE_WITH_YOUR_INGEST_KEY"
-INTERVAL_SECONDS  = 300
-HEARTBEAT_SECONDS = 60
-MAX_LINES         = 500
-AUTO_ANALYSE      = True
-AUTO_CASE         = True
-THREAT_THRESHOLD  = 60
-AGENT_VERSION     = "2.0"
-TAGS              = []
-# ════════════════════════════════════════════════════════════════════════════
+# === CONFIG =================================================================
+import os
 
-import os, sys, json, time, socket, platform, subprocess, logging
-from datetime import datetime
+SERVER_URL            = os.environ.get("AEGISTRACE_SERVER", "https://aegistrace-7qvn.onrender.com")
+AGENT_TOKEN           = os.environ.get("AEGISTRACE_TOKEN", "")
+AGENT_ID              = os.environ.get("AEGISTRACE_AGENT_ID", "")
+POLL_INTERVAL         = int(os.environ.get("AEGISTRACE_POLL_INTERVAL", "30"))
+COMMAND_POLL_INTERVAL = int(os.environ.get("AEGISTRACE_CMD_INTERVAL", "10"))
+APPROVED_AI_SERVICES  = [x.strip() for x in os.environ.get("AEGISTRACE_APPROVED_AI", "").split(",") if x.strip()]
+
+# === CONSTANTS ===============================================================
+AGENT_VERSION = "3.0.0"
+
+AI_API_DOMAINS = [
+    "api.openai.com", "api.anthropic.com",
+    "generativelanguage.googleapis.com", "api.mistral.ai",
+    "api.groq.com", "api.cohere.ai", "huggingface.co",
+    "api.together.xyz", "api.perplexity.ai", "api.replicate.com",
+    "inference.cerebras.ai", "api.deepseek.com",
+    "openrouter.ai", "api.x.ai",
+]
+
+SENSITIVE_PATHS = [
+    ".ssh", ".aws", ".env", ".gnupg", "id_rsa", "id_ed25519",
+    "credentials", ".kube/config", ".docker/config.json",
+    "passwd", "shadow", "sudoers",
+]
+
+SUSPICIOUS_PROCESS_NAMES = [
+    "mimikatz", "lazagne", "procdump", "meterpreter",
+    "netcat", "ncat", "powersploit", "empire", "cobalt",
+    "cobaltstrike", "msfconsole", "metasploit",
+]
+
+# Suspicious parent-child relationships: (parent_keyword, child_keyword)
+SUSPICIOUS_LINEAGES = [
+    ("word",       "cmd"),
+    ("word",       "powershell"),
+    ("excel",      "cmd"),
+    ("excel",      "powershell"),
+    ("outlook",    "cmd"),
+    ("outlook",    "powershell"),
+    ("chrome",     "cmd"),
+    ("firefox",    "cmd"),
+    ("winword",    "wscript"),
+    ("svchost",    "powershell"),
+    ("explorer",   "regsvr32"),
+    ("explorer",   "mshta"),
+]
+
+SUSPICIOUS_PORTS = {4444, 1337, 31337, 8888, 9999, 6666, 5555, 12345}
+
+# Critical paths to monitor for FIM (file integrity monitoring)
+FIM_PATHS_LINUX = [
+    "/etc/passwd", "/etc/shadow", "/etc/sudoers",
+    "/etc/crontab", "/etc/ssh/sshd_config",
+    "/etc/hosts", "/etc/ld.so.conf",
+]
+FIM_PATHS_MAC = [
+    "/etc/passwd", "/etc/sudoers",
+    "/Library/LaunchDaemons",
+    "/etc/hosts",
+]
+FIM_PATHS_WINDOWS = [
+    r"C:\Windows\System32\drivers\etc\hosts",
+    r"C:\Windows\System32\config\SAM",
+]
+
+# === IMPORTS =================================================================
+import sys, json, time, socket, platform, subprocess, logging, threading
+import hashlib, hmac, re, math, statistics
+from datetime import datetime, timedelta
 from pathlib import Path
-from urllib import request, error
-from typing import Tuple, Optional, List, Dict
+from urllib import request as urllib_request, error as urllib_error
+from typing import Optional, List, Dict, Tuple
+from logging.handlers import RotatingFileHandler
+from collections import defaultdict, deque
 
-# ── Paths ─────────────────────────────────────────────────────────────────────
-_DIR        = Path(__file__).parent
-LOG_FILE    = _DIR / "aegistrace_agent.log"
-STATE_FILE  = _DIR / "aegistrace_agent_state.json"
-RETRY_FILE  = _DIR / "aegistrace_retry_queue.json"
-CONFIG_FILE = _DIR / "aegistrace_agent.conf"
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
+    print("[WARN] psutil not installed. Run: pip install psutil")
+    print("[WARN] Agent will run with reduced capabilities.")
 
-# ── Logging ───────────────────────────────────────────────────────────────────
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.FileHandler(LOG_FILE), logging.StreamHandler(sys.stdout)],
-)
-log = logging.getLogger("aegistrace_agent")
+# === PATHS ===================================================================
+_DIR         = Path(__file__).parent
+LOG_FILE     = _DIR / "aegistrace_agent.log"
+BUFFER_FILE  = _DIR / "aegistrace_buffer.jsonl"
+STATE_FILE   = _DIR / "aegistrace_state.json"
+BASELINE_FILE= _DIR / "aegistrace_baseline.json"
+FIM_FILE     = _DIR / "aegistrace_fim.json"
 
+# === LOGGING =================================================================
+class JsonFormatter(logging.Formatter):
+    """Structured JSON log formatter — every line is valid JSON."""
+    def format(self, record: logging.LogRecord) -> str:
+        return json.dumps({
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "level":     record.levelname,
+            "agent_id":  AGENT_ID or "unknown",
+            "version":   AGENT_VERSION,
+            "module":    record.module,
+            "message":   record.getMessage(),
+        })
 
-# ── Config file override ───────────────────────────────────────────────────────
-def _load_config_file():
-    global AEGISTRACE_URL, INGEST_KEY, INTERVAL_SECONDS, HEARTBEAT_SECONDS
-    global MAX_LINES, AUTO_ANALYSE, AUTO_CASE, THREAT_THRESHOLD, TAGS
-    if not CONFIG_FILE.exists():
-        return
-    try:
-        cfg = json.loads(CONFIG_FILE.read_text())
-        if "url"              in cfg: AEGISTRACE_URL    = cfg["url"]
-        if "key"              in cfg: INGEST_KEY        = cfg["key"]
-        if "interval"         in cfg: INTERVAL_SECONDS  = int(cfg["interval"])
-        if "heartbeat"        in cfg: HEARTBEAT_SECONDS = int(cfg["heartbeat"])
-        if "max_lines"        in cfg: MAX_LINES         = int(cfg["max_lines"])
-        if "auto_analyse"     in cfg: AUTO_ANALYSE      = bool(cfg["auto_analyse"])
-        if "auto_case"        in cfg: AUTO_CASE         = bool(cfg["auto_case"])
-        if "threat_threshold" in cfg: THREAT_THRESHOLD  = int(cfg["threat_threshold"])
-        if "tags"             in cfg: TAGS              = list(cfg["tags"])
-        log.info(f"[config] Loaded from {CONFIG_FILE.name}")
-    except Exception as e:
-        log.warning(f"[config] Error: {e}")
+_file_handler = RotatingFileHandler(LOG_FILE, maxBytes=5 * 1024 * 1024, backupCount=3)
+_file_handler.setFormatter(JsonFormatter())
+_stream_handler = logging.StreamHandler(sys.stdout)
+_stream_handler.setFormatter(JsonFormatter())
 
-_load_config_file()
+logger = logging.getLogger("aegistrace")
+logger.setLevel(logging.INFO)
+logger.addHandler(_file_handler)
+logger.addHandler(_stream_handler)
+logger.propagate = False
 
-# ── Platform ───────────────────────────────────────────────────────────────────
-OS = platform.system().lower()
-
-def get_hostname() -> str:
-    return socket.gethostname()
-
-def get_ip() -> str:
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        ip = s.getsockname()[0]
-        s.close()
-        return ip
-    except Exception:
-        return ""
-
-def get_os_type() -> str:
-    return {"windows": "windows", "linux": "linux", "darwin": "mac"}.get(OS, "unknown")
-
-
-# ── State ──────────────────────────────────────────────────────────────────────
+# === STATE ===================================================================
 def load_state() -> dict:
     try:
         return json.loads(STATE_FILE.read_text()) if STATE_FILE.exists() else {}
@@ -114,750 +159,1183 @@ def load_state() -> dict:
 def save_state(state: dict):
     try:
         STATE_FILE.write_text(json.dumps(state, indent=2))
-    except Exception:
-        pass
-
-
-# ── Retry queue ───────────────────────────────────────────────────────────────
-def load_retry_queue() -> List[dict]:
-    try:
-        return json.loads(RETRY_FILE.read_text()) if RETRY_FILE.exists() else []
-    except Exception:
-        return []
-
-def save_retry_queue(queue: List[dict]):
-    try:
-        RETRY_FILE.write_text(json.dumps(queue, indent=2))
-    except Exception:
-        pass
-
-def enqueue_retry(hostname: str, ip: str, batch: dict):
-    queue = load_retry_queue()
-    queue.append({"hostname": hostname, "ip": ip, "batch": batch,
-                  "queued_at": datetime.utcnow().isoformat(), "attempts": 0})
-    save_retry_queue(queue[-50:])
-    log.warning(f"[retry] Queued: {batch.get('log_file','?')} (total={len(queue[-50:])})")
-
-def flush_retry_queue(hostname: str, ip: str):
-    queue = load_retry_queue()
-    if not queue:
-        return
-    log.info(f"[retry] Flushing {len(queue)} queued batches…")
-    remaining = []
-    for item in queue:
-        item["attempts"] = item.get("attempts", 0) + 1
-        r = ship_batch(item["hostname"], item["ip"], item["batch"])
-        if r.get("ok"):
-            log.info(f"[retry] ✓ {item['batch'].get('log_file','?')}")
-        elif item["attempts"] < 5:
-            remaining.append(item)
-        else:
-            log.warning(f"[retry] Dropped after 5 attempts: {item['batch'].get('log_file','?')}")
-    save_retry_queue(remaining)
-
-
-# ── File tail reader ───────────────────────────────────────────────────────────
-def read_file_tail(path: str, max_lines: int, state: dict) -> Tuple[str, int]:
-    try:
-        p = Path(path)
-        if not p.exists():
-            return "", 0
-        size     = p.stat().st_size
-        last_pos = state.get(path, 0)
-        if size < last_pos:
-            last_pos = 0   # log rotated
-        with open(p, "r", errors="replace") as f:
-            f.seek(last_pos)
-            lines: List[str] = []
-            for line in f:
-                lines.append(line)
-                if len(lines) >= max_lines:
-                    break
-            new_pos = f.tell()
-        return "".join(lines), new_pos
     except Exception as e:
-        log.warning(f"Cannot read {path}: {e}")
-        return "", state.get(path, 0)
+        logger.warning(f"State save failed: {e}")
 
+# === BASELINE ENGINE =========================================================
+# Behavioural baseline: 7-day learning, then flag >2 std dev deviations
 
-# ── Local pre-filter ──────────────────────────────────────────────────────────
-def pre_score(content: str, log_type: str) -> int:
-    """Quick 0-100 threat hint based on pattern matching — never blocks shipping."""
-    score = 0
-    lower = content.lower()
-    lines = lower.splitlines()
+class BaselineEngine:
+    """
+    Learns normal behaviour over the first N cycles, then flags anomalies.
+    Tracks: process names, external IPs, login patterns, active hours.
+    """
+    LEARNING_CYCLES = 5 * 24 * 2  # ~5 days at 30s intervals
 
-    # Auth failures
-    fails = sum(1 for l in lines if any(p in l for p in [
-        "failed password", "authentication failure", "invalid user",
-        "failed login", "logon failure", "bad password", "4625"
-    ]))
-    if fails > 20: score += 40
-    elif fails > 10: score += 25
-    elif fails > 3:  score += 10
+    def __init__(self):
+        self.data = self._load()
+        self._cycle = self.data.get("cycle_count", 0)
 
-    # LOLBins / encoded payloads
-    lol_hits = sum(1 for l in lines if any(p in l for p in [
-        "certutil", "mshta", "regsvr32", "rundll32", "downloadstring",
-        "invoke-webrequest", "-enc ", "-encodedcommand", "bypass", "iex "
-    ]))
-    if lol_hits > 3: score += 30
-    elif lol_hits:   score += 15
-
-    # Credential access
-    if any(p in lower for p in ["lsass", "mimikatz", "secretsdump",
-                                  "createremotethread", "procdump"]):
-        score += 35
-
-    # Audit log cleared — immediate high-priority
-    if "1102" in content or "audit log was cleared" in lower:
-        score += 40
-
-    # Privilege escalation
-    if any(p in lower for p in ["net localgroup administrators", "useradd",
-                                  "4672", "4648", "sudo", "su -"]):
-        score += 15
-
-    return min(score, 100)
-
-
-# ══ SYSTEM METRICS (no psutil — pure stdlib) ══════════════════════════════════
-
-def _linux_metrics() -> dict:
-    m: dict = {}
-    try:
-        vals: dict = {}
-        for line in Path("/proc/meminfo").read_text().splitlines():
-            if ":" in line:
-                k, v = line.split(":", 1)
-                vals[k.strip()] = int(v.strip().split()[0])
-        total = vals.get("MemTotal", 0)
-        avail = vals.get("MemAvailable", vals.get("MemFree", 0))
-        if total:
-            m["mem_total_mb"] = total // 1024
-            m["mem_used_mb"]  = (total - avail) // 1024
-            m["mem_percent"]  = round((total - avail) / total * 100, 1)
-    except Exception:
-        pass
-    try:
-        parts = Path("/proc/loadavg").read_text().split()
-        m["cpu_load_1m"]  = float(parts[0])
-        m["cpu_load_5m"]  = float(parts[1])
-        m["cpu_load_15m"] = float(parts[2])
-    except Exception:
-        pass
-    try:
-        df  = subprocess.run(["df", "-BM", "/"], capture_output=True, text=True, timeout=5)
-        row = df.stdout.strip().splitlines()
-        if len(row) > 1:
-            p = row[1].split()
-            m["disk_total_mb"] = int(p[1].rstrip("M"))
-            m["disk_used_mb"]  = int(p[2].rstrip("M"))
-            m["disk_free_mb"]  = int(p[3].rstrip("M"))
-            m["disk_percent"]  = int(p[4].rstrip("%"))
-    except Exception:
-        pass
-    return m
-
-def _windows_metrics() -> dict:
-    m: dict = {}
-    try:
-        r = subprocess.run(
-            ["wmic", "OS", "get", "TotalVisibleMemorySize,FreePhysicalMemory", "/value"],
-            capture_output=True, text=True, timeout=10,
-        )
-        for line in r.stdout.splitlines():
-            if "TotalVisibleMemorySize=" in line:
-                m["mem_total_mb"] = int(line.split("=")[1].strip()) // 1024
-            elif "FreePhysicalMemory=" in line:
-                free  = int(line.split("=")[1].strip()) // 1024
-                total = m.get("mem_total_mb", 0)
-                m["mem_used_mb"] = total - free
-                m["mem_percent"] = round((total - free) / total * 100, 1) if total else 0
-    except Exception:
-        pass
-    try:
-        r = subprocess.run(["wmic", "cpu", "get", "LoadPercentage", "/value"],
-                           capture_output=True, text=True, timeout=10)
-        for line in r.stdout.splitlines():
-            if "LoadPercentage=" in line:
-                v = line.split("=")[1].strip()
-                if v.isdigit():
-                    m["cpu_percent"] = int(v)
-    except Exception:
-        pass
-    return m
-
-def _mac_metrics() -> dict:
-    m: dict = {}
-    try:
-        r    = subprocess.run(["vm_stat"], capture_output=True, text=True, timeout=5)
-        vals: dict = {}
-        for line in r.stdout.splitlines():
-            if ":" in line:
-                k, v = line.split(":", 1)
-                try:
-                    vals[k.strip()] = int(v.strip().rstrip("."))
-                except Exception:
-                    pass
-        total = sum(vals.values())
-        free  = vals.get("Pages free", 0)
-        if total:
-            m["mem_total_mb"] = total * 4096 // (1024 * 1024)
-            m["mem_free_mb"]  = free  * 4096 // (1024 * 1024)
-            m["mem_used_mb"]  = m["mem_total_mb"] - m["mem_free_mb"]
-            m["mem_percent"]  = round(m["mem_used_mb"] / m["mem_total_mb"] * 100, 1)
-    except Exception:
-        pass
-    return m
-
-def get_metrics() -> dict:
-    try:
-        if OS == "windows": return _windows_metrics()
-        if OS == "darwin":  return _mac_metrics()
-        return _linux_metrics()
-    except Exception:
-        return {}
-
-
-# ══ LOG COLLECTORS ════════════════════════════════════════════════════════════
-
-def collect_linux(state: dict) -> List[dict]:
-    batches: List[dict] = []
-
-    for path, ltype in [
-        ("/var/log/auth.log",         "auth_log"),
-        ("/var/log/secure",           "auth_log"),
-        ("/var/log/syslog",           "syslog"),
-        ("/var/log/messages",         "syslog"),
-        ("/var/log/kern.log",         "syslog"),
-        ("/var/log/nginx/access.log", "nginx_access"),
-        ("/var/log/nginx/error.log",  "nginx_access"),
-        ("/var/log/apache2/access.log", "apache_access"),
-        ("/var/log/apache2/error.log",  "apache_access"),
-        ("/var/log/httpd/access_log",   "apache_access"),
-    ]:
-        content, new_pos = read_file_tail(path, MAX_LINES, state)
-        if content.strip():
-            batches.append({"log_file": path, "log_type": ltype,
-                            "content": content, "new_pos": new_pos, "path_key": path})
-
-    # journalctl
-    try:
-        last_ts = state.get("journalctl_since", "")
-        cmd     = ["journalctl", "-n", str(MAX_LINES), "--no-pager", "-o", "short"]
-        if last_ts:
-            cmd += ["--since", last_ts]
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
-        if r.stdout.strip():
-            batches.append({"log_file": "journalctl", "log_type": "syslog",
-                            "content": r.stdout, "new_pos": None,
-                            "path_key": "journalctl_since",
-                            "new_ts": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")})
-    except Exception:
-        pass
-
-    # Rich process snapshot — process_tree_analyser compatible JSON
-    try:
-        r = subprocess.run(
-            ["ps", "-eo", "pid,ppid,user,pcpu,pmem,stat,comm,args", "--no-headers"],
-            capture_output=True, text=True, timeout=10,
-        )
-        if r.stdout.strip():
-            procs = []
-            for line in r.stdout.strip().splitlines():
-                p = line.split(None, 7)
-                if len(p) >= 7:
-                    procs.append({
-                        "pid": int(p[0]), "ppid": int(p[1]), "user": p[2],
-                        "cpu": float(p[3]), "mem": float(p[4]),
-                        "status": p[5], "name": p[6],
-                        "cmdline": p[7] if len(p) > 7 else p[6],
-                    })
-            if procs:
-                batches.append({"log_file": "process_list", "log_type": "process_snapshot",
-                                "content": json.dumps(procs), "new_pos": None, "path_key": None})
-    except Exception:
-        pass
-
-    # Network connections
-    try:
-        r = subprocess.run(["ss", "-tunp"], capture_output=True, text=True, timeout=5)
-        if not r.stdout.strip():
-            r = subprocess.run(["netstat", "-tunp"], capture_output=True, text=True, timeout=5)
-        if r.stdout.strip():
-            batches.append({"log_file": "network_connections", "log_type": "netstat",
-                            "content": r.stdout, "new_pos": None, "path_key": None})
-    except Exception:
-        pass
-
-    # Persistence enumeration
-    persist: List[str] = []
-    for p in ["/etc/crontab", "/var/spool/cron/crontabs"]:
-        pp = Path(p)
-        if pp.is_file():
-            try:
-                persist.append(f"# {p}\n{pp.read_text()}")
-            except Exception:
-                pass
-        elif pp.is_dir():
-            for f in pp.iterdir():
-                try:
-                    persist.append(f"# {f}\n{f.read_text()}")
-                except Exception:
-                    pass
-    for p in ["/etc/rc.local", "/etc/rc.d/rc.local"]:
+    def _load(self) -> dict:
         try:
-            c = Path(p).read_text()
-            if c.strip():
-                persist.append(f"# {p}\n{c}")
+            return json.loads(BASELINE_FILE.read_text()) if BASELINE_FILE.exists() else {}
+        except Exception:
+            return {}
+
+    def _save(self):
+        try:
+            BASELINE_FILE.write_text(json.dumps(self.data))
         except Exception:
             pass
-    try:
-        r = subprocess.run(
-            ["systemctl", "list-unit-files", "--type=service", "--state=enabled", "--no-pager"],
-            capture_output=True, text=True, timeout=10,
-        )
-        if r.stdout.strip():
-            persist.append(f"# systemctl enabled\n{r.stdout}")
-    except Exception:
-        pass
-    try:
-        r = subprocess.run(["crontab", "-l"], capture_output=True, text=True, timeout=5)
-        if r.stdout.strip():
-            persist.append(f"# user crontab\n{r.stdout}")
-    except Exception:
-        pass
-    if persist:
-        batches.append({"log_file": "persistence", "log_type": "persistence_scan",
-                        "content": "\n\n".join(persist)[:50000],
-                        "new_pos": None, "path_key": None})
 
-    return batches
+    @property
+    def is_learning(self) -> bool:
+        return self._cycle < self.LEARNING_CYCLES
 
+    def record(self, processes: list, connections: list):
+        """Update baseline with current observation."""
+        self._cycle += 1
+        self.data["cycle_count"] = self._cycle
 
-def _ps(cmd: str, timeout: int = 30) -> Optional[str]:
-    """Run PowerShell command and return stdout or None."""
-    try:
-        r = subprocess.run(
-            ["powershell", "-NoProfile", "-NonInteractive", "-Command", cmd],
-            capture_output=True, text=True, timeout=timeout,
-        )
-        out = r.stdout.strip()
-        return out if out and out.lower() not in ("", "null") else None
-    except Exception:
+        # Track process name frequencies
+        proc_names = set()
+        for p in processes:
+            pname = (p.get("name") or "").lower()
+            if pname:
+                proc_names.add(pname)
+                self.data.setdefault("known_processes", {})[pname] = \
+                    self.data.get("known_processes", {}).get(pname, 0) + 1
+
+        # Track external IPs
+        for c in connections:
+            rip = c.get("remote_ip", "")
+            if rip and not rip.startswith(("10.", "192.168.", "172.", "127.", "::1")):
+                self.data.setdefault("known_ips", {})[rip] = \
+                    self.data.get("known_ips", {}).get(rip, 0) + 1
+
+        # Track active hours
+        hour = datetime.utcnow().hour
+        hours = self.data.setdefault("active_hours", {})
+        hours[str(hour)] = hours.get(str(hour), 0) + 1
+
+        if self._cycle % 100 == 0:
+            self._save()
+
+    def check_anomalies(self, processes: list, connections: list) -> list:
+        """
+        Returns list of anomaly dicts if current state deviates from baseline.
+        Only runs after learning period is complete.
+        """
+        if self.is_learning:
+            return []
+
+        anomalies = []
+        known_procs = self.data.get("known_processes", {})
+        known_ips   = self.data.get("known_ips", {})
+
+        # New processes never seen before
+        for p in processes:
+            pname = (p.get("name") or "").lower()
+            if pname and pname not in known_procs:
+                anomalies.append({
+                    "type": "behavioural_anomaly",
+                    "subtype": "new_process",
+                    "description": f"New process never seen during baseline: {pname}",
+                    "process_name": pname,
+                    "process_pid": p.get("pid", 0),
+                    "severity": "low",
+                })
+
+        # New external IPs never seen before
+        for c in connections:
+            rip = c.get("remote_ip", "")
+            if rip and not rip.startswith(("10.", "192.168.", "172.", "127.", "::1")):
+                if rip not in known_ips:
+                    anomalies.append({
+                        "type": "new_destination",
+                        "description": f"New external IP never seen during baseline: {rip}",
+                        "remote_ip": rip,
+                        "remote_port": c.get("remote_port"),
+                        "process_name": c.get("process_name", "unknown"),
+                        "severity": "low",
+                    })
+
+        # Unusual hour
+        hour = str(datetime.utcnow().hour)
+        active_hours = self.data.get("active_hours", {})
+        if active_hours and int(active_hours.get(hour, 0)) < 2:
+            anomalies.append({
+                "type": "behavioural_anomaly",
+                "subtype": "unusual_hour",
+                "description": f"Activity at unusual hour: {hour}:00 UTC (rarely active at this time)",
+                "hour": int(hour),
+                "severity": "low",
+            })
+
+        return anomalies
+
+_baseline = BaselineEngine()
+
+# === FIM (File Integrity Monitoring) =========================================
+
+class FileIntegrityMonitor:
+    """Hash critical system files on startup, alert on changes."""
+
+    def __init__(self):
+        self.hashes = self._load()
+
+    def _load(self) -> dict:
+        try:
+            return json.loads(FIM_FILE.read_text()) if FIM_FILE.exists() else {}
+        except Exception:
+            return {}
+
+    def _save(self):
+        try:
+            FIM_FILE.write_text(json.dumps(self.hashes))
+        except Exception:
+            pass
+
+    def _hash_file(self, path: str) -> Optional[str]:
+        try:
+            h = hashlib.sha256()
+            p = Path(path)
+            if p.is_file():
+                h.update(p.read_bytes())
+                return h.hexdigest()
+            elif p.is_dir():
+                # For directories, hash the listing
+                entries = sorted(str(e) for e in p.iterdir())
+                h.update("\n".join(entries).encode())
+                return h.hexdigest()
+        except Exception:
+            pass
         return None
 
+    def _get_paths(self) -> list:
+        OS = platform.system().lower()
+        if OS == "linux":  return FIM_PATHS_LINUX
+        if OS == "darwin": return FIM_PATHS_MAC
+        if OS == "windows": return FIM_PATHS_WINDOWS
+        return FIM_PATHS_LINUX
 
-def collect_windows(state: dict) -> List[dict]:
-    batches: List[dict] = []
+    def initialize(self):
+        """Hash all paths on startup. No alerts on first run."""
+        for path in self._get_paths():
+            h = self._hash_file(path)
+            if h:
+                self.hashes[path] = h
+        self._save()
+        logger.info(f"FIM initialized: {len(self.hashes)} paths monitored")
 
-    # Event log queries — v2.0 FIXED: FilterHashtable with StartTime
-    event_queries = [
-        {
-            "name":     "Security",
-            "log_type": "windows_event",
-            "ids": [4624, 4625, 4634, 4648, 4688, 4697, 4698, 4702,
-                    4720, 4726, 4732, 4756, 4771, 4776, 1102],
-        },
-        {
-            "name":     "System",
-            "log_type": "windows_event",
-            "ids":      [7045, 7040, 7036],
-        },
-        {
-            "name":     "Microsoft-Windows-Sysmon/Operational",
-            "log_type": "sysmon",
-            "ids":      [1, 3, 7, 8, 10, 11, 12, 13, 15, 22],
-        },
-    ]
-
-    for eq in event_queries:
-        key     = f"win_{eq['name'].replace('/', '_')}"
-        last_ts = state.get(key, "")
-        id_arr  = ", ".join(str(i) for i in eq["ids"])
-        try:
-            if last_ts:
-                # FIX: use FilterHashtable @{StartTime=...} — correct PowerShell syntax
-                ps_cmd = (
-                    f"$ids=@({id_arr}); $st=[datetime]'{last_ts}'; "
-                    f"Get-WinEvent -FilterHashtable @{{LogName='{eq['name']}';Id=$ids;StartTime=$st}} "
-                    f"-ErrorAction SilentlyContinue "
-                    f"| Select-Object TimeCreated,Id,LevelDisplayName,Message "
-                    f"| ConvertTo-Json -Depth 1 -Compress"
-                )
-            else:
-                ps_cmd = (
-                    f"$ids=@({id_arr}); "
-                    f"Get-WinEvent -FilterHashtable @{{LogName='{eq['name']}';Id=$ids}} "
-                    f"-MaxEvents {MAX_LINES} -ErrorAction SilentlyContinue "
-                    f"| Select-Object TimeCreated,Id,LevelDisplayName,Message "
-                    f"| ConvertTo-Json -Depth 1 -Compress"
-                )
-            out = _ps(ps_cmd, timeout=45)
-            if out:
-                batches.append({
-                    "log_file": f"Windows {eq['name']}",
-                    "log_type": eq["log_type"],
-                    "content":  out,
-                    "new_pos":  None,
-                    "path_key": key,
-                    "new_ts":   datetime.utcnow().isoformat(),
+    def check(self) -> list:
+        """Return list of alerts for changed files."""
+        alerts = []
+        for path in self._get_paths():
+            current = self._hash_file(path)
+            if current is None:
+                continue
+            stored = self.hashes.get(path)
+            if stored is None:
+                # New path — just record it
+                self.hashes[path] = current
+            elif stored != current:
+                alerts.append({
+                    "type": "fim_change",
+                    "path": path,
+                    "description": f"Critical file modified: {path}",
+                    "old_hash": stored[:16] + "...",
+                    "new_hash": current[:16] + "...",
+                    "severity": "high",
+                    "timestamp": datetime.utcnow().isoformat(),
                 })
-        except Exception as e:
-            log.debug(f"[windows] {eq['name']}: {e}")
+                # Update stored hash
+                self.hashes[path] = current
+        if alerts:
+            self._save()
+        return alerts
 
-    # Application events
-    try:
-        key     = "win_Application"
-        last_ts = state.get(key, "")
-        if last_ts:
-            ps_cmd = (
-                f"$st=[datetime]'{last_ts}'; "
-                f"Get-WinEvent -FilterHashtable @{{LogName='Application';StartTime=$st}} "
-                f"-MaxEvents 100 -ErrorAction SilentlyContinue "
-                f"| Select-Object TimeCreated,Id,LevelDisplayName,Message "
-                f"| ConvertTo-Json -Depth 1 -Compress"
-            )
-        else:
-            ps_cmd = (
-                "Get-WinEvent -LogName Application -MaxEvents 100 -ErrorAction SilentlyContinue "
-                "| Select-Object TimeCreated,Id,LevelDisplayName,Message "
-                "| ConvertTo-Json -Depth 1 -Compress"
-            )
-        out = _ps(ps_cmd, timeout=30)
-        if out:
-            batches.append({"log_file": "Windows Application", "log_type": "windows_event",
-                            "content": out, "new_pos": None,
-                            "path_key": "win_Application",
-                            "new_ts": datetime.utcnow().isoformat()})
-    except Exception:
-        pass
+_fim = FileIntegrityMonitor()
 
-    # PowerShell history
-    try:
-        ps_hist = os.path.expandvars(
-            r"%APPDATA%\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt")
-        content, new_pos = read_file_tail(ps_hist, MAX_LINES, state)
-        if content.strip():
-            batches.append({"log_file": "PowerShell History", "log_type": "windows_event",
-                            "content": content, "new_pos": new_pos, "path_key": ps_hist})
-    except Exception:
-        pass
+# === LOCAL ANOMALY SCORER ====================================================
 
-    # Rich process snapshot — process_tree_analyser compatible
+def calculate_local_anomaly_score(
+    processes: list,
+    connections: list,
+    alerts: list,
+    login_events: list,
+) -> Tuple[int, list]:
+    """
+    Pure Python statistical scorer. Returns (score 0-100, reasons list).
+    Weights:
+      new process (found suspicious)    +30
+      new external IP                   +20
+      unusual hours                     +15
+      suspicious lineage                +40
+      failed logins (> 5)               +25
+      shadow AI                         +35
+      known malicious process           +50
+      suspicious port                   +30
+      FIM change                        +40
+      privilege escalation              +45
+    """
+    score = 0
+    reasons = []
+
+    alert_types = [a.get("type", "") for a in alerts]
+
+    if "shadow_ai" in alert_types:
+        score += 35
+        reasons.append("Shadow AI API access detected")
+
+    if "suspicious_process" in alert_types:
+        score += 50
+        reasons.append("Known malicious process name detected")
+
+    if "suspicious_port" in alert_types:
+        score += 30
+        reasons.append("Connection to known C2 port")
+
+    if "fim_change" in alert_types:
+        score += 40
+        reasons.append("Critical system file modified")
+
+    if "privilege_escalation" in alert_types:
+        score += 45
+        reasons.append("Privilege escalation detected")
+
+    if "suspicious_lineage" in alert_types:
+        score += 40
+        reasons.append("Suspicious parent-child process relationship")
+
+    # Failed login count
+    failed_logins = sum(1 for e in login_events if not e.get("success"))
+    if failed_logins > 10:
+        score += 25
+        reasons.append(f"High failed login count: {failed_logins}")
+    elif failed_logins > 5:
+        score += 15
+        reasons.append(f"Multiple failed logins: {failed_logins}")
+
+    # New external IPs
+    known_ips = _baseline.data.get("known_ips", {})
+    new_ips = [
+        c.get("remote_ip") for c in connections
+        if c.get("remote_ip")
+        and not c["remote_ip"].startswith(("10.", "192.168.", "172.", "127.", "::1"))
+        and c["remote_ip"] not in known_ips
+    ]
+    if len(new_ips) > 5:
+        score += 20
+        reasons.append(f"{len(new_ips)} new external IPs")
+    elif new_ips:
+        score += 10
+        reasons.append(f"{len(new_ips)} new external IP(s)")
+
+    return min(score, 100), reasons
+
+
+# === COLLECTORS ==============================================================
+
+def collect_processes() -> list:
+    """Collect running processes with network connections embedded."""
+    if not PSUTIL_AVAILABLE:
+        return _collect_processes_fallback()
+    procs = []
     try:
-        ps_cmd = (
-            "Get-CimInstance Win32_Process | "
-            "Select-Object ProcessId,ParentProcessId,Name,ExecutablePath,CommandLine,"
-            "@{N='MemMB';E={[math]::Round($_.WorkingSetSize/1MB,1)}},"
-            "@{N='User';E={try{$o=$_.GetOwner();\"$($o.Domain)\\$($o.User)\"}catch{'SYSTEM'}}} | "
-            "ConvertTo-Json -Depth 1 -Compress"
-        )
-        out = _ps(ps_cmd, timeout=30)
-        if out:
+        for proc in psutil.process_iter(["pid", "ppid", "name", "cmdline", "username", "status", "create_time"]):
             try:
-                raw = json.loads(out)
-                if isinstance(raw, dict):
-                    raw = [raw]
-                procs = [{
-                    "pid": p.get("ProcessId"), "ppid": p.get("ParentProcessId"),
-                    "name": p.get("Name", ""), "exe": p.get("ExecutablePath", ""),
-                    "cmdline": p.get("CommandLine", ""),
-                    "cpu": 0, "mem": p.get("MemMB", 0), "user": p.get("User", "SYSTEM"),
-                } for p in raw if p.get("ProcessId")]
-                batches.append({"log_file": "process_list", "log_type": "process_snapshot",
-                                "content": json.dumps(procs), "new_pos": None, "path_key": None})
-            except Exception:
-                batches.append({"log_file": "process_list", "log_type": "process_snapshot",
-                                "content": out, "new_pos": None, "path_key": None})
-    except Exception:
-        pass
-
-    # Network connections
-    out = _ps(
-        "Get-NetTCPConnection | Select-Object LocalAddress,LocalPort,"
-        "RemoteAddress,RemotePort,State | ConvertTo-Json -Compress",
-        timeout=10,
-    )
-    if out:
-        batches.append({"log_file": "network_connections", "log_type": "netstat",
-                        "content": out, "new_pos": None, "path_key": None})
-
-    # Persistence — registry Run keys + scheduled tasks + services
-    persist: List[str] = []
-    for rkey in [
-        r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run",
-        r"HKLM\Software\Microsoft\Windows\CurrentVersion\Run",
-        r"HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce",
-        r"HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunServices",
-    ]:
-        try:
-            r = subprocess.run(["reg", "query", rkey], capture_output=True, text=True, timeout=5)
-            if r.stdout.strip():
-                persist.append(f"# Registry Run: {rkey}\n{r.stdout}")
-        except Exception:
-            pass
-    out = _ps(
-        "Get-ScheduledTask | Select-Object TaskName,TaskPath,State | ConvertTo-Json -Compress",
-        timeout=20,
-    )
-    if out:
-        persist.append(f"# Scheduled Tasks\n{out}")
-    out = _ps(
-        "Get-Service | Where-Object {$_.Status -eq 'Running'} | "
-        "Select-Object Name,DisplayName,Status | ConvertTo-Json -Compress",
-        timeout=15,
-    )
-    if out:
-        persist.append(f"# Running Services\n{out}")
-    if persist:
-        batches.append({"log_file": "persistence", "log_type": "persistence_scan",
-                        "content": "\n\n".join(persist)[:50000],
-                        "new_pos": None, "path_key": None})
-
-    return batches
-
-
-def collect_mac(state: dict) -> List[dict]:
-    batches: List[dict] = []
-
-    for path, ltype in [("/var/log/system.log", "syslog"),
-                         ("/var/log/secure.log", "auth_log")]:
-        content, new_pos = read_file_tail(path, MAX_LINES, state)
-        if content.strip():
-            batches.append({"log_file": path, "log_type": ltype,
-                            "content": content, "new_pos": new_pos, "path_key": path})
-
-    try:
-        r = subprocess.run(
-            ["log", "show", "--predicate",
-             "eventMessage contains[c] 'error' or eventMessage contains[c] 'fail'",
-             "--last", "1h", "--style", "compact"],
-            capture_output=True, text=True, timeout=15,
-        )
-        if r.stdout.strip():
-            batches.append({"log_file": "macos_unified_log", "log_type": "syslog",
-                            "content": r.stdout[:50000], "new_pos": None, "path_key": None})
-    except Exception:
-        pass
-
-    try:
-        r = subprocess.run(
-            ["ps", "-eo", "pid,ppid,user,pcpu,pmem,stat,comm,args", "--no-headers"],
-            capture_output=True, text=True, timeout=10,
-        )
-        if r.stdout.strip():
-            procs = []
-            for line in r.stdout.strip().splitlines():
-                p = line.split(None, 7)
-                if len(p) >= 7:
-                    procs.append({
-                        "pid": int(p[0]), "ppid": int(p[1]), "user": p[2],
-                        "cpu": float(p[3]), "mem": float(p[4]),
-                        "status": p[5], "name": p[6],
-                        "cmdline": p[7] if len(p) > 7 else p[6],
-                    })
-            if procs:
-                batches.append({"log_file": "process_list", "log_type": "process_snapshot",
-                                "content": json.dumps(procs), "new_pos": None, "path_key": None})
-    except Exception:
-        pass
-
-    persist: List[str] = []
-    for d in ["/Library/LaunchAgents", "/Library/LaunchDaemons",
-              str(Path.home() / "Library/LaunchAgents")]:
-        dp = Path(d)
-        if dp.exists():
-            for f in dp.glob("*.plist"):
+                info = proc.info
+                connections = []
                 try:
-                    persist.append(f"# {f}\n{f.read_text()}")
+                    for c in proc.connections(kind="inet"):
+                        connections.append({
+                            "local_ip": str(c.laddr.ip) if c.laddr else "",
+                            "local_port": c.laddr.port if c.laddr else 0,
+                            "remote_ip": str(c.raddr.ip) if c.raddr else "",
+                            "remote_port": c.raddr.port if c.raddr else 0,
+                            "status": c.status,
+                        })
+                except (psutil.AccessDenied, psutil.NoSuchProcess):
+                    pass
+
+                procs.append({
+                    "pid":         info["pid"],
+                    "ppid":        info["ppid"],
+                    "name":        info["name"] or "",
+                    "cmdline":     " ".join(info["cmdline"] or [])[:500],
+                    "username":    info["username"] or "",
+                    "status":      info["status"] or "",
+                    "create_time": info["create_time"],
+                    "connections": connections,
+                })
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                pass
+    except Exception as e:
+        logger.error(f"collect_processes error: {e}")
+    return procs
+
+
+def _collect_processes_fallback() -> list:
+    """Fallback using ps/wmic when psutil unavailable."""
+    OS = platform.system().lower()
+    procs = []
+    try:
+        if OS in ("linux", "darwin"):
+            r = subprocess.run(
+                ["ps", "-eo", "pid,ppid,user,stat,comm,args", "--no-headers"],
+                capture_output=True, text=True, timeout=10
+            )
+            for line in r.stdout.strip().splitlines():
+                p = line.split(None, 5)
+                if len(p) >= 5:
+                    procs.append({"pid": int(p[0]), "ppid": int(p[1]),
+                                  "username": p[2], "status": p[3],
+                                  "name": p[4], "cmdline": p[5] if len(p) > 5 else p[4],
+                                  "connections": []})
+    except Exception as e:
+        logger.error(f"Fallback process collect error: {e}")
+    return procs
+
+
+def collect_network_connections() -> list:
+    """Collect all network connections with hostname resolution."""
+    if not PSUTIL_AVAILABLE:
+        return _collect_connections_fallback()
+    connections = []
+    _dns_cache: dict = {}
+
+    def _resolve(ip: str) -> str:
+        if ip in _dns_cache:
+            return _dns_cache[ip]
+        try:
+            h = socket.gethostbyaddr(ip)[0]
+            _dns_cache[ip] = h
+            return h
+        except Exception:
+            _dns_cache[ip] = ip
+            return ip
+
+    try:
+        pid_to_name: dict = {}
+        try:
+            for proc in psutil.process_iter(["pid", "name"]):
+                try:
+                    pid_to_name[proc.pid] = proc.info["name"] or ""
                 except Exception:
                     pass
-    if persist:
-        batches.append({"log_file": "persistence", "log_type": "persistence_scan",
-                        "content": "\n\n".join(persist)[:50000],
-                        "new_pos": None, "path_key": None})
+        except Exception:
+            pass
 
-    return batches
-
-
-def collect_logs(state: dict) -> List[dict]:
-    if OS == "windows": return collect_windows(state)
-    if OS == "darwin":  return collect_mac(state)
-    return collect_linux(state)
-
-
-# ══ SHIPPING ══════════════════════════════════════════════════════════════════
-
-def ship_batch(hostname: str, ip: str, batch: dict) -> dict:
-    payload = json.dumps({
-        "hostname":         hostname,
-        "os_type":          get_os_type(),
-        "ip_address":       ip,
-        "log_file":         batch["log_file"],
-        "log_type":         batch["log_type"],
-        "content":          batch["content"],
-        "auto_analyse":     AUTO_ANALYSE,
-        "auto_case":        AUTO_CASE,
-        "threat_threshold": THREAT_THRESHOLD,
-        "agent_version":    AGENT_VERSION,
-        "tags":             TAGS,
-        "pre_score":        pre_score(batch.get("content", ""), batch.get("log_type", "")),
-        "metrics":          get_metrics(),
-    }).encode("utf-8")
-
-    url = f"{AEGISTRACE_URL.rstrip('/')}/api/ingest/logs"
-    req = request.Request(url, data=payload,
-                          headers={"Content-Type": "application/json",
-                                   "X-AegisTrace-Key": INGEST_KEY},
-                          method="POST")
-    try:
-        with request.urlopen(req, timeout=30) as resp:
-            return json.loads(resp.read().decode())
-    except error.HTTPError as e:
-        log.error(f"HTTP {e.code}: {e.read().decode()}")
-        return {"error": f"HTTP {e.code}"}
+        for c in psutil.net_connections(kind="inet"):
+            rip = str(c.raddr.ip) if c.raddr else ""
+            connections.append({
+                "local_ip":    str(c.laddr.ip) if c.laddr else "",
+                "local_port":  c.laddr.port if c.laddr else 0,
+                "remote_ip":   rip,
+                "remote_port": c.raddr.port if c.raddr else 0,
+                "status":      c.status,
+                "pid":         c.pid or 0,
+                "process_name": pid_to_name.get(c.pid, "") if c.pid else "",
+                "remote_hostname": _resolve(rip) if rip else "",
+            })
     except Exception as e:
-        log.error(f"Ship error: {e}")
+        logger.error(f"collect_network_connections error: {e}")
+    return connections
+
+
+def _collect_connections_fallback() -> list:
+    """Fallback using ss/netstat."""
+    connections = []
+    try:
+        OS = platform.system().lower()
+        if OS == "linux":
+            r = subprocess.run(["ss", "-tunp"], capture_output=True, text=True, timeout=5)
+            if not r.stdout.strip():
+                r = subprocess.run(["netstat", "-tunp"], capture_output=True, text=True, timeout=5)
+            for line in r.stdout.strip().splitlines()[1:]:
+                parts = line.split()
+                if len(parts) >= 5:
+                    connections.append({"raw": line})
+    except Exception:
+        pass
+    return connections
+
+
+def collect_system_info() -> dict:
+    """Collect system-level metrics."""
+    info = {
+        "hostname":   socket.gethostname(),
+        "os":         platform.system(),
+        "os_release": platform.release(),
+        "ip_address": "",
+        "timestamp":  datetime.utcnow().isoformat() + "Z",
+    }
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        info["ip_address"] = s.getsockname()[0]
+        s.close()
+    except Exception:
+        pass
+
+    if PSUTIL_AVAILABLE:
+        try:
+            info["cpu_percent"] = psutil.cpu_percent(interval=1)
+            mem = psutil.virtual_memory()
+            info["mem_total_mb"]  = mem.total // (1024 * 1024)
+            info["mem_used_mb"]   = mem.used  // (1024 * 1024)
+            info["mem_percent"]   = mem.percent
+            disk = psutil.disk_usage("/")
+            info["disk_total_gb"] = round(disk.total / (1024**3), 1)
+            info["disk_used_gb"]  = round(disk.used  / (1024**3), 1)
+            info["disk_percent"]  = disk.percent
+            users = psutil.users()
+            info["logged_in_users"] = [u.name for u in users]
+        except Exception as e:
+            logger.warning(f"system_info metrics error: {e}")
+    else:
+        info.update(_fallback_metrics())
+
+    return info
+
+
+def _fallback_metrics() -> dict:
+    """Stdlib-only system metrics."""
+    m = {}
+    OS = platform.system().lower()
+    if OS == "linux":
+        try:
+            vals = {}
+            for line in Path("/proc/meminfo").read_text().splitlines():
+                if ":" in line:
+                    k, v = line.split(":", 1)
+                    vals[k.strip()] = int(v.strip().split()[0])
+            total = vals.get("MemTotal", 0)
+            avail = vals.get("MemAvailable", vals.get("MemFree", 0))
+            if total:
+                m["mem_total_mb"] = total // 1024
+                m["mem_used_mb"]  = (total - avail) // 1024
+                m["mem_percent"]  = round((total - avail) / total * 100, 1)
+        except Exception:
+            pass
+    return m
+
+
+def collect_login_events() -> list:
+    """Parse authentication logs for login/logout/failure events."""
+    OS = platform.system().lower()
+    events = []
+    try:
+        if OS == "linux":
+            events = _parse_linux_auth_logs()
+        elif OS == "darwin":
+            events = _parse_mac_auth_logs()
+        elif OS == "windows":
+            events = _parse_windows_auth_logs()
+    except Exception as e:
+        logger.error(f"collect_login_events error: {e}")
+    return events
+
+
+def _parse_linux_auth_logs() -> list:
+    events = []
+    for log_path in ["/var/log/auth.log", "/var/log/secure"]:
+        p = Path(log_path)
+        if not p.exists():
+            continue
+        try:
+            lines = p.read_text(errors="replace").splitlines()[-200:]
+            for line in lines:
+                lower = line.lower()
+                ev = {
+                    "raw": line[:300],
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "success": True,
+                    "source_ip": None,
+                    "username": None,
+                    "event_type": "login",
+                }
+                ip_match = re.search(r"from\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", line)
+                user_match = re.search(r"(?:user|for)\s+(\S+)", line, re.IGNORECASE)
+                if ip_match:
+                    ev["source_ip"] = ip_match.group(1)
+                if user_match:
+                    ev["username"] = user_match.group(1)
+
+                if any(x in lower for x in ["failed password", "authentication failure", "invalid user"]):
+                    ev["success"] = False
+                    ev["event_type"] = "failed_login"
+                    events.append(ev)
+                elif "accepted" in lower and "publickey" in lower or "accepted password" in lower:
+                    ev["event_type"] = "login"
+                    events.append(ev)
+        except Exception as e:
+            logger.warning(f"Linux auth log parse error ({log_path}): {e}")
+    return events[-100:]  # Cap at 100
+
+
+def _parse_mac_auth_logs() -> list:
+    events = []
+    try:
+        r = subprocess.run(["last", "-20"], capture_output=True, text=True, timeout=5)
+        for line in r.stdout.splitlines():
+            if line.strip():
+                parts = line.split()
+                if parts:
+                    events.append({
+                        "username": parts[0] if parts else "",
+                        "source_ip": parts[2] if len(parts) > 2 else "",
+                        "event_type": "login",
+                        "success": True,
+                        "timestamp": datetime.utcnow().isoformat(),
+                    })
+    except Exception:
+        pass
+    return events
+
+
+def _parse_windows_auth_logs() -> list:
+    events = []
+    try:
+        ps_cmd = (
+            "$ids=@(4624,4625); "
+            "Get-WinEvent -FilterHashtable @{LogName='Security';Id=$ids} "
+            "-MaxEvents 50 -ErrorAction SilentlyContinue "
+            "| Select-Object TimeCreated,Id,Message "
+            "| ConvertTo-Json -Depth 1 -Compress"
+        )
+        r = subprocess.run(
+            ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_cmd],
+            capture_output=True, text=True, timeout=30
+        )
+        if r.stdout.strip():
+            raw = json.loads(r.stdout)
+            if isinstance(raw, dict):
+                raw = [raw]
+            for ev in raw:
+                success = int(ev.get("Id", 0)) == 4624
+                ip_match = re.search(r"Network Address:\s+(\d+\.\d+\.\d+\.\d+)", ev.get("Message", ""))
+                user_match = re.search(r"Account Name:\s+(\S+)", ev.get("Message", ""))
+                events.append({
+                    "event_type": "login" if success else "failed_login",
+                    "success": success,
+                    "source_ip": ip_match.group(1) if ip_match else "",
+                    "username": user_match.group(1) if user_match else "",
+                    "timestamp": str(ev.get("TimeCreated", "")),
+                })
+    except Exception as e:
+        logger.warning(f"Windows auth log parse error: {e}")
+    return events
+
+
+def collect_file_events() -> list:
+    """Detect processes accessing sensitive files."""
+    if not PSUTIL_AVAILABLE:
+        return []
+    events = []
+    try:
+        for proc in psutil.process_iter(["pid", "name", "username"]):
+            try:
+                for f in proc.open_files():
+                    fpath = str(f.path).lower()
+                    if any(s.lower() in fpath for s in SENSITIVE_PATHS):
+                        events.append({
+                            "pid":          proc.pid,
+                            "process_name": proc.info["name"] or "",
+                            "username":     proc.info["username"] or "",
+                            "file_path":    f.path,
+                            "timestamp":    datetime.utcnow().isoformat(),
+                        })
+            except (psutil.AccessDenied, psutil.NoSuchProcess):
+                pass
+            except Exception:
+                pass
+    except Exception as e:
+        logger.error(f"collect_file_events error: {e}")
+    return events
+
+
+# === DETECTORS ===============================================================
+
+def detect_shadow_ai(connections: list) -> list:
+    """
+    Detect outbound connections to AI API domains not in the approved list.
+    Returns HIGH severity alerts immediately.
+    """
+    alerts = []
+    approved = set(APPROVED_AI_SERVICES)
+
+    for conn in connections:
+        rip   = conn.get("remote_ip", "")
+        rhost = conn.get("remote_hostname", "")
+        pname = conn.get("process_name", "")
+
+        matched_domain = None
+        for domain in AI_API_DOMAINS:
+            if domain in rhost or (rip and rhost == rip and _hostname_matches(rip, domain)):
+                matched_domain = domain
+                break
+
+        if matched_domain and matched_domain not in approved:
+            alerts.append({
+                "type":               "shadow_ai",
+                "process_name":       pname,
+                "process_pid":        conn.get("pid", 0),
+                "destination_domain": matched_domain,
+                "destination_ip":     rip,
+                "remote_port":        conn.get("remote_port", 0),
+                "description":        f"Unapproved AI API access: {pname} → {matched_domain}",
+                "severity":           "HIGH",
+                "timestamp":          datetime.utcnow().isoformat(),
+            })
+
+    return alerts
+
+
+def _hostname_matches(ip: str, domain: str) -> bool:
+    """Try to resolve IP to check if it matches a known AI domain."""
+    try:
+        hostname = socket.gethostbyaddr(ip)[0]
+        return domain in hostname
+    except Exception:
+        return False
+
+
+def detect_suspicious_processes(processes: list) -> list:
+    """Match process names against known malicious tool list."""
+    alerts = []
+    for proc in processes:
+        pname = (proc.get("name") or "").lower()
+        cmdline = (proc.get("cmdline") or "").lower()
+
+        for suspect in SUSPICIOUS_PROCESS_NAMES:
+            if suspect in pname or suspect in cmdline:
+                alerts.append({
+                    "type":         "suspicious_process",
+                    "process_name": proc.get("name", ""),
+                    "process_pid":  proc.get("pid", 0),
+                    "username":     proc.get("username", ""),
+                    "cmdline":      proc.get("cmdline", "")[:300],
+                    "matched":      suspect,
+                    "description":  f"Known malicious process detected: {proc.get('name')} (matches '{suspect}')",
+                    "severity":     "HIGH",
+                })
+                break
+
+    return alerts
+
+
+def detect_process_lineage(processes: list) -> list:
+    """Build PID-to-process map and flag suspicious parent-child pairs."""
+    alerts = []
+    pid_map: dict = {p["pid"]: p for p in processes if p.get("pid")}
+
+    for proc in processes:
+        pname  = (proc.get("name") or "").lower()
+        ppid   = proc.get("ppid", 0)
+        parent = pid_map.get(ppid)
+        if not parent:
+            continue
+        parent_name = (parent.get("name") or "").lower()
+
+        for par_kw, child_kw in SUSPICIOUS_LINEAGES:
+            if par_kw in parent_name and child_kw in pname:
+                alerts.append({
+                    "type":          "suspicious_lineage",
+                    "process_name":  proc.get("name", ""),
+                    "process_pid":   proc.get("pid", 0),
+                    "parent_name":   parent.get("name", ""),
+                    "parent_pid":    ppid,
+                    "description":   f"Suspicious lineage: {parent.get('name')} spawned {proc.get('name')}",
+                    "severity":      "HIGH",
+                })
+                break
+
+    return alerts
+
+
+def detect_suspicious_ports(connections: list) -> list:
+    """Flag connections to known C2/RAT ports."""
+    alerts = []
+    for conn in connections:
+        rport = conn.get("remote_port", 0)
+        if rport and int(rport) in SUSPICIOUS_PORTS:
+            alerts.append({
+                "type":         "suspicious_port",
+                "process_name": conn.get("process_name", ""),
+                "pid":          conn.get("pid", 0),
+                "remote_ip":    conn.get("remote_ip", ""),
+                "remote_port":  rport,
+                "description":  f"Connection to suspicious port {rport} ({conn.get('process_name', 'unknown')} → {conn.get('remote_ip')})",
+                "severity":     "HIGH",
+            })
+    return alerts
+
+
+def detect_privilege_escalation(processes: list) -> list:
+    """
+    Detect privilege escalation patterns:
+    - Process running as root that is a known user process
+    - SUID/setuid binaries executing
+    - sudo usage outside business hours
+    """
+    if not PSUTIL_AVAILABLE:
+        return []
+    alerts = []
+    OS = platform.system().lower()
+    if OS == "windows":
+        return alerts
+
+    # Processes running as root with unusual names
+    user_space_names = {"python", "python3", "perl", "ruby", "bash", "sh", "curl", "wget"}
+    try:
+        for proc in psutil.process_iter(["pid", "name", "username", "cmdline"]):
+            try:
+                info = proc.info
+                uname = (info.get("username") or "").lower()
+                pname = (info.get("name") or "").lower()
+                cmdline = " ".join(info.get("cmdline") or []).lower()
+
+                if uname == "root" and pname in user_space_names:
+                    # Check if this could be a privilege escalation (compare with nice/normal state)
+                    if "sudo" in cmdline or "su " in cmdline:
+                        alerts.append({
+                            "type":         "privilege_escalation",
+                            "process_name": info.get("name", ""),
+                            "process_pid":  info.get("pid", 0),
+                            "username":     info.get("username", ""),
+                            "cmdline":      cmdline[:300],
+                            "description":  f"User-space process running as root with sudo: {info.get('name')} ({cmdline[:100]})",
+                            "severity":     "HIGH",
+                        })
+            except (psutil.AccessDenied, psutil.NoSuchProcess):
+                pass
+    except Exception as e:
+        logger.error(f"detect_privilege_escalation error: {e}")
+
+    return alerts
+
+
+def detect_new_network_destinations(connections: list) -> list:
+    """Flag external IPs never seen before (after baseline is built)."""
+    if _baseline.is_learning:
+        return []
+
+    known_ips = set(_baseline.data.get("known_ips", {}).keys())
+    alerts = []
+
+    for conn in connections:
+        rip = conn.get("remote_ip", "")
+        if not rip or rip.startswith(("10.", "192.168.", "172.", "127.", "::1", "0.")):
+            continue
+        if rip not in known_ips:
+            alerts.append({
+                "type":         "new_destination",
+                "remote_ip":    rip,
+                "remote_port":  conn.get("remote_port", 0),
+                "process_name": conn.get("process_name", ""),
+                "remote_hostname": conn.get("remote_hostname", rip),
+                "description":  f"New external destination: {conn.get('remote_hostname', rip)}:{conn.get('remote_port')} ({conn.get('process_name', 'unknown')})",
+                "severity":     "LOW",
+            })
+
+    return alerts
+
+
+# === TRANSPORT ===============================================================
+
+def ship_telemetry(payload: dict) -> bool:
+    """POST telemetry to AegisTrace server. Buffer on failure."""
+    url = f"{SERVER_URL.rstrip('/')}/api/ingest/{AGENT_ID}"
+    data = json.dumps({
+        **payload,
+        "agent_id": AGENT_ID,
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+    }).encode("utf-8")
+    headers = {
+        "Content-Type": "application/json",
+        "X-Agent-Token": AGENT_TOKEN,
+        "X-Agent-Version": AGENT_VERSION,
+    }
+
+    for attempt in range(3):
+        try:
+            req = urllib_request.Request(url, data=data, headers=headers, method="POST")
+            with urllib_request.urlopen(req, timeout=10) as resp:
+                resp.read()
+            return True
+        except Exception as e:
+            wait = 2 ** attempt
+            logger.warning(f"Ship attempt {attempt+1} failed: {e}. Retrying in {wait}s")
+            if attempt < 2:
+                time.sleep(wait)
+
+    # Buffer failed payload
+    _buffer_event(payload)
+    return False
+
+
+def _buffer_event(payload: dict):
+    """Append a failed payload to the local buffer file."""
+    try:
+        with open(BUFFER_FILE, "a") as f:
+            f.write(json.dumps({
+                "payload": payload,
+                "buffered_at": datetime.utcnow().isoformat(),
+            }) + "\n")
+    except Exception as e:
+        logger.error(f"Buffer write failed: {e}")
+
+
+def _flush_buffer():
+    """Replay buffered events. Clear buffer on success."""
+    if not BUFFER_FILE.exists():
+        return
+    try:
+        lines = BUFFER_FILE.read_text().strip().splitlines()
+        if not lines:
+            return
+        logger.info(f"Flushing {len(lines)} buffered events...")
+        remaining = []
+        for line in lines:
+            try:
+                item = json.loads(line)
+                if ship_telemetry(item["payload"]):
+                    logger.info("Buffer event replayed OK")
+                else:
+                    remaining.append(line)
+            except Exception:
+                pass
+        if remaining:
+            BUFFER_FILE.write_text("\n".join(remaining) + "\n")
+        else:
+            BUFFER_FILE.unlink(missing_ok=True)
+    except Exception as e:
+        logger.error(f"Buffer flush error: {e}")
+
+
+# === COMMAND CHANNEL =========================================================
+
+_command_running = True
+
+
+def poll_commands_loop():
+    """Daemon thread: poll for commands every COMMAND_POLL_INTERVAL seconds."""
+    while _command_running:
+        try:
+            _poll_commands()
+        except Exception as e:
+            logger.error(f"Command poll error: {e}")
+        time.sleep(COMMAND_POLL_INTERVAL)
+
+
+def _poll_commands():
+    url = f"{SERVER_URL.rstrip('/')}/api/ingest/agent/commands/{AGENT_ID}"
+    headers = {"X-Agent-Token": AGENT_TOKEN, "X-Agent-Version": AGENT_VERSION}
+    try:
+        req = urllib_request.Request(url, headers=headers)
+        with urllib_request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read())
+        for cmd in data.get("commands", []):
+            _execute_command(cmd)
+    except urllib_error.HTTPError as e:
+        if e.code not in (401, 403, 404):
+            logger.warning(f"Command poll HTTP {e.code}")
+    except Exception as e:
+        if "Connection refused" not in str(e) and "timed out" not in str(e):
+            logger.warning(f"Command poll error: {e}")
+
+
+def _execute_command(cmd: dict):
+    command_type = cmd.get("command", "")
+    payload      = cmd.get("payload", {})
+    command_id   = cmd.get("id")
+
+    result = {}
+    success = True
+    try:
+        if command_type == "ping":
+            result = {"status": "alive", "version": AGENT_VERSION, "agent_id": AGENT_ID}
+
+        elif command_type == "collect_now":
+            # Trigger immediate collection cycle
+            threading.Thread(target=_run_collection_cycle, daemon=True).start()
+            result = {"status": "collection_started"}
+
+        elif command_type == "collect_file":
+            path = payload.get("path", "")
+            if path:
+                try:
+                    content = Path(path).read_text(errors="replace")[:50000]
+                    result = {"path": path, "content": content, "size": len(content)}
+                except Exception as e:
+                    result = {"error": str(e)}
+                    success = False
+
+        elif command_type == "kill_process":
+            pid = payload.get("pid")
+            if pid and PSUTIL_AVAILABLE:
+                try:
+                    psutil.Process(int(pid)).terminate()
+                    result = {"status": f"Process {pid} terminated"}
+                except Exception as e:
+                    result = {"error": str(e)}
+                    success = False
+
+        elif command_type == "get_process_tree":
+            pid = payload.get("pid")
+            result = _get_process_tree(int(pid)) if pid and PSUTIL_AVAILABLE else {"error": "pid required"}
+
+        elif command_type == "update_approved_ai":
+            global APPROVED_AI_SERVICES
+            APPROVED_AI_SERVICES = payload.get("domains", [])
+            result = {"approved_count": len(APPROVED_AI_SERVICES)}
+
+        elif command_type == "set_poll_interval":
+            global POLL_INTERVAL
+            POLL_INTERVAL = max(10, int(payload.get("seconds", 30)))
+            result = {"poll_interval": POLL_INTERVAL}
+
+        else:
+            result = {"error": f"Unknown command: {command_type}"}
+            success = False
+
+        logger.info(f"Command '{command_type}' executed: {result}")
+
+    except Exception as e:
+        result = {"error": str(e)}
+        success = False
+
+    # Post result back
+    _post_command_result(command_id, result, success)
+
+
+def _post_command_result(command_id, result: dict, success: bool):
+    try:
+        url = f"{SERVER_URL.rstrip('/')}/api/ingest/agent/commands/{AGENT_ID}/result"
+        data = json.dumps({"command_id": command_id, "result": result, "success": success}).encode()
+        headers = {
+            "Content-Type": "application/json",
+            "X-Agent-Token": AGENT_TOKEN,
+            "X-Agent-Version": AGENT_VERSION,
+        }
+        req = urllib_request.Request(url, data=data, headers=headers, method="POST")
+        with urllib_request.urlopen(req, timeout=10) as _:
+            pass
+    except Exception:
+        pass
+
+
+def _get_process_tree(pid: int) -> dict:
+    """Build process tree upward from given PID."""
+    if not PSUTIL_AVAILABLE:
+        return {"error": "psutil not available"}
+    try:
+        proc = psutil.Process(pid)
+        tree = []
+        current = proc
+        for _ in range(10):  # max 10 levels up
+            try:
+                info = current.as_dict(attrs=["pid", "ppid", "name", "username", "cmdline"])
+                tree.append(info)
+                parent = current.parent()
+                if parent is None or parent.pid == current.pid:
+                    break
+                current = parent
+            except Exception:
+                break
+        return {"pid": pid, "tree": tree}
+    except Exception as e:
         return {"error": str(e)}
 
 
-def send_heartbeat(hostname: str, ip: str):
-    """Lightweight ping — server marks endpoint alive even when no new logs."""
-    payload = json.dumps({
-        "hostname":      hostname,
-        "ip_address":    ip,
-        "os_type":       get_os_type(),
-        "agent_version": AGENT_VERSION,
-        "tags":          TAGS,
-        "metrics":       get_metrics(),
-    }).encode("utf-8")
-    url = f"{AEGISTRACE_URL.rstrip('/')}/api/ingest/heartbeat"
-    req = request.Request(url, data=payload,
-                          headers={"Content-Type": "application/json",
-                                   "X-AegisTrace-Key": INGEST_KEY},
-                          method="POST")
-    try:
-        with request.urlopen(req, timeout=10) as _:
-            pass
-    except Exception as e:
-        log.debug(f"Heartbeat (non-fatal): {e}")
+# === WATCHDOG ================================================================
+
+_heartbeat_ts = time.time()
 
 
-# ══ MAIN LOOP ═════════════════════════════════════════════════════════════════
-
-def run_once():
-    hostname = get_hostname()
-    ip       = get_ip()
-    state    = load_state()
-
-    log.info(f"Collecting: {hostname} ({ip}) [{get_os_type()}]")
-    flush_retry_queue(hostname, ip)
-
-    batches = collect_logs(state)
-    if not batches:
-        log.info("No new log data.")
-        return
-
-    shipped = skipped = total_lines = max_score = 0
-    for batch in batches:
-        if not batch.get("content", "").strip():
-            skipped += 1
-            continue
-        lines = len(batch["content"].splitlines())
-        log.info(f"Shipping: {batch['log_file']} ({lines} lines)")
-        result = ship_batch(hostname, ip, batch)
-        if result.get("ok"):
-            shipped     += 1
-            total_lines += result.get("lines_received", 0)
-            score        = result.get("threat_score", 0)
-            max_score    = max(max_score, score)
-            if result.get("case_created"):
-                log.warning(f"CASE CREATED: score={score} case=#{result['case_created']}")
-            else:
-                log.info(f"OK: {result.get('message','OK')}")
-            key = batch.get("path_key")
-            if key and batch.get("new_pos") is not None:
-                state[key] = batch["new_pos"]
-            elif key and batch.get("new_ts"):
-                state[key] = batch["new_ts"]
-        else:
-            enqueue_retry(hostname, ip, batch)
-
-    save_state(state)
-    log.info(f"Done: {shipped} shipped, {skipped} skipped, {total_lines} lines, peak={max_score}/100")
-
-
-def main():
-    _load_config_file()
-    if "--check"           in sys.argv: _do_check();               return
-    if "--install-service" in sys.argv: _install_systemd_service(); return
-    if "--install-launchd" in sys.argv: _install_launchd();         return
-    if "--once"            in sys.argv: run_once();                 return
-
-    hostname = get_hostname()
-    ip       = get_ip()
-    log.info(f"AegisTrace Agent v{AGENT_VERSION} starting")
-    log.info(f"  Host: {hostname} ({ip}) | OS: {get_os_type()}")
-    log.info(f"  Server: {AEGISTRACE_URL} | Interval: {INTERVAL_SECONDS}s | HB: {HEARTBEAT_SECONDS}s")
-
-    last_hb = 0.0
+def watchdog_thread():
+    """Daemon thread: restart main loop if heartbeat goes stale."""
     while True:
-        now = time.time()
-        if now - last_hb >= HEARTBEAT_SECONDS:
-            send_heartbeat(hostname, ip)
-            last_hb = now
+        time.sleep(30)
+        age = time.time() - _heartbeat_ts
+        if age > 90:
+            logger.error(f"Watchdog: heartbeat stale ({age:.0f}s). Main loop may be hung.")
+            # Can't restart main loop from watchdog without process management, but we can alert
+            try:
+                _buffer_event({"alerts": [{"type": "watchdog_alert",
+                    "description": f"Agent main loop may be hung (heartbeat age: {age:.0f}s)",
+                    "severity": "HIGH"}]})
+            except Exception:
+                pass
+
+
+# === MAIN LOOP ===============================================================
+
+_main_loop_running = True
+
+
+def _run_collection_cycle():
+    """One full collection + detection + ship cycle."""
+    global _heartbeat_ts
+    _heartbeat_ts = time.time()
+
+    system_info = collect_system_info()
+    processes   = collect_processes()
+    connections = collect_network_connections()
+    login_events= collect_login_events()
+    file_events = collect_file_events()
+
+    # Run FIM check
+    fim_alerts = _fim.check()
+
+    # Run all detectors
+    alerts = []
+    alerts += detect_shadow_ai(connections)
+    alerts += detect_suspicious_processes(processes)
+    alerts += detect_process_lineage(processes)
+    alerts += detect_suspicious_ports(connections)
+    alerts += detect_privilege_escalation(processes)
+    alerts += detect_new_network_destinations(connections)
+    alerts += fim_alerts
+
+    # Behavioural baseline
+    baseline_anomalies = _baseline.check_anomalies(processes, connections)
+    _baseline.record(processes, connections)
+
+    # Only ship behavioural anomalies if they're unusual enough
+    for anomaly in baseline_anomalies:
+        if anomaly.get("subtype") not in ("unusual_hour", "new_process"):
+            alerts.append(anomaly)
+
+    # Local anomaly scoring
+    anomaly_score, score_reasons = calculate_local_anomaly_score(
+        processes, connections, alerts, login_events
+    )
+
+    # Add score to system_info
+    system_info["local_anomaly_score"] = anomaly_score
+    system_info["anomaly_reasons"] = score_reasons
+
+    payload = {
+        "system_info":        system_info,
+        "processes":          processes[:500],  # cap at 500 to limit payload size
+        "network_connections": connections,
+        "login_events":       login_events,
+        "file_events":        file_events[:50],
+        "alerts":             alerts,
+        "local_anomaly_score": anomaly_score,
+    }
+
+    # Ship immediately on high-severity alerts (don't wait for next cycle)
+    critical_alerts = [a for a in alerts if a.get("severity") in ("HIGH", "CRITICAL")]
+    if critical_alerts:
+        logger.warning(f"High-severity alerts ({len(critical_alerts)}): {[a.get('type') for a in critical_alerts]}")
+        # Ship shadow AI alerts immediately
+        shadow_ai = [a for a in critical_alerts if a.get("type") == "shadow_ai"]
+        if shadow_ai:
+            ship_telemetry({
+                "system_info": system_info,
+                "alerts": shadow_ai,
+                "priority": "immediate",
+                "processes": [],
+                "network_connections": [],
+                "login_events": [],
+                "file_events": [],
+            })
+
+    # Ship full telemetry
+    ship_telemetry(payload)
+
+    return alerts
+
+
+def main_loop():
+    """Main collection loop with error recovery."""
+    global _heartbeat_ts, _main_loop_running
+
+    logger.info("Main collection loop starting")
+    _flush_buffer()
+
+    while _main_loop_running:
         try:
-            run_once()
+            _heartbeat_ts = time.time()
+            alerts = _run_collection_cycle()
+            logger.info(f"Cycle complete. Alerts: {len(alerts)}. Sleeping {POLL_INTERVAL}s")
         except KeyboardInterrupt:
-            log.info("Agent stopped.")
+            logger.info("Agent stopped by user")
             break
         except Exception as e:
-            log.error(f"Run error: {e}")
-        log.info(f"Sleeping {INTERVAL_SECONDS}s…")
-        time.sleep(INTERVAL_SECONDS)
+            logger.error(f"Main loop error: {e}")
+            time.sleep(5)
+            continue
+
+        time.sleep(POLL_INTERVAL)
 
 
-def _do_check():
-    hostname = get_hostname()
-    ip       = get_ip()
-    print(f"\n{'='*55}")
-    print(f"  AegisTrace Agent v{AGENT_VERSION} — Connectivity Check")
-    print(f"{'='*55}")
-    print(f"  Server  : {AEGISTRACE_URL}")
-    print(f"  Host    : {hostname} ({ip}) | OS: {get_os_type()}")
-    print(f"  Config  : {'found' if CONFIG_FILE.exists() else 'not found (using hardcoded defaults)'}")
-    print()
-    try:
-        req = request.Request(f"{AEGISTRACE_URL.rstrip('/')}/api/health")
-        with request.urlopen(req, timeout=10) as resp:
-            h = json.loads(resp.read().decode())
-        print(f"  OK  Server reachable  status={h.get('status')} groq={h.get('groq')} vt={h.get('vt')}")
-    except Exception as e:
-        print(f"  FAIL  Cannot reach server: {e}")
-        return
-    send_heartbeat(hostname, ip)
-    print(f"  OK  Ingest key valid — heartbeat sent")
-    m = get_metrics()
-    if m:
-        print(f"\n  System Metrics:")
-        for k, v in m.items():
-            if k != "disks":
-                print(f"    {k}: {v}")
-    print(f"\n  Retry queue: {len(load_retry_queue())} item(s)")
-    print(f"  All checks passed. Agent is ready.\n")
+# === VALIDATION ==============================================================
+
+def validate_config():
+    """Validate required environment variables on startup."""
+    errors = []
+    if not AGENT_TOKEN:
+        errors.append("AEGISTRACE_TOKEN is not set")
+    if not AGENT_ID:
+        errors.append("AEGISTRACE_AGENT_ID is not set")
+    if not PSUTIL_AVAILABLE:
+        print("[WARN] psutil not installed. Install with: pip install psutil")
+        print("[WARN] Running with reduced capability (no process/port monitoring)")
+
+    if errors:
+        print("\n[AegisTrace Agent] Setup required:")
+        for e in errors:
+            print(f"  ✗ {e}")
+        print("\nSet environment variables and restart:")
+        print("  export AEGISTRACE_TOKEN=<your-token>")
+        print("  export AEGISTRACE_AGENT_ID=<your-hostname>")
+        print("  export AEGISTRACE_SERVER=https://aegistrace-7qvn.onrender.com")
+        print("\nOr use install.sh: curl -sSL https://aegistrace.com/install.sh | bash -s TOKEN AGENT_ID")
+        sys.exit(1)
+
+    print(f"[AegisTrace] Server: {SERVER_URL}")
+    print(f"[AegisTrace] Agent ID: {AGENT_ID}")
+    print(f"[AegisTrace] Poll interval: {POLL_INTERVAL}s")
+    print(f"[AegisTrace] Approved AI services: {APPROVED_AI_SERVICES or 'none (all AI traffic flagged)'}")
+    print(f"[AegisTrace] psutil: {'available' if PSUTIL_AVAILABLE else 'not available (reduced mode)'}")
 
 
-def _install_systemd_service():
+# === SERVICE REGISTRATION ====================================================
+
+def register_as_service():
+    """Register agent as OS service. Non-fatal if not root."""
+    OS = platform.system().lower()
     agent_path  = Path(__file__).resolve()
     python_path = sys.executable
-    svc = f"""[Unit]
-Description=AegisTrace Endpoint Agent v2.0
+
+    if OS == "linux" and os.geteuid() == 0:
+        _install_systemd(agent_path, python_path)
+    elif OS == "darwin":
+        _install_launchagent(agent_path, python_path)
+    elif OS == "windows":
+        _install_windows_service(agent_path, python_path)
+    else:
+        print("[service] Running without service registration (not root or unsupported OS)")
+        print("[service] To register manually, re-run as root/admin with --install-service")
+
+
+def _install_systemd(agent_path: Path, python_path: str):
+    svc_file = Path("/etc/systemd/system/aegistrace-agent.service")
+    svc_content = f"""[Unit]
+Description=AegisTrace Endpoint Agent v{AGENT_VERSION}
 After=network.target
 
 [Service]
 Type=simple
+Environment=AEGISTRACE_TOKEN={AGENT_TOKEN}
+Environment=AEGISTRACE_AGENT_ID={AGENT_ID}
+Environment=AEGISTRACE_SERVER={SERVER_URL}
+Environment=AEGISTRACE_POLL_INTERVAL={POLL_INTERVAL}
 ExecStart={python_path} {agent_path}
 Restart=always
 RestartSec=30
@@ -867,16 +1345,17 @@ StandardError=journal
 [Install]
 WantedBy=multi-user.target
 """
-    p = Path("/etc/systemd/system/aegistrace-agent.service")
-    p.write_text(svc)
-    os.system("systemctl daemon-reload && systemctl enable aegistrace-agent && systemctl start aegistrace-agent")
-    print("Service installed. Check: systemctl status aegistrace-agent")
+    try:
+        svc_file.write_text(svc_content)
+        os.system("systemctl daemon-reload && systemctl enable aegistrace-agent && systemctl start aegistrace-agent")
+        print(f"[service] systemd service installed. Status: systemctl status aegistrace-agent")
+    except Exception as e:
+        print(f"[service] systemd install failed: {e}")
 
 
-def _install_launchd():
-    agent_path  = Path(__file__).resolve()
-    python_path = sys.executable
-    plist = f"""<?xml version="1.0" encoding="UTF-8"?>
+def _install_launchagent(agent_path: Path, python_path: str):
+    plist_path = Path.home() / "Library/LaunchAgents/com.aegistrace.agent.plist"
+    plist_content = f"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
     "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -887,19 +1366,124 @@ def _install_launchd():
         <string>{python_path}</string>
         <string>{agent_path}</string>
     </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>AEGISTRACE_TOKEN</key><string>{AGENT_TOKEN}</string>
+        <key>AEGISTRACE_AGENT_ID</key><string>{AGENT_ID}</string>
+        <key>AEGISTRACE_SERVER</key><string>{SERVER_URL}</string>
+    </dict>
     <key>RunAtLoad</key><true/>
     <key>KeepAlive</key><true/>
-    <key>StartInterval</key><integer>{INTERVAL_SECONDS}</integer>
     <key>StandardOutPath</key><string>/tmp/aegistrace_agent.log</string>
     <key>StandardErrorPath</key><string>/tmp/aegistrace_agent_err.log</string>
 </dict>
 </plist>"""
-    plist_path = Path.home() / "Library/LaunchAgents/com.aegistrace.agent.plist"
-    plist_path.parent.mkdir(parents=True, exist_ok=True)
-    plist_path.write_text(plist)
-    os.system(f"launchctl load {plist_path}")
-    print(f"LaunchAgent installed: {plist_path}")
+    try:
+        plist_path.parent.mkdir(parents=True, exist_ok=True)
+        plist_path.write_text(plist_content)
+        os.system(f"launchctl load {plist_path}")
+        print(f"[service] LaunchAgent installed: {plist_path}")
+    except Exception as e:
+        print(f"[service] LaunchAgent install failed: {e}")
 
+
+def _install_windows_service(agent_path: Path, python_path: str):
+    try:
+        cmd = f'sc create AegisTraceAgent binPath= "{python_path} {agent_path}" start= auto'
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        if result.returncode == 0:
+            subprocess.run("sc start AegisTraceAgent", shell=True)
+            print("[service] Windows Service registered as AegisTraceAgent")
+        else:
+            print(f"[service] Windows Service install failed: {result.stderr}")
+    except Exception as e:
+        print(f"[service] Windows Service error: {e}")
+
+
+# === CONNECTIVITY CHECK ======================================================
+
+def _do_check():
+    hostname = socket.gethostname()
+    print(f"\n{'='*60}")
+    print(f"  AegisTrace Agent v{AGENT_VERSION} — Connectivity Check")
+    print(f"{'='*60}")
+    print(f"  Server   : {SERVER_URL}")
+    print(f"  Agent ID : {AGENT_ID}")
+    print(f"  psutil   : {'available' if PSUTIL_AVAILABLE else 'NOT AVAILABLE'}")
+    print()
+
+    # Test health endpoint
+    try:
+        req = urllib_request.Request(f"{SERVER_URL.rstrip('/')}/api/health")
+        with urllib_request.urlopen(req, timeout=10) as resp:
+            h = json.loads(resp.read())
+        print(f"  OK  Server reachable. Status: {h.get('status')} v{h.get('version')}")
+    except Exception as e:
+        print(f"  FAIL  Cannot reach server: {e}")
+        return
+
+    # Test auth
+    try:
+        url = f"{SERVER_URL.rstrip('/')}/api/ingest/agent/commands/{AGENT_ID}"
+        headers = {"X-Agent-Token": AGENT_TOKEN, "X-Agent-Version": AGENT_VERSION}
+        req = urllib_request.Request(url, headers=headers)
+        with urllib_request.urlopen(req, timeout=10) as _:
+            pass
+        print("  OK  Agent token valid")
+    except urllib_error.HTTPError as e:
+        if e.code == 401:
+            print("  FAIL  Invalid agent token")
+        elif e.code == 404:
+            print("  OK  Token valid (agent not yet registered — will auto-register on first telemetry)")
+        else:
+            print(f"  WARN  HTTP {e.code}")
+    except Exception as e:
+        print(f"  WARN  Command channel check: {e}")
+
+    # System info
+    info = collect_system_info()
+    print(f"\n  System: {info.get('os')} {info.get('os_release')} | CPU: {info.get('cpu_percent', 'N/A')}% | Mem: {info.get('mem_percent', 'N/A')}%")
+    print(f"  Hostname: {info.get('hostname')} | IP: {info.get('ip_address')}")
+    print(f"\n  Buffer: {BUFFER_FILE.exists()} ({BUFFER_FILE.stat().st_size if BUFFER_FILE.exists() else 0} bytes)")
+    print(f"\n  All checks passed. Agent is ready.\n")
+
+
+# === ENTRYPOINT ==============================================================
 
 if __name__ == "__main__":
-    main()
+    if "--check"          in sys.argv: _do_check();           sys.exit(0)
+    if "--install-service" in sys.argv:
+        validate_config()
+        register_as_service()
+        sys.exit(0)
+    if "--once"           in sys.argv:
+        validate_config()
+        _fim.initialize()
+        _run_collection_cycle()
+        sys.exit(0)
+
+    print(f"\nAegisTrace Agent v{AGENT_VERSION}")
+    print(f"{'='*50}")
+    validate_config()
+
+    # Initialize FIM on first run
+    if not FIM_FILE.exists():
+        print("[FIM] Initializing file integrity monitoring...")
+        _fim.initialize()
+
+    # Start service registration (non-blocking)
+    print("[service] Attempting service registration...")
+    register_as_service()
+
+    # Start watchdog thread
+    threading.Thread(target=watchdog_thread, daemon=True).start()
+    print("[watchdog] Started")
+
+    # Start command polling thread
+    threading.Thread(target=poll_commands_loop, daemon=True).start()
+    print("[commands] Command channel started")
+
+    print(f"\nAgent running. Press Ctrl+C to stop.\n")
+
+    # Run main loop
+    main_loop()

@@ -3,14 +3,18 @@ from pathlib import Path
 from collections import defaultdict
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from database import create_db_and_tables, engine
 from migration import run_migrations
 from seed import seed_demo_data
-from routers.auth import ensure_admin, router as auth_router
+from routers.auth import ensure_admin, cleanup_token_blocklist, router as auth_router
 from routers.cases import router as cases_router
 from routers.vt import router as vt_router
 from routers.email_router import router as email_router
@@ -37,16 +41,28 @@ from routers.comments import router as comments_router
 from routers.policies import router as policies_router
 from routers.itdr import router as itdr_router
 from routers.agent_security import router as agent_security_router
+from routers.connectors import router as connectors_router
+from routers.nhi import router as nhi_router
+from routers.health import router as health_router
 from hardware_tools import router as hardware_router
 from ai_router import call_ai_json
 from core.identity_engine import register_default_detectors
+from core.events import event_bus, Events
+from models import AuditLog
+
+# ── Rate limiter (slowapi) ────────────────────────────────────────────────────
+limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
 
 app = FastAPI(
     title="AegisTrace API",
-    version="2.0.0",
+    version="4.3.0",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 # ── CORS ─────────────────────────────────────────────────────────────────────
 PUBLIC_URL = os.getenv("PUBLIC_URL", "https://aegistrace-7qvn.onrender.com")
@@ -87,20 +103,12 @@ for r in [auth_router, cases_router, vt_router, email_router, ioc_router,
           audit_router, ingest_router, enrichment_router, edr_router, pcap_router,
           feeds_router, schedule_reports_router, hardware_router,
           identity_router, provenance_router, analytics_router, comments_router,
-          policies_router, itdr_router, agent_security_router]:
+          policies_router, itdr_router, agent_security_router,
+          connectors_router, nhi_router, health_router]:
     app.include_router(r)
 
 
-# ── Health ────────────────────────────────────────────────────────────────────
-@app.get("/api/health")
-def health():
-    return {
-        "status": "ok",
-        "service": "AegisTrace",
-        "version": "2.0.0",
-        "groq": bool(os.getenv("GROQ_API_KEY")),
-        "vt": bool(os.getenv("VIRUSTOTAL_API_KEY")),
-    }
+# Health endpoint now served by routers/health.py
 
 
 # ── Public AI Demo (rate-limited) ─────────────────────────────────────────────
@@ -167,16 +175,67 @@ async def startup():
     ensure_admin(engine)     # sync admin password from ADMIN_PIN env var
     start_scheduler()        # launch background report-delivery scheduler
     register_default_detectors()  # v4.0 identity risk engine
+
     # ── Hardware platform startup ─────────────────────────────────────────────
     try:
         from sqlmodel import Session
-        from models import HardwareDevice
         from hardware_tools import seed_builtin_devices
         with Session(engine) as _s:
             seed_builtin_devices(_s)
     except Exception as _e:
         print(f"[hardware] Seed skipped: {_e}")
-    print("[AegisTrace v2.0] Server ready.")
+
+    # ── Event bus handlers ────────────────────────────────────────────────────
+    @event_bus.on(Events.IDENTITY_DISCOVERED)
+    def on_identity_discovered(payload):
+        """Trigger risk calculation when a new identity is discovered."""
+        pass  # Risk calculation happens at sync time; extend here for notifications
+
+    @event_bus.on(Events.ITDR_ALERT_FIRED)
+    def on_itdr_alert(payload):
+        """Log ITDR alerts to audit trail."""
+        try:
+            from sqlmodel import Session as S
+            with S(engine) as session:
+                session.add(AuditLog(
+                    action="itdr_alert_fired",
+                    entity_type="itdr_alert",
+                    entity_id=payload.get("alert_type", ""),
+                    new_value=str(payload),
+                ))
+                session.commit()
+        except Exception as e:
+            print(f"[event_bus] ITDR audit failed: {e}")
+
+    @event_bus.on(Events.SHADOW_AI_DETECTED)
+    def on_shadow_ai(payload):
+        """Auto-escalate shadow AI events to ITDR."""
+        pass  # Handled in ingest.py at detection time
+
+    # ── Nightly cleanup (runs in background) ─────────────────────────────────
+    import asyncio, threading
+
+    def _nightly_cleanup():
+        """Background thread for nightly maintenance tasks."""
+        import time as _time
+        while True:
+            _time.sleep(6 * 3600)   # every 6 hours
+            try:
+                cleanup_token_blocklist(engine)
+                print("[scheduler] Token blocklist cleanup done")
+            except Exception as e:
+                print(f"[scheduler] Cleanup error: {e}")
+            try:
+                from core.cache import cache
+                removed = cache.purge_expired()
+                if removed:
+                    print(f"[scheduler] Cache: purged {removed} expired entries")
+            except Exception as e:
+                print(f"[scheduler] Cache purge error: {e}")
+
+    threading.Thread(target=_nightly_cleanup, daemon=True).start()
+
+    print("[AegisTrace v4.3] Server ready.")
     print(f"[AegisTrace] Allowed origins: {ALLOWED_ORIGINS}")
     # ── Security warnings for weak defaults ──────────────────────────────────
     if os.getenv("JWT_SECRET", "") in ("", "aegistrace-secret-change-me-2025"):

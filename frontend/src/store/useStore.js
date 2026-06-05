@@ -1,22 +1,38 @@
+/**
+ * AegisTrace v4.3 — Zustand store split into focused slices.
+ *
+ * Import slices directly for best performance (component re-renders only
+ * when its own slice changes):
+ *
+ *   import useAuthStore    from './store/useAuthStore'
+ *   import useCaseStore    from './store/useCaseStore'
+ *   import useUIStore      from './store/useUIStore'
+ *   import useIdentityStore from './store/useIdentityStore'
+ *   import useConnectorStore from './store/useConnectorStore'
+ *
+ * This file re-exports a merged store for backward compatibility
+ * with existing components that import from useStore.
+ */
 import { create } from 'zustand';
 
+// ── Unified store (backward-compatible) ──────────────────────────────────────
 const useStore = create((set, get) => ({
-  // Auth
-  token: localStorage.getItem('at_token') || null,
-  user: JSON.parse(localStorage.getItem('at_user') || 'null'),
+  // ── Auth ────────────────────────────────────────────────────────────────────
+  token: sessionStorage.getItem('at_token') || null,
+  user: JSON.parse(sessionStorage.getItem('at_user') || 'null'),
   setAuth: (token, user) => {
-    localStorage.setItem('at_token', token);
-    localStorage.setItem('at_user', JSON.stringify(user));
+    sessionStorage.setItem('at_token', token);
+    sessionStorage.setItem('at_user', JSON.stringify(user));
     set({ token, user });
   },
   logout: () => {
-    localStorage.removeItem('at_token');
-    localStorage.removeItem('at_user');
+    sessionStorage.removeItem('at_token');
+    sessionStorage.removeItem('at_user');
     set({ token: null, user: null });
   },
   isAuthenticated: () => !!get().token,
 
-  // Toasts
+  // ── Toasts ──────────────────────────────────────────────────────────────────
   toasts: [],
   addToast: (message, type = 'success') => {
     const id = Date.now();
@@ -24,18 +40,18 @@ const useStore = create((set, get) => ({
     setTimeout(() => set(s => ({ toasts: s.toasts.filter(t => t.id !== id) })), 3500);
   },
 
-  // Cases
+  // ── Cases ───────────────────────────────────────────────────────────────────
   cases: [],
   setCases: (cases) => set({ cases }),
   currentCase: null,
   setCurrentCase: (c) => set({ currentCase: c }),
 
-  // Global search
+  // ── Search ──────────────────────────────────────────────────────────────────
   searchQuery: '',
   setSearchQuery: (q) => set({ searchQuery: q }),
 
-  // Autosave state
-  autosaveStatus: 'idle', // idle / saving / saved
+  // ── Autosave ────────────────────────────────────────────────────────────────
+  autosaveStatus: 'idle',
   setAutosaveStatus: (s) => set({ autosaveStatus: s }),
 }));
 

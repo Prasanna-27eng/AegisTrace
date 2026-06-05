@@ -1,6 +1,8 @@
 import os, json, re
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlmodel import Session, select
 from models import VTHistory, AuditLog, User
 from database import get_session
@@ -8,6 +10,7 @@ from routers.auth import get_current_user
 import httpx
 
 router = APIRouter(prefix="/api/vt", tags=["virustotal"])
+limiter = Limiter(key_func=get_remote_address)
 
 VT_BASE = "https://www.virustotal.com/api/v3"
 
@@ -99,7 +102,8 @@ async def do_vt_lookup(ioc: str, key: str) -> dict:
 
 
 @router.post("/lookup")
-async def lookup(data: dict, session: Session = Depends(get_session),
+@limiter.limit("10/minute")
+async def lookup(request: Request, data: dict, session: Session = Depends(get_session),
                  _user: User = Depends(get_current_user)):
     ioc = data.get("ioc", "").strip()
     if not ioc:

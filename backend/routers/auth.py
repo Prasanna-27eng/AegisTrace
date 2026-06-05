@@ -1,17 +1,18 @@
 """
 AegisTrace Authentication
 ─────────────────────────
-Passwords stored in User.hashed_password (SHA-256 + secret).
-JWT tokens — 7-day expiry, pure Python (no extra deps).
+Passwords: bcrypt (transparent upgrade from SHA-256 on first login).
+JWT tokens — 7-day expiry, server-side invalidation via TokenBlocklist.
 Admin: prasanna80564@gmail.com / ADMIN_PIN env var (default: aegis2025)
 """
-import os, json, hashlib, hmac, base64, time
-from datetime import datetime
+import os, json, hashlib, hmac, base64, time, uuid
+from datetime import datetime, timedelta
 from collections import defaultdict
 from typing import Optional
+import bcrypt
 from fastapi import APIRouter, Depends, HTTPException, Header, Request
 from sqlmodel import Session, select
-from models import User, AuditLog
+from models import User, AuditLog, TokenBlocklist
 from database import get_session
 
 # ── Login brute-force protection ──────────────────────────────────────────────
@@ -29,19 +30,38 @@ def _b64(data: bytes) -> str:
 def _unb64(s: str) -> bytes:
     return base64.urlsafe_b64decode(s + "=" * (4 - len(s) % 4))
 
+
 def hash_password(pw: str) -> str:
-    return hashlib.sha256((pw + SECRET).encode()).hexdigest()
+    """Returns bcrypt hash. Used for new passwords and upgrades."""
+    return bcrypt.hashpw(pw.encode(), bcrypt.gensalt(12)).decode()
+
+
+def verify_password(pw: str, stored: str) -> bool:
+    """
+    Verify password against stored hash.
+    Handles both bcrypt (new) and SHA-256 (legacy) hashes transparently.
+    SHA-256 hashes are exactly 64 hex chars; bcrypt hashes start with '$2'.
+    """
+    if not stored:
+        return False
+    if stored.startswith("$2"):
+        # bcrypt hash
+        return bcrypt.checkpw(pw.encode(), stored.encode())
+    # Legacy SHA-256 hash — verify then caller should upgrade
+    legacy = hashlib.sha256((pw + SECRET).encode()).hexdigest()
+    return hmac.compare_digest(legacy, stored)
+
 
 def create_token(payload: dict) -> str:
-    import time
-    p = {**payload, "exp": int(time.time()) + TTL, "iat": int(time.time())}
+    jti = str(uuid.uuid4())
+    p = {**payload, "exp": int(time.time()) + TTL, "iat": int(time.time()), "jti": jti}
     h = _b64(json.dumps({"alg": "HS256", "typ": "JWT"}).encode())
     b = _b64(json.dumps(p).encode())
     s = _b64(hmac.new(SECRET.encode(), f"{h}.{b}".encode(), hashlib.sha256).digest())
     return f"{h}.{b}.{s}"
 
-def verify_token(token: str) -> dict:
-    import time
+
+def verify_token(token: str, session: Session = None) -> dict:
     try:
         h, b, s = token.split(".")
         expected = _b64(hmac.new(SECRET.encode(), f"{h}.{b}".encode(), hashlib.sha256).digest())
@@ -50,7 +70,16 @@ def verify_token(token: str) -> dict:
         p = json.loads(_unb64(b))
         if p.get("exp", 0) < time.time():
             raise ValueError("token expired")
+        # Server-side invalidation check
+        if session and p.get("jti"):
+            blocked = session.exec(
+                select(TokenBlocklist).where(TokenBlocklist.token_jti == p["jti"])
+            ).first()
+            if blocked:
+                raise ValueError("token revoked")
         return p
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(401, f"Invalid or expired token: {e}")
 
@@ -62,7 +91,7 @@ def get_current_user(
 ) -> User:
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(401, "Authorization header required")
-    payload = verify_token(authorization.split(" ", 1)[1])
+    payload = verify_token(authorization.split(" ", 1)[1], session)
     user = session.get(User, payload["user_id"])
     if not user or not user.is_active:
         raise HTTPException(401, "User not found or inactive")
@@ -99,11 +128,29 @@ def ensure_admin(engine):
             session.commit()
             print(f"[auth] Admin created: {email}")
         else:
-            # Always sync password hash from ADMIN_PIN on startup
-            admin.hashed_password = pw_hash
-            session.add(admin)
-            session.commit()
-            print(f"[auth] Admin password synced: {email}")
+            # Re-hash if still using legacy SHA-256
+            if admin.hashed_password and not admin.hashed_password.startswith("$2"):
+                admin.hashed_password = pw_hash
+                session.add(admin)
+                session.commit()
+                print(f"[auth] Admin password upgraded to bcrypt: {email}")
+            else:
+                print(f"[auth] Admin password OK: {email}")
+
+
+# ── Nightly cleanup of expired blocklist entries ──────────────────────────────
+def cleanup_token_blocklist(engine):
+    from sqlmodel import Session as S
+    with S(engine) as session:
+        now = datetime.utcnow()
+        expired = session.exec(
+            select(TokenBlocklist).where(TokenBlocklist.expires_at < now)
+        ).all()
+        for entry in expired:
+            session.delete(entry)
+        session.commit()
+        if expired:
+            print(f"[auth] Cleaned up {len(expired)} expired blocklist entries")
 
 
 # ── Router ────────────────────────────────────────────────────────────────────
@@ -112,7 +159,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 @router.post("/login")
 def login(data: dict, request: Request, session: Session = Depends(get_session)):
-    # Brute-force protection: max 10 attempts/min per IP
+    # Brute-force protection
     ip  = getattr(request.client, "host", "unknown")
     now = time.time()
     _login_attempts[ip] = [t for t in _login_attempts[ip] if now - t < 60]
@@ -130,24 +177,15 @@ def login(data: dict, request: Request, session: Session = Depends(get_session))
         raise HTTPException(401, "Invalid credentials")
 
     stored = user.hashed_password
-    # Fallback: check legacy AuditLog if column is empty (one-time migration window)
-    if not stored:
-        logs = session.exec(
-            select(AuditLog)
-            .where(AuditLog.entity_type == "user_pw")
-            .where(AuditLog.entity_id == str(user.id))
-            .order_by(AuditLog.timestamp.desc())
-        ).all()
-        for log in logs:
-            if log.new_value and len(log.new_value) == 64:
-                stored = log.new_value
-                user.hashed_password = stored
-                session.add(user)
-                session.commit()
-                break
-
-    if not stored or not hmac.compare_digest(hash_password(password), stored):
+    if not stored or not verify_password(password, stored):
         raise HTTPException(401, "Invalid credentials")
+
+    # Transparent upgrade: if legacy SHA-256, upgrade to bcrypt on successful login
+    if stored and not stored.startswith("$2"):
+        user.hashed_password = hash_password(password)
+        session.add(user)
+        session.commit()
+        print(f"[auth] Upgraded password hash for: {email}")
 
     token = create_token({
         "user_id": user.id, "email": user.email,
@@ -159,6 +197,33 @@ def login(data: dict, request: Request, session: Session = Depends(get_session))
         "id": user.id, "email": user.email,
         "name": user.name, "role": user.role
     }}
+
+
+@router.post("/logout")
+def logout(
+    authorization: Optional[str] = Header(None),
+    session: Session = Depends(get_session),
+):
+    """Invalidate the current token server-side."""
+    if not authorization or not authorization.startswith("Bearer "):
+        return {"ok": True}
+    token = authorization.split(" ", 1)[1]
+    try:
+        h, b, s = token.split(".")
+        payload = json.loads(_unb64(b))
+        jti = payload.get("jti")
+        exp = payload.get("exp", 0)
+        if jti:
+            session.add(TokenBlocklist(
+                token_jti=jti,
+                blocked_at=datetime.utcnow(),
+                expires_at=datetime.utcfromtimestamp(exp),
+                user_id=payload.get("user_id"),
+            ))
+            session.commit()
+    except Exception:
+        pass
+    return {"ok": True}
 
 
 @router.get("/me")
@@ -250,8 +315,7 @@ def change_password(data: dict, user: User = Depends(get_current_user),
     new_pw = (data.get("new_password") or "").strip()
     if not old_pw or not new_pw:
         raise HTTPException(400, "Both passwords required")
-    if not user.hashed_password or not hmac.compare_digest(
-            hash_password(old_pw), user.hashed_password):
+    if not user.hashed_password or not verify_password(old_pw, user.hashed_password):
         raise HTTPException(401, "Current password is incorrect")
     user.hashed_password = hash_password(new_pw)
     session.add(user)

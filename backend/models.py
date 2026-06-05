@@ -371,16 +371,25 @@ class TerminalCommand(SQLModel, table=True):
 class IdentityNode(SQLModel, table=True):
     """A first-class identity entity: user, service account, token, device, or agent."""
     id: Optional[int] = Field(default=None, primary_key=True)
-    node_type: str = Field(default="")            # user | service_account | api_key | token | device | agent | prompt
+    node_type: str = Field(default="", index=True)  # user | service_account | api_key | token | device | agent | prompt
     label: str = Field(default="", index=True)
     metadata_json: Optional[str] = Field(default="{}", sa_column=Column(Text))  # role, scope, issuer, etc.
-    risk_score: int = Field(default=0)            # 0–100
-    is_compromised: bool = Field(default=False)
+    risk_score: int = Field(default=0, index=True)  # 0–100
+    is_compromised: bool = Field(default=False, index=True)
     first_seen: datetime = Field(default_factory=datetime.utcnow)
     last_seen: datetime = Field(default_factory=datetime.utcnow)
     linked_case_ids: Optional[str] = Field(default="[]", sa_column=Column(Text))
     org_id: int = Field(default=1)
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    # v4.3 additions
+    last_active: Optional[datetime] = Field(default=None)
+    expiry_date: Optional[datetime] = Field(default=None)
+    privilege_level: str = Field(default="low")          # low | medium | high | admin
+    is_orphaned: bool = Field(default=False)
+    credential_sprawl_score: float = Field(default=0.0)
+    trust_score_history: Optional[str] = Field(default="[]", sa_column=Column(Text))  # JSON [{date, score}]
+    anomaly_count_7d: int = Field(default=0)
+    source_connector: Optional[str] = Field(default=None)  # azure_ad | okta | google | csv | manual
 
 
 class IdentityEdge(SQLModel, table=True):
@@ -541,3 +550,85 @@ class AuthEvent(SQLModel, table=True):
 
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# ── v4.3 Security & Identity Models ──────────────────────────────────────────
+
+class TokenBlocklist(SQLModel, table=True):
+    """Server-side JWT revocation — checked on every authenticated request."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    token_jti: str = Field(unique=True, index=True)   # JWT ID claim
+    blocked_at: datetime = Field(default_factory=datetime.utcnow)
+    expires_at: datetime = Field(default_factory=datetime.utcnow)
+    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
+
+
+class IdentityConnector(SQLModel, table=True):
+    """An external identity provider connected to AegisTrace."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    org_name: str = Field(default="")
+    connector_type: str = Field(default="")    # azure_ad | okta | google | csv | scim
+    client_id: Optional[str] = Field(default=None)
+    encrypted_token: Optional[str] = Field(default=None, sa_column=Column(Text))
+    tenant_id: Optional[str] = Field(default=None)
+    domain: Optional[str] = Field(default=None)
+    last_sync: Optional[datetime] = Field(default=None)
+    sync_status: str = Field(default="never")  # never | running | ok | error
+    identities_discovered: int = Field(default=0)
+    last_error: Optional[str] = Field(default=None, sa_column=Column(Text))
+    created_by: Optional[int] = Field(default=None, foreign_key="user.id")
+    is_active: bool = Field(default=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class ApprovedAIService(SQLModel, table=True):
+    """Whitelist of AI API services allowed for endpoint agents."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    service_name: str = Field(default="")
+    api_domain: str = Field(default="", index=True)
+    is_approved: bool = Field(default=True)
+    added_by: Optional[int] = Field(default=None, foreign_key="user.id")
+    added_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class ShadowAIEvent(SQLModel, table=True):
+    """Unapproved AI API access detected by the endpoint agent."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    agent_id: Optional[int] = Field(default=None, foreign_key="endpoint.id")
+    process_name: str = Field(default="")
+    process_pid: int = Field(default=0)
+    destination_domain: str = Field(default="")
+    destination_ip: Optional[str] = Field(default=None)
+    detected_at: datetime = Field(default_factory=datetime.utcnow)
+    is_reviewed: bool = Field(default=False)
+    reviewed_by: Optional[int] = Field(default=None, foreign_key="user.id")
+    case_id: Optional[int] = Field(default=None, foreign_key="case.id")
+
+
+class AgentCommand(SQLModel, table=True):
+    """Commands queued for an endpoint agent via the command channel."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    agent_id: int = Field(foreign_key="endpoint.id", index=True)
+    command_type: str = Field(default="")    # collect_now | collect_file | kill_process | ping | etc.
+    payload: Optional[str] = Field(default="{}", sa_column=Column(Text))
+    status: str = Field(default="pending")  # pending | sent | completed | failed
+    result: Optional[str] = Field(default=None, sa_column=Column(Text))
+    created_by: Optional[int] = Field(default=None, foreign_key="user.id")
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    executed_at: Optional[datetime] = Field(default=None)
+
+
+class ITDRAlert(SQLModel, table=True):
+    """An ITDR detection alert from any detector."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    alert_type: str = Field(default="", index=True)       # credential_stuffing | impossible_travel | token_theft | shadow_ai | privilege_escalation | etc.
+    severity: str = Field(default="medium", index=True)   # critical | high | medium | low
+    identity_label: Optional[str] = Field(default=None)
+    node_id: Optional[int] = Field(default=None, foreign_key="identitynode.id")
+    description: str = Field(default="", sa_column=Column(Text))
+    evidence: Optional[str] = Field(default="{}", sa_column=Column(Text))  # JSON
+    status: str = Field(default="open")                   # open | investigating | resolved | false_positive
+    resolved_by: Optional[str] = Field(default=None)
+    case_id: Optional[int] = Field(default=None, foreign_key="case.id")
+    detected_at: datetime = Field(default_factory=datetime.utcnow)
+    resolved_at: Optional[datetime] = Field(default=None)

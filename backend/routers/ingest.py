@@ -10,11 +10,19 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Header, Request
 from sqlmodel import Session, select, func
 from typing import Optional
-from models import Endpoint, LogBatch, Case, TimelineEvent, AuditLog, IOCCorrelation
+from models import Endpoint, LogBatch, Case, TimelineEvent, AuditLog, IOCCorrelation, ShadowAIEvent, AgentCommand, ITDRAlert
 from database import get_session
 from routers.auth import get_current_user
 from models import User
 from ai_router import call_ai_json
+from core.events import event_bus, Events
+
+# ── In-memory command queue (per agent_id) ────────────────────────────────────
+_SUSPICIOUS_PROCESSES = {
+    "mimikatz", "lazagne", "procdump", "meterpreter",
+    "netcat", "ncat", "powersploit", "empire", "cobalt"
+}
+_SUSPICIOUS_PORTS = {4444, 1337, 31337, 8888, 9999}
 
 router = APIRouter(prefix="/api/ingest", tags=["ingest"])
 
@@ -561,3 +569,316 @@ def list_analyses(
         "suspicious_entries": a.suspicious_entries, "case_id": a.case_id,
         "created_at": a.created_at,
     } for a in analyses]
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# v4.3 — New telemetry endpoint for rebuilt agent (psutil-based)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@router.post("/{agent_id}")
+async def ingest_telemetry(
+    agent_id: str,
+    data: dict,
+    session: Session = Depends(get_session),
+    x_agent_token: Optional[str] = Header(None),
+    x_agent_version: Optional[str] = Header(None),
+):
+    """
+    Receive structured telemetry from the rebuilt psutil-based agent.
+    Payload: {system_info, processes, network_connections, login_events, file_events, alerts}
+    """
+    # Validate agent token
+    expected_key = _get_ingest_key()
+    if not x_agent_token or not hmac.compare_digest(x_agent_token, expected_key):
+        raise HTTPException(401, "Invalid agent token")
+
+    hostname = data.get("system_info", {}).get("hostname", agent_id)
+    ip_addr  = data.get("system_info", {}).get("ip_address", "")
+    os_type  = data.get("system_info", {}).get("os_type", "unknown")
+    version  = x_agent_version or "3.0"
+    alerts   = data.get("alerts", [])
+
+    # ── Upsert endpoint ───────────────────────────────────────────────────────
+    endpoint = session.exec(
+        select(Endpoint).where(Endpoint.hostname == hostname)
+    ).first()
+    if endpoint:
+        endpoint.last_seen     = datetime.utcnow()
+        endpoint.is_active     = True
+        endpoint.agent_version = version
+        if ip_addr: endpoint.ip_address = ip_addr
+        if os_type != "unknown": endpoint.os_type = os_type
+        endpoint.total_batches += 1
+    else:
+        endpoint = Endpoint(
+            hostname=hostname, os_type=os_type, ip_address=ip_addr,
+            agent_version=version, total_batches=1, is_active=True,
+        )
+        session.add(endpoint)
+        session.flush()
+        event_bus.emit(Events.ENDPOINT_CONNECTED, {
+            "agent_id": agent_id, "hostname": hostname, "ip": ip_addr
+        })
+    session.add(endpoint)
+    session.commit()
+    session.refresh(endpoint)
+
+    # ── Process shadow AI alerts ──────────────────────────────────────────────
+    shadow_ai_count = 0
+    itdr_alerts = []
+    for alert in alerts:
+        alert_type = alert.get("type", "")
+
+        if alert_type == "shadow_ai":
+            shadow_event = ShadowAIEvent(
+                agent_id=endpoint.id,
+                process_name=alert.get("process_name", ""),
+                process_pid=alert.get("process_pid", 0),
+                destination_domain=alert.get("destination_domain", ""),
+                destination_ip=alert.get("destination_ip"),
+                detected_at=datetime.utcnow(),
+            )
+            session.add(shadow_event)
+            shadow_ai_count += 1
+            event_bus.emit(Events.SHADOW_AI_DETECTED, {
+                "process_name": alert.get("process_name"),
+                "destination": alert.get("destination_domain"),
+                "agent_id": endpoint.id,
+            })
+
+        elif alert_type == "suspicious_process":
+            itdr_alerts.append(ITDRAlert(
+                alert_type="suspicious_process",
+                severity="high",
+                identity_label=hostname,
+                description=f"Suspicious process detected on {hostname}: {alert.get('process_name')} (PID {alert.get('process_pid')})",
+                evidence=json.dumps(alert),
+            ))
+
+        elif alert_type == "suspicious_port":
+            itdr_alerts.append(ITDRAlert(
+                alert_type="suspicious_port",
+                severity="medium",
+                identity_label=hostname,
+                description=f"Suspicious outbound port on {hostname}: {alert.get('process_name')} → :{alert.get('remote_port')} ({alert.get('remote_ip')})",
+                evidence=json.dumps(alert),
+            ))
+
+        elif alert_type in ("privilege_escalation", "fim_change", "new_destination", "behavioural_anomaly"):
+            severity = {"privilege_escalation": "critical", "fim_change": "high"}.get(alert_type, "medium")
+            itdr_alerts.append(ITDRAlert(
+                alert_type=alert_type,
+                severity=severity,
+                identity_label=hostname,
+                description=alert.get("description", f"{alert_type} detected on {hostname}"),
+                evidence=json.dumps(alert),
+            ))
+
+    # ── Check processes against suspicious list ───────────────────────────────
+    processes = data.get("processes", [])
+    for proc in processes:
+        pname = (proc.get("name") or "").lower()
+        if any(s in pname for s in _SUSPICIOUS_PROCESSES):
+            itdr_alerts.append(ITDRAlert(
+                alert_type="suspicious_process",
+                severity="high",
+                identity_label=hostname,
+                description=f"Known malicious process '{proc.get('name')}' (PID {proc.get('pid')}) detected on {hostname}",
+                evidence=json.dumps(proc),
+            ))
+
+    # ── Check network connections for suspicious ports ────────────────────────
+    connections = data.get("network_connections", [])
+    for conn in connections:
+        rport = conn.get("remote_port", 0)
+        if rport and int(rport) in _SUSPICIOUS_PORTS:
+            itdr_alerts.append(ITDRAlert(
+                alert_type="suspicious_port",
+                severity="high",
+                identity_label=hostname,
+                description=f"Connection to suspicious port {rport} from {hostname} (process: {conn.get('process_name', 'unknown')})",
+                evidence=json.dumps(conn),
+            ))
+
+    # ── Save ITDR alerts ──────────────────────────────────────────────────────
+    for alert_obj in itdr_alerts:
+        session.add(alert_obj)
+        event_bus.emit(Events.ITDR_ALERT_FIRED, {
+            "alert_type": alert_obj.alert_type,
+            "severity": alert_obj.severity,
+            "identity_id": None,
+            "details": {"hostname": hostname},
+        })
+
+    # ── Forward login events to ITDR ──────────────────────────────────────────
+    login_events = data.get("login_events", [])
+    for ev in login_events:
+        if not ev.get("success") and ev.get("source_ip"):
+            # Forward failed logins to ITDR engine
+            try:
+                from models import AuthEvent
+                session.add(AuthEvent(
+                    identity_label=ev.get("username", hostname),
+                    event_type="failed_login",
+                    success=False,
+                    source_ip=ev.get("source_ip"),
+                    user_agent=ev.get("event_type"),
+                    timestamp=datetime.utcnow(),
+                ))
+            except Exception:
+                pass
+
+    session.commit()
+
+    return {
+        "ok": True,
+        "endpoint_id": endpoint.id,
+        "alerts_processed": len(alerts),
+        "shadow_ai_events": shadow_ai_count,
+        "itdr_alerts_created": len(itdr_alerts),
+    }
+
+
+# ── Command channel ────────────────────────────────────────────────────────────
+
+@router.get("/agent/commands/{agent_id}")
+async def get_commands(
+    agent_id: str,
+    session: Session = Depends(get_session),
+    x_agent_token: Optional[str] = Header(None),
+):
+    """Agent polls this every 10 seconds for pending commands."""
+    expected_key = _get_ingest_key()
+    if not x_agent_token or not hmac.compare_digest(x_agent_token, expected_key):
+        raise HTTPException(401, "Invalid agent token")
+
+    endpoint = session.exec(
+        select(Endpoint).where(Endpoint.hostname == agent_id)
+    ).first()
+    if not endpoint:
+        return {"commands": []}
+
+    pending = session.exec(
+        select(AgentCommand)
+        .where(AgentCommand.agent_id == endpoint.id)
+        .where(AgentCommand.status == "pending")
+    ).all()
+
+    commands = []
+    for cmd in pending:
+        cmd.status = "sent"
+        session.add(cmd)
+        commands.append({
+            "id": cmd.id,
+            "command": cmd.command_type,
+            "payload": json.loads(cmd.payload or "{}"),
+        })
+    session.commit()
+    return {"commands": commands}
+
+
+@router.post("/agent/commands/{agent_id}/result")
+async def command_result(
+    agent_id: str,
+    data: dict,
+    session: Session = Depends(get_session),
+    x_agent_token: Optional[str] = Header(None),
+):
+    """Agent posts command execution results here."""
+    expected_key = _get_ingest_key()
+    if not x_agent_token or not hmac.compare_digest(x_agent_token, expected_key):
+        raise HTTPException(401, "Invalid agent token")
+
+    command_id = data.get("command_id")
+    result     = data.get("result", {})
+    success    = data.get("success", True)
+
+    if command_id:
+        cmd = session.get(AgentCommand, command_id)
+        if cmd:
+            cmd.status     = "completed" if success else "failed"
+            cmd.result     = json.dumps(result)
+            cmd.executed_at = datetime.utcnow()
+            session.add(cmd)
+            session.commit()
+
+    return {"ok": True}
+
+
+@router.post("/agent/command/dispatch")
+def dispatch_command(
+    data: dict,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Dispatch a command to an agent from the AegisTrace UI."""
+    agent_id     = data.get("agent_id")
+    command_type = data.get("command", "ping")
+    payload      = data.get("payload", {})
+
+    if not agent_id:
+        raise HTTPException(400, "agent_id required")
+
+    endpoint = session.get(Endpoint, agent_id)
+    if not endpoint:
+        raise HTTPException(404, "Endpoint not found")
+
+    cmd = AgentCommand(
+        agent_id=endpoint.id,
+        command_type=command_type,
+        payload=json.dumps(payload),
+        status="pending",
+        created_by=user.id,
+    )
+    session.add(cmd)
+    session.commit()
+    session.refresh(cmd)
+    return {"ok": True, "command_id": cmd.id}
+
+
+@router.get("/shadow-ai")
+def list_shadow_ai(
+    limit: int = 50,
+    offset: int = 0,
+    reviewed: Optional[bool] = None,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """List all shadow AI events."""
+    query = select(ShadowAIEvent)
+    if reviewed is not None:
+        query = query.where(ShadowAIEvent.is_reviewed == reviewed)
+    total = len(session.exec(query).all())
+    items = session.exec(query.order_by(ShadowAIEvent.detected_at.desc()).offset(offset).limit(limit)).all()
+    return {
+        "items": [
+            {
+                "id": e.id,
+                "agent_id": e.agent_id,
+                "process_name": e.process_name,
+                "process_pid": e.process_pid,
+                "destination_domain": e.destination_domain,
+                "destination_ip": e.destination_ip,
+                "detected_at": e.detected_at,
+                "is_reviewed": e.is_reviewed,
+            }
+            for e in items
+        ],
+        "total": total, "limit": limit, "offset": offset,
+    }
+
+
+@router.patch("/shadow-ai/{event_id}/review")
+def review_shadow_ai(
+    event_id: int,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    ev = session.get(ShadowAIEvent, event_id)
+    if not ev:
+        raise HTTPException(404)
+    ev.is_reviewed = True
+    ev.reviewed_by = user.id
+    session.add(ev)
+    session.commit()
+    return {"ok": True}

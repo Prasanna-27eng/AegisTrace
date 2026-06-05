@@ -14,7 +14,9 @@ Sources:
   NVD CVE            — CVE lookup (no key)
 """
 import os, re, json
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlmodel import Session
 from database import get_session
 from routers.auth import get_current_user
@@ -22,6 +24,7 @@ from models import User
 import httpx
 
 router = APIRouter(prefix="/api/enrich", tags=["enrichment"])
+limiter = Limiter(key_func=get_remote_address)
 
 TIMEOUT = 8  # seconds per request
 
@@ -236,7 +239,9 @@ async def query_nvd_cve(keyword: str) -> dict:
 
 # ── Main enrichment endpoint ──────────────────────────────────────────────────
 @router.get("/{ioc}")
+@limiter.limit("20/minute")
 async def enrich(
+    request: Request,
     ioc: str,
     _user: User = Depends(get_current_user),
     session: Session = Depends(get_session),

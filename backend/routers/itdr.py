@@ -1,21 +1,24 @@
 """
-AegisTrace v4.0 — ITDR: Identity Threat Detection & Response
+AegisTrace v4.3 — ITDR: Identity Threat Detection & Response
 ──────────────────────────────────────────────────────────────
 Analysts enter auth events manually or paste from logs.
-Four detectors run on demand to flag identity-based attack patterns.
+Six detectors (v4.3 hardened) run on demand to flag identity attacks.
 
-Detectors (all work on AuthEvent data):
-  1. CredentialStuffingDetector  — 5+ failed logins within 10 minutes
+Detectors:
+  1. CredentialStuffingDetector  — multi-window: 10min/5, 1h/15, 24h/25 + distributed
   2. ImpossibleTravelDetector    — logins from different continents < 4h apart
   3. NewDeviceDetector           — login from a device not seen before
   4. PrivilegeEscalationDetector — privilege_change event without approval
+  5. TokenTheftDetector          — same session token, different user-agents < 1h (v4.3)
+  6. ShadowAIITDRDetector        — 3+ unapproved AI API hits in 24h (v4.3)
 
 GET  /api/itdr/events
 POST /api/itdr/events            — create single event
 POST /api/itdr/events/parse      — paste raw log text → AI extracts events
 POST /api/itdr/events/bulk       — create multiple events
-POST /api/itdr/analyse           — run all 4 detectors for an identity
+POST /api/itdr/analyse           — run all detectors for an identity
 GET  /api/itdr/anomalies         — ITDR-sourced anomalies
+GET  /api/itdr/alerts            — ITDRAlert records
 """
 import json
 import re
@@ -23,10 +26,11 @@ from datetime import datetime, timedelta
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select
-from models import AuthEvent, IdentityAnomaly, IdentityNode, User, AuditLog
+from models import AuthEvent, IdentityAnomaly, IdentityNode, User, AuditLog, ITDRAlert, ShadowAIEvent
 from database import get_session
 from routers.auth import get_current_user
 from ai_router import call_ai_json
+from core.events import event_bus, Events
 
 router = APIRouter(prefix="/api/itdr", tags=["itdr"])
 
@@ -61,44 +65,95 @@ def _region(country_code: Optional[str]) -> Optional[str]:
     return COUNTRY_REGION.get(country_code.upper())
 
 
-# ── Detector 1: Credential Stuffing ─────────────────────────────────────────
+# ── Detector 1: Credential Stuffing (v4.3 — multi-window + distributed) ──────
 
 def _detect_credential_stuffing(
     identity_label: str,
     node_id: Optional[int],
     session: Session,
-    window_minutes: int = 10,
-    threshold: int = 5,
 ) -> Optional[dict]:
-    """5+ failed logins for the same identity within `window_minutes`."""
-    cutoff = datetime.utcnow() - timedelta(minutes=window_minutes)
-    q = select(AuthEvent).where(
-        AuthEvent.event_type == "failed_login",
-        AuthEvent.success == False,     # noqa: E712
-        AuthEvent.timestamp >= cutoff,
-    )
-    if node_id:
-        q = q.where(AuthEvent.node_id == node_id)
-    else:
-        q = q.where(AuthEvent.identity_label == identity_label)
+    """
+    v4.3 hardened: three time windows + cross-user distributed attack detection.
+    Windows:
+      10 min / 5+ failures  → HIGH
+      1 hour / 15+ failures → HIGH
+      24 hours / 25+ failures → CRITICAL
+    Cross-user: same source IP, 2+ failures across 10+ different users in 1h → CRITICAL
+    """
+    now = datetime.utcnow()
 
-    failures = session.exec(q).all()
-    if len(failures) >= threshold:
-        return {
-            "detector": "credential_stuffing",
-            "severity": "high",
-            "confidence": 0.95,
-            "description": (
-                f"{len(failures)} failed logins for '{identity_label}' "
-                f"within {window_minutes} minutes — likely credential stuffing"
-            ),
-            "evidence": {
-                "failed_count": len(failures),
-                "window_minutes": window_minutes,
-                "threshold": threshold,
-                "source_ips": list({e.source_ip for e in failures if e.source_ip}),
-            },
-        }
+    # ── Per-identity, multi-window ────────────────────────────────────────────
+    windows = [
+        (10,       5,  "high",     "10-minute"),
+        (60,       15, "high",     "1-hour"),
+        (60 * 24,  25, "critical", "24-hour"),
+    ]
+
+    for window_minutes, threshold, severity, label_str in windows:
+        cutoff = now - timedelta(minutes=window_minutes)
+        q = select(AuthEvent).where(
+            AuthEvent.event_type == "failed_login",
+            AuthEvent.success == False,   # noqa: E712
+            AuthEvent.timestamp >= cutoff,
+        )
+        if node_id:
+            q = q.where(AuthEvent.node_id == node_id)
+        else:
+            q = q.where(AuthEvent.identity_label == identity_label)
+
+        failures = session.exec(q).all()
+        if len(failures) >= threshold:
+            return {
+                "detector": "credential_stuffing",
+                "severity": severity,
+                "confidence": 0.95,
+                "description": (
+                    f"{len(failures)} failed logins for '{identity_label}' "
+                    f"within {label_str} — likely credential stuffing"
+                ),
+                "evidence": {
+                    "failed_count": len(failures),
+                    "window_minutes": window_minutes,
+                    "threshold": threshold,
+                    "source_ips": list({e.source_ip for e in failures if e.source_ip}),
+                },
+            }
+
+    # ── Cross-user distributed attack detection ────────────────────────────────
+    # Same source IP, failures across 10+ different users in 1h
+    cutoff_1h = now - timedelta(hours=1)
+    distributed_q = select(AuthEvent).where(
+        AuthEvent.event_type == "failed_login",
+        AuthEvent.success == False,      # noqa: E712
+        AuthEvent.timestamp >= cutoff_1h,
+        AuthEvent.source_ip != None,     # noqa: E711
+    )
+    all_failures = session.exec(distributed_q).all()
+
+    # Group by source IP
+    ip_to_users: dict = {}
+    for ev in all_failures:
+        if ev.source_ip:
+            ip_to_users.setdefault(ev.source_ip, set()).add(ev.identity_label)
+
+    for ip, users in ip_to_users.items():
+        if len(users) >= 10:
+            return {
+                "detector": "credential_stuffing_distributed",
+                "severity": "critical",
+                "confidence": 0.98,
+                "description": (
+                    f"Distributed credential stuffing from {ip}: "
+                    f"failures across {len(users)} different accounts in 1 hour"
+                ),
+                "evidence": {
+                    "source_ip": ip,
+                    "unique_targets": len(users),
+                    "sample_targets": list(users)[:5],
+                    "window_hours": 1,
+                },
+            }
+
     return None
 
 
@@ -434,6 +489,143 @@ Return [] if no auth events are found."""
     return {"events": [], "count": 0, "raw": parsed}
 
 
+# ── Detector 5: Token Theft (v4.3) ────────────────────────────────────────────
+
+def _detect_token_theft(
+    identity_label: str,
+    node_id: Optional[int],
+    session: Session,
+    hours: int = 1,
+) -> Optional[dict]:
+    """
+    Same session token (tracked via device_id as session key) used from
+    two different user-agent strings within 1 hour.
+    This catches session hijacking even when IP stays the same.
+    """
+    cutoff = datetime.utcnow() - timedelta(hours=hours)
+    q = (
+        select(AuthEvent)
+        .where(
+            AuthEvent.timestamp >= cutoff,
+            AuthEvent.device_id != None,    # noqa: E711
+            AuthEvent.user_agent != None,   # noqa: E711
+        )
+        .order_by(AuthEvent.timestamp.desc())
+    )
+    if node_id:
+        q = q.where(AuthEvent.node_id == node_id)
+    else:
+        q = q.where(AuthEvent.identity_label == identity_label)
+
+    events = session.exec(q).all()
+
+    # Group by device_id (used as session key)
+    device_agents: dict = {}
+    for ev in events:
+        if ev.device_id:
+            device_agents.setdefault(ev.device_id, set()).add(ev.user_agent or "")
+
+    for device_id, agents in device_agents.items():
+        # Filter empty strings
+        agents = {a for a in agents if a}
+        if len(agents) >= 2:
+            agents_list = list(agents)
+            return {
+                "detector": "token_theft",
+                "severity": "critical",
+                "confidence": 0.91,
+                "description": (
+                    f"Session token used from {len(agents)} different user-agents within {hours}h "
+                    f"for '{identity_label}' — possible session hijacking"
+                ),
+                "evidence": {
+                    "device_id": device_id,
+                    "user_agents": agents_list,
+                    "window_hours": hours,
+                    "unique_agents": len(agents),
+                },
+            }
+    return None
+
+
+# ── Detector 6: Shadow AI ITDR (v4.3) ─────────────────────────────────────────
+
+def _detect_shadow_ai_usage(
+    identity_label: str,
+    node_id: Optional[int],
+    session: Session,
+    hours: int = 24,
+    threshold: int = 3,
+) -> Optional[dict]:
+    """
+    Same process hits unapproved AI API 3+ times in 24 hours → ITDR alert.
+    First offence: MEDIUM. Repeat: HIGH.
+    """
+    try:
+        cutoff = datetime.utcnow() - timedelta(hours=hours)
+        events = session.exec(
+            select(ShadowAIEvent).where(ShadowAIEvent.detected_at >= cutoff)
+        ).all()
+
+        if not events:
+            return None
+
+        # Group by process name
+        proc_counts: dict = {}
+        for ev in events:
+            proc_counts[ev.process_name] = proc_counts.get(ev.process_name, 0) + 1
+
+        for proc_name, count in proc_counts.items():
+            if count >= threshold:
+                # Check if this is a repeat offender (has alerts from before the window)
+                older = session.exec(
+                    select(ShadowAIEvent).where(
+                        ShadowAIEvent.process_name == proc_name,
+                        ShadowAIEvent.detected_at < cutoff,
+                    )
+                ).first()
+                severity = "high" if older else "medium"
+
+                return {
+                    "detector": "shadow_ai",
+                    "severity": severity,
+                    "confidence": 0.93,
+                    "description": (
+                        f"Process '{proc_name}' made {count} unapproved AI API "
+                        f"calls in {hours}h — Shadow AI usage escalated to ITDR alert"
+                    ),
+                    "evidence": {
+                        "process_name": proc_name,
+                        "call_count": count,
+                        "window_hours": hours,
+                        "threshold": threshold,
+                        "is_repeat": bool(older),
+                        "domains": list({e.destination_domain for e in events if e.process_name == proc_name}),
+                    },
+                }
+    except Exception:
+        pass
+    return None
+
+
+# ── Helper: create anomaly from detection result ─────────────────────────────
+
+def _create_anomaly(detection: dict, node_id: Optional[int], session: Session) -> IdentityAnomaly:
+    sev_map = {"low": "low", "medium": "medium", "high": "high", "critical": "critical"}
+    anomaly = IdentityAnomaly(
+        node_id=node_id,
+        anomaly_type=detection["detector"],
+        description=detection["description"],
+        severity=sev_map.get(detection["severity"], "medium"),
+        confidence=detection["confidence"],
+    )
+    session.add(anomaly)
+    return anomaly
+
+
+# ── API Endpoints ─────────────────────────────────────────────────────────────
+
+
 @router.post("/analyse")
 def run_itdr_detectors(
     data: dict,
@@ -441,15 +633,12 @@ def run_itdr_detectors(
     user: User = Depends(get_current_user),
 ):
     """
-    Run all 4 ITDR detectors for a given identity and persist anomalies.
-
+    Run all ITDR detectors for a given identity and persist anomalies.
     Body: {node_id?: int, identity_label?: str}
-    Returns: {detections: [...], anomalies_created: int}
     """
-    node_id    = data.get("node_id")
-    label      = data.get("identity_label", "")
+    node_id = data.get("node_id")
+    label   = data.get("identity_label", "")
 
-    # Resolve label from node if not provided
     if node_id and not label:
         node = session.get(IdentityNode, node_id)
         if node:
@@ -459,16 +648,29 @@ def run_itdr_detectors(
         raise HTTPException(400, "node_id or identity_label required")
 
     detections = []
-    for fn in [
+    detectors = [
         lambda: _detect_credential_stuffing(label, node_id, session),
         lambda: _detect_impossible_travel(label, node_id, session),
         lambda: _detect_new_device(label, node_id, session),
         lambda: _detect_privilege_escalation(label, node_id, session),
-    ]:
-        result = fn()
-        if result:
-            detections.append(result)
-            _create_anomaly(result, node_id, session)
+        lambda: _detect_token_theft(label, node_id, session),
+        lambda: _detect_shadow_ai_usage(label, node_id, session),
+    ]
+
+    for fn in detectors:
+        try:
+            result = fn()
+            if result:
+                detections.append(result)
+                _create_anomaly(result, node_id, session)
+                event_bus.emit(Events.ITDR_ALERT_FIRED, {
+                    "alert_type": result["detector"],
+                    "identity_id": node_id,
+                    "severity": result["severity"],
+                    "details": result.get("evidence", {}),
+                })
+        except Exception as e:
+            pass
 
     if detections:
         session.add(AuditLog(
@@ -494,8 +696,11 @@ def list_itdr_anomalies(
     session: Session = Depends(get_session),
     _user: User = Depends(get_current_user),
 ):
-    """Return anomalies sourced from ITDR detectors."""
-    itdr_types = ["credential_stuffing", "impossible_travel", "new_device", "privilege_escalation"]
+    itdr_types = [
+        "credential_stuffing", "credential_stuffing_distributed",
+        "impossible_travel", "new_device", "privilege_escalation",
+        "token_theft", "shadow_ai",
+    ]
     q = (
         select(IdentityAnomaly)
         .where(
@@ -505,3 +710,60 @@ def list_itdr_anomalies(
         .order_by(IdentityAnomaly.detected_at.desc())
     )
     return session.exec(q).all()
+
+
+@router.get("/alerts")
+def list_itdr_alerts(
+    status: Optional[str] = Query(None),
+    severity: Optional[str] = Query(None),
+    limit: int = Query(50),
+    offset: int = Query(0),
+    session: Session = Depends(get_session),
+    _user: User = Depends(get_current_user),
+):
+    """List all ITDRAlert records (from agents + manual analysis)."""
+    q = select(ITDRAlert).order_by(ITDRAlert.detected_at.desc())
+    if status:
+        q = q.where(ITDRAlert.status == status)
+    if severity:
+        q = q.where(ITDRAlert.severity == severity)
+    total = len(session.exec(q).all())
+    items = session.exec(q.offset(offset).limit(limit)).all()
+    return {
+        "items": [
+            {
+                "id": a.id,
+                "alert_type": a.alert_type,
+                "severity": a.severity,
+                "identity_label": a.identity_label,
+                "description": a.description,
+                "status": a.status,
+                "detected_at": a.detected_at,
+                "evidence": json.loads(a.evidence or "{}"),
+            }
+            for a in items
+        ],
+        "total": total, "limit": limit, "offset": offset,
+    }
+
+
+@router.patch("/alerts/{alert_id}")
+def update_itdr_alert(
+    alert_id: int,
+    data: dict,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    alert = session.get(ITDRAlert, alert_id)
+    if not alert:
+        raise HTTPException(404)
+    if "status" in data:
+        alert.status = data["status"]
+        if data["status"] == "resolved":
+            alert.resolved_by = user.email
+            alert.resolved_at = datetime.utcnow()
+    if "case_id" in data:
+        alert.case_id = data["case_id"]
+    session.add(alert)
+    session.commit()
+    return {"ok": True}

@@ -209,11 +209,11 @@ const CERTS = [
 
 const ROADMAP = [
   {
-    phase:'Live — v2.0 → v4.2', status:'live', color:'#22C55E',
+    phase:'Live — v2.0 → v4.3', status:'live', color:'#22C55E',
     items:['SOC case management — 13-tab lifecycle, autosave, MITRE mapping','Explainable multi-model AI (Groq) — reasoning chain, evidence, confidence','7-source IOC enrichment + cross-case correlation + campaign detection','ITDR — credential stuffing, impossible travel, new device, privilege escalation','Identity Graph + Pluggable Risk Engine + 3 detectors','Trust Timeline + Provenance Ledger — every AI action audited','Policy Engine — allow/deny per identity type, IP + time restrictions','Terminal Lab — 20+ commands, AI parsing, IOC extraction, save to case','Endpoint agent v2 — Sysmon, process trees, persistence, auth logs','18 hardware forensic tools (WiFi/RF/RFID/HID/Suricata)','Email forensics — SPF/DKIM/DMARC, AI phishing verdict','DORA Article 19 compliance + PCAP analysis + webhook alerting','Dashboard analytics — severity breakdown chart + SLA status panel','Investigation templates — 6 pre-built scaffolds (phishing, brute force, malware…)','Report completeness preview — 7-section checklist before export','Public case narrative — story format: Trigger → Investigation → Findings → Outcome']
   },
   {
-    phase:'In Progress — v4.2', status:'building', color:'#EAB308',
+    phase:'In Progress — v4.3', status:'building', color:'#EAB308',
     items:['AI Agent Security ✓ — human approval queue for all AI actions (shipped)','Shadow AI Detection — detect data sent to unauthorized AI services','SOAR Playbooks — automated response sequences per incident type','Control Plane view — live trust, policy, and agent health dashboard']
   },
   {
@@ -305,8 +305,26 @@ function BentoFeatures({ mono }) {
       {/* Endpoint Agent */}
       <div className="bento-card" style={{gridColumn:'span 4',background:'rgba(234,179,8,0.03)',border:'1px solid rgba(234,179,8,0.1)',borderRadius:14,padding:22}}>
         <Monitor size={20} style={{color:'#EAB308',marginBottom:10}}/>
-        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#F0F0F8'}}>Endpoint Agent v2</div>
-        <div style={{fontSize:11,color:'rgba(240,240,248,0.45)',lineHeight:1.7,...mono,fontWeight:300}}>Zero-dependency Python. Windows/Linux/Mac. Sysmon, process trees, persistence, auth logs. Heartbeat every 60s.</div>
+        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#F0F0F8'}}>Endpoint Agent v3</div>
+        <div style={{fontSize:11,color:'rgba(240,240,248,0.45)',lineHeight:1.7,...mono,fontWeight:300}}>psutil-powered. Shadow AI detection, behavioural baseline, FIM, privilege escalation detector, command channel. Linux/macOS/Windows.</div>
+      </div>
+
+      {/* Identity Auto-Discovery — v4.3 new */}
+      <div className="bento-card" style={{gridColumn:'span 4',background:'rgba(77,163,255,0.04)',border:'1px solid rgba(77,163,255,0.18)',borderRadius:14,padding:22}}>
+        <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#4DA3FF" strokeWidth={2} style={{marginBottom:10}}>
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+        </svg>
+        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#F0F0F8'}}>Identity Auto-Discovery</div>
+        <div style={{fontSize:11,color:'rgba(240,240,248,0.45)',lineHeight:1.7,...mono,fontWeight:300}}>Connect Azure AD, Okta, or Google. Your entire identity surface discovered in 5 minutes. No spreadsheets.</div>
+      </div>
+
+      {/* NHI Health Monitor — v4.3 new */}
+      <div className="bento-card" style={{gridColumn:'span 4',background:'rgba(167,139,250,0.04)',border:'1px solid rgba(167,139,250,0.16)',borderRadius:14,padding:22}}>
+        <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth={2} style={{marginBottom:10}}>
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#F0F0F8'}}>NHI Health Monitor</div>
+        <div style={{fontSize:11,color:'rgba(240,240,248,0.45)',lineHeight:1.7,...mono,fontWeight:300}}>Stale tokens. Orphaned accounts. Over-privileged service accounts. Surfaced automatically before attackers find them.</div>
       </div>
     </div>
   );
@@ -448,8 +466,11 @@ export default function Landing() {
                 <div style={{fontSize:'clamp(2.8rem,7vw,8.5rem)',color:'#F0F0F8',fontWeight:400}}>Attackers no longer break in.</div>
                 <div style={{fontSize:'clamp(2.8rem,7vw,8.5rem)',color:'#4DA3FF',fontStyle:'italic',fontWeight:400}}>They become trusted.</div>
               </h1>
-              <p style={{maxWidth:520,fontSize:13,color:'rgba(240,240,248,0.5)',lineHeight:1.8,...mono,fontWeight:300,marginBottom:28}}>
+              <p style={{maxWidth:520,fontSize:13,color:'rgba(240,240,248,0.5)',lineHeight:1.8,...mono,fontWeight:300,marginBottom:14}}>
                 AegisTrace is not just a SOC dashboard — it is a security control plane built for the AI-agent era. Identity-centric. Provenance-aware. Explainable.
+              </p>
+              <p style={{maxWidth:520,fontSize:12,color:'rgba(77,163,255,0.7)',lineHeight:1.7,...mono,fontWeight:300,marginBottom:28,borderLeft:'2px solid rgba(77,163,255,0.3)',paddingLeft:12}}>
+                The average enterprise has <strong style={{color:'#4DA3FF'}}>144 machine identities</strong> for every human. Most are unmonitored.
               </p>
               <div style={{display:'flex',gap:12,flexWrap:'wrap'}}>
                 <button onClick={openApp} style={{background:'#4DA3FF',color:'#fff',border:'none',borderRadius:6,padding:'12px 28px',fontSize:12,fontWeight:600,cursor:'pointer',...mono,letterSpacing:'0.08em',textTransform:'uppercase',display:'flex',alignItems:'center',gap:8}}>
