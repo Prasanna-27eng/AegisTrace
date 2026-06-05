@@ -1,18 +1,27 @@
 #!/bin/bash
 # ─────────────────────────────────────────────────────────────────
-# AegisTrace Endpoint Agent v3.0 — One-Command Installer
-# Usage: curl -sSL https://aegistrace.com/install.sh | bash -s TOKEN AGENT_ID
-#   OR:  bash install.sh <TOKEN> <AGENT_ID> [SERVER_URL]
+# AegisTrace Endpoint Agent v5.0 — One-Command Installer
+#
+# Usage:
+#   bash install.sh <TOKEN> <AGENT_ID> [SERVER_URL] [AUTO_BLOCK]
+#
+# Examples:
+#   bash install.sh mytoken myhostname
+#   bash install.sh mytoken myhostname https://primary.com,https://backup.com alert
+#
+# AUTO_BLOCK values: off | alert | block  (default: alert)
 # ─────────────────────────────────────────────────────────────────
 set -e
 
 AGENT_TOKEN=${1:-""}
 AGENT_ID=${2:-"$(hostname)"}
 SERVER_URL=${3:-"https://aegistrace-7qvn.onrender.com"}
+AUTO_BLOCK=${4:-"alert"}
 
 echo ""
 echo "╔══════════════════════════════════════════════════════════╗"
-echo "║         AegisTrace Endpoint Agent v3.0 Installer        ║"
+echo "║         AegisTrace Endpoint Agent v5.0 Installer        ║"
+echo "║  🍯 Honey Token Trap · DNS/DGA · Guardian · Auto-Block  ║"
 echo "╚══════════════════════════════════════════════════════════╝"
 echo ""
 
@@ -84,6 +93,8 @@ export AEGISTRACE_AGENT_ID="${AGENT_ID}"
 export AEGISTRACE_SERVER="${SERVER_URL}"
 export AEGISTRACE_POLL_INTERVAL="30"
 export AEGISTRACE_CMD_INTERVAL="10"
+export AEGISTRACE_AUTO_BLOCK="${AUTO_BLOCK}"
+export AEGISTRACE_HONEY_TOKENS="true"
 EOF
 
 echo "✓ Config written to $INSTALL_DIR/aegistrace.env"

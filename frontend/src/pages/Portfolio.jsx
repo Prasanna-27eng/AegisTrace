@@ -63,7 +63,7 @@ function TerminalWindow() {
     {t:4200, text:'    ✓ Sec+   CompTIA Security+', color:'#22C55E'},
     {t:4700, text:'    ✓ TCM    Practical Ethical Hacking', color:'#22C55E'},
     {t:5400, text:'[*] Analysing projects...', color:'#EAB308'},
-    {t:6100, text:'    → AegisTrace v4.0  LIVE    [Identity SOC]', color:'#4DA3FF'},
+    {t:6100, text:'    → AegisTrace v5.0  LIVE    [Trust OS · EDR]', color:'#4DA3FF'},
     {t:6800, text:'    → WebSecGuard       SHIPPED [XSS/CSRF ext.]', color:'#A78BFA'},
     {t:7500, text:'[+] Threat intel stack: MITRE ATT&CK · KQL · SPL', color:'rgba(240,240,248,0.5)'},
     {t:8200, text:'[✓] Analysis complete. Open to hire.', color:'#22C55E'},
@@ -143,8 +143,8 @@ const CERTS = [
 ];
 
 const PROJECTS = [
-  { title:'AegisTrace — Identity-First SOC Control Plane', period:'Jun 2025 — Present', desc:'Production-grade SOC investigation platform. v4.0 ships ITDR — four real-time detectors. Includes pluggable identity risk engine, Identity Graph, Trust Timeline, Provenance Ledger, Policy Engine, and Terminal Lab.', tags:['React','FastAPI','Groq AI','VirusTotal','SQLite','Docker','Render','ITDR'], badge:'Live — v4.0', badgeColor:'#4BE38A', link:null, highlight:true,
-    features:['ITDR — credential stuffing, impossible travel, new device, privilege escalation detection','Pluggable identity risk engine with 3 detectors + policy enforcement','Explainable AI — full reasoning chain on every verdict','7-source IOC enrichment + 18 hardware forensic tools','Email forensics (SPF/DKIM/DMARC) + DORA Article 19 compliance'] },
+  { title:'AegisTrace — Trust Operating System · AI-Agent Era', period:'Jun 2025 — Present', desc:'Production-grade SOC control plane with full EDR. v5.0 ships Endpoint Agent with Honey Token Trap, DNS/DGA detection, YARA-lite engine, auto-block, USB + registry monitoring and guardian process alongside ITDR, Identity Graph, Trust Timeline, and Provenance Ledger.', tags:['React','FastAPI','Groq AI','VirusTotal','SQLite','Docker','Render','ITDR','EDR'], badge:'Live — v5.0', badgeColor:'#4BE38A', link:null, highlight:true,
+    features:['Endpoint Agent v5.0 — 🍯 Honey Token Trap, DNS/DGA, YARA-lite, auto-block engine, guardian process','ITDR — credential stuffing, impossible travel, new device, privilege escalation (6 detectors)','Pluggable identity risk engine · Identity Graph · Trust Timeline · Provenance Ledger','Explainable AI — full reasoning chain on every verdict · 7-source IOC enrichment','18 hardware forensic tools · Email forensics (SPF/DKIM/DMARC) · DORA Article 19'] },
   { title:'WebSecGuard — Browser Vulnerability Scanner', period:'Jun–Sep 2025 · MSc Dissertation', desc:'Chrome extension (Manifest V3) for real-time XSS and CSRF detection. Detects 25+ injection points on OWASP Juice Shop during testing.', tags:['JavaScript','Chrome Extension API','Manifest V3','OWASP','Burp Suite'], badge:'Security Research', badgeColor:'#EF4444', link:'https://github.com/prasanna80564/web-scanner-', highlight:false },
   { title:'Grand Line SOC Dashboard', period:'May 2026', desc:'Full-featured SOC dashboard with MITRE ATT&CK mapping, VirusTotal IOC enrichment, AI-generated case summaries, role-based access control, and one-click PDF report export.', tags:['React 18','Firebase','MITRE ATT&CK','VirusTotal API','Groq AI','RBAC'], badge:'Blue Team', badgeColor:'#9C7CFF', link:'https://github.com/Prasanna-27eng/grant-line-soc-', highlight:false },
   { title:'Automated Cloud Deployment & CI/CD', period:'Jan–Mar 2025', desc:'End-to-end automated deployment pipeline to AWS EC2. Infrastructure-as-code with Terraform, configuration management via Ansible, CI/CD through GitHub Actions. Reduced deployment time by 70%.', tags:['Terraform','Ansible','Docker','AWS EC2','GitHub Actions','IaC'], badge:'Cloud/DevOps', badgeColor:'#4A8EDB', link:'https://github.com/prasanna80564/networking', highlight:false },

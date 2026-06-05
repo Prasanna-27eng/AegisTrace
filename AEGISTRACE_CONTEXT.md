@@ -91,8 +91,8 @@ backend/            FastAPI (Python)
       okta.py             Okta API token
       csv_import.py       CSV upload + column mapping
 
-agent/              aegistrace_agent.py (v3.0 — psutil-based, Layer 2 complete)
-                    install.sh — one-command installer
+agent/              aegistrace_agent.py (v5.0 — 2432 lines, production-grade EDR)
+                    install.sh — one-command installer (v5.0)
 Dockerfile          Multi-stage: frontend build → FastAPI server
 render.yaml         Render free-tier deploy config (autoDeploy: true)
 ```
@@ -377,21 +377,27 @@ react, react-dom, react-router-dom, axios, zustand, lucide-react, react-scripts
 
 ## FULL FUTURE WORK BACKLOG
 
-### Priority 1 — Endpoint Agent Layer 2 Completions (partially done in v4.3)
+### Priority 1 — Endpoint Agent v5.0 (completed June 2026)
 - [x] Shadow AI detection — 14 AI API domains, cross-refs approved list
 - [x] Suspicious process detection — known malicious name matching
 - [x] Suspicious port detection — C2 port flagging
 - [x] New network destination detection — baseline + deviation after 5 cycles
-- [x] Behavioural Baseline Engine — 7-day learning, anomaly detection
+- [x] Behavioural Baseline Engine — 7-day learning, anomaly detection, cross-session persistence
 - [x] Process Lineage Tree — suspicious parent-child detection (office→cmd, browser→cmd, etc.)
-- [x] File Integrity Monitoring — hash critical system paths, alert on change
+- [x] File Integrity Monitoring — SHA-256 + mtime + size, recursive dir monitoring, suppress re-alerts
 - [x] Privilege Escalation Detector — root escalation, sudo anomalies
-- [x] Local Anomaly Scorer — pure Python 0-100 composite score
-- [x] Command Channel — bidirectional control: collect_now, kill_process, get_process_tree, ping, etc.
-- [x] Watchdog Thread — heartbeat monitoring, restarts main loop on failure
-- [x] Service registration — systemd / LaunchAgent / Windows Service
-- [ ] DNS Query Monitoring — DGA detection, tunnelling, newly registered domains (Layer 2 remaining)
-- [ ] Behavioural baseline: cross-session persistence with rolling 7-day statistics
+- [x] Local Anomaly Scorer — pure Python 0-100 composite score (v5.0 extended weights)
+- [x] Command Channel — collect_now, kill_process, block_ip, unblock_ip, isolate_device, get_process_tree, ping, fim_check_now, honey_status, get_blocked_ips
+- [x] Watchdog Thread — heartbeat monitoring, guardian process (separate OS process, v5.0)
+- [x] Service registration — systemd / LaunchAgent / Windows Service (with service recovery)
+- [x] DNS/DGA Detection — Shannon entropy + vowel ratio + digit ratio, tunnelling detection
+- [x] 🍯 Honey Token Trap — canary credential files (.aws/credentials, .honey_env, .honey_vault, honey_passwords.txt), CRITICAL alert on access, zero false positives
+- [x] Auto-Block Engine — iptables / pfctl / netsh blocking, device isolation mode
+- [x] USB/Removable Media Detector — Linux /proc/mounts, macOS diskutil, Windows WMI
+- [x] Windows Registry Monitor — Run/RunOnce/Winlogon/Services persistence keys
+- [x] YARA-lite Engine — 16 string signature rules on process cmdlines (reverse shells, LOLBins, credential access)
+- [x] Multiple Backend Failover — primary → secondary → tertiary, JSONL offline buffer
+- [x] Guardian Process — multiprocessing.Process guardian restarts agent on crash
 
 ### Priority 2 — ITDR Hardening (v4.3 completed)
 - [x] Multiple time windows for credential stuffing — 10min/5, 1h/15, 24h/25

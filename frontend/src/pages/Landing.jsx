@@ -143,7 +143,7 @@ function AIDemo() {
 }
 
 function Ticker() {
-  const items='◇ Trust Operating System · Identity · Provenance · Control · ◇ ITDR — Credential Stuffing · Impossible Travel · Privilege Escalation · ◇ Identity Graph · Trust Timeline · Provenance Ledger · Pluggable Risk Engine · ◇ Endpoint Agent v2 · Sysmon Collection · Process Tree Analysis · ◇ 18 Hardware Analysis Tools · WiFi Pineapple · HackRF One · Flipper Zero · Proxmark3 · ◇ AI Case Analysis · MITRE ATT&CK · IOC Correlation · Explainable AI · ◇ VirusTotal v3 · Shodan · MalwareBazaar · URLhaus · ThreatFox · GreyNoise · ◇ Email Forensics · DORA Article 19 · Webhook Alerting · ◇ Terminal Lab · Log Parsing · IOC Extraction · ◇ AI Agent Security · Bounded Autonomy · Human Approval Queue · ◇ Policy Engine · Trust Validation · Anomaly Detection · ◇ Free. Open. Deployable. · ';
+  const items='◇ Trust Operating System · Identity · Provenance · Control · ◇ ITDR — Credential Stuffing · Impossible Travel · Privilege Escalation · ◇ Identity Graph · Trust Timeline · Provenance Ledger · Pluggable Risk Engine · ◇ Endpoint Agent v5 · Honey Token Trap · DNS/DGA Detection · Auto-Block · YARA-lite · Guardian Process · ◇ 18 Hardware Analysis Tools · WiFi Pineapple · HackRF One · Flipper Zero · Proxmark3 · ◇ AI Case Analysis · MITRE ATT&CK · IOC Correlation · Explainable AI · ◇ VirusTotal v3 · Shodan · MalwareBazaar · URLhaus · ThreatFox · GreyNoise · ◇ Email Forensics · DORA Article 19 · Webhook Alerting · ◇ Terminal Lab · Log Parsing · IOC Extraction · ◇ AI Agent Security · Bounded Autonomy · Human Approval Queue · ◇ Policy Engine · Trust Validation · Anomaly Detection · ◇ Free. Open. Deployable. · ';
   return (
     <div style={{position:'absolute',bottom:0,left:0,right:0,zIndex:10,height:32,overflow:'hidden',background:'rgba(7,8,15,0.7)',borderTop:'1px solid rgba(255,255,255,0.06)',display:'flex',alignItems:'center'}}>
       <div style={{display:'flex',animation:'marquee 60s linear infinite',whiteSpace:'nowrap'}}>
@@ -162,7 +162,7 @@ const FEATURES = [
   { Icon:Brain,        title:'Explainable AI',        desc:'Multi-model Groq routing with full reasoning chain. Every verdict shows evidence used, reasoning steps, what-could-be-wrong, and confidence. No black boxes. Provenance ledger records every AI action.', color:'#22C55E' },
   { Icon:Shield,       title:'7-Source IOC Intel',    desc:'VirusTotal v3 + Shodan, MalwareBazaar, URLhaus, ThreatFox, GreyNoise, IPInfo — all queried in parallel. Results saved to history and correlated cross-case to detect campaigns.', color:'#4DA3FF' },
   { Icon:Mail,         title:'Email Forensics',       desc:'Full RFC header parsing, SPF/DKIM/DMARC validation, routing hop extraction, AI phishing verdict with confidence scoring and MITRE ATT&CK technique mapping.', color:'#A78BFA' },
-  { Icon:Monitor,      title:'Endpoint Agent v2',     desc:'Zero-dependency Python agent for Windows/Linux/Mac. Collects Sysmon events, process trees, persistence, auth logs. Heartbeat every 60s, retry queue.', color:'#EAB308' },
+  { Icon:Monitor,      title:'Endpoint Agent v5',     desc:'Production-grade Python EDR for Windows/Linux/Mac. Honey Token Trap (canary files, zero false positives), DNS/DGA detection, auto-block engine, YARA-lite, USB + registry monitoring. Multi-backend failover. Guardian process.', color:'#EAB308' },
   { Icon:Terminal,     title:'Terminal Lab',          desc:'Private Linux-style analyst workspace. Simulated mode for 20+ commands. AI parses every output, extracts IOCs, maps to MITRE. Save sessions to cases.', color:'#22C55E' },
   { Icon:Activity,     title:'Threat Hunting',        desc:'Cross-case IOC correlation, MITRE heatmap, campaign detection, saved queries. Spots attacker infrastructure reuse across all your investigations.', color:'#4DA3FF' },
   { Icon:Globe,        title:'DORA Compliance',       desc:'One-click Article 19 Major ICT Incident Report PDF. Maps 5 DORA pillars to live case data. Built for EU financial services regulated firms.', color:'#A78BFA' },
@@ -305,8 +305,8 @@ function BentoFeatures({ mono }) {
       {/* Endpoint Agent */}
       <div className="bento-card" style={{gridColumn:'span 4',background:'rgba(234,179,8,0.03)',border:'1px solid rgba(234,179,8,0.1)',borderRadius:14,padding:22}}>
         <Monitor size={20} style={{color:'#EAB308',marginBottom:10}}/>
-        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#F0F0F8'}}>Endpoint Agent v3</div>
-        <div style={{fontSize:11,color:'rgba(240,240,248,0.45)',lineHeight:1.7,...mono,fontWeight:300}}>psutil-powered. Shadow AI detection, behavioural baseline, FIM, privilege escalation detector, command channel. Linux/macOS/Windows.</div>
+        <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#F0F0F8'}}>Endpoint Agent v5 <span style={{fontSize:9,background:'rgba(234,179,8,0.15)',border:'1px solid rgba(234,179,8,0.3)',color:'#EAB308',borderRadius:3,padding:'1px 5px',marginLeft:4,verticalAlign:'middle'}}>NEW</span></div>
+        <div style={{fontSize:11,color:'rgba(240,240,248,0.45)',lineHeight:1.7,...mono,fontWeight:300}}>🍯 Honey Token Trap · DNS/DGA · Auto-Block · YARA-lite · USB + Registry · Guardian Process · Multi-backend failover. Linux/macOS/Windows.</div>
       </div>
 
       {/* Identity Auto-Discovery — v4.3 new */}
