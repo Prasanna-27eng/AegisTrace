@@ -15,75 +15,141 @@ import api from '../api/client';
 const openApp = () => window.open('/app/login', '_blank', 'noopener,noreferrer');
 
 /* ─── Particle network ───────────────────────────────────────────────────── */
-function ParticleNetwork() {
-  const ref  = useRef(null);
-  const mRef = useRef({ x: 0.5, y: 0.5 });
+/* ─── Aurora Flow Field ──────────────────────────────────────────────────────
+   Two-layer animation: large drifting aurora orbs (light blobs) underneath,
+   500 micro-particles following an animated vector field on top.
+   Mouse cursor creates a live vortex that pulls nearby particles into orbit.
+   Result: looks like aurora borealis / magnetic plasma — completely alive.
+────────────────────────────────────────────────────────────────────────────── */
+function AuroraFlowField() {
+  const cvRef = useRef(null);
+  const mouse = useRef({ x: 0.5, y: 0.5 });
+
   useEffect(() => {
-    const cv = ref.current; if (!cv) return;
+    const cv = cvRef.current;
+    if (!cv) return;
     const ctx = cv.getContext('2d');
-    let aid;
-    const N = 110;
-    const pts = Array.from({ length: N }, () => ({
-      x: Math.random(), y: Math.random(),
-      vx: (Math.random() - 0.5) * 0.00022,
-      vy: (Math.random() - 0.5) * 0.00022,
-      r: Math.random() * 1.8 + 0.6,
-      a: Math.random() * 0.5 + 0.45,
-    }));
+    let W, H, raf;
+
     function resize() {
-      const dpr = Math.min(window.devicePixelRatio||1,2);
-      cv.width  = cv.offsetWidth  * dpr;
-      cv.height = cv.offsetHeight * dpr;
-      ctx.scale(dpr, dpr);
+      W = cv.offsetWidth; H = cv.offsetHeight;
+      cv.width = W; cv.height = H;
     }
     resize();
     window.addEventListener('resize', resize);
-    const onM = e => { mRef.current = { x: e.clientX/window.innerWidth, y: e.clientY/window.innerHeight }; };
-    window.addEventListener('mousemove', onM);
-    let mx = 0.5, my = 0.5;
-    function frame() {
-      const W = cv.offsetWidth, H = cv.offsetHeight;
-      mx += (mRef.current.x - mx) * 0.04;
-      my += (mRef.current.y - my) * 0.04;
-      const ox = (mx - 0.5) * 28, oy = (my - 0.5) * 18;
-      ctx.clearRect(0,0,W,H);
-      ctx.fillStyle = '#040812'; ctx.fillRect(0,0,W,H);
-      pts.forEach(p => {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0) p.x = 1; if (p.x > 1) p.x = 0;
-        if (p.y < 0) p.y = 1; if (p.y > 1) p.y = 0;
-      });
-      const THRESH = Math.min(W, H) * 0.20;
-      for (let i = 0; i < pts.length; i++) {
-        for (let j = i+1; j < pts.length; j++) {
-          const a = pts[i], b = pts[j];
-          const ax = a.x*W+ox, ay = a.y*H+oy;
-          const bx = b.x*W+ox, by = b.y*H+oy;
-          const d  = Math.sqrt((ax-bx)**2+(ay-by)**2);
-          if (d < THRESH) {
-            const alpha = (1 - d/THRESH) * 0.38;
-            ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by);
-            ctx.strokeStyle = `rgba(74,142,219,${alpha})`; ctx.lineWidth=0.8; ctx.stroke();
-          }
-        }
-      }
-      pts.forEach(p => {
-        const px = p.x*W+ox, py = p.y*H+oy;
-        ctx.beginPath(); ctx.arc(px, py, p.r, 0, Math.PI*2);
-        ctx.fillStyle = `rgba(74,142,219,${p.a})`; ctx.fill();
-      });
-      const grd = ctx.createRadialGradient(W/2+ox*0.3, H*0.42+oy*0.3, 0, W/2+ox*0.3, H*0.42+oy*0.3, Math.min(W,H)*0.4);
-      grd.addColorStop(0, 'rgba(77,163,255,0.07)'); grd.addColorStop(0.5, 'rgba(156,124,255,0.04)'); grd.addColorStop(1, 'transparent');
-      ctx.fillStyle = grd; ctx.fillRect(0,0,W,H);
-      const vig = ctx.createRadialGradient(W/2, H/2, H*0.15, W/2, H/2, H*0.9);
-      vig.addColorStop(0, 'transparent'); vig.addColorStop(1, 'rgba(7,11,20,0.75)');
-      ctx.fillStyle = vig; ctx.fillRect(0,0,W,H);
-      aid = requestAnimationFrame(frame);
+    const onMouse = e => { mouse.current = { x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight }; };
+    window.addEventListener('mousemove', onMouse);
+
+    // ── Aurora orbs — large slow drifting blobs of coloured light ────────
+    const ORBS = [
+      { bx: 0.28, by: 0.32, r: 0.40, sx: 0.22, sy: 0.16, ph: 0.0, col: [77, 163, 255]  },
+      { bx: 0.72, by: 0.52, r: 0.34, sx: 0.17, sy: 0.24, ph: 1.3, col: [124, 58, 237]  },
+      { bx: 0.50, by: 0.74, r: 0.30, sx: 0.21, sy: 0.13, ph: 2.6, col: [6,  182, 212]  },
+      { bx: 0.14, by: 0.62, r: 0.26, sx: 0.14, sy: 0.19, ph: 0.9, col: [167, 139, 250] },
+      { bx: 0.86, by: 0.38, r: 0.28, sx: 0.19, sy: 0.22, ph: 2.0, col: [59,  130, 246] },
+      { bx: 0.58, by: 0.20, r: 0.22, sx: 0.25, sy: 0.18, ph: 3.4, col: [99,  214, 205] },
+    ];
+
+    // ── Micro-particles — follow an animated vector flow field ────────────
+    const PALETTE = [[77,163,255],[124,58,237],[6,182,212],[167,139,250]];
+    const N = 520;
+    const pts = Array.from({ length: N }, () => ({
+      x: Math.random(), y: Math.random(),
+      spd: 0.00018 + Math.random() * 0.00032,
+      life: Math.random() * 220,
+      maxLife: 100 + Math.random() * 220,
+      w: 0.28 + Math.random() * 0.62,
+      col: PALETTE[Math.floor(Math.random() * PALETTE.length)],
+    }));
+
+    // Layered-sine approximation of a Perlin flow field
+    function flowAngle(nx, ny, t, mx, my) {
+      const a =
+        Math.sin(nx * 4.1 + t * 0.26) * Math.PI +
+        Math.cos(ny * 3.0 + t * 0.19) * Math.PI * 0.55 +
+        Math.sin((nx + ny) * 2.7 + t * 0.34) * Math.PI * 0.38 +
+        Math.cos((nx - ny) * 1.8 - t * 0.14) * Math.PI * 0.22;
+      // Mouse vortex: perpendicular pull within radius 0.22
+      const dx = nx - mx, dy = ny - my, d = Math.sqrt(dx * dx + dy * dy);
+      if (d < 0.22) return a + (Math.atan2(dy, dx) + Math.PI / 2) * ((0.22 - d) / 0.22) * 3.2;
+      return a;
     }
-    aid = requestAnimationFrame(frame);
-    return () => { cancelAnimationFrame(aid); window.removeEventListener('resize',resize); window.removeEventListener('mousemove',onM); };
+
+    let t = 0, last = 0;
+
+    function frame(ts) {
+      const dt = Math.min(ts - last, 40);
+      last = ts;
+      t += dt * 0.001;
+
+      const mx = mouse.current.x, my = mouse.current.y;
+
+      // Fade (creates particle trails; also fades previous orb positions)
+      ctx.fillStyle = 'rgba(4,8,18,0.28)';
+      ctx.fillRect(0, 0, W, H);
+
+      // ── Draw aurora orbs ──────────────────────────────────────────────
+      ORBS.forEach(o => {
+        const ox = (o.bx + 0.09 * Math.sin(t * o.sx + o.ph)) * W;
+        const oy = (o.by + 0.07 * Math.cos(t * o.sy + o.ph * 1.5)) * H;
+        const rad = o.r * Math.min(W, H) * (0.87 + 0.13 * Math.sin(t * 0.65 + o.ph));
+        // Slight attraction toward mouse
+        const mdx = mx * W - ox, mdy = my * H - oy, md = Math.sqrt(mdx*mdx+mdy*mdy);
+        const pull = Math.min(55, 2200 / (md + 1));
+        const fx = ox + (mdx / (md || 1)) * pull;
+        const fy = oy + (mdy / (md || 1)) * pull;
+        const g = ctx.createRadialGradient(fx, fy, 0, fx, fy, rad);
+        const [r, gg, b] = o.col;
+        g.addColorStop(0,    `rgba(${r},${gg},${b},0.14)`);
+        g.addColorStop(0.38, `rgba(${r},${gg},${b},0.07)`);
+        g.addColorStop(0.75, `rgba(${r},${gg},${b},0.02)`);
+        g.addColorStop(1,    `rgba(${r},${gg},${b},0)`);
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+      });
+
+      // ── Draw flow particles ───────────────────────────────────────────
+      pts.forEach(p => {
+        p.life += dt * 0.075;
+        if (p.life >= p.maxLife) {
+          p.x = Math.random(); p.y = Math.random();
+          p.life = 0; p.maxLife = 100 + Math.random() * 220;
+          return;
+        }
+        const angle = flowAngle(p.x, p.y, t, mx, my);
+        const nx = p.x + Math.cos(angle) * p.spd;
+        const ny = p.y + Math.sin(angle) * p.spd;
+        const alpha = Math.sin((p.life / p.maxLife) * Math.PI) * 0.72;
+        const [r, gg, b] = p.col;
+        ctx.beginPath();
+        ctx.moveTo(p.x * W, p.y * H);
+        ctx.lineTo(nx * W, ny * H);
+        ctx.strokeStyle = `rgba(${r},${gg},${b},${alpha})`;
+        ctx.lineWidth = p.w;
+        ctx.stroke();
+        p.x = ((nx % 1) + 1) % 1;
+        p.y = ((ny % 1) + 1) % 1;
+      });
+
+      // Edge vignette
+      const vig = ctx.createRadialGradient(W/2, H/2, H*0.12, W/2, H/2, H*0.9);
+      vig.addColorStop(0, 'transparent');
+      vig.addColorStop(1, 'rgba(4,8,18,0.82)');
+      ctx.fillStyle = vig;
+      ctx.fillRect(0, 0, W, H);
+
+      raf = requestAnimationFrame(frame);
+    }
+
+    raf = requestAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', onMouse);
+    };
   }, []);
-  return <canvas ref={ref} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }} />;
+
+  return <canvas ref={cvRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />;
 }
 
 function Clock() {
@@ -441,7 +507,7 @@ export default function Landing() {
 
       {/* ══ HERO — SPLIT LAYOUT ══ */}
       <section style={{position:'relative',width:'100%',height:'100vh',overflow:'hidden'}}>
-        <ParticleNetwork/>
+        <AuroraFlowField/>
         <div className="lp-rails" style={{position:'absolute',left:20,top:'50%',transform:'translateY(-50%)',zIndex:10,display:'flex',flexDirection:'column',alignItems:'center',gap:12}}>
           <span style={{writingMode:'vertical-rl',fontSize:10,color:'rgba(240,240,248,0.3)',letterSpacing:'0.15em',textTransform:'uppercase',...mono}}>Transmission № 01</span>
           <div style={{width:1,height:48,background:'rgba(77,163,255,0.3)'}}/>
