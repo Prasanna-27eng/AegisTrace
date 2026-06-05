@@ -85,7 +85,15 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         borderBottom: '1px solid var(--border)',
         marginBottom: 4, flexShrink: 0,
       }}>
-        {collapsed ? <Logo size={22} showText={false} /> : <Logo size={22} showText />}
+        <div
+          onClick={() => navigate('/')}
+          title="Back to home"
+          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', borderRadius: 6, padding: '2px 4px', transition: 'background 0.15s' }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(77,163,255,0.07)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+        >
+          {collapsed ? <Logo size={22} showText={false} /> : <Logo size={22} showText />}
+        </div>
         <button onClick={() => setCollapsed(!collapsed)}
           style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer', padding: 4 }}
           title={collapsed ? 'Expand' : 'Collapse'}>

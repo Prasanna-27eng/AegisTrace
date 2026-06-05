@@ -84,8 +84,16 @@ export default function AgentSetup() {
   const [activeSection, setActiveSection] = useState('overview');
   const [mobileNav, setMobileNav] = useState(false);
 
-  const configSnippet = `AEGISTRACE_URL = "${AEGISTRACE_URL}"
-INGEST_KEY     = "paste-your-ingest-key-here"`;
+  const configSnippet = `# Set these before running:
+export AEGISTRACE_TOKEN=your_ingest_key_here
+export AEGISTRACE_AGENT_ID=$(hostname)
+export AEGISTRACE_SERVER=${AEGISTRACE_URL}
+
+# Optional: enable auto-blocking (off | alert | block)
+export AEGISTRACE_AUTO_BLOCK=alert
+
+# Then run:
+python3 aegistrace_agent.py`;
 
   const scrollTo = id => {
     document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'});
@@ -201,12 +209,12 @@ INGEST_KEY     = "paste-your-ingest-key-here"`;
                   <Terminal size={22} style={{color:'#4DA3FF'}}/>
                 </div>
                 <div>
-                  <div style={{fontSize:10,...mono,color:'#4DA3FF',textTransform:'uppercase',letterSpacing:'0.12em'}}>Endpoint Agent · v2</div>
+                  <div style={{fontSize:10,...mono,color:'#4DA3FF',textTransform:'uppercase',letterSpacing:'0.12em'}}>Endpoint Agent · <span style={{color:'#22C55E'}}>v5.0</span></div>
                   <h1 style={{fontSize:26,fontWeight:800,margin:0,lineHeight:1.2}}>Setup Guide</h1>
                 </div>
               </div>
               <p style={{fontSize:14,color:'rgba(240,240,248,0.6)',lineHeight:1.8,maxWidth:620,margin:'0 0 24px',...mono,fontWeight:300}}>
-                Install the AegisTrace agent on any machine — Windows, Linux, or Mac — to automatically collect and ship security logs to your AegisTrace dashboard. Zero dependencies required beyond Python 3.7+.
+                Production-grade EDR agent for Windows, Linux, and macOS. Ships security telemetry to your AegisTrace dashboard, detects threats locally, and responds in under 1 second. One dependency: <strong style={{color:'#F0F0F8'}}>psutil</strong>. Single Python file.
               </p>
 
               {/* Download card */}
@@ -227,16 +235,18 @@ INGEST_KEY     = "paste-your-ingest-key-here"`;
                 </div>
               </div>
 
-              {/* Feature highlights */}
+              {/* v5.0 feature highlights */}
               <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:10,marginTop:16}}>
                 {[
-                  {Icon:Cpu,   label:'Auto-detects OS',    sub:'Windows, Linux, macOS'},
-                  {Icon:Shield,label:'Ships over HTTPS',   sub:'Encrypted telemetry'},
-                  {Icon:Wifi,  label:'Retry queue',        sub:'Offline-resilient'},
-                  {Icon:CheckCircle,label:'No duplicates', sub:'Tracks log position'},
-                ].map(({Icon,label,sub})=>(
+                  {Icon:Shield,     label:'🍯 Honey Token Trap', sub:'Zero false positives · catches harvesters',   color:'#EAB308'},
+                  {Icon:Wifi,       label:'DNS / DGA Detection',  sub:'Entropy-based C2 domain detection',           color:'#4DA3FF'},
+                  {Icon:Cpu,        label:'YARA-lite Engine',      sub:'16 string signatures on process cmdlines',    color:'#A78BFA'},
+                  {Icon:Shield,     label:'Auto-Block Engine',     sub:'iptables / pfctl / netsh < 1 second',         color:'#22C55E'},
+                  {Icon:CheckCircle,label:'Multi-backend failover',sub:'Primary → secondary → tertiary',             color:'#4DA3FF'},
+                  {Icon:Server,     label:'Guardian Process',      sub:'Separate OS process restarts agent on crash', color:'#F97316'},
+                ].map(({Icon,label,sub,color})=>(
                   <div key={label} style={{display:'flex',gap:10,alignItems:'center',padding:'12px 14px',background:'rgba(255,255,255,0.02)',border:'1px solid rgba(255,255,255,0.06)',borderRadius:9}}>
-                    <Icon size={14} style={{color:'#4DA3FF',flexShrink:0}}/>
+                    <Icon size={14} style={{color,flexShrink:0}}/>
                     <div>
                       <div style={{fontSize:12,fontWeight:600,color:'#F0F0F8'}}>{label}</div>
                       <div style={{fontSize:10,color:'#71717A',...mono,marginTop:1}}>{sub}</div>
@@ -417,25 +427,26 @@ INGEST_KEY     = "paste-your-ingest-key-here"`;
                 <h2 style={{fontSize:22,fontWeight:700,margin:0}}>Config options</h2>
                 <p style={{fontSize:13,color:'rgba(240,240,248,0.5)',marginTop:8,...mono,fontWeight:300}}>Open <code style={{color:'#A78BFA',fontSize:12}}>aegistrace_agent.py</code> and adjust these variables near the top:</p>
               </div>
-              <CopyBlock label="Configuration variables" code={`INTERVAL_SECONDS = 300     # How often to ship logs (default: 5 min)
-MAX_LINES        = 500     # Max lines per log file per run
-AUTO_ANALYSE     = True    # Run AI analysis on arrival
-AUTO_CASE        = True    # Auto-create a case if threat score > threshold
-THREAT_THRESHOLD = 60      # Score 0–100 (default: 60)
-TAGS             = ["prod", "finance"]  # Optional labels for this machine`}/>
-
               {/* Config reference table */}
               <div style={{border:'1px solid rgba(255,255,255,0.07)',borderRadius:10,overflow:'hidden',marginTop:8}}>
                 <table style={{width:'100%',borderCollapse:'collapse',fontSize:12}}>
                   <thead>
                     <tr style={{background:'rgba(255,255,255,0.03)'}}>
-                      {['Variable','Default','Description'].map(h=>(
+                      {['Environment Variable','Default','Description'].map(h=>(
                         <th key={h} style={{textAlign:'left',padding:'9px 14px',color:'rgba(240,240,248,0.35)',fontWeight:500,borderBottom:'1px solid rgba(255,255,255,0.07)',...mono,fontSize:10,textTransform:'uppercase',letterSpacing:'0.08em'}}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {[['INTERVAL_SECONDS','300','Seconds between each collection run'],['MAX_LINES','500','Max log lines shipped per file per run'],['AUTO_ANALYSE','True','Trigger AI analysis on log batch arrival'],['AUTO_CASE','True','Auto-create case if threat score exceeds threshold'],['THREAT_THRESHOLD','60','Minimum score (0–100) to trigger auto-case'],['TAGS','[]','Label this machine for filtering in the dashboard']].map(([v,d,desc],i)=>(
+                    {[
+                      ['AEGISTRACE_TOKEN',    '(required)', 'Your ingest key from Endpoints page'],
+                      ['AEGISTRACE_AGENT_ID', 'hostname',   'Unique name for this machine'],
+                      ['AEGISTRACE_SERVER',   AEGISTRACE_URL, 'Backend URL — comma-separate for failover'],
+                      ['AEGISTRACE_POLL_INTERVAL', '30',   'Seconds between collection cycles'],
+                      ['AEGISTRACE_AUTO_BLOCK',    'alert', 'off | alert | block (block = auto-firewall IPs)'],
+                      ['AEGISTRACE_HONEY_TOKENS',  'true',  'Plant canary credential files (highly recommended)'],
+                      ['AEGISTRACE_APPROVED_AI',   '',      'Comma list of approved AI domains (e.g. api.openai.com)'],
+                    ].map(([v,d,desc],i)=>(
                       <tr key={v} style={{borderBottom:'1px solid rgba(255,255,255,0.04)',background:i%2===0?'rgba(255,255,255,0.01)':'transparent'}}>
                         <td style={{padding:'8px 14px',...mono,fontSize:11,color:'#A78BFA'}}>{v}</td>
                         <td style={{padding:'8px 14px',...mono,fontSize:11,color:'#EAB308'}}>{d}</td>

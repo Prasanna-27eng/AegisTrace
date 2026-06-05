@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Navigate, Outlet, useNavigate, NavLink } from 'react-router-dom';
-import { Search, Menu, LayoutDashboard, FolderOpen, Crosshair, Monitor, Settings } from 'lucide-react';
+import { Search, Menu, LayoutDashboard, FolderOpen, Crosshair, Monitor, Settings, ChevronDown, LogOut, Home } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import CommandPalette from '../../components/CommandPalette';
 import useStore from '../../store/useStore';
@@ -15,18 +15,32 @@ const MOBILE_NAV = [
 ];
 
 export default function AppShell() {
-  const { token, user, searchQuery, setSearchQuery } = useStore();
+  const { token, user, searchQuery, setSearchQuery, logout } = useStore();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [recentCases, setRecentCases] = useState([]);
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
   if (!token) return <Navigate to="/app/login" replace />;
 
   useEffect(() => {
     api.get('/api/cases?limit=10').then(r => setRecentCases(r.data)).catch(() => {});
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [dropdownOpen]);
 
   useEffect(() => {
     const onKey = (e) => {
@@ -91,14 +105,44 @@ export default function AppShell() {
             </button>
           </div>
 
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 500, color: '#F0F0F8' }}>{user?.name}</div>
-              <div style={{ fontSize: '0.62rem', color: '#71717A', fontFamily: 'JetBrains Mono' }}>{user?.role}</div>
-            </div>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(77,163,255,0.15)', border: '1px solid rgba(77,163,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 600, color: '#60A5FA', flexShrink: 0 }}>
-              {user?.name?.[0] || 'A'}
-            </div>
+          {/* User dropdown */}
+          <div ref={dropdownRef} style={{ marginLeft: 'auto', position: 'relative' }}>
+            <button
+              onClick={() => setDropdownOpen(o => !o)}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, background: dropdownOpen ? 'rgba(77,163,255,0.08)' : 'none', border: '1px solid ' + (dropdownOpen ? 'rgba(77,163,255,0.2)' : 'transparent'), borderRadius: 8, padding: '4px 8px 4px 10px', cursor: 'pointer', transition: 'all 0.15s' }}
+              onMouseEnter={e => { if (!dropdownOpen) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+              onMouseLeave={e => { if (!dropdownOpen) e.currentTarget.style.background = 'none'; }}
+            >
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 500, color: '#F0F0F8' }}>{user?.name}</div>
+                <div style={{ fontSize: '0.62rem', color: '#71717A', fontFamily: 'JetBrains Mono' }}>{user?.role}</div>
+              </div>
+              <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(77,163,255,0.15)', border: '1px solid rgba(77,163,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 600, color: '#60A5FA', flexShrink: 0 }}>
+                {user?.name?.[0] || 'A'}
+              </div>
+              <ChevronDown size={12} style={{ color: '#71717A', transition: 'transform 0.2s', transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+            </button>
+
+            {dropdownOpen && (
+              <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 8px)', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: 6, minWidth: 190, zIndex: 300, boxShadow: '0 10px 40px rgba(0,0,0,0.5)', animation: 'at-dd-in 0.12s ease' }}>
+                {[
+                  { Icon: Home,     label: 'Back to Home',  action: () => { navigate('/');          setDropdownOpen(false); }, color: 'rgba(240,240,248,0.7)' },
+                  { Icon: Settings, label: 'Settings',       action: () => { navigate('/app/admin'); setDropdownOpen(false); }, color: 'rgba(240,240,248,0.7)' },
+                ].map(({ Icon, label, action, color }) => (
+                  <button key={label} onClick={action} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', background: 'none', border: 'none', borderRadius: 7, padding: '9px 12px', fontSize: '0.8rem', color, cursor: 'pointer', transition: 'background 0.12s', textAlign: 'left', fontFamily: 'inherit' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                    <Icon size={14} style={{ flexShrink: 0, opacity: 0.7 }} />{label}
+                  </button>
+                ))}
+                <div style={{ height: 1, background: 'var(--border)', margin: '4px 6px' }} />
+                <button onClick={() => { logout(); navigate('/'); }} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', background: 'none', border: 'none', borderRadius: 7, padding: '9px 12px', fontSize: '0.8rem', color: '#EF4444', cursor: 'pointer', transition: 'background 0.12s', textAlign: 'left', fontFamily: 'inherit' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                  <LogOut size={14} style={{ flexShrink: 0 }} /> Sign Out
+                </button>
+              </div>
+            )}
           </div>
         </header>
 
@@ -120,6 +164,10 @@ export default function AppShell() {
           .hidden-mobile { display: none !important; }
           .mobile-only   { display: flex !important; }
           .mobile-bottom-nav { display: flex !important; }
+        }
+        @keyframes at-dd-in {
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </div>

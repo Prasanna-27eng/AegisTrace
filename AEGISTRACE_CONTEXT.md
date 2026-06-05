@@ -305,13 +305,37 @@ Shareable via token, PDF downloadable, AI summary callout at top
 - [x] Sidebar: Connectors + NHI Health nav items
 - [x] Landing: 144:1 stat, Identity Auto-Discovery bento, NHI Health Monitor bento, v4.3 badge
 
-### v4.3 Remaining
+### v5.0 Completed (June 2026 session)
+
+**Endpoint Agent v5.0** (agent/aegistrace_agent.py — 2432 lines)
+- [x] 🍯 Honey Token Trap — canary .aws/credentials, .honey_env, .honey_vault, honey_passwords.txt; CRITICAL alert when any process reads them; zero false positives
+- [x] DNS/DGA Detection — Shannon entropy + vowel ratio + digit ratio scoring; DNS tunnelling (subdomain > 50 chars); hooks system syslog/mdnsresponder
+- [x] Auto-Block Engine — iptables/pfctl/netsh DROP rules; device isolation mode (cuts all outbound except AegisTrace); kill_process; configurable via AEGISTRACE_AUTO_BLOCK=off|alert|block
+- [x] USB/Removable Media Detector — /proc/mounts (Linux), diskutil (macOS), WMI (Windows); one alert per device per session
+- [x] Windows Registry Monitor — Run/RunOnce/Winlogon/Services persistence keys; hash-based change detection
+- [x] YARA-lite Engine — 16 string signatures: reverse shells, Mimikatz, encoded PowerShell, certutil, LOLBin patterns, net user /add
+- [x] Guardian Process — multiprocessing.Process (not just a thread) monitors main agent PID; restarts on SIGKILL
+- [x] Multi-backend failover — AEGISTRACE_SERVER=url1,url2,url3; automatic failover without data loss
+- [x] Enhanced FIM v5.0 — mtime + size + hash; directory listing monitor; 5-min re-alert suppression
+- [x] Network isolation command — isolate_device / unisolate_device from command channel
+- [x] New command channel commands: block_ip, unblock_ip, isolate_device, unisolate_device, honey_status, fim_check_now, get_blocked_ips
+- [x] install.sh updated — includes AEGISTRACE_AUTO_BLOCK + AEGISTRACE_HONEY_TOKENS env vars
+- [x] GitHub push protection fix — replaced Stripe key patterns in honey token content with non-matching fakes
+
+**Frontend UI (June 2026 session)**
+- [x] Login.jsx — complete rewrite with orbital Trust Field canvas animation (16 identity nodes on 3 orbital rings, trust bond connections, threat/resolve events, center pulsing core); no WireframeBackground
+- [x] Sidebar.jsx — logo click navigates to / (home page); hover effect added
+- [x] AppShell.jsx — user name/avatar in header is now a clickable dropdown: Home, Settings, Sign Out (with animation + click-outside close)
+- [x] Landing.jsx — Endpoint Agent feature updated to v5.0 with Honey Token Trap mention
+- [x] Portfolio.jsx — AegisTrace project updated to v5.0, terminal animation updated
+- [x] AgentSetup.jsx — updated to v5.0: new description, 6 feature highlights, updated quick start (env var pattern), new config table with all AEGISTRACE_* vars, download link live
+
+### v4.3 Remaining (still to do)
 - [ ] Shadow AI Detection dashboard UI — `/app/shadow-ai` full investigation page for ShadowAIEvent records
 - [ ] ITDR analytics page — detector fire rates, top targeted identities, false positive trends
-- [ ] DNS query monitoring in agent — DGA detection, tunnelling
 - [ ] DPDPA Compliance Report — India market accelerator
 
-### v5.0 Planned
+### v5.0 / Future Planned
 - [ ] SCIM endpoint (/api/scim/v2) — enterprise push-based identity sync
 - [ ] Least Agency enforcement — per-agent scope definition + auto-reject
 - [ ] MCP Security Gateway — monitor MCP server connections, flag unapproved
@@ -319,6 +343,7 @@ Shareable via token, PDF downloadable, AI summary callout at top
 - [ ] Attacker Path Reconstruction — visual kill-chain across human + machine actors
 - [ ] Endpoint Agent Layer 3 (eBPF/Falco) — kernel-level visibility on Linux
 - [ ] Endpoint Agent Layer 4 (Memory Forensics) — Volatility 3 integration
+- [ ] Shadow AI dashboard (/app/shadow-ai) — investigation UI for ShadowAIEvent records
 
 ---
 
