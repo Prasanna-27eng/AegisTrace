@@ -14,199 +14,174 @@ import api from '../api/client';
 
 const openApp = () => window.open('/app/login', '_blank', 'noopener,noreferrer');
 
-/* ─── Particle network ───────────────────────────────────────────────────── */
-/* ─── Aurora Flow Field ──────────────────────────────────────────────────────
-   Two-layer animation: large drifting aurora orbs (light blobs) underneath,
-   500 micro-particles following an animated vector field on top.
-   Mouse cursor creates a live vortex that pulls nearby particles into orbit.
-   Result: looks like aurora borealis / magnetic plasma — completely alive.
-────────────────────────────────────────────────────────────────────────────── */
-/* ─── Identity Constellation ──────────────────────────────────────────────────
-   AegisTrace's vision as a live scene: a force-directed graph of identity
-   entities — users, AI agents, services, devices, tokens — connected by
-   trust relationships. The graph breathes and self-organises via spring
-   physics. Move your cursor and nearby nodes scatter. Every ~8 seconds a
-   random node is compromised (turns red, edges flash), then resolved
-   (brief green pulse). The same story AegisTrace is built to tell.
-────────────────────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   HEX FORTRESS
+   ────────────
+   A living tessellated shield — the visual metaphor for layered security.
 
-const IC_TYPES = [
-  { label:'USR', r:77,  g:163, b:255 },   // human user   — blue
-  { label:'AGT', r:167, g:139, b:250 },   // AI agent     — purple
-  { label:'SVC', r:34,  g:197, b:94  },   // service      — green
-  { label:'DEV', r:234, g:179, b:8   },   // device       — amber
-  { label:'TKN', r:6,   g:182, b:212 },   // token        — teal
-];
+   · Full-screen hexagonal armour grid. Cells nearest the center glow brightest.
+   · Defense pulse waves radiate outward from center every ~3.5 s, lighting
+     each hex ring as the wave passes — like a sonar ping across the shield.
+   · Attack events: every ~8 s, a cluster of red hexes erupts at a random
+     screen edge and cascades inward. The "threat front" advances ~3 rows
+     before being absorbed — cells return to blue, then calm.
+   · Mouse cursor creates an instant bright protective zone on nearby hexes.
+   · No dots. No random particles. Pure geometric strength.
+═══════════════════════════════════════════════════════════════════════════ */
 
-function IdentityConstellation() {
+function HexFortress() {
   const cvRef = useRef(null);
-  const mRef  = useRef({ x: -999, y: -999 });
+  const mRef  = useRef({ x: -9999, y: -9999 });
 
   useEffect(() => {
     const cv = cvRef.current;
     if (!cv) return;
     const ctx = cv.getContext('2d');
-    let W, H, raf;
+    let W, H, raf, last = 0;
+
+    // ── Hex geometry ─────────────────────────────────────────────────────
+    const HS = 34;                           // hex flat-to-flat half-width
+    const HW = HS * 1.5;                     // col step
+    const HH = HS * Math.sqrt(3);            // row step
+
+    let hexes = [];
+
+    function buildGrid() {
+      hexes = [];
+      const cols = Math.ceil(W / HW) + 4;
+      const rows = Math.ceil(H / HH) + 4;
+      for (let c = -2; c < cols; c++) {
+        for (let r = -2; r < rows; r++) {
+          const x = c * HW;
+          const y = r * HH + (c % 2 === 0 ? 0 : HH / 2);
+          hexes.push({ x, y, heat: 0, alert: 0 });
+        }
+      }
+    }
 
     function resize() {
       W = cv.offsetWidth; H = cv.offsetHeight;
       cv.width = W; cv.height = H;
+      buildGrid();
     }
     resize();
-    window.addEventListener('resize', resize);
+    const ro = new ResizeObserver(resize);
+    ro.observe(cv);
+
     const onMouse = e => { mRef.current = { x: e.clientX, y: e.clientY }; };
     window.addEventListener('mousemove', onMouse);
 
-    // ── Build identity nodes ─────────────────────────────────────────────
-    const NODE_COUNT = 38;
-    const nodes = Array.from({ length: NODE_COUNT }, (_, i) => {
-      const t = IC_TYPES[i % IC_TYPES.length];
-      const a = (i / NODE_COUNT) * Math.PI * 2 + Math.random() * 0.5;
-      const d = 90 + Math.random() * 200;
-      return {
-        x: W / 2 + Math.cos(a) * d, y: H / 2 + Math.sin(a) * d,
-        vx: 0, vy: 0,
-        r: t.r, g: t.g, b: t.b,
-        sz: 3.5 + Math.random() * 2.8,
-        ph: Math.random() * Math.PI * 2,
-        state: 'normal',   // normal | compromised | resolving
-        stateT: 0,
-      };
-    });
+    // ── Pulse waves ───────────────────────────────────────────────────────
+    const pulses = [];
+    let pulseCD  = 3200;
+    let attackCD = 7500 + Math.random() * 5000;
 
-    // Build edges: each node → 2–3 nearest neighbours
-    const edges = [];
-    for (let i = 0; i < NODE_COUNT; i++) {
-      const sorted = nodes
-        .map((n, j) => ({ j, d: Math.hypot(nodes[i].x - n.x, nodes[i].y - n.y) }))
-        .filter(e => e.j !== i)
-        .sort((a, b) => a.d - b.d);
-      const nc = 2 + (Math.random() < 0.38 ? 1 : 0);
-      for (let k = 0; k < nc; k++) {
-        const j = sorted[k].j;
-        if (!edges.some(e => (e[0]===i&&e[1]===j)||(e[0]===j&&e[1]===i)))
-          edges.push({ a: i, b: j, alert: false });
+    function drawHex(hx, hy, size) {
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a  = (i * Math.PI / 3) - Math.PI / 6;
+        const px = hx + size * Math.cos(a);
+        const py = hy + size * Math.sin(a);
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
       }
+      ctx.closePath();
     }
-
-    let compromiseCD = 6000 + Math.random() * 5000;
-    let last = 0;
 
     function frame(ts) {
       const dt = Math.min(ts - last, 40);
       last = ts;
-      const mx = mRef.current.x, my = mRef.current.y;
-      const cx = W / 2, cy = H / 2;
 
-      // ── Force simulation ──────────────────────────────────────────────
-      // Node-node repulsion
-      for (let i = 0; i < NODE_COUNT; i++) {
-        for (let j = i + 1; j < NODE_COUNT; j++) {
-          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
-          const d2 = dx * dx + dy * dy;
-          if (d2 > 200 * 200 || d2 < 0.01) continue;
-          const d  = Math.sqrt(d2);
-          const f  = Math.min(4, 2200 / d2);
-          const fx = (dx / d) * f, fy = (dy / d) * f;
-          nodes[i].vx += fx; nodes[i].vy += fy;
-          nodes[j].vx -= fx; nodes[j].vy -= fy;
-        }
-      }
-
-      // Edge springs (ideal 88 px)
-      edges.forEach(({ a: ai, b: bi }) => {
-        const na = nodes[ai], nb = nodes[bi];
-        const dx = nb.x - na.x, dy = nb.y - na.y;
-        const d  = Math.hypot(dx, dy) || 0.1;
-        const f  = (d - 88) * 0.004;
-        na.vx += (dx / d) * f; na.vy += (dy / d) * f;
-        nb.vx -= (dx / d) * f; nb.vy -= (dy / d) * f;
-      });
-
-      // Integrate
-      nodes.forEach(n => {
-        // Gentle center gravity
-        n.vx += (cx - n.x) * 0.0007;
-        n.vy += (cy - n.y) * 0.0007;
-
-        // Mouse repulsion
-        const mdx = n.x - mx, mdy = n.y - my, md2 = mdx * mdx + mdy * mdy;
-        if (md2 < 130 * 130 && md2 > 0.1) {
-          const md = Math.sqrt(md2);
-          const f  = Math.min(5, 9000 / md2);
-          n.vx += (mdx / md) * f; n.vy += (mdy / md) * f;
-        }
-
-        n.vx *= 0.90; n.vy *= 0.90;  // heavy damp → stable
-        n.x  += n.vx;  n.y  += n.vy;
-        n.ph += 0.0008 * dt;
-
-        // Soft bounds
-        if (n.x < 48)    n.vx += 1.4;
-        if (n.x > W - 48) n.vx -= 1.4;
-        if (n.y < 48)    n.vy += 1.4;
-        if (n.y > H - 48) n.vy -= 1.4;
-      });
-
-      // ── Compromise / resolve events ───────────────────────────────────
-      compromiseCD -= dt;
-      if (compromiseCD <= 0) {
-        const idx = Math.floor(Math.random() * NODE_COUNT);
-        nodes[idx].state = 'compromised'; nodes[idx].stateT = 0;
-        edges.forEach(e => { if (e.a === idx || e.b === idx) e.alert = true; });
-        compromiseCD = 7000 + Math.random() * 6000;
-      }
-      nodes.forEach((n, i) => {
-        if (n.state === 'compromised') {
-          n.stateT += dt;
-          if (n.stateT > 2600) { n.state = 'resolving'; n.stateT = 0; }
-        } else if (n.state === 'resolving') {
-          n.stateT += dt;
-          if (n.stateT > 1100) {
-            n.state = 'normal';
-            edges.forEach(e => { if (e.a === i || e.b === i) e.alert = false; });
-          }
-        }
-      });
-
-      // ── Render ────────────────────────────────────────────────────────
       ctx.fillStyle = '#040812';
       ctx.fillRect(0, 0, W, H);
 
-      // Edges
-      edges.forEach(({ a: ai, b: bi, alert }) => {
-        const na = nodes[ai], nb = nodes[bi];
-        const d  = Math.hypot(na.x - nb.x, na.y - nb.y);
-        if (d > 215) return;
-        ctx.beginPath(); ctx.moveTo(na.x, na.y); ctx.lineTo(nb.x, nb.y);
-        ctx.strokeStyle = alert
-          ? `rgba(239,68,68,${(1 - d/215) * 0.55})`
-          : `rgba(77,163,255,${(1 - d/215) * 0.18})`;
-        ctx.lineWidth = alert ? 0.85 : 0.5; ctx.stroke();
+      const cx = W / 2, cy = H / 2;
+      const maxD = Math.hypot(cx, cy);
+      const { x: mx, y: my } = mRef.current;
+
+      // ── Timers ────────────────────────────────────────────────────────
+      pulseCD  -= dt;
+      attackCD -= dt;
+
+      if (pulseCD <= 0) {
+        pulses.push({ r: 0, alpha: 0.85, speed: 0.095 });
+        pulseCD = 3000 + Math.random() * 2200;
+      }
+
+      if (attackCD <= 0) {
+        // Pick a random edge cluster
+        const edge = Math.floor(Math.random() * 4);
+        let ex, ey;
+        if (edge === 0) { ex = Math.random() * W; ey = -HS * 2; }
+        else if (edge === 1) { ex = W + HS * 2; ey = Math.random() * H; }
+        else if (edge === 2) { ex = Math.random() * W; ey = H + HS * 2; }
+        else               { ex = -HS * 2; ey = Math.random() * H; }
+        // Mark nearby hexes as alert
+        hexes.forEach(h => {
+          const d = Math.hypot(h.x - ex, h.y - ey);
+          if (d < HS * 5) h.alert = 1.0 + (1 - d / (HS * 5)) * 0.5;
+        });
+        attackCD = 7000 + Math.random() * 6000;
+      }
+
+      // ── Update pulses ─────────────────────────────────────────────────
+      for (let i = pulses.length - 1; i >= 0; i--) {
+        pulses[i].r     += pulses[i].speed * dt;
+        pulses[i].alpha -= 0.00085 * dt;
+        if (pulses[i].alpha <= 0 || pulses[i].r > maxD * 1.1) pulses.splice(i, 1);
+      }
+
+      // ── Draw hexes ────────────────────────────────────────────────────
+      hexes.forEach(h => {
+        const dCenter = Math.hypot(h.x - cx, h.y - cy);
+        const dMouse  = Math.hypot(h.x - mx, h.y - my);
+
+        // Alert decay (red threats fade out)
+        if (h.alert > 0) h.alert = Math.max(0, h.alert - dt * 0.00088);
+
+        // Base: center cells glow brighter
+        const baseBright = Math.max(0.018, (1 - dCenter / (maxD * 1.1)) * 0.11);
+
+        // Pulse heat: ring of brightness from each wave
+        let pulseHeat = 0;
+        pulses.forEach(p => {
+          const diff = Math.abs(dCenter - p.r);
+          const band = HS * 3.2;
+          if (diff < band) {
+            pulseHeat = Math.max(pulseHeat, (1 - diff / band) * p.alpha * 0.55);
+          }
+        });
+
+        // Mouse proximity glow
+        const mouseGlow = dMouse < 90 ? (1 - dMouse / 90) * 0.72 : 0;
+
+        const totalBright = baseBright + pulseHeat + mouseGlow;
+        const isAlert = h.alert > 0.05;
+
+        // Fill
+        drawHex(h.x, h.y, HS - 2.5);
+        if (isAlert) {
+          ctx.fillStyle = `rgba(239,68,68,${h.alert * 0.13})`;
+        } else {
+          ctx.fillStyle = `rgba(77,163,255,${totalBright * 0.55})`;
+        }
+        ctx.fill();
+
+        // Stroke
+        drawHex(h.x, h.y, HS - 1.5);
+        if (isAlert) {
+          ctx.strokeStyle = `rgba(239,68,68,${Math.min(0.75, h.alert * 0.65)})`;
+          ctx.lineWidth   = h.alert > 0.55 ? 1.2 : 0.65;
+        } else {
+          ctx.strokeStyle = `rgba(77,163,255,${Math.min(0.28, totalBright * 2.8)})`;
+          ctx.lineWidth   = mouseGlow > 0.1 ? 0.9 : 0.45;
+        }
+        ctx.stroke();
       });
 
-      // Nodes
-      nodes.forEach(n => {
-        const p = 0.72 + 0.28 * Math.sin(n.ph);
-        let r = n.r, g = n.g, b = n.b;
-        if (n.state === 'compromised') { r = 239; g = 68;  b = 68; }
-        if (n.state === 'resolving')   { r = 34;  g = 197; b = 94; }
-
-        const gR = n.sz * 3.8;
-        const ng = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, gR);
-        ng.addColorStop(0, `rgba(${r},${g},${b},${p * 0.38})`);
-        ng.addColorStop(1, 'transparent');
-        ctx.beginPath(); ctx.arc(n.x, n.y, gR, 0, Math.PI * 2);
-        ctx.fillStyle = ng; ctx.fill();
-
-        ctx.beginPath(); ctx.arc(n.x, n.y, n.sz, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${r},${g},${b},${0.76 + p * 0.24})`; ctx.fill();
-      });
-
-      // Vignette
-      const vig = ctx.createRadialGradient(W/2, H/2, H*0.1, W/2, H/2, H*0.88);
+      // ── Radial vignette ───────────────────────────────────────────────
+      const vig = ctx.createRadialGradient(cx, cy, H * 0.08, cx, cy, H * 0.88);
       vig.addColorStop(0, 'transparent');
-      vig.addColorStop(1, 'rgba(4,8,18,0.82)');
+      vig.addColorStop(1, 'rgba(4,8,18,0.86)');
       ctx.fillStyle = vig; ctx.fillRect(0, 0, W, H);
 
       raf = requestAnimationFrame(frame);
@@ -215,7 +190,7 @@ function IdentityConstellation() {
     raf = requestAnimationFrame(frame);
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener('resize', resize);
+      ro.disconnect();
       window.removeEventListener('mousemove', onMouse);
     };
   }, []);
@@ -578,7 +553,7 @@ export default function Landing() {
 
       {/* ══ HERO — SPLIT LAYOUT ══ */}
       <section style={{position:'relative',width:'100%',height:'100vh',overflow:'hidden'}}>
-        <IdentityConstellation/>
+        <HexFortress/>
         <div className="lp-rails" style={{position:'absolute',left:20,top:'50%',transform:'translateY(-50%)',zIndex:10,display:'flex',flexDirection:'column',alignItems:'center',gap:12}}>
           <span style={{writingMode:'vertical-rl',fontSize:10,color:'rgba(240,240,248,0.3)',letterSpacing:'0.15em',textTransform:'uppercase',...mono}}>Transmission № 01</span>
           <div style={{width:1,height:48,background:'rgba(77,163,255,0.3)'}}/>

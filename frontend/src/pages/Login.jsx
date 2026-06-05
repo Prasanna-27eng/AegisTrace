@@ -6,267 +6,244 @@ import api from '../api/client';
 import useStore from '../store/useStore';
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   TRUST VERIFICATION
-   ─────────────────
-   AegisTrace's core mission, rendered as a living scene.
+   IRIS SCANNER
+   ────────────
+   Biometric authentication rendered as a living canvas.
 
-   · Identity nodes (USR · AGT · SVC · DEV) emerge from the darkness and
-     drift inward toward the central Trust Core.
-   · When close enough, a beam of light connects node to core → authenticated.
-     The node takes its orbit. A pulse ring confirms the grant.
-   · Orbiting nodes weave thin trust threads between each other — a living
-     mesh that grows and breathes.
-   · Every ~10 seconds, a red threat node approaches. The Core rejects it:
-     a red pulse ring fires, the threat is expelled back into the dark.
-   · Subtle dot grid, three concentric orbit guides, three micro-electrons
-     circling the core.
-
-   Clean. Geometric. Purposeful. Nothing funky.
+   · Faint hex grid tiles the background — structural, not decorative.
+   · Four counter-rotating iris petal layers create a living starburst.
+   · Outer dial ring with 72 tick marks slowly drifts clockwise.
+   · Three cipher-text rings orbit at different radii + speeds:
+       inner  → hex opcodes  (CW)
+       middle → algorithm IDs (CCW)
+       outer  → status tokens (CW)
+   · A horizontal scan beam sweeps top-to-bottom, clipped to the iris.
+   · Corner targeting brackets frame the iris.
+   · Every ~10 s: "● BIOMETRIC VERIFIED" flashes green + a ring pulse fires.
 ═══════════════════════════════════════════════════════════════════════════ */
 
-const ID_TYPES = [
-  { label: 'USR', r: 77,  g: 163, b: 255 },   // human user   — blue
-  { label: 'AGT', r: 167, g: 139, b: 250 },   // AI agent     — purple
-  { label: 'SVC', r: 34,  g: 197, b: 94  },   // service acct — green
-  { label: 'DEV', r: 234, g: 179, b: 8   },   // device       — amber
-];
-
-function TrustVerification() {
+function IrisScanner() {
   const cvRef = useRef(null);
 
   useEffect(() => {
     const cv = cvRef.current;
     if (!cv) return;
     const ctx = cv.getContext('2d');
-    let W, H, raf;
+    let W, H, raf, t = 0, last = 0;
+    let scanY = 0, scanDir = 1;
+    let verifiedFlash = 0;
+    let verifiedCD = 9000 + Math.random() * 5000;
+    const pulses = [];
 
     function resize() {
       W = cv.offsetWidth;
       H = cv.offsetHeight;
-      cv.width  = W;
+      cv.width = W;
       cv.height = H;
+      scanY = 0;
     }
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(cv);
 
-    // ── State ────────────────────────────────────────────────────────────
-    const nodes  = [];
-    const pulses = [];     // expanding ring events from core
-    let spawnCD  = 1100;
-    let threatCD = 11000 + Math.random() * 6000;
-    let cPulseCD = 2800;
-    let last     = 0;
+    // ── Cipher ring data ─────────────────────────────────────────────────
+    const RINGS = [
+      {
+        tokens: ['0x3F','0x7A','RSA','0x2B','HMAC','0x91','0x4E','TLS','0xAB','0x5C','0xFF','AES'],
+        speed: 0.000185, dir:  1, alpha: 0.24, rMul: 1.22,
+      },
+      {
+        tokens: ['SHA-256','VERIFY','AES-GCM','JWT','CERT','ECDSA','0x0F','4DA3FF','0xCC','0x11'],
+        speed: 0.000125, dir: -1, alpha: 0.16, rMul: 1.48,
+      },
+      {
+        tokens: ['ACCESS','GRANTED','FIREWALL','SCAN','0x1A','AUTH','0xBB','SECURE','ZONE','CTRL'],
+        speed: 0.000085, dir:  1, alpha: 0.09, rMul: 1.74,
+      },
+    ];
 
-    const MAX_NODES = 12;
-    const AUTH_R    = 54;   // within this radius → node authenticates
-    const ORB_MAX   = 132;  // max orbit radius
+    // ── Iris petal layers ────────────────────────────────────────────────
+    const LAYERS = [
+      { count: 34, inner: 0.31, outer: 0.73, speed: 0.000215, dir:  1, alpha: 0.38, lw: 0.9 },
+      { count: 26, inner: 0.23, outer: 0.59, speed: 0.000175, dir: -1, alpha: 0.28, lw: 0.7 },
+      { count: 18, inner: 0.14, outer: 0.44, speed: 0.000130, dir:  1, alpha: 0.20, lw: 0.6 },
+      { count: 12, inner: 0.07, outer: 0.27, speed: 0.000095, dir: -1, alpha: 0.14, lw: 0.5 },
+    ];
 
-    // ── Helpers ───────────────────────────────────────────────────────────
-    function edgePt() {
-      const e = Math.floor(Math.random() * 4);
-      if (e === 0) return { x: Math.random() * W, y: -18 };
-      if (e === 1) return { x: W + 18,             y: Math.random() * H };
-      if (e === 2) return { x: Math.random() * W,  y: H + 18 };
-      return              { x: -18,                y: Math.random() * H };
-    }
-
-    function spawnNode(isThreat) {
-      const { x, y } = edgePt();
-      const cx = W / 2, cy = H / 2;
-      const t   = ID_TYPES[Math.floor(Math.random() * ID_TYPES.length)];
-      const ang = Math.random() * Math.PI * 2;
-      const od  = 40 + Math.random() * (ORB_MAX - 40);
-
-      nodes.push({
-        x, y,
-        tx: cx + Math.cos(ang) * od,
-        ty: cy + Math.sin(ang) * od,
-        oAng: ang,
-        oDist: od,
-        oSpd: (0.00024 + Math.random() * 0.00032) * (Math.random() < 0.5 ? 1 : -1),
-        spd:   0.031 + Math.random() * 0.038,
-        sz:    3.5 + Math.random() * 2.5,
-        ph:    Math.random() * Math.PI * 2,
-        r: isThreat ? 239 : t.r,
-        g: isThreat ? 68  : t.g,
-        b: isThreat ? 68  : t.b,
-        label: t.label,
-        isThreat,
-        rejected: false,
-        state:    'arriving',   // arriving | orbiting | leaving
-        alpha:    0,
-        lineB:    0,            // brightness of line to core
-        life:     0,
-        maxLife:  isThreat ? 0 : 10000 + Math.random() * 8000,
-      });
-    }
-
-    // Seed a few nodes so screen is not empty at start
-    for (let i = 0; i < 4; i++) spawnNode(false);
-
-    // ── Frame ─────────────────────────────────────────────────────────────
     function frame(ts) {
       const dt = Math.min(ts - last, 40);
       last = ts;
-      const cx = W / 2, cy = H / 2;
+      t += dt;
 
-      ctx.fillStyle = '#07080F';
+      ctx.fillStyle = '#070A12';
       ctx.fillRect(0, 0, W, H);
 
-      // Subtle dot grid
-      ctx.fillStyle = 'rgba(77,163,255,0.048)';
-      for (let gx = 44; gx < W; gx += 44)
-        for (let gy = 44; gy < H; gy += 44) {
-          ctx.beginPath(); ctx.arc(gx, gy, 0.72, 0, Math.PI * 2); ctx.fill();
+      const cx = W / 2, cy = H / 2;
+      const R = Math.min(W, H) * 0.36;
+
+      // ── Hex grid background ──────────────────────────────────────────
+      const HS = 30;
+      const HW = HS * 1.5, HH = HS * Math.sqrt(3);
+      ctx.strokeStyle = 'rgba(77,163,255,0.032)';
+      ctx.lineWidth = 0.5;
+      const cols = Math.ceil(W / HW) + 3, rows = Math.ceil(H / HH) + 3;
+      for (let c = -1; c < cols; c++) {
+        for (let r = -1; r < rows; r++) {
+          const hx = c * HW - HS;
+          const hy = r * HH + (c % 2 === 0 ? 0 : HH / 2) - HS;
+          ctx.beginPath();
+          for (let i = 0; i < 6; i++) {
+            const a = (i * Math.PI / 3) - Math.PI / 6;
+            const px = hx + (HS - 1) * Math.cos(a);
+            const py = hy + (HS - 1) * Math.sin(a);
+            i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+          }
+          ctx.closePath(); ctx.stroke();
         }
+      }
 
-      // Orbit guide rings (dashed)
-      ctx.setLineDash([2, 12]);
-      [50, 91, ORB_MAX].forEach((r, i) => {
-        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(77,163,255,${[0.07, 0.05, 0.035][i]})`;
-        ctx.lineWidth = 0.7; ctx.stroke();
+      // ── Cipher text rings ─────────────────────────────────────────────
+      RINGS.forEach(ring => {
+        const ringR = R * ring.rMul;
+        const rot = t * ring.speed * ring.dir;
+        ctx.font = '7.5px JetBrains Mono, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const step = (Math.PI * 2) / ring.tokens.length;
+        ring.tokens.forEach((tok, i) => {
+          const a = i * step + rot;
+          const tx2 = cx + Math.cos(a) * ringR;
+          const ty2 = cy + Math.sin(a) * ringR;
+          ctx.save();
+          ctx.translate(tx2, ty2);
+          ctx.rotate(a + Math.PI / 2);
+          ctx.fillStyle = `rgba(77,163,255,${ring.alpha})`;
+          ctx.fillText(tok, 0, 0);
+          ctx.restore();
+        });
+        // Ring circle
+        ctx.beginPath(); ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(77,163,255,${ring.alpha * 0.45})`;
+        ctx.lineWidth = 0.5; ctx.stroke();
       });
-      ctx.setLineDash([]);
 
-      // ── Spawn timers ────────────────────────────────────────────────────
-      spawnCD  -= dt;
-      threatCD -= dt;
-      cPulseCD -= dt;
-      if (spawnCD  <= 0 && nodes.length < MAX_NODES) { spawnNode(false); spawnCD  = 1400 + Math.random() * 1900; }
-      if (threatCD <= 0)                              { spawnNode(true);  threatCD = 12000 + Math.random() * 8000; }
-      if (cPulseCD <= 0)                              { pulses.push({ r: 10, op: 0.3, red: false }); cPulseCD = 2700 + Math.random() * 1500; }
+      // ── Outer dial ring (tick marks) ──────────────────────────────────
+      const dialRot = t * 0.000072;
+      for (let i = 0; i < 72; i++) {
+        const a = (i / 72) * Math.PI * 2 + dialRot;
+        const major = i % 6 === 0;
+        const r1 = R * 0.985, r2 = R * (major ? 0.908 : 0.945);
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
+        ctx.lineTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2);
+        ctx.strokeStyle = `rgba(77,163,255,${major ? 0.62 : 0.25})`;
+        ctx.lineWidth = major ? 1.3 : 0.65; ctx.stroke();
+      }
+      // Outer rim circle
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(77,163,255,0.55)';
+      ctx.lineWidth = 1.6; ctx.stroke();
 
-      // ── Pulse rings ─────────────────────────────────────────────────────
+      // ── Iris petal layers ─────────────────────────────────────────────
+      LAYERS.forEach(layer => {
+        const rot = t * layer.speed * layer.dir;
+        const spread = (Math.PI / layer.count) * 0.55;
+        for (let i = 0; i < layer.count; i++) {
+          const a = (i / layer.count) * Math.PI * 2 + rot;
+          const rIn = R * layer.inner, rOut = R * layer.outer;
+          ctx.beginPath();
+          ctx.moveTo(cx + Math.cos(a - spread) * rIn, cy + Math.sin(a - spread) * rIn);
+          ctx.lineTo(cx + Math.cos(a) * rOut,         cy + Math.sin(a) * rOut);
+          ctx.lineTo(cx + Math.cos(a + spread) * rIn, cy + Math.sin(a + spread) * rIn);
+          ctx.strokeStyle = `rgba(77,163,255,${layer.alpha})`;
+          ctx.lineWidth = layer.lw; ctx.stroke();
+        }
+      });
+
+      // ── Inner limbal ring ─────────────────────────────────────────────
+      ctx.beginPath(); ctx.arc(cx, cy, R * 0.18, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(77,163,255,0.45)';
+      ctx.lineWidth = 1.0; ctx.stroke();
+
+      // ── Scan beam (clipped to iris) ───────────────────────────────────
+      scanY += scanDir * dt * 0.16;
+      if (scanY > R * 2 + 4) scanDir = -1;
+      if (scanY < -4)         scanDir =  1;
+      const scanAbsY = cy - R + scanY;
+
+      ctx.save();
+      ctx.beginPath(); ctx.arc(cx, cy, R * 0.985, 0, Math.PI * 2); ctx.clip();
+      // Glow band
+      const sg = ctx.createLinearGradient(0, scanAbsY - 22, 0, scanAbsY + 22);
+      sg.addColorStop(0, 'transparent');
+      sg.addColorStop(0.5, 'rgba(77,163,255,0.14)');
+      sg.addColorStop(1, 'transparent');
+      ctx.fillStyle = sg; ctx.fillRect(cx - R, scanAbsY - 22, R * 2, 44);
+      // Bright line
+      ctx.beginPath(); ctx.moveTo(cx - R, scanAbsY); ctx.lineTo(cx + R, scanAbsY);
+      ctx.strokeStyle = 'rgba(77,163,255,0.60)'; ctx.lineWidth = 1.0; ctx.stroke();
+      ctx.restore();
+
+      // ── Pupil glow ────────────────────────────────────────────────────
+      const pupR = R * 0.135;
+      const pg = ctx.createRadialGradient(cx, cy, 0, cx, cy, pupR * 2.6);
+      pg.addColorStop(0, 'rgba(77,163,255,0.92)');
+      pg.addColorStop(0.38, 'rgba(77,163,255,0.26)');
+      pg.addColorStop(1, 'transparent');
+      ctx.beginPath(); ctx.arc(cx, cy, pupR * 2.6, 0, Math.PI * 2);
+      ctx.fillStyle = pg; ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, cy, pupR, 0, Math.PI * 2);
+      ctx.fillStyle = '#4DA3FF'; ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, cy, pupR * 0.42, 0, Math.PI * 2);
+      ctx.fillStyle = '#fff'; ctx.fill();
+
+      // ── Targeting brackets ────────────────────────────────────────────
+      const bLen = 20, bAlpha = 0.42;
+      const corners = [
+        [cx - R * 0.68, cy - R * 0.68, 1, 1],
+        [cx + R * 0.68, cy - R * 0.68, -1, 1],
+        [cx + R * 0.68, cy + R * 0.68, -1, -1],
+        [cx - R * 0.68, cy + R * 0.68, 1, -1],
+      ];
+      ctx.strokeStyle = `rgba(77,163,255,${bAlpha})`;
+      ctx.lineWidth = 1.6;
+      corners.forEach(([bx, by, dx, dy]) => {
+        ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + dx * bLen, by); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx, by + dy * bLen); ctx.stroke();
+      });
+
+      // ── Pulse rings ───────────────────────────────────────────────────
       for (let i = pulses.length - 1; i >= 0; i--) {
-        pulses[i].r  += 0.055 * dt;
-        pulses[i].op -= 0.0017 * dt;
+        pulses[i].r  += 0.048 * dt;
+        pulses[i].op -= 0.0018 * dt;
         if (pulses[i].op <= 0) { pulses.splice(i, 1); continue; }
         ctx.beginPath(); ctx.arc(cx, cy, pulses[i].r, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(${pulses[i].red ? '239,68,68' : '77,163,255'},${pulses[i].op})`;
-        ctx.lineWidth = 1.3; ctx.stroke();
+        ctx.strokeStyle = `rgba(${pulses[i].green ? '34,197,94' : '77,163,255'},${pulses[i].op})`;
+        ctx.lineWidth = 1.2; ctx.stroke();
       }
 
-      // ── Trust threads (orbiting nodes ↔ each other) ─────────────────────
-      const orb = nodes.filter(n => n.state === 'orbiting' && !n.rejected);
-      for (let i = 0; i < orb.length; i++)
-        for (let j = i + 1; j < orb.length; j++) {
-          const d = Math.sqrt((orb[i].x - orb[j].x) ** 2 + (orb[i].y - orb[j].y) ** 2);
-          if (d < 155) {
-            ctx.beginPath(); ctx.moveTo(orb[i].x, orb[i].y); ctx.lineTo(orb[j].x, orb[j].y);
-            ctx.strokeStyle = `rgba(77,163,255,${(1 - d / 155) * 0.17})`;
-            ctx.lineWidth = 0.45; ctx.stroke();
-          }
-        }
-
-      // ── Update + draw nodes ─────────────────────────────────────────────
-      for (let i = nodes.length - 1; i >= 0; i--) {
-        const n  = nodes[i];
-        n.life  += dt;
-        n.ph    += 0.0009 * dt;
-        const dc = Math.sqrt((n.x - cx) ** 2 + (n.y - cy) ** 2);
-
-        // Threat rejection
-        if (n.isThreat && !n.rejected && n.state === 'arriving' && dc < AUTH_R + 14) {
-          n.rejected = true;
-          n.state    = 'leaving';
-          const dx = n.x - cx, dy = n.y - cy, dn = Math.sqrt(dx * dx + dy * dy) || 1;
-          n.tx = cx + (dx / dn) * W * 0.86;
-          n.ty = cy + (dy / dn) * H * 0.86;
-          pulses.push({ r: 14, op: 0.82, red: true });
-        }
-
-        if (n.state === 'arriving') {
-          n.x    += (n.tx - n.x) * n.spd;
-          n.y    += (n.ty - n.y) * n.spd;
-          n.alpha = Math.min(1, n.alpha + dt * 0.003);
-          if (!n.isThreat && Math.sqrt((n.x - n.tx) ** 2 + (n.y - n.ty) ** 2) < 3) {
-            n.state = 'orbiting';
-            n.lineB = 1;
-            pulses.push({ r: 8, op: 0.42, red: false });
-          }
-        } else if (n.state === 'orbiting') {
-          n.oAng += n.oSpd * dt;
-          n.x = cx + Math.cos(n.oAng) * n.oDist + Math.sin(n.ph) * 2.5;
-          n.y = cy + Math.sin(n.oAng) * n.oDist + Math.cos(n.ph * 1.4) * 2.5;
-          n.lineB = Math.max(0, n.lineB - dt * 0.0006);
-          if (n.maxLife > 0 && n.life > n.maxLife) {
-            n.state = 'leaving';
-            const a = Math.random() * Math.PI * 2;
-            n.tx = cx + Math.cos(a) * W;
-            n.ty = cy + Math.sin(a) * H;
-          }
-        } else if (n.state === 'leaving') {
-          n.x    += (n.tx - n.x) * 0.022;
-          n.y    += (n.ty - n.y) * 0.022;
-          n.alpha = Math.max(0, n.alpha - dt * 0.0018);
-          if (n.alpha <= 0) { nodes.splice(i, 1); continue; }
-        }
-
-        // Line from node → core
-        const lA = n.state === 'orbiting'
-          ? Math.max(0.05, n.lineB * 0.62) * n.alpha
-          : (dc < ORB_MAX + 42 ? (1 - dc / (ORB_MAX + 42)) * 0.28 * n.alpha : 0);
-        if (lA > 0.018) {
-          ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(cx, cy);
-          ctx.strokeStyle = `rgba(${n.r},${n.g},${n.b},${lA})`;
-          ctx.lineWidth   = n.lineB > 0.4 ? 1.0 : 0.45;
-          ctx.stroke();
-        }
-
-        // Node glow
-        const gR = n.sz * 3.8 * (n.isThreat ? 1.5 : 1);
-        const ng = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, gR);
-        ng.addColorStop(0, `rgba(${n.r},${n.g},${n.b},${n.alpha * 0.42})`);
-        ng.addColorStop(1, 'transparent');
-        ctx.beginPath(); ctx.arc(n.x, n.y, gR, 0, Math.PI * 2);
-        ctx.fillStyle = ng; ctx.fill();
-
-        // Node core dot
-        ctx.beginPath(); ctx.arc(n.x, n.y, n.sz, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${n.r},${n.g},${n.b},${n.alpha})`; ctx.fill();
-
-        // Type label (very faint)
-        if (n.alpha > 0.5 && !n.isThreat) {
-          ctx.font      = '7px JetBrains Mono,monospace';
-          ctx.textAlign = 'center';
-          ctx.fillStyle = `rgba(240,240,248,${n.alpha * 0.28})`;
-          ctx.fillText(n.label, n.x, n.y - n.sz - 5);
-        }
+      // ── Verified flash ────────────────────────────────────────────────
+      verifiedCD -= dt;
+      if (verifiedCD <= 0) {
+        verifiedFlash = 1600;
+        verifiedCD = 9500 + Math.random() * 7000;
+        pulses.push({ r: R * 0.96, op: 0.75, green: true });
+      }
+      if (verifiedFlash > 0) {
+        verifiedFlash -= dt;
+        const progress = verifiedFlash / 1600;
+        const vAlpha   = Math.min(1, (1 - Math.abs(progress - 0.5) * 2) + 0.25);
+        ctx.font = '8.5px JetBrains Mono, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = `rgba(34,197,94,${vAlpha * 0.88})`;
+        ctx.fillText('● BIOMETRIC VERIFIED', cx, cy + R + 24);
       }
 
-      // ── Central Trust Core ───────────────────────────────────────────────
-      const cp = 0.68 + 0.32 * Math.sin(ts * 0.00088);
-
-      // Outer glow
-      const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, 36);
-      cg.addColorStop(0,    `rgba(77,163,255,${cp * 0.88})`);
-      cg.addColorStop(0.45, `rgba(77,163,255,${cp * 0.28})`);
-      cg.addColorStop(1,    'transparent');
-      ctx.beginPath(); ctx.arc(cx, cy, 36, 0, Math.PI * 2);
-      ctx.fillStyle = cg; ctx.fill();
-
-      // Three orbiting micro-electrons
-      for (let i = 0; i < 3; i++) {
-        const a  = ts * 0.00078 + (i * Math.PI * 2) / 3;
-        const ex = cx + Math.cos(a) * 15;
-        const ey = cy + Math.sin(a) * 15;
-        ctx.beginPath(); ctx.arc(ex, ey, 1.8, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(77,163,255,0.72)'; ctx.fill();
-      }
-
-      // Core dot
-      ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI * 2);
-      ctx.fillStyle = '#4DA3FF'; ctx.fill();
-      ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffffff'; ctx.fill();
-
-      // Bottom fade
-      const bv = ctx.createLinearGradient(0, H * 0.52, 0, H);
-      bv.addColorStop(0, 'transparent');
-      bv.addColorStop(1, 'rgba(7,8,15,0.6)');
-      ctx.fillStyle = bv; ctx.fillRect(0, 0, W, H);
+      // ── Radial vignette ───────────────────────────────────────────────
+      const vig = ctx.createRadialGradient(cx, cy, R * 0.45, cx, cy, Math.max(W, H) * 0.72);
+      vig.addColorStop(0, 'transparent');
+      vig.addColorStop(1, 'rgba(7,10,18,0.90)');
+      ctx.fillStyle = vig; ctx.fillRect(0, 0, W, H);
 
       raf = requestAnimationFrame(frame);
     }
@@ -311,8 +288,8 @@ export default function Login() {
   return (
     <div style={{ minHeight: '100vh', background: '#07080F', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
 
-      {/* Trust Verification animation fills the whole background */}
-      <TrustVerification />
+      {/* Iris Scanner animation fills the whole background */}
+      <IrisScanner />
 
       {/* Centre vignette so card reads clearly over the animation */}
       <div style={{
