@@ -10,43 +10,131 @@ import Logo from '../components/Logo';
 import api from '../api/client';
 
 /* ─── Mini particle bg ─────────────────────────────────────────────────── */
+/* ─── Hex Grid Pulse ──────────────────────────────────────────────────────────
+   A honeycomb of hexagons. Ripple waves radiate from random source points
+   and light up every hex they pass through. Three colour channels (blue,
+   purple, teal) are pre-assigned per hex, creating a mosaic that pulses
+   with overlapping rings of light. Completely different from the landing
+   aurora or the login signal monitor.
+────────────────────────────────────────────────────────────────────────────── */
 function HeroBg() {
   const ref = useRef(null);
   useEffect(() => {
     const cv = ref.current; if (!cv) return;
     const ctx = cv.getContext('2d');
-    let aid;
-    const pts = Array.from({ length: 50 }, () => ({
-      x: Math.random(), y: Math.random(),
-      vx: (Math.random()-0.5)*0.0002, vy: (Math.random()-0.5)*0.0002,
-      r: Math.random()*1.4+0.4, a: Math.random()*0.4+0.25,
-    }));
-    function resize() {
-      const d=Math.min(window.devicePixelRatio||1,2);
-      cv.width=cv.offsetWidth*d; cv.height=cv.offsetHeight*d; ctx.scale(d,d);
-    }
-    resize(); window.addEventListener('resize',resize);
-    function frame() {
-      const W=cv.offsetWidth,H=cv.offsetHeight;
-      ctx.clearRect(0,0,W,H); ctx.fillStyle='#040812'; ctx.fillRect(0,0,W,H);
-      pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=1;if(p.x>1)p.x=0;if(p.y<0)p.y=1;if(p.y>1)p.y=0;});
-      const T=Math.min(W,H)*0.18;
-      for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++){
-        const a=pts[i],b=pts[j];
-        const ax=a.x*W,ay=a.y*H,bx=b.x*W,by=b.y*H;
-        const d=Math.sqrt((ax-bx)**2+(ay-by)**2);
-        if(d<T){ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.strokeStyle=`rgba(74,142,219,${(1-d/T)*0.22})`;ctx.lineWidth=0.6;ctx.stroke();}
+    let W, H, raf, grid = [];
+
+    const R  = 20;                          // hex circumradius
+    const RW = R * 2;
+    const RH = R * Math.sqrt(3);
+    // Three colour tints
+    const COLS = [[74,142,219],[124,58,237],[6,182,212]];
+
+    function buildGrid() {
+      grid = [];
+      const cols = Math.ceil(W / (RW * 0.75)) + 2;
+      const rows = Math.ceil(H / RH) + 2;
+      for (let c = -1; c <= cols; c++) {
+        for (let r = -1; r <= rows; r++) {
+          grid.push({
+            cx: c * RW * 0.75,
+            cy: r * RH + (c % 2 === 0 ? 0 : RH / 2),
+            bright: 0,
+            ci: Math.floor(Math.random() * 3),   // colour index
+          });
+        }
       }
-      pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x*W,p.y*H,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(74,142,219,${p.a})`;ctx.fill();});
-      const vig=ctx.createRadialGradient(W/2,H/2,H*0.1,W/2,H/2,H*0.9);
-      vig.addColorStop(0,'transparent');vig.addColorStop(1,'rgba(4,8,18,0.85)');
-      ctx.fillStyle=vig;ctx.fillRect(0,0,W,H);
-      aid=requestAnimationFrame(frame);
     }
-    frame();
-    return()=>{cancelAnimationFrame(aid);window.removeEventListener('resize',resize);};
-  },[]);
-  return <canvas ref={ref} style={{position:'absolute',inset:0,width:'100%',height:'100%'}}/>;
+
+    function resize() {
+      W = cv.offsetWidth; H = cv.offsetHeight;
+      cv.width = W; cv.height = H;
+      buildGrid();
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Active ripple waves
+    const waves = [];
+    let wCD = 500 + Math.random() * 400;   // cooldown to next wave
+    let last = 0;
+
+    function hexPath(x, y, r) {
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = (Math.PI / 3) * i - Math.PI / 6;
+        const px = x + (r - 1) * Math.cos(a);
+        const py = y + (r - 1) * Math.sin(a);
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+    }
+
+    function frame(ts) {
+      const dt = Math.min(ts - last, 40);
+      last = ts;
+
+      ctx.fillStyle = '#040812';
+      ctx.fillRect(0, 0, W, H);
+
+      // Spawn new wave
+      wCD -= dt;
+      if (wCD <= 0) {
+        waves.push({
+          x: Math.random() * W,
+          y: Math.random() * H * 0.8,   // bias toward upper half
+          r: 0,
+          spd: 0.065 + Math.random() * 0.055,
+          maxR: 160 + Math.random() * 220,
+        });
+        wCD = 550 + Math.random() * 950;
+      }
+
+      // Advance waves, remove finished
+      for (let i = waves.length - 1; i >= 0; i--) {
+        waves[i].r += waves[i].spd * dt;
+        if (waves[i].r > waves[i].maxR) waves.splice(i, 1);
+      }
+
+      // Update + draw each hex
+      grid.forEach(h => {
+        // Find peak brightness from all active waves
+        let peak = 0;
+        waves.forEach(w => {
+          const d = Math.sqrt((h.cx - w.x) ** 2 + (h.cy - w.y) ** 2);
+          const diff = Math.abs(d - w.r);
+          const band = 28;
+          if (diff < band) peak = Math.max(peak, 1 - diff / band);
+        });
+
+        // Smooth toward peak
+        h.bright += (peak - h.bright) * 0.09;
+
+        if (h.bright < 0.015) return;
+
+        const [cr, cg, cb] = COLS[h.ci];
+        hexPath(h.cx, h.cy, R);
+        ctx.fillStyle   = `rgba(${cr},${cg},${cb},${h.bright * 0.13})`;
+        ctx.fill();
+        ctx.strokeStyle = `rgba(${cr},${cg},${cb},${0.05 + h.bright * 0.38})`;
+        ctx.lineWidth   = 0.7;
+        ctx.stroke();
+      });
+
+      // Bottom fade
+      const fade = ctx.createLinearGradient(0, H * 0.35, 0, H);
+      fade.addColorStop(0, 'transparent');
+      fade.addColorStop(1, 'rgba(4,8,18,0.96)');
+      ctx.fillStyle = fade;
+      ctx.fillRect(0, 0, W, H);
+
+      raf = requestAnimationFrame(frame);
+    }
+
+    raf = requestAnimationFrame(frame);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); };
+  }, []);
+  return <canvas ref={ref} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />;
 }
 
 /* ─── Animated terminal window ─────────────────────────────────────────── */
