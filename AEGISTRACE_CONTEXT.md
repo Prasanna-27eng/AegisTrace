@@ -331,7 +331,7 @@ Shareable via token, PDF downloadable, AI summary callout at top
 - [x] AgentSetup.jsx — updated to v5.0: new description, 6 feature highlights, updated quick start (env var pattern), new config table with all AEGISTRACE_* vars, download link live
 
 ### v4.3 Remaining (still to do)
-- [ ] Shadow AI Detection dashboard UI — `/app/shadow-ai` full investigation page for ShadowAIEvent records
+- [x] Shadow AI Detection dashboard UI — `/app/shadow-ai` — stats, filter tabs (All/Unreviewed/Reviewed), event rows with expand detail, Mark Reviewed + Create Case actions, AI service labels, explainer panel
 - [ ] ITDR analytics page — detector fire rates, top targeted identities, false positive trends
 - [ ] DPDPA Compliance Report — India market accelerator
 

@@ -58,6 +58,7 @@ const Policies         = lazy(() => import('./pages/app/Policies'));
 const AgentSecurity    = lazy(() => import('./pages/app/AgentSecurity'));
 const ConnectorHub     = lazy(() => import('./pages/app/ConnectorHub'));
 const NHIHealth        = lazy(() => import('./pages/app/NHIHealth'));
+const ShadowAI         = lazy(() => import('./pages/app/ShadowAI'));
 
 export default function App() {
   return (
@@ -101,6 +102,7 @@ export default function App() {
             <Route path="agent-security"    element={<AgentSecurity />} />
             <Route path="connectors"        element={<ConnectorHub />} />
             <Route path="nhi-health"        element={<NHIHealth />} />
+            <Route path="shadow-ai"         element={<ShadowAI />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

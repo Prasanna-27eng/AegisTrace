@@ -5,7 +5,7 @@ import {
   Wrench, Globe, Settings, LogOut, ChevronLeft, ChevronRight,
   Crosshair, ScrollText, Monitor, Network, Rss, Cpu,
   Terminal, Fingerprint, BarChart2, ShieldAlert, ShieldCheck, Bot,
-  Plug, Activity
+  Plug, Activity, Brain
 } from 'lucide-react';
 import Logo from './Logo';
 import useStore from '../store/useStore';
@@ -40,6 +40,7 @@ const NAV_GROUPS = [
       { to: '/app/connectors',       label: 'Connectors',        Icon: Plug },
       { to: '/app/policies',         label: 'Policies',          Icon: ShieldCheck },
       { to: '/app/agent-security',   label: 'AI Agent Security', Icon: Bot },
+      { to: '/app/shadow-ai',        label: 'Shadow AI',         Icon: Brain },
     ],
   },
   {
