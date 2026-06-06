@@ -79,23 +79,28 @@ function Collapsible({ title, icon, children, defaultOpen = false }) {
 }
 
 function SetupGuideModal({ onClose, ingestKey, onFetchKey }) {
-  const [activeTab, setActiveTab] = useState('quick');
+  const [activeTab, setActiveTab] = useState('deploy');
+  const [os, setOs]               = useState('linux');
   const tabs = [
-    { id:'quick', label:'Quick Start' },
+    { id:'deploy',  label:'🚀 One-Click Deploy' },
     { id:'service', label:'Background Service' },
-    { id:'collects', label:'What It Collects' },
-    { id:'config', label:'Config Options' },
+    { id:'collects',label:'What It Collects' },
+    { id:'config',  label:'Config Options' },
   ];
 
   const agentUrl = `${AEGISTRACE_URL}/agent/aegistrace_agent.py`;
+  const token    = ingestKey || 'YOUR_TOKEN_HERE';
 
-  const configSnippet = `AEGISTRACE_URL = "${AEGISTRACE_URL}"
-INGEST_KEY     = "${ingestKey || 'paste-your-key-here'}"`;
+  const oneLiner = {
+    linux: `pip3 install psutil -q --break-system-packages 2>/dev/null || pip3 install psutil -q; python3 -c "import urllib.request; open('/tmp/at_agent.py','wb').write(urllib.request.urlopen('${agentUrl}').read())" && AEGISTRACE_TOKEN=${token} AEGISTRACE_AGENT_ID=$(hostname) AEGISTRACE_SERVER=${AEGISTRACE_URL} nohup python3 /tmp/at_agent.py > ~/aegistrace.log 2>&1 & echo "✓ AegisTrace Agent started (PID: $!)"`,
+    mac:   `pip3 install psutil -q 2>/dev/null; python3 -c "import urllib.request; open('/tmp/at_agent.py','wb').write(urllib.request.urlopen('${agentUrl}').read())" && AEGISTRACE_TOKEN=${token} AEGISTRACE_AGENT_ID=$(hostname) AEGISTRACE_SERVER=${AEGISTRACE_URL} nohup python3 /tmp/at_agent.py > ~/aegistrace.log 2>&1 & echo "✓ AegisTrace Agent started (PID: $!)"`,
+    windows: `pip install psutil -q; python -c "import urllib.request; open('C:/Windows/Temp/at_agent.py','wb').write(urllib.request.urlopen('${agentUrl}').read())"; $env:AEGISTRACE_TOKEN='${token}'; $env:AEGISTRACE_AGENT_ID=$env:COMPUTERNAME; $env:AEGISTRACE_SERVER='${AEGISTRACE_URL}'; Start-Process python -ArgumentList 'C:\\Windows\\Temp\\at_agent.py' -NoNewWindow`,
+  };
 
   return (
     <div style={{ position:'fixed', inset:0, zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.7)', backdropFilter:'blur(4px)', padding:20 }}
       onClick={e => { if(e.target === e.currentTarget) onClose(); }}>
-      <div style={{ background:'#111111', border:'1px solid rgba(255,255,255,0.1)', borderRadius:12, width:'100%', maxWidth:680, maxHeight:'88vh', display:'flex', flexDirection:'column', boxShadow:'0 25px 60px rgba(0,0,0,0.6)' }}>
+      <div style={{ background:'#111111', border:'1px solid rgba(255,255,255,0.1)', borderRadius:12, width:'100%', maxWidth:700, maxHeight:'88vh', display:'flex', flexDirection:'column', boxShadow:'0 25px 60px rgba(0,0,0,0.6)' }}>
 
         {/* Header */}
         <div style={{ padding:'18px 20px', borderBottom:'1px solid rgba(255,255,255,0.07)', display:'flex', alignItems:'center', gap:12, flexShrink:0 }}>
@@ -103,8 +108,8 @@ INGEST_KEY     = "${ingestKey || 'paste-your-key-here'}"`;
             <Terminal size={18} style={{ color:'#5A8A9F' }}/>
           </div>
           <div>
-            <div style={{ fontWeight:700, fontSize:'1rem' }}>Endpoint Agent Setup Guide</div>
-            <div style={{ fontSize:'0.72rem', color:'#787878', marginTop:1 }}>Install the agent on any machine to ship logs to AegisTrace</div>
+            <div style={{ fontWeight:700, fontSize:'1rem' }}>Deploy Endpoint Agent</div>
+            <div style={{ fontSize:'0.72rem', color:'#787878', marginTop:1 }}>One command — installs, configures, and starts the agent</div>
           </div>
           <button onClick={onClose} style={{ marginLeft:'auto', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:6, padding:'5px 8px', cursor:'pointer', color:'#787878' }}><X size={14}/></button>
         </div>
@@ -112,7 +117,7 @@ INGEST_KEY     = "${ingestKey || 'paste-your-key-here'}"`;
         {/* Tabs */}
         <div style={{ display:'flex', gap:0, borderBottom:'1px solid rgba(255,255,255,0.07)', padding:'0 20px', flexShrink:0 }}>
           {tabs.map(t => (
-            <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ padding:'10px 14px', background:'none', border:'none', borderBottom: activeTab===t.id ? '2px solid #C0392B' : '2px solid transparent', color: activeTab===t.id ? '#fff' : '#787878', cursor:'pointer', fontSize:'0.8rem', fontWeight: activeTab===t.id ? 600 : 400, marginBottom:-1, transition:'color 0.15s' }}>
+            <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ padding:'10px 14px', background:'none', border:'none', borderBottom: activeTab===t.id ? '2px solid #5A8A9F' : '2px solid transparent', color: activeTab===t.id ? '#fff' : '#787878', cursor:'pointer', fontSize:'0.8rem', fontWeight: activeTab===t.id ? 600 : 400, marginBottom:-1, transition:'color 0.15s' }}>
               {t.label}
             </button>
           ))}
@@ -122,51 +127,57 @@ INGEST_KEY     = "${ingestKey || 'paste-your-key-here'}"`;
         <div style={{ flex:1, overflowY:'auto', padding:'20px' }}>
 
           {/* ── QUICK START ── */}
-          {activeTab === 'quick' && (
+          {activeTab === 'deploy' && (
             <div>
-              <div style={{ marginBottom:20 }}>
-                <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
-                  <div style={{ width:22, height:22, borderRadius:'50%', background:'rgba(90,138,159,0.2)', border:'1px solid rgba(90,138,159,0.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.72rem', fontWeight:700, color:'#5A8A9F', flexShrink:0 }}>1</div>
-                  <div style={{ fontWeight:600 }}>Get your Ingest Key</div>
+              {/* Step 1 — fetch key if missing */}
+              {!ingestKey && (
+                <div style={{ marginBottom:20, padding:'14px 16px', background:'rgba(234,179,8,0.06)', border:'1px solid rgba(234,179,8,0.2)', borderRadius:8, display:'flex', alignItems:'center', gap:12 }}>
+                  <span style={{ fontSize:'0.82rem', color:'#EAB308' }}>⚠ Fetch your token first to auto-fill the command</span>
+                  <button onClick={onFetchKey} className="btn-ghost" style={{ fontSize:'0.75rem', marginLeft:'auto', flexShrink:0 }}>
+                    <Shield size={12}/> Fetch Token
+                  </button>
                 </div>
-                {ingestKey ? (
-                  <CodeBlock code={ingestKey} label="Your ingest key" />
+              )}
+
+              {ingestKey && (
+                <div style={{ marginBottom:16, padding:'10px 14px', background:'rgba(34,197,94,0.06)', border:'1px solid rgba(34,197,94,0.18)', borderRadius:8, fontSize:'0.78rem', color:'#22C55E', display:'flex', alignItems:'center', gap:8 }}>
+                  <CheckCircle size={13}/> Token loaded — command below is ready to copy &amp; run
+                </div>
+              )}
+
+              {/* OS selector */}
+              <div style={{ display:'flex', gap:8, marginBottom:14 }}>
+                {[['linux','🐧 Linux'],['mac','🍎 macOS'],['windows','🪟 Windows']].map(([id,label]) => (
+                  <button key={id} onClick={() => setOs(id)}
+                    style={{ padding:'7px 14px', borderRadius:7, border:'1px solid', fontSize:'0.76rem', cursor:'pointer', fontFamily:'JetBrains Mono,monospace',
+                      background: os===id ? 'rgba(90,138,159,0.12)' : 'transparent',
+                      color: os===id ? '#5A8A9F' : '#787878',
+                      borderColor: os===id ? 'rgba(90,138,159,0.35)' : 'rgba(255,255,255,0.08)',
+                    }}>{label}</button>
+                ))}
+              </div>
+
+              {/* The one-liner */}
+              <div style={{ marginBottom:20 }}>
+                <div style={{ fontSize:'0.68rem', color:'#787878', marginBottom:6, fontFamily:'JetBrains Mono,monospace', textTransform:'uppercase', letterSpacing:'0.06em' }}>
+                  Paste this in your {os === 'windows' ? 'PowerShell (Admin)' : 'terminal'} — does everything automatically
+                </div>
+                <CodeBlock code={oneLiner[os]} label={null} />
+              </div>
+
+              {/* What it does */}
+              <div style={{ padding:'12px 16px', background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, fontSize:'0.76rem', color:'#787878', lineHeight:1.8 }}>
+                <div style={{ fontWeight:600, color:'#A8A8A8', marginBottom:6 }}>This command:</div>
+                {os === 'windows' ? (
+                  <div>① Installs psutil &nbsp;② Downloads agent to Temp &nbsp;③ Sets env vars &nbsp;④ Starts agent in background</div>
                 ) : (
-                  <div style={{ display:'flex', gap:10, alignItems:'center' }}>
-                    <div style={{ fontSize:'0.8rem', color:'#787878' }}>Go to <strong style={{color:'#A8A8A8'}}>Admin → System</strong> tab, or click:</div>
-                    <button onClick={onFetchKey} className="btn-ghost" style={{ fontSize:'0.75rem' }}><Shield size={12}/> Fetch Key</button>
-                  </div>
+                  <div>① Installs psutil &nbsp;② Downloads agent to /tmp &nbsp;③ Runs with your token pre-filled &nbsp;④ Detaches so closing terminal is safe &nbsp;⑤ Prints the PID</div>
                 )}
               </div>
 
-              <div style={{ marginBottom:20 }}>
-                <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
-                  <div style={{ width:22, height:22, borderRadius:'50%', background:'rgba(90,138,159,0.2)', border:'1px solid rgba(90,138,159,0.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.72rem', fontWeight:700, color:'#5A8A9F', flexShrink:0 }}>2</div>
-                  <div style={{ fontWeight:600 }}>Download &amp; configure the agent</div>
-                </div>
-                <div style={{ fontSize:'0.8rem', color:'#787878', marginBottom:8 }}>Download <code style={{color:'#8FAFC0', fontFamily:'JetBrains Mono', fontSize:'0.78rem'}}>aegistrace_agent.py</code> then open it and set these two lines:</div>
-                <CodeBlock code={configSnippet} label="aegistrace_agent.py — edit these lines" />
-                <div style={{ marginTop:10 }}>
-                  <a href={agentUrl} target="_blank" rel="noreferrer" className="btn-ghost" style={{ textDecoration:'none', fontSize:'0.75rem', display:'inline-flex', alignItems:'center', gap:6 }}>
-                    <Download size={12}/> Download aegistrace_agent.py
-                  </a>
-                </div>
-              </div>
-
-              <div style={{ marginBottom:20 }}>
-                <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
-                  <div style={{ width:22, height:22, borderRadius:'50%', background:'rgba(90,138,159,0.2)', border:'1px solid rgba(90,138,159,0.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.72rem', fontWeight:700, color:'#5A8A9F', flexShrink:0 }}>3</div>
-                  <div style={{ fontWeight:600 }}>Run it</div>
-                </div>
-                <CodeBlock code="python3 aegistrace_agent.py" label="Terminal" />
-                <div style={{ fontSize:'0.78rem', color:'#787878', marginTop:10, padding:'10px 12px', background:'rgba(34,197,94,0.05)', border:'1px solid rgba(34,197,94,0.15)', borderRadius:6 }}>
-                  <CheckCircle size={12} style={{ color:'#22C55E', display:'inline', marginRight:6, verticalAlign:'middle' }}/>
-                  Logs appear in this <strong style={{color:'#A8A8A8'}}>Endpoints</strong> page within 5 minutes.
-                </div>
-              </div>
-
-              <div style={{ padding:'12px 14px', background:'rgba(143,175,192,0.05)', border:'1px solid rgba(143,175,192,0.15)', borderRadius:6, fontSize:'0.78rem', color:'#8FAFC0' }}>
-                <strong>Note:</strong> Requires Python 3.7+ with no extra packages. Ships only new log lines on each run — no duplicates.
+              <div style={{ marginTop:16, padding:'10px 14px', background:'rgba(34,197,94,0.04)', border:'1px solid rgba(34,197,94,0.12)', borderRadius:7, fontSize:'0.76rem', color:'#787878' }}>
+                <CheckCircle size={12} style={{ color:'#22C55E', display:'inline', marginRight:6, verticalAlign:'middle' }}/>
+                Endpoint appears in this page within 60 seconds. Requires Python 3.8+.
               </div>
             </div>
           )}

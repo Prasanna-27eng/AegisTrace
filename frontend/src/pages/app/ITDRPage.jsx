@@ -300,10 +300,14 @@ function DetectionTab({ events, anomalies, loading }) {
 ══════════════════════════════════════════════════════════════════════════ */
 function AlertsTab() {
   const { addToast } = useStore();
-  const [alerts, setAlerts]   = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter]   = useState('all');
-  const [total, setTotal]     = useState(0);
+  const [alerts, setAlerts]       = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [filter, setFilter]       = useState('all');
+  const [total, setTotal]         = useState(0);
+  const [expanded, setExpanded]   = useState(null);
+  const [endpoints, setEndpoints] = useState([]);
+  const [cmdLoading, setCmdLoading] = useState('');
+  const [cmdResult, setCmdResult]   = useState({});   // alertId → result text
 
   const STATUS_FILTERS = ['all', 'open', 'investigating', 'resolved', 'false_positive'];
   const STATUS_COLORS  = { open: '#EF4444', investigating: '#F97316', resolved: '#22C55E', false_positive: '#787878' };
@@ -320,6 +324,9 @@ function AlertsTab() {
   }, [filter]);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    api.get('/api/ingest/endpoints').then(r => setEndpoints(r.data || [])).catch(() => {});
+  }, []);
 
   const updateStatus = async (id, status) => {
     try {
@@ -328,6 +335,42 @@ function AlertsTab() {
       load();
     } catch { addToast('Update failed', 'error'); }
   };
+
+  const dispatch = async (alertId, hostname, command, payload = {}) => {
+    const ep = endpoints.find(e => e.hostname === hostname);
+    if (!ep) { addToast('Endpoint not found or offline', 'error'); return; }
+    const key = `${alertId}-${command}`;
+    setCmdLoading(key);
+    try {
+      await api.post('/api/ingest/agent/command/dispatch', { agent_id: ep.id, command, payload });
+      addToast(`✓ Command "${command}" sent — agent will execute within 10s`, 'success');
+      setCmdResult(prev => ({ ...prev, [alertId]: `"${command}" dispatched successfully` }));
+    } catch (e) {
+      addToast(e.response?.data?.detail || 'Dispatch failed', 'error');
+    }
+    setCmdLoading('');
+  };
+
+  /* Parse evidence JSON into readable fields */
+  const parseEvidence = (raw) => {
+    try { return JSON.parse(raw || '{}'); } catch { return {}; }
+  };
+
+  const EvidenceRow = ({ label, value, mono = true }) => value ? (
+    <div style={{ display: 'flex', gap: 10, marginBottom: 5, alignItems: 'flex-start' }}>
+      <span style={{ fontSize: '0.68rem', color: '#787878', minWidth: 110, flexShrink: 0, paddingTop: 1 }}>{label}</span>
+      <span style={{ fontSize: '0.72rem', color: '#EBEBEB', ...(mono ? MONO : {}), wordBreak: 'break-all', lineHeight: 1.5 }}>{String(value)}</span>
+    </div>
+  ) : null;
+
+  const ActionBtn = ({ label, color, bg, border, onClick, loading: isLoading }) => (
+    <button onClick={onClick} disabled={!!isLoading}
+      style={{ fontSize: '0.68rem', background: bg, border: `1px solid ${border}`, color, borderRadius: 5,
+        padding: '4px 10px', cursor: isLoading ? 'not-allowed' : 'pointer', ...MONO, opacity: isLoading ? 0.6 : 1,
+        display: 'flex', alignItems: 'center', gap: 5, transition: 'opacity 0.15s' }}>
+      {isLoading ? <Loader2 size={10} className="spinner"/> : null}{label}
+    </button>
+  );
 
   return (
     <div>
@@ -358,50 +401,133 @@ function AlertsTab() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {alerts.map(a => {
-            const dm = DETECTOR_META[a.alert_type] || { label: a.alert_type || 'Alert', color: '#EF4444', Icon: AlertTriangle };
+            const dm  = DETECTOR_META[a.alert_type] || { label: a.alert_type?.replace(/_/g, ' ') || 'Alert', color: '#EF4444', Icon: AlertTriangle };
             const { Icon } = dm;
-            const sc = STATUS_COLORS[a.status] || '#787878';
+            const sc  = STATUS_COLORS[a.status] || '#787878';
+            const ev  = parseEvidence(a.evidence);
+            const isOpen = expanded === a.id;
+            const hostname = a.identity_label || '';
+            const hasPid = ev.process_pid || ev.pid;
+            const hasIp  = ev.remote_ip || ev.destination_ip || ev.source_ip;
+
             return (
-              <div key={a.id} className="at-card" style={{ padding: '14px 18px', borderLeft: `3px solid ${SEV_COLOR[a.severity] || '#EF4444'}` }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+              <div key={a.id} className="at-card"
+                style={{ padding: 0, borderLeft: `3px solid ${SEV_COLOR[a.severity] || '#EF4444'}`, overflow: 'hidden' }}>
+
+                {/* ── Alert header (always visible, clickable) ── */}
+                <div onClick={() => setExpanded(isOpen ? null : a.id)}
+                  style={{ padding: '14px 18px', cursor: 'pointer', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                   <Icon size={15} style={{ color: dm.color, marginTop: 2, flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5, flexWrap: 'wrap' }}>
                       <span style={{ fontWeight: 600, fontSize: '0.84rem', color: '#EBEBEB' }}>{dm.label}</span>
                       <span style={{ fontSize: '0.64rem', color: SEV_COLOR[a.severity], background: `${SEV_COLOR[a.severity]}14`, padding: '1px 7px', borderRadius: 3, ...MONO }}>
                         {(a.severity || 'low').toUpperCase()}
                       </span>
-                      {a.identity_label && (
-                        <span style={{ fontSize: '0.72rem', color: '#787878', ...MONO }}>{a.identity_label}</span>
-                      )}
+                      {hostname && <span style={{ fontSize: '0.7rem', color: '#787878', ...MONO }}>🖥 {hostname}</span>}
                       <span style={{ marginLeft: 'auto', fontSize: '0.64rem', color: sc, background: `${sc}14`, padding: '1px 8px', borderRadius: 3, ...MONO, textTransform: 'uppercase' }}>
                         {(a.status || 'open').replace('_', ' ')}
                       </span>
+                      <span style={{ fontSize: '0.7rem', color: '#5A5A5A' }}>{isOpen ? '▲' : '▼'}</span>
                     </div>
                     {a.description && (
-                      <div style={{ fontSize: '0.76rem', color: '#909090', lineHeight: 1.6, marginBottom: 8 }}>{a.description}</div>
+                      <div style={{ fontSize: '0.76rem', color: '#909090', lineHeight: 1.5 }}>{a.description}</div>
                     )}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '0.64rem', color: '#787878', ...MONO }}>{timeAgo(a.detected_at)}</span>
+                    <div style={{ marginTop: 6, fontSize: '0.64rem', color: '#787878', ...MONO }}>{timeAgo(a.detected_at)}</div>
+                  </div>
+                </div>
+
+                {/* ── Expanded detail + actions ── */}
+                {isOpen && (
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '16px 18px', background: 'rgba(0,0,0,0.25)' }}>
+
+                    {/* Evidence fields */}
+                    <div style={{ marginBottom: 14 }}>
+                      <div style={{ fontSize: '0.65rem', color: '#5A8A9F', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10, ...MONO }}>
+                        ◇ Evidence
+                      </div>
+                      <div style={{ padding: '12px 14px', background: 'rgba(0,0,0,0.3)', borderRadius: 7, border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <EvidenceRow label="Process"     value={ev.process_name ? `${ev.process_name} (PID ${ev.process_pid || '?'})` : null} />
+                        <EvidenceRow label="User"        value={ev.username} />
+                        <EvidenceRow label="Cmdline"     value={ev.cmdline} />
+                        <EvidenceRow label="Parent"      value={ev.parent_name} />
+                        <EvidenceRow label="Honey File"  value={ev.honey_file} />
+                        <EvidenceRow label="Path"        value={ev.path} />
+                        <EvidenceRow label="Old Hash"    value={ev.old_hash} />
+                        <EvidenceRow label="New Hash"    value={ev.new_hash} />
+                        <EvidenceRow label="Remote IP"   value={ev.remote_ip || ev.destination_ip} />
+                        <EvidenceRow label="Remote Port" value={ev.remote_port} />
+                        <EvidenceRow label="Domain"      value={ev.domain} />
+                        <EvidenceRow label="Severity"    value={ev.severity} />
+                        {Object.keys(ev).length === 0 && (
+                          <div style={{ fontSize: '0.72rem', color: '#555' }}>No evidence data</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Response actions */}
+                    <div style={{ marginBottom: 12 }}>
+                      <div style={{ fontSize: '0.65rem', color: '#5A8A9F', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10, ...MONO }}>
+                        ◇ Response Actions
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        {hasPid && (
+                          <ActionBtn label={`⚡ Kill Process (PID ${hasPid})`}
+                            color="#EF4444" bg="rgba(239,68,68,0.08)" border="rgba(239,68,68,0.25)"
+                            loading={cmdLoading === `${a.id}-kill_process`}
+                            onClick={() => dispatch(a.id, hostname, 'kill_process', { pid: hasPid })} />
+                        )}
+                        {hasPid && (
+                          <ActionBtn label="🌲 Process Tree"
+                            color="#8FAFC0" bg="rgba(143,175,192,0.08)" border="rgba(143,175,192,0.2)"
+                            loading={cmdLoading === `${a.id}-get_process_tree`}
+                            onClick={() => dispatch(a.id, hostname, 'get_process_tree', { pid: hasPid })} />
+                        )}
+                        {hasIp && (
+                          <ActionBtn label={`🚫 Block IP (${hasIp})`}
+                            color="#F97316" bg="rgba(249,115,22,0.08)" border="rgba(249,115,22,0.25)"
+                            loading={cmdLoading === `${a.id}-block_ip`}
+                            onClick={() => dispatch(a.id, hostname, 'block_ip', { ip: hasIp })} />
+                        )}
+                        <ActionBtn label="⚡ Collect Now"
+                          color="#22C55E" bg="rgba(34,197,94,0.08)" border="rgba(34,197,94,0.2)"
+                          loading={cmdLoading === `${a.id}-collect_now`}
+                          onClick={() => dispatch(a.id, hostname, 'collect_now')} />
+                        <ActionBtn label="🔒 Isolate Device"
+                          color="#EF4444" bg="rgba(239,68,68,0.05)" border="rgba(239,68,68,0.15)"
+                          loading={cmdLoading === `${a.id}-isolate_device`}
+                          onClick={() => { if (window.confirm(`Isolate ${hostname}? This blocks ALL outbound traffic.`)) dispatch(a.id, hostname, 'isolate_device'); }} />
+                      </div>
+
+                      {/* Command result feedback */}
+                      {cmdResult[a.id] && (
+                        <div style={{ marginTop: 10, fontSize: '0.7rem', color: '#22C55E', ...MONO, padding: '6px 10px', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: 5 }}>
+                          ✓ {cmdResult[a.id]}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Status actions */}
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                       {a.status === 'open' && <>
                         <button onClick={() => updateStatus(a.id, 'investigating')}
-                          style={{ fontSize: '0.65rem', background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.2)', color: '#F97316', borderRadius: 4, padding: '2px 8px', cursor: 'pointer', ...MONO }}>
+                          style={{ fontSize: '0.65rem', background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.2)', color: '#F97316', borderRadius: 4, padding: '3px 10px', cursor: 'pointer', ...MONO }}>
                           Investigate
                         </button>
                         <button onClick={() => updateStatus(a.id, 'false_positive')}
-                          style={{ fontSize: '0.65rem', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#787878', borderRadius: 4, padding: '2px 8px', cursor: 'pointer', ...MONO }}>
+                          style={{ fontSize: '0.65rem', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#787878', borderRadius: 4, padding: '3px 10px', cursor: 'pointer', ...MONO }}>
                           False Positive
                         </button>
                       </>}
                       {a.status === 'investigating' && (
                         <button onClick={() => updateStatus(a.id, 'resolved')}
-                          style={{ fontSize: '0.65rem', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#22C55E', borderRadius: 4, padding: '2px 8px', cursor: 'pointer', ...MONO }}>
+                          style={{ fontSize: '0.65rem', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#22C55E', borderRadius: 4, padding: '3px 10px', cursor: 'pointer', ...MONO }}>
                           ✓ Resolve
                         </button>
                       )}
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             );
           })}
