@@ -83,17 +83,44 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Request Size Limiter ──────────────────────────────────────────────────────
+MAX_REQUEST_BODY = 10 * 1024 * 1024   # 10 MB — prevents memory exhaustion
+
+class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        content_length = request.headers.get("content-length")
+        if content_length and int(content_length) > MAX_REQUEST_BODY:
+            return JSONResponse(
+                status_code=413,
+                content={"detail": "Request body too large (max 10 MB)"},
+            )
+        return await call_next(request)
+
+app.add_middleware(RequestSizeLimitMiddleware)
+
 # ── Security Headers Middleware ───────────────────────────────────────────────
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "DENY"
-        response.headers["X-XSS-Protection"] = "1; mode=block"
-        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        response.headers["X-Content-Type-Options"]  = "nosniff"
+        response.headers["X-Frame-Options"]         = "DENY"
+        response.headers["X-XSS-Protection"]        = "1; mode=block"
+        response.headers["Referrer-Policy"]          = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"]       = "geolocation=(), microphone=(), camera=()"
+        response.headers["X-Powered-By"]             = ""          # hide server info
+        response.headers["Server"]                   = ""          # hide server info
+        # Strict Transport Security (HTTPS only — safe for Render/VPS with SSL)
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data: https:; "
+            "connect-src 'self' https://api.groq.com https://www.virustotal.com; "
+            "frame-ancestors 'none';"
+        )
         if request.url.path.startswith("/api/"):
-            response.headers["Cache-Control"] = "no-store"
+            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
         return response
 
 app.add_middleware(SecurityHeadersMiddleware)
@@ -202,7 +229,10 @@ DEMO_RATE_LIMIT = 10                    # requests per minute per IP
 
 @app.post("/api/public/demo-analyse")
 async def public_demo_analyse(request: Request, data: dict):
-    ip = request.client.host or "unknown"
+    # Use real IP (respects X-Forwarded-For from Render proxy)
+    forwarded = request.headers.get("X-Forwarded-For", "")
+    ip = forwarded.split(",")[0].strip() if forwarded else (request.client.host or "unknown")
+
     now = time.time()
     window = [t for t in _demo_calls[ip] if now - t < 60]
     if len(window) >= DEMO_RATE_LIMIT:
@@ -213,6 +243,10 @@ async def public_demo_analyse(request: Request, data: dict):
     text = (data.get("input") or "").strip()
     if not text or len(text) > 500:
         raise HTTPException(400, "Input required (max 500 chars)")
+
+    # Sanitise input through prompt injection shield before sending to Groq
+    from core.prompt_shield import shield as _ps
+    text = _ps.sanitise(text, "generic").cleaned
 
     prompt = f"""Analyse this for cybersecurity threats: {text}
 

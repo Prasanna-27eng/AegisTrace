@@ -504,7 +504,7 @@ Start a new Claude session and paste this file. Then say:
 
 > "Read AEGISTRACE_CONTEXT.md — I want to work on [task from backlog above]"
 
-**Highest priority items (as of v5.3):** SOAR Playbooks engine, email notifications on ITDR anomaly, Trust score trending, DPDPA Compliance Report, Defense Engine prompt injection shield.
+**Highest priority items (as of v5.4):** SOAR Playbooks engine, email notifications on ITDR anomaly, Trust score trending, DPDPA Compliance Report.
 
 ### v5.2 Completed (this session)
 
@@ -546,6 +546,42 @@ Start a new Claude session and paste this file. Then say:
 **New router registered in main.py:** `defense` → `/api/defense`
 **New page:** `/app/defense-console` → `DefenseConsole.jsx`
 **New sidebar item:** Control group → Defense Console (top position)
+
+### v5.4 Completed (this session)
+
+**Deep Security Audit — 15 additional issues fixed**
+- [x] IDOR: `GET /{case_id}/evidence` had no auth — added `get_current_user` + `org_id` check
+- [x] IDOR: `GET /{case_id}/timeline` had no auth — added `get_current_user` + `org_id` check
+- [x] Zero-day: `case_chat` had NO authentication — fixed with auth + org_id + rate limit + input cap
+- [x] Zero-day: Terminal sessions had no ownership — `created_by_id` added to `TerminalSession` model, enforced on all 4 session endpoints (get/run/save/delete)
+- [x] Zero-day: Case chat no rate limit — 20 msg/min rate limit + 500 char cap
+- [x] IDOR: reports.pdf/docx/dora had no org_id check — fixed all 3
+- [x] IDOR: case comments had no org_id check — fixed get + post
+- [x] Predictable ingest key when default ADMIN_PIN — warning added, derivation hardened
+- [x] SSRF via webhooks — `_validate_webhook_url()` blocklist (localhost, private IPs, cloud metadata)
+- [x] MFA pending token replay — token added to `TokenBlocklist` on successful MFA login
+- [x] `/login/mfa` had no rate limit — 5 attempts/min enforced
+- [x] Login rate limiter blind behind proxy — `_get_real_ip()` reads `X-Forwarded-For`
+- [x] `commands_run` in public case endpoint — removed from `sanitize_case()`
+- [x] No password minimum length — 8-char minimum on create + change
+- [x] PCAP magic byte validation — rejects non-PCAP files before parsing
+
+**Prompt Injection Shield — `backend/core/prompt_shield.py`**
+- [x] 20+ injection pattern categories: system_override, role_hijack, jailbreak, delimiter_inject, role_delimiter, exfiltration, xml_inject, template_inject, encoding_bypass
+- [x] Wired into `ai_router.py` — ALL Groq calls (call_ai + call_ai_json) automatically sanitised
+- [x] System prompt hardening — every Groq call now includes injection resistance instruction
+- [x] Detected injections logged as `DefenseEvent` (attack_type="prompt_injection")
+- [x] History messages sanitised too (prevents injection via chat history)
+- [x] Context-aware length limits: case_description=2000, chat_message=500, terminal_output=5000
+
+**Security hardening — `main.py`**
+- [x] `RequestSizeLimitMiddleware` — 10MB max request body, prevents memory exhaustion
+- [x] `Strict-Transport-Security` header added (HTTPS enforcement)
+- [x] `Content-Security-Policy` header added (XSS mitigation)
+- [x] `Server` and `X-Powered-By` headers cleared (hide server info)
+- [x] `Cache-Control: no-store, no-cache, must-revalidate` on all API routes
+
+**New file:** `backend/core/prompt_shield.py` — singleton `shield` object, importable anywhere
 
 Do NOT give Claude the full codebase — this file is sufficient context for any continuation task.
 

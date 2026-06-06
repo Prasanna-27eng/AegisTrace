@@ -80,9 +80,10 @@ def health_check():
     # ── Overall status ────────────────────────────────────────────────────────
     overall = "ok" if checks.get("database") == "ok" else "degraded"
 
+    # SECURITY: return minimal public response only.
+    # Version strings, internal component details, connector types, and job names
+    # are omitted — they help attackers fingerprint and target the deployment.
     return {
         "status": overall,
-        "version": "4.3.0",
         "timestamp": datetime.utcnow().isoformat() + "Z",
-        "checks": checks,
     }

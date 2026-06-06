@@ -8,26 +8,33 @@ router = APIRouter(prefix="/api/public", tags=["public"])
 
 
 def sanitize_case(case: Case) -> dict:
+    """
+    Public-safe case view. Strips all PII and sensitive operational fields.
+    Rules:
+    - customer_name: redacted (client confidentiality)
+    - analyst_name: redacted (staff privacy)
+    - commands_run: excluded (sensitive investigation steps)
+    - affected_systems: excluded (infrastructure disclosure)
+    - tools_output: excluded (tooling disclosure)
+    - id: excluded (prevents total case count enumeration)
+    """
     return {
-        "id": case.id,
         "case_number": case.case_number,
         "title": case.title,
         "severity": case.severity,
         "status": case.status,
         "incident_type": case.incident_type,
-        "analyst_name": case.analyst_name,
-        "customer_name": case.customer_name,
+        "analyst_name": "AegisTrace Analyst",   # redacted — staff privacy
+        "customer_name": "Redacted",             # redacted — client confidentiality
         "description": case.description,
         "findings": case.findings,
         "recommendations": case.recommendations,
         "iocs": json.loads(case.iocs or "[]"),
-        "timeline_events": json.loads(case.timeline_events or "[]"),
         "mitre_techniques": json.loads(case.mitre_techniques or "[]"),
         "ai_executive_summary": case.ai_executive_summary,
         "ai_technical_summary": case.ai_technical_summary,
         "ai_severity_score": case.ai_severity_score,
-        # commands_run intentionally excluded — contains sensitive analyst investigation steps
-        "closure_notes": json.loads(case.closure_notes) if case.closure_notes else None,
+        # commands_run, affected_systems, tools_output, id — all intentionally excluded
         "share_token": case.share_token,
         "created_at": case.created_at,
         "updated_at": case.updated_at,

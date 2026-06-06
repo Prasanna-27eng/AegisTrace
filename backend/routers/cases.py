@@ -370,7 +370,14 @@ def close_case(
 
 # ── EVIDENCE ──────────────────────────────────────────────────────────────────
 @router.get("/{case_id}/evidence")
-def list_evidence(case_id: int, session: Session = Depends(get_session)):
+def list_evidence(
+    case_id: int,
+    session: Session = Depends(get_session),
+    user: User = Depends(get_current_user),
+):
+    case = session.get(Case, case_id)
+    if not case or case.org_id != user.org_id:
+        raise HTTPException(404, "Case not found")
     return session.exec(
         select(EvidenceArtifact).where(EvidenceArtifact.case_id == case_id)
     ).all()
@@ -422,7 +429,14 @@ def update_evidence(
 
 # ── TIMELINE ──────────────────────────────────────────────────────────────────
 @router.get("/{case_id}/timeline")
-def list_timeline(case_id: int, session: Session = Depends(get_session)):
+def list_timeline(
+    case_id: int,
+    session: Session = Depends(get_session),
+    user: User = Depends(get_current_user),
+):
+    case = session.get(Case, case_id)
+    if not case or case.org_id != user.org_id:
+        raise HTTPException(404, "Case not found")
     return session.exec(
         select(TimelineEvent)
         .where(TimelineEvent.case_id == case_id)
