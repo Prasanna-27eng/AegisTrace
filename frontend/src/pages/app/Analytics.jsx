@@ -55,7 +55,7 @@ function HBar({ label, value, max, color }) {
 }
 
 /* ── Section header ───────────────────────────────────────────────────────── */
-function SectionHeader({ icon: Icon, label, color = '#4A8EDB' }) {
+function SectionHeader({ icon: Icon, label, color = '#4E7A8E' }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
       <Icon size={14} style={{ color }} />
@@ -131,7 +131,7 @@ export default function Analytics() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-            <BarChart2 size={20} style={{ color: '#4A8EDB' }} />
+            <BarChart2 size={20} style={{ color: '#4E7A8E' }} />
             <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Analytics</h1>
           </div>
           <div style={{ fontSize: '0.7rem', color: '#787878', ...MONO }}>
@@ -146,19 +146,19 @@ export default function Analytics() {
 
       {loading && !overview ? (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300, gap: 12 }}>
-          <Loader2 size={20} className="spinner" style={{ color: '#4A8EDB' }} />
+          <Loader2 size={20} className="spinner" style={{ color: '#4E7A8E' }} />
           <span style={{ color: '#787878', ...MONO, fontSize: '0.82rem' }}>Loading analytics…</span>
         </div>
       ) : (
         <>
           {/* KPI Row */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 20 }}>
-            <KPICard label="Total Cases"    value={overview?.total_cases}    Icon={Activity}      color="#4A8EDB"  sub="All time" />
+            <KPICard label="Total Cases"    value={overview?.total_cases}    Icon={Activity}      color="#4E7A8E"  sub="All time" />
             <KPICard label="Open Cases"     value={overview?.open_cases}     Icon={AlertTriangle} color="#EAB308"  sub="Needs attention" />
             <KPICard label="Critical Open"  value={overview?.critical_open}  Icon={Zap}           color="#EF4444"  sub="Immediate action" />
             <KPICard label="SLA Breached"   value={slaBreached}              Icon={Clock}         color="#F97316"  sub={`${slaAtRisk} at risk`} />
             <KPICard label="Closed Cases"   value={overview?.closed_cases}   Icon={CheckCircle}   color="#22C55E"  sub="All time" />
-            <KPICard label="Avg Close Time" value={overview?.avg_time_to_close_hours ? `${overview.avg_time_to_close_hours}h` : '—'} Icon={Target} color="#A78BFA" sub="Mean resolution" />
+            <KPICard label="Avg Close Time" value={overview?.avg_time_to_close_hours ? `${overview.avg_time_to_close_hours}h` : '—'} Icon={Target} color="#8FAFC0" sub="Mean resolution" />
           </div>
 
           {/* Main grid */}
@@ -207,7 +207,7 @@ export default function Analytics() {
 
             {/* Time to Close */}
             <Panel>
-              <SectionHeader icon={TrendingUp} label="Avg Close Time" color="#A78BFA" />
+              <SectionHeader icon={TrendingUp} label="Avg Close Time" color="#8FAFC0" />
               {ttc.length === 0 ? (
                 <div style={{ color: '#787878', fontSize: '0.78rem', ...MONO }}>No closed cases</div>
               ) : (
@@ -237,7 +237,7 @@ export default function Analytics() {
                 <div>
                   <div style={{ display: 'flex', gap: 16, marginBottom: 14 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.7rem', color: '#787878' }}>
-                      <div style={{ width: 10, height: 3, background: '#4A8EDB', borderRadius: 2 }} /> Created
+                      <div style={{ width: 10, height: 3, background: '#4E7A8E', borderRadius: 2 }} /> Created
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.7rem', color: '#787878' }}>
                       <div style={{ width: 10, height: 3, background: '#22C55E', borderRadius: 2 }} /> Closed
@@ -247,7 +247,7 @@ export default function Analytics() {
                     {trend.map((t, i) => (
                       <div key={t.date} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
                         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 2, height: 70, justifyContent: 'flex-end' }}>
-                          <div title={`Created: ${t.created}`} style={{ width: '100%', height: `${(t.created / trendMax) * 100}%`, background: '#4A8EDB', borderRadius: '3px 3px 0 0', minHeight: t.created > 0 ? 3 : 0, opacity: 0.8 }} />
+                          <div title={`Created: ${t.created}`} style={{ width: '100%', height: `${(t.created / trendMax) * 100}%`, background: '#4E7A8E', borderRadius: '3px 3px 0 0', minHeight: t.created > 0 ? 3 : 0, opacity: 0.8 }} />
                         </div>
                         {i % 3 === 0 && <div style={{ fontSize: '0.55rem', color: '#404040', ...MONO, textAlign: 'center' }}>{t.date.slice(5)}</div>}
                       </div>
@@ -264,7 +264,7 @@ export default function Analytics() {
                 <div style={{ color: '#787878', fontSize: '0.78rem', ...MONO }}>No data</div>
               ) : (
                 throughput.slice(0, 6).map(a => (
-                  <HBar key={a.analyst} label={a.analyst || 'Unassigned'} value={a.created} max={maxThroughput} color="#4A8EDB" />
+                  <HBar key={a.analyst} label={a.analyst || 'Unassigned'} value={a.created} max={maxThroughput} color="#4E7A8E" />
                 ))
               )}
             </Panel>

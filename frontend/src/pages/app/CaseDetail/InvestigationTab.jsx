@@ -35,7 +35,7 @@ export default function InvestigationTab({ caseData, updateCase, caseId }) {
     } catch {}
   };
 
-  const scoreColor = { confirmed: '#22C55E', strong: '#A78BFA', weak: '#EAB308', hypothesis: '#787878' };
+  const scoreColor = { confirmed: '#22C55E', strong: '#8FAFC0', weak: '#EAB308', hypothesis: '#787878' };
 
   return (
     <div style={{ padding: '20px 24px' }}>
@@ -87,7 +87,7 @@ export default function InvestigationTab({ caseData, updateCase, caseId }) {
                     {ev.verdict && <div style={{ fontSize: '0.72rem', color: '#787878' }}>Verdict: <span style={{ color: ev.verdict === 'malicious' ? '#EF4444' : '#EAB308' }}>{ev.verdict}</span></div>}
                     {ev.normalized_output && <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.normalized_output.slice(0,80)}</div>}
                     {ev.ai_analysis && (
-                      <div style={{ marginTop: 6, padding: '6px 8px', background: 'rgba(167,139,250,0.06)', borderRadius: 4, borderLeft: '2px solid rgba(167,139,250,0.3)' }}>
+                      <div style={{ marginTop: 6, padding: '6px 8px', background: 'rgba(143,175,192,0.06)', borderRadius: 4, borderLeft: '2px solid rgba(143,175,192,0.3)' }}>
                         <span className="ai-badge" style={{ marginBottom: 4, display: 'inline-block' }}>AI</span>
                         <div style={{ fontSize: '0.72rem', color: '#909090', marginTop: 2 }}>{ev.ai_analysis.slice(0, 120)}…</div>
                       </div>
@@ -106,7 +106,7 @@ export default function InvestigationTab({ caseData, updateCase, caseId }) {
 
           {/* Add evidence modal */}
           {showAddEv && (
-            <div className="at-card" style={{ padding: 16, borderColor: 'rgba(77,163,255,0.25)' }}>
+            <div className="at-card" style={{ padding: 16, borderColor: 'rgba(90,138,159,0.25)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
                 <div className="section-label" style={{ margin: 0 }}>Add Evidence</div>
                 <button onClick={() => setShowAddEv(false)} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={14} /></button>

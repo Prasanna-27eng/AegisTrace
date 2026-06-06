@@ -8,10 +8,10 @@ import api from '../../api/client';
 import useStore from '../../store/useStore';
 
 const SOURCE_META = {
-  cisa_kev:      { label: 'CISA KEV',        color: '#4DA3FF', icon: AlertTriangle, url: 'https://www.cisa.gov/known-exploited-vulnerabilities-catalog' },
+  cisa_kev:      { label: 'CISA KEV',        color: '#5A8A9F', icon: AlertTriangle, url: 'https://www.cisa.gov/known-exploited-vulnerabilities-catalog' },
   urlhaus:       { label: 'URLhaus',          color: '#EF4444', icon: Globe,         url: 'https://urlhaus.abuse.ch/' },
   threatfox:     { label: 'ThreatFox',        color: '#EAB308', icon: Shield,        url: 'https://threatfox.abuse.ch/' },
-  malwarebazaar: { label: 'MalwareBazaar',    color: '#A78BFA', icon: Bug,           url: 'https://bazaar.abuse.ch/' },
+  malwarebazaar: { label: 'MalwareBazaar',    color: '#8FAFC0', icon: Bug,           url: 'https://bazaar.abuse.ch/' },
   feodotracker:  { label: 'Feodo Tracker',    color: '#22C55E', icon: Server,        url: 'https://feodotracker.abuse.ch/' },
 };
 
@@ -113,7 +113,7 @@ function FeedSection({ feedKey, data, navigate }) {
                     fontFamily: 'JetBrains Mono', fontWeight: 600,
                   }}>{u.url_status}</span>
                   <span style={{ fontFamily: 'JetBrains Mono', color: '#909090', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, fontSize: '0.68rem' }}>{u.url}</span>
-                  {u.tags?.length > 0 && <span style={{ color: '#A78BFA', fontSize: '0.62rem', flexShrink: 0 }}>{u.tags.slice(0, 2).join(', ')}</span>}
+                  {u.tags?.length > 0 && <span style={{ color: '#8FAFC0', fontSize: '0.62rem', flexShrink: 0 }}>{u.tags.slice(0, 2).join(', ')}</span>}
                   <span style={{ color: '#787878', fontSize: '0.62rem', flexShrink: 0, fontFamily: 'JetBrains Mono' }}>{timeAgo(u.date_added)}</span>
                 </div>
               ))}
@@ -143,7 +143,7 @@ function FeedSection({ feedKey, data, navigate }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {items.map((s, i) => (
                 <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 10px', background: '#111111', borderRadius: 5, fontSize: '0.72rem', alignItems: 'center' }}>
-                  <span style={{ fontFamily: 'JetBrains Mono', color: '#A78BFA', fontSize: '0.62rem', flexShrink: 0, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.sha256?.slice(0, 12)}…</span>
+                  <span style={{ fontFamily: 'JetBrains Mono', color: '#8FAFC0', fontSize: '0.62rem', flexShrink: 0, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.sha256?.slice(0, 12)}…</span>
                   <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.file_name || s.sha256}</span>
                   <span style={{ color: '#EF4444', fontSize: '0.7rem', flexShrink: 0 }}>{s.signature || s.file_type}</span>
                   <span style={{ color: '#787878', fontSize: '0.62rem', flexShrink: 0, fontFamily: 'JetBrains Mono' }}>{timeAgo(s.first_seen)}</span>
@@ -219,7 +219,7 @@ export default function ThreatFeeds() {
 
       {loading ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: '48px 0', color: '#787878' }}>
-          <Loader2 size={22} style={{ animation: 'spin 1s linear infinite', color: '#A78BFA' }} />
+          <Loader2 size={22} style={{ animation: 'spin 1s linear infinite', color: '#8FAFC0' }} />
           <div style={{ fontSize: '0.82rem' }}>Fetching threat intelligence feeds…</div>
         </div>
       ) : (

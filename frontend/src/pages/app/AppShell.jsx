@@ -109,7 +109,7 @@ export default function AppShell() {
           <div ref={dropdownRef} style={{ marginLeft: 'auto', position: 'relative' }}>
             <button
               onClick={() => setDropdownOpen(o => !o)}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, background: dropdownOpen ? 'rgba(77,163,255,0.08)' : 'none', border: '1px solid ' + (dropdownOpen ? 'rgba(77,163,255,0.2)' : 'transparent'), borderRadius: 8, padding: '4px 8px 4px 10px', cursor: 'pointer', transition: 'all 0.15s' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, background: dropdownOpen ? 'rgba(90,138,159,0.08)' : 'none', border: '1px solid ' + (dropdownOpen ? 'rgba(90,138,159,0.2)' : 'transparent'), borderRadius: 8, padding: '4px 8px 4px 10px', cursor: 'pointer', transition: 'all 0.15s' }}
               onMouseEnter={e => { if (!dropdownOpen) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
               onMouseLeave={e => { if (!dropdownOpen) e.currentTarget.style.background = 'none'; }}
             >
@@ -117,7 +117,7 @@ export default function AppShell() {
                 <div style={{ fontSize: '0.75rem', fontWeight: 500, color: '#EBEBEB' }}>{user?.name}</div>
                 <div style={{ fontSize: '0.62rem', color: '#787878', fontFamily: 'JetBrains Mono' }}>{user?.role}</div>
               </div>
-              <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(77,163,255,0.15)', border: '1px solid rgba(77,163,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 600, color: '#60A5FA', flexShrink: 0 }}>
+              <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(90,138,159,0.15)', border: '1px solid rgba(90,138,159,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 600, color: '#60A5FA', flexShrink: 0 }}>
                 {user?.name?.[0] || 'A'}
               </div>
               <ChevronDown size={12} style={{ color: '#787878', transition: 'transform 0.2s', transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />

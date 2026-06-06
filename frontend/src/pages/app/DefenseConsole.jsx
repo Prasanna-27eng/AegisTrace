@@ -20,7 +20,7 @@ const SEV_COLOR = {
 
 const STATUS_COLOR = {
   pending_review: '#F97316',
-  auto_handled:   '#4DA3FF',
+  auto_handled:   '#5A8A9F',
   approved:       '#22C55E',
   dismissed:      '#686868',
   detecting:      '#EAB308',
@@ -30,7 +30,7 @@ const ACTION_COLOR = {
   block:      '#EF4444',
   rate_limit: '#F97316',
   watchlist:  '#EAB308',
-  escalate:   '#A78BFA',
+  escalate:   '#8FAFC0',
   dismiss:    '#686868',
 };
 
@@ -53,7 +53,7 @@ function timeAgo(iso) {
 }
 
 // ── KPI Card ──────────────────────────────────────────────────────────────────
-function KPICard({ label, value, sub, icon: Icon, color = '#4DA3FF', alert = false, pulse = false }) {
+function KPICard({ label, value, sub, icon: Icon, color = '#5A8A9F', alert = false, pulse = false }) {
   return (
     <div style={{
       background:   alert ? 'rgba(239,68,68,0.05)' : 'rgba(255,255,255,0.02)',
@@ -151,7 +151,7 @@ function EventCard({ event, onAction, processing }) {
 
         {/* AI threat type */}
         {event.ai_threat_type && (
-          <div style={{ fontSize: '0.68rem', color: '#9C7CFF', ...MONO, flexShrink: 0 }}>
+          <div style={{ fontSize: '0.68rem', color: '#7AABB5', ...MONO, flexShrink: 0 }}>
             {event.ai_threat_type}
           </div>
         )}
@@ -210,8 +210,8 @@ function EventCard({ event, onAction, processing }) {
                 {indicators.map((ind, i) => (
                   <span key={i} style={{
                     fontSize: '0.68rem', padding: '2px 8px', borderRadius: 4,
-                    background: 'rgba(74,142,219,0.1)', border: '1px solid rgba(74,142,219,0.2)',
-                    color: '#4DA3FF', ...MONO,
+                    background: 'rgba(78,122,142,0.1)', border: '1px solid rgba(78,122,142,0.2)',
+                    color: '#5A8A9F', ...MONO,
                   }}>
                     {ind}
                   </span>
@@ -238,7 +238,7 @@ function EventCard({ event, onAction, processing }) {
           {/* Reviewed info */}
           {event.reviewed_by && (
             <div style={{ marginTop: 10, fontSize: '0.68rem', color: '#686868', ...MONO }}>
-              Reviewed by <span style={{ color: '#4DA3FF' }}>{event.reviewed_by}</span>
+              Reviewed by <span style={{ color: '#5A8A9F' }}>{event.reviewed_by}</span>
               {event.review_notes && <span> · "{event.review_notes}"</span>}
             </div>
           )}
@@ -249,7 +249,7 @@ function EventCard({ event, onAction, processing }) {
               {[
                 { act: 'block',     label: 'Block IP',    col: '#EF4444', Icon: Ban        },
                 { act: 'watchlist', label: 'Watchlist',   col: '#EAB308', Icon: Eye        },
-                { act: 'escalate',  label: 'Escalate',    col: '#A78BFA', Icon: ShieldAlert},
+                { act: 'escalate',  label: 'Escalate',    col: '#8FAFC0', Icon: ShieldAlert},
                 { act: 'dismiss',   label: 'Dismiss',     col: '#686868', Icon: XCircle    },
               ].map(({ act, label, col, Icon: I }) => (
                 <button
@@ -476,8 +476,8 @@ export default function DefenseConsole() {
             disabled={demoLoading}
             style={{
               display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px',
-              background: 'rgba(156,124,255,0.08)', border: '1px solid rgba(156,124,255,0.25)',
-              color: '#9C7CFF', fontSize: '0.68rem', borderRadius: 5, cursor: 'pointer',
+              background: 'rgba(122,171,181,0.08)', border: '1px solid rgba(122,171,181,0.25)',
+              color: '#7AABB5', fontSize: '0.68rem', borderRadius: 5, cursor: 'pointer',
               fontFamily: 'JetBrains Mono, monospace', opacity: demoLoading ? 0.5 : 1,
             }}
           >
@@ -515,14 +515,14 @@ export default function DefenseConsole() {
           value={stats.auto_handled ?? 0}
           sub="AI managed automatically"
           icon={Cpu}
-          color="#4DA3FF"
+          color="#5A8A9F"
         />
         <KPICard
           label="Honeypot Hits"
           value={stats.honeypot_hits ?? 0}
           sub="scanner traps triggered"
           icon={Target}
-          color="#A78BFA"
+          color="#8FAFC0"
           alert={(stats.honeypot_hits ?? 0) > 0}
         />
         <KPICard
@@ -548,9 +548,9 @@ export default function DefenseConsole() {
             onClick={() => setFilter(tab.key)}
             style={{
               padding: '5px 14px', borderRadius: 5, border: '1px solid',
-              borderColor: filter === tab.key ? 'rgba(77,163,255,0.4)' : 'rgba(255,255,255,0.07)',
-              background:  filter === tab.key ? 'rgba(77,163,255,0.1)' : 'transparent',
-              color:       filter === tab.key ? '#4DA3FF' : '#686868',
+              borderColor: filter === tab.key ? 'rgba(90,138,159,0.4)' : 'rgba(255,255,255,0.07)',
+              background:  filter === tab.key ? 'rgba(90,138,159,0.1)' : 'transparent',
+              color:       filter === tab.key ? '#5A8A9F' : '#686868',
               fontSize: '0.7rem', fontFamily: 'JetBrains Mono, monospace', cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 6,
             }}
@@ -558,8 +558,8 @@ export default function DefenseConsole() {
             {tab.label}
             {tab.count > 0 && (
               <span style={{
-                background: filter === tab.key ? 'rgba(77,163,255,0.2)' : 'rgba(255,255,255,0.06)',
-                color: filter === tab.key ? '#4DA3FF' : '#A8A8A8',
+                background: filter === tab.key ? 'rgba(90,138,159,0.2)' : 'rgba(255,255,255,0.06)',
+                color: filter === tab.key ? '#5A8A9F' : '#A8A8A8',
                 fontSize: '0.62rem', padding: '0 5px', borderRadius: 3, ...MONO,
               }}>
                 {tab.count}
@@ -572,7 +572,7 @@ export default function DefenseConsole() {
       {/* ── Event Feed ───────────────────────────────────────────────────────── */}
       {loading ? (
         <div style={{ textAlign: 'center', padding: '60px 0', color: '#686868', fontSize: '0.8rem', ...MONO }}>
-          <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #4DA3FF', borderTopColor: 'transparent', animation: 'aegis-pulse 0.8s linear infinite', margin: '0 auto 12px' }} />
+          <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #5A8A9F', borderTopColor: 'transparent', animation: 'aegis-pulse 0.8s linear infinite', margin: '0 auto 12px' }} />
           Loading defense events…
         </div>
       ) : filteredEvents.length === 0 ? (
@@ -591,8 +591,8 @@ export default function DefenseConsole() {
             onClick={handleTest}
             disabled={testLoading}
             style={{
-              marginTop: 16, padding: '7px 18px', background: 'rgba(77,163,255,0.1)',
-              border: '1px solid rgba(77,163,255,0.3)', color: '#4DA3FF', borderRadius: 5,
+              marginTop: 16, padding: '7px 18px', background: 'rgba(90,138,159,0.1)',
+              border: '1px solid rgba(90,138,159,0.3)', color: '#5A8A9F', borderRadius: 5,
               fontSize: '0.72rem', fontFamily: 'JetBrains Mono, monospace', cursor: 'pointer',
             }}
           >

@@ -98,7 +98,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           onClick={() => navigate('/')}
           title="Back to home"
           style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', borderRadius: 6, padding: '2px 4px', transition: 'background 0.15s' }}
-          onMouseEnter={e => e.currentTarget.style.background = 'rgba(77,163,255,0.07)'}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(90,138,159,0.07)'}
           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
         >
           {collapsed ? <Logo size={22} showText={false} /> : <Logo size={22} showText />}

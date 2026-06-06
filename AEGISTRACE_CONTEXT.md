@@ -1,5 +1,5 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v5.1 | **Last updated:** June 2026
+**Version:** v5.5 | **Last updated:** June 2026
 **Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files.
 
 ---
@@ -50,7 +50,7 @@ AegisTrace is a **free, open-source Trust Operating System for the AI-agent era*
 **Built by:** Prasanna Kumar Surendran, Blue Team analyst, Dublin, Ireland  
 **Live at:** https://aegistrace-7qvn.onrender.com  
 **GitHub:** https://github.com/Prasanna-27eng/AegisTrace  
-**Stack:** React 18 · FastAPI · SQLite/SQLModel · Groq API · Docker · Render free tier
+**Stack:** React 18 · FastAPI · SQLite/SQLModel · Groq API · Docker · Render free tier (VPS migration guide written for DigitalOcean/Hetzner/UpCloud)
 
 ---
 
@@ -85,6 +85,8 @@ backend/            FastAPI (Python)
     identity_engine.py    Pluggable risk detectors
     cache.py              TTL cache (no new packages)
     events.py             Internal event bus (singleton event_bus)
+    prompt_shield.py      Prompt injection shield — sanitises all Groq inputs (v5.4)
+    encryption.py         Fernet field encryption for sensitive DB columns (v5.5)
     connectors/           Connector plugin architecture
       base.py             BaseConnector abstract class
       azure_ad.py         Microsoft Graph app-only auth
@@ -130,6 +132,8 @@ render.yaml         Render free-tier deploy config (autoDeploy: true)
 | connectors | /api/connectors | Identity provider OAuth + sync (v4.3) |
 | nhi | /api/nhi | NHI health, sprawl scores, trust decay (v4.3) |
 | health | /api/health | Platform health check — no auth (v4.3) |
+| defense | /api/defense | AI Defense Engine — fingerprinting, honeypots, Groq triage, HITL review (v5.3) |
+| demo | /api/demo | Demo data seeder — seeds Identity, ITDR, Shadow AI, Defense, Agent Security (v5.5) |
 
 ---
 
@@ -140,6 +144,10 @@ render.yaml         Render free-tier deploy config (autoDeploy: true)
 **v3.0 additions:** `TerminalSession`, `TerminalCommand`, `IdentityNode`, `IdentityEdge`, `TrustEvent`, `ProvenanceLedger`, `CaseComment`, `InvestigationTemplate`, `AgentAction`
 
 **v4.3 additions:** `IdentityConnector`, `ApprovedAIService`, `ShadowAIEvent`, `TokenBlocklist`, `AgentCommand`, `ITDRAlert`
+
+**v5.3 additions:** `DefenseEvent` — attacker_ip, attack_type, threat_source, endpoint_hit, request_count, user_agent, request_pattern (JSON), ai_threat_type, ai_confidence, ai_reasoning, ai_recommended_action, ai_model_used, status (detecting|pending_review|auto_handled|approved|dismissed), response_action, reviewed_by, review_notes, severity, detected_at, reviewed_at
+
+**v5.5 field updates:** `TerminalSession` — added `created_by_id` (FK user.id) for session ownership enforcement
 
 **Key model fields:**
 - `ProvenanceLedger`: `action_type`, `model_used`, `actor`, `confidence_score`, `approval_status` (auto|pending|approved|rejected), `approved_by`, `evidence_used`, `reasoning`, `case_id`, `timestamp`
@@ -190,6 +198,7 @@ render.yaml         Render free-tier deploy config (autoDeploy: true)
 | /app/agent-security | AgentSecurity.jsx | AI action approval queue + OWASP Agentic coverage |
 | /app/audit | AuditLog.jsx | Full platform audit trail |
 | /app/admin | Admin.jsx | User management, webhooks, EDR integrations |
+| /app/defense-console | DefenseConsole.jsx | AI Defense Engine — live attack feed, HITL approve/block/escalate/dismiss (v5.3) |
 
 **Removed in v4.2 cleanup** (all redirect to better alternatives):
 - `/app/logs` → redirects to `/app/terminal-lab`
@@ -423,12 +432,38 @@ react, react-dom, react-router-dom, axios, zustand, lucide-react, react-scripts
 
 ---
 
-## SECURITY FIXES (v4.3 — ALL COMPLETED)
+## SECURITY FIXES (ALL COMPLETED through v5.5)
 
-- [x] **bcrypt password hashing** — `backend/routers/auth.py`, transparent upgrade from SHA-256 on first login
-- [x] **sessionStorage swap** — `frontend/src/store/useStore.js` + `client.js` (all localStorage → sessionStorage)
-- [x] **Rate limiting on VT/enrichment** — `slowapi==0.1.9`, 10/min VT, 20/min enrichment, global 200/min
-- [x] **JWT server-side invalidation** — `TokenBlocklist` model, check on every request, nightly cleanup
+**v4.3 original fixes:**
+- [x] bcrypt password hashing, sessionStorage swap, rate limiting, JWT server-side invalidation
+
+**v5.4 audit fixes (13 issues):**
+- [x] IDOR: evidence/timeline endpoints had no auth
+- [x] IDOR: reports PDF/DOCX/DORA had no org_id check
+- [x] IDOR: case comments had no org_id check
+- [x] Zero-day: case_chat had NO authentication
+- [x] Zero-day: terminal sessions had no ownership (added created_by_id)
+- [x] Zero-day: case chat had no rate limit
+- [x] SSRF via webhooks (blocklist added)
+- [x] MFA pending token replayable (added to TokenBlocklist on use)
+- [x] /login/mfa had no rate limit (5/min enforced)
+- [x] Login rate limiter blind behind proxy (real IP via X-Forwarded-For)
+- [x] commands_run in public endpoint (removed)
+- [x] No password minimum length (8 chars enforced)
+- [x] PCAP magic byte validation
+- [x] customer_name + analyst_name in public cases (redacted)
+- [x] Health endpoint exposing internals (stripped)
+
+**v5.5 hardening:**
+- [x] JWT replaced with python-jose (battle-tested library)
+- [x] Progressive account lockout (5→60s, 10→15min, 20→1hr)
+- [x] Admin 2FA enforcement (mfa_setup_required flag on login)
+- [x] Connector tokens encrypted at rest (Fernet via core/encryption.py)
+- [x] Auto-generate INGEST_API_KEY on startup
+- [x] Per-user Groq rate limiting (100/hr per user)
+- [x] Prompt injection shield on ALL Groq calls (core/prompt_shield.py)
+- [x] Request body size limit 10MB
+- [x] Full security headers (HSTS, CSP, Server header removal)
 
 ---
 
@@ -620,6 +655,40 @@ Start a new Claude session and paste this file. Then say:
 **New env vars (add to Render/VPS):**
 - `FERNET_KEY` — base64url-encoded 32-byte key: `python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
 - `INGEST_API_KEY` — random hex string: `python3 -c "import secrets; print(secrets.token_hex(32))"`
+
+### v5.5 Bug Fixes + Demo System (this session)
+
+**Defense Console critical bug fix**
+- [x] `current_user: dict` → `current_user: User` in ALL defense.py endpoints — was causing silent 500 on every Block/Watchlist/Escalate/Dismiss button click
+- [x] `current_user.get("email")` → `current_user.email` — User object has no `.get()` method
+- [x] Added `User` import to `routers/defense.py`
+- [x] Test event no longer calls Groq live — 4 hardcoded realistic scenarios rotate randomly (AI Agent Scan, Honeypot Trigger, Brute Force, Prompt Injection). No network timeout risk.
+- [x] Toast notifications added to `DefenseConsole.jsx` — success/error feedback on every action
+- [x] "Load Demo" button added to Defense Console header
+
+**Website attack surface hardening (v5.4 additions)**
+- [x] Public cases leaking `customer_name` + `analyst_name` — both redacted in `sanitize_case()`
+- [x] Health endpoint exposing version, connector types, job names — stripped to minimal `{status, timestamp}`
+- [x] Demo endpoint rate limiter blind behind Render proxy — now uses `X-Forwarded-For`
+- [x] Demo endpoint now runs through prompt shield before Groq call
+
+**Demo seed system — `backend/routers/demo.py`**
+- [x] `POST /api/demo/seed` — seeds ALL sections (Identity, ITDR, Shadow AI, Defense, Agent Security) — idempotent
+- [x] `POST /api/demo/seed/defense` — Defense Console only (5 realistic events)
+- [x] `POST /api/demo/seed/identity` — Identity Graph + ITDR (10 nodes, edges, anomalies, 5 alerts)
+- [x] `DELETE /api/demo/clear` — admin only, clears all demo data
+- [x] Registered in `main.py`
+- [x] How to seed: open browser console while logged in and run:
+  ```javascript
+  fetch('/api/demo/seed', { method:'POST', headers:{ 'Authorization':'Bearer '+sessionStorage.getItem('aegis_token'), 'Content-Type':'application/json' }}).then(r=>r.json()).then(console.log)
+  ```
+
+**Security rules added to this file (for future sessions):**
+- JWT now uses `python-jose` — never revert to custom HMAC JWT implementation
+- All passwords minimum 8 characters — enforced in auth.py
+- `current_user` in all routes MUST be typed as `User`, never `dict` — `.get()` does not work on User objects
+- All Groq calls automatically sanitised by `core/prompt_shield.py` — do not bypass
+- Connector tokens stored via `core/encryption.py` `enc.encrypt()` — always decrypt before use
 
 Do NOT give Claude the full codebase — this file is sufficient context for any continuation task.
 

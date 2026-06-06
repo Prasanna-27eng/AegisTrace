@@ -41,7 +41,7 @@ const TEMPLATES = [
     id: 'malware',
     label: 'Malware / Ransomware',
     Icon: Bug,
-    color: '#A78BFA',
+    color: '#8FAFC0',
     severity: 'critical',
     incident_type: 'malware',
     title: 'Malware Infection — [Hostname / User]',
@@ -67,7 +67,7 @@ const TEMPLATES = [
     id: 'suspicious_login',
     label: 'Suspicious Login',
     Icon: UserX,
-    color: '#4A8EDB',
+    color: '#4E7A8E',
     severity: 'medium',
     incident_type: 'identity',
     title: 'Suspicious Login Activity — [Account]',
@@ -172,7 +172,7 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                     {preview.evidence.map(e => (
                       <div key={e} style={{ display: 'flex', gap: 6, fontSize: '0.74rem', color: '#909090' }}>
-                        <span style={{ color: '#4A8EDB', flexShrink: 0 }}>→</span> {e}
+                        <span style={{ color: '#4E7A8E', flexShrink: 0 }}>→</span> {e}
                       </div>
                     ))}
                   </div>

@@ -20,7 +20,7 @@ function CopyBlock({ code, label, lang = 'shell' }) {
   return (
     <div style={{position:'relative',marginTop:10,marginBottom:16}}>
       {label&&<div style={{fontSize:10,color:'rgba(240,240,248,0.4)',marginBottom:6,...mono,textTransform:'uppercase',letterSpacing:'0.08em',display:'flex',alignItems:'center',gap:6}}>
-        <div style={{width:2,height:10,background:'#4DA3FF',borderRadius:1}}/>{label}
+        <div style={{width:2,height:10,background:'#5A8A9F',borderRadius:1}}/>{label}
       </div>}
       <pre style={{background:'rgba(0,0,0,0.55)',border:'1px solid rgba(255,255,255,0.09)',borderRadius:10,padding:'16px 48px 16px 18px',margin:0,...mono,fontSize:13,color:'#A8A8A8',overflowX:'auto',whiteSpace:'pre-wrap',wordBreak:'break-all',lineHeight:1.7}}>{code}</pre>
       <button onClick={copy} style={{position:'absolute',top:label?44:10,right:10,background:copied?'rgba(34,197,94,0.1)':'rgba(255,255,255,0.07)',border:`1px solid ${copied?'rgba(34,197,94,0.3)':'rgba(255,255,255,0.12)'}`,borderRadius:6,padding:'5px 10px',cursor:'pointer',color:copied?'#22C55E':'rgba(240,240,248,0.55)',fontSize:11,display:'flex',alignItems:'center',gap:4,...mono,transition:'all 0.15s'}}>
@@ -33,7 +33,7 @@ function CopyBlock({ code, label, lang = 'shell' }) {
 /* ── Step component ── */
 function Step({ n, title, status = 'default', children }) {
   const statusStyle = {
-    default: {bg:'rgba(77,163,255,0.12)',border:'rgba(77,163,255,0.35)',color:'#4DA3FF'},
+    default: {bg:'rgba(90,138,159,0.12)',border:'rgba(90,138,159,0.35)',color:'#5A8A9F'},
     done:    {bg:'rgba(34,197,94,0.12)',border:'rgba(34,197,94,0.35)',color:'#22C55E'},
   }[status];
   return (
@@ -55,14 +55,14 @@ function Step({ n, title, status = 'default', children }) {
 /* ── OS Tab ── */
 function OsTab({ label, icon: Icon, active, onClick }) {
   return (
-    <button onClick={onClick} style={{display:'flex',alignItems:'center',gap:7,padding:'9px 16px',background:active?'rgba(77,163,255,0.08)':'transparent',border:`1px solid ${active?'rgba(77,163,255,0.3)':'rgba(255,255,255,0.07)'}`,borderRadius:8,color:active?'#4DA3FF':'rgba(240,240,248,0.5)',fontSize:12,fontWeight:active?600:400,cursor:'pointer',...mono,transition:'all 0.15s'}}>
+    <button onClick={onClick} style={{display:'flex',alignItems:'center',gap:7,padding:'9px 16px',background:active?'rgba(90,138,159,0.08)':'transparent',border:`1px solid ${active?'rgba(90,138,159,0.3)':'rgba(255,255,255,0.07)'}`,borderRadius:8,color:active?'#5A8A9F':'rgba(240,240,248,0.5)',fontSize:12,fontWeight:active?600:400,cursor:'pointer',...mono,transition:'all 0.15s'}}>
       <Icon size={14}/>{label}
     </button>
   );
 }
 
 /* ── Info pill ── */
-function InfoPill({ color='#4DA3FF', children }) {
+function InfoPill({ color='#5A8A9F', children }) {
   return (
     <div style={{display:'inline-flex',alignItems:'center',gap:7,fontSize:12,color,background:`${color}10`,border:`1px solid ${color}25`,borderRadius:7,padding:'8px 14px',...mono,marginTop:8}}>
       {children}
@@ -128,10 +128,10 @@ python3 aegistrace_agent.py`;
       <ThreatStream opacity={0.30} />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&display=swap');
-        ::selection{background:rgba(77,163,255,0.3);color:#fff}
+        ::selection{background:rgba(90,138,159,0.3);color:#fff}
         .agent-sidebar-link{display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:0.72rem;color:#787878;text-decoration:none;border-radius:7px;transition:all 0.15s;font-family:'JetBrains Mono',monospace;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;background:none;border:none;text-align:left;width:100%}
         .agent-sidebar-link:hover{color:#EBEBEB;background:rgba(255,255,255,0.05)}
-        .agent-sidebar-link.active{color:#4DA3FF;background:rgba(77,163,255,0.08);border-left:2px solid #4DA3FF;padding-left:12px}
+        .agent-sidebar-link.active{color:#5A8A9F;background:rgba(90,138,159,0.08);border-left:2px solid #5A8A9F;padding-left:12px}
         .mobile-nav-drawer{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(3,4,10,0.97);z-index:200;display:flex;flex-direction:column;padding:24px;backdrop-filter:blur(20px)}
         @media(max-width:860px){
           .agent-sidebar{display:none!important}
@@ -151,7 +151,7 @@ python3 aegistrace_agent.py`;
         <span style={{fontSize:11,color:'rgba(240,240,248,0.35)',...mono,textTransform:'uppercase',letterSpacing:'0.1em'}}>Endpoint Agent Docs</span>
         <div style={{flex:1}}/>
         <a href="/public" style={{fontSize:12,color:'rgba(240,240,248,0.4)',textDecoration:'none',...mono,letterSpacing:'0.06em',textTransform:'uppercase'}}>Case Library</a>
-        <button onClick={()=>navigate('/app/login')} style={{background:'#4DA3FF',color:'#fff',border:'none',borderRadius:6,padding:'7px 16px',fontSize:11,fontWeight:600,cursor:'pointer',...mono,letterSpacing:'0.08em',textTransform:'uppercase'}}>
+        <button onClick={()=>navigate('/app/login')} style={{background:'#5A8A9F',color:'#fff',border:'none',borderRadius:6,padding:'7px 16px',fontSize:11,fontWeight:600,cursor:'pointer',...mono,letterSpacing:'0.08em',textTransform:'uppercase'}}>
           Sign In
         </button>
         <button className="mobile-menu-btn" onClick={()=>setMobileNav(true)} style={{background:'none',border:'1px solid rgba(240,240,248,0.15)',borderRadius:6,padding:'7px 9px',cursor:'pointer',color:'#EBEBEB',display:'flex',alignItems:'center'}}>
@@ -181,11 +181,11 @@ python3 aegistrace_agent.py`;
         {/* LEFT SIDEBAR */}
         <aside className="agent-sidebar" style={{width:230,flexShrink:0,position:'sticky',top:56,height:'calc(100vh - 56px)',overflow:'auto',borderRight:'1px solid rgba(255,255,255,0.06)',padding:'24px 12px',background:'rgba(3,4,10,0.5)'}}>
           {/* Download card */}
-          <div style={{margin:'0 0 20px',padding:'14px',background:'rgba(77,163,255,0.06)',border:'1px solid rgba(77,163,255,0.2)',borderRadius:10}}>
+          <div style={{margin:'0 0 20px',padding:'14px',background:'rgba(90,138,159,0.06)',border:'1px solid rgba(90,138,159,0.2)',borderRadius:10}}>
             <div style={{fontSize:11,color:'rgba(240,240,248,0.6)',...mono,marginBottom:8}}>aegistrace_agent.py</div>
             <div style={{fontSize:9,color:'#787878',...mono,marginBottom:12}}>Python 3.7+ · Zero deps</div>
             <a href={AGENT_RAW_URL} download="aegistrace_agent.py" target="_blank" rel="noreferrer"
-              style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,background:'#4DA3FF',color:'#fff',textDecoration:'none',padding:'8px',borderRadius:6,fontSize:11,fontWeight:700,...mono,letterSpacing:'0.06em',textTransform:'uppercase'}}>
+              style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,background:'#5A8A9F',color:'#fff',textDecoration:'none',padding:'8px',borderRadius:6,fontSize:11,fontWeight:700,...mono,letterSpacing:'0.06em',textTransform:'uppercase'}}>
               <Download size={12}/> Download
             </a>
           </div>
@@ -220,11 +220,11 @@ python3 aegistrace_agent.py`;
             {/* ── OVERVIEW ── */}
             <section id="overview" className="agent-scan-section" style={{marginBottom:56}}>
               <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:20}}>
-                <div style={{width:44,height:44,background:'rgba(77,163,255,0.1)',border:'1px solid rgba(77,163,255,0.3)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                  <Terminal size={22} style={{color:'#4DA3FF'}}/>
+                <div style={{width:44,height:44,background:'rgba(90,138,159,0.1)',border:'1px solid rgba(90,138,159,0.3)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                  <Terminal size={22} style={{color:'#5A8A9F'}}/>
                 </div>
                 <div>
-                  <div style={{fontSize:10,...mono,color:'#4DA3FF',textTransform:'uppercase',letterSpacing:'0.12em'}}>Endpoint Agent · <span style={{color:'#22C55E'}}>v5.0</span></div>
+                  <div style={{fontSize:10,...mono,color:'#5A8A9F',textTransform:'uppercase',letterSpacing:'0.12em'}}>Endpoint Agent · <span style={{color:'#22C55E'}}>v5.0</span></div>
                   <h1 style={{fontSize:26,fontWeight:800,margin:0,lineHeight:1.2}}>Setup Guide</h1>
                 </div>
               </div>
@@ -233,14 +233,14 @@ python3 aegistrace_agent.py`;
               </p>
 
               {/* Download card */}
-              <div style={{display:'flex',gap:16,alignItems:'center',padding:'20px 24px',background:'rgba(77,163,255,0.05)',border:'1px solid rgba(77,163,255,0.2)',borderRadius:12,flexWrap:'wrap'}}>
+              <div style={{display:'flex',gap:16,alignItems:'center',padding:'20px 24px',background:'rgba(90,138,159,0.05)',border:'1px solid rgba(90,138,159,0.2)',borderRadius:12,flexWrap:'wrap'}}>
                 <div style={{flex:1,minWidth:200}}>
                   <div style={{fontWeight:700,fontSize:14,marginBottom:3,...mono,color:'#EBEBEB'}}>aegistrace_agent.py</div>
                   <div style={{fontSize:11,color:'#787878',...mono}}>Python 3.7+ · Zero dependencies · Windows / Linux / Mac</div>
                 </div>
                 <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
                   <a href={AGENT_RAW_URL} download="aegistrace_agent.py" target="_blank" rel="noreferrer"
-                    style={{display:'inline-flex',alignItems:'center',gap:7,background:'#4DA3FF',color:'#fff',textDecoration:'none',padding:'10px 20px',borderRadius:8,fontSize:12,fontWeight:700,...mono,letterSpacing:'0.06em',textTransform:'uppercase'}}>
+                    style={{display:'inline-flex',alignItems:'center',gap:7,background:'#5A8A9F',color:'#fff',textDecoration:'none',padding:'10px 20px',borderRadius:8,fontSize:12,fontWeight:700,...mono,letterSpacing:'0.06em',textTransform:'uppercase'}}>
                     <Download size={14}/> Download Agent
                   </a>
                   <a href={`https://github.com/Prasanna-27eng/AegisTrace`} target="_blank" rel="noreferrer"
@@ -254,10 +254,10 @@ python3 aegistrace_agent.py`;
               <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:10,marginTop:16}}>
                 {[
                   {Icon:Shield,     label:'🍯 Honey Token Trap', sub:'Zero false positives · catches harvesters',   color:'#EAB308'},
-                  {Icon:Wifi,       label:'DNS / DGA Detection',  sub:'Entropy-based C2 domain detection',           color:'#4DA3FF'},
-                  {Icon:Cpu,        label:'YARA-lite Engine',      sub:'16 string signatures on process cmdlines',    color:'#A78BFA'},
+                  {Icon:Wifi,       label:'DNS / DGA Detection',  sub:'Entropy-based C2 domain detection',           color:'#5A8A9F'},
+                  {Icon:Cpu,        label:'YARA-lite Engine',      sub:'16 string signatures on process cmdlines',    color:'#8FAFC0'},
                   {Icon:Shield,     label:'Auto-Block Engine',     sub:'iptables / pfctl / netsh < 1 second',         color:'#22C55E'},
-                  {Icon:CheckCircle,label:'Multi-backend failover',sub:'Primary → secondary → tertiary',             color:'#4DA3FF'},
+                  {Icon:CheckCircle,label:'Multi-backend failover',sub:'Primary → secondary → tertiary',             color:'#5A8A9F'},
                   {Icon:Server,     label:'Guardian Process',      sub:'Separate OS process restarts agent on crash', color:'#F97316'},
                 ].map(({Icon,label,sub,color})=>(
                   <div key={label} style={{display:'flex',gap:10,alignItems:'center',padding:'12px 14px',background:'rgba(255,255,255,0.02)',border:'1px solid rgba(255,255,255,0.06)',borderRadius:9}}>
@@ -276,7 +276,7 @@ python3 aegistrace_agent.py`;
             {/* ── QUICK START ── */}
             <section id="quickstart" className="agent-scan-section" style={{marginBottom:56}}>
               <div style={{marginBottom:28}}>
-                <div style={{fontSize:9,color:'#4DA3FF',letterSpacing:'0.18em',textTransform:'uppercase',...mono,marginBottom:8}}>◇ Quick Start</div>
+                <div style={{fontSize:9,color:'#5A8A9F',letterSpacing:'0.18em',textTransform:'uppercase',...mono,marginBottom:8}}>◇ Quick Start</div>
                 <h2 style={{fontSize:22,fontWeight:700,margin:0}}>Up and running in 3 steps</h2>
               </div>
 
@@ -284,7 +284,7 @@ python3 aegistrace_agent.py`;
                 <p style={{fontSize:13,color:'rgba(240,240,248,0.6)',margin:'0 0 12px',lineHeight:1.7,...mono,fontWeight:300}}>
                   Log into AegisTrace, go to <strong style={{color:'#EBEBEB'}}>Endpoints</strong> and click <strong style={{color:'#EBEBEB'}}>Get Ingest Key</strong>. Copy the key — you'll paste it in the next step.
                 </p>
-                <InfoPill color="#A78BFA">
+                <InfoPill color="#8FAFC0">
                   <Shield size={12}/> Admin → Endpoints → Get Ingest Key
                 </InfoPill>
               </Step>
@@ -309,7 +309,7 @@ python3 aegistrace_agent.py`;
                 </div>
               </Step>
 
-              <div style={{padding:'14px 18px',background:'rgba(167,139,250,0.05)',border:'1px solid rgba(167,139,250,0.18)',borderRadius:9,fontSize:13,color:'#A78BFA',lineHeight:1.6,...mono}}>
+              <div style={{padding:'14px 18px',background:'rgba(143,175,192,0.05)',border:'1px solid rgba(143,175,192,0.18)',borderRadius:9,fontSize:13,color:'#8FAFC0',lineHeight:1.6,...mono}}>
                 <strong>Requirements:</strong> Python 3.7 or newer. No extra packages needed. The agent tracks its position in each log file so it never ships duplicate lines.
               </div>
             </section>
@@ -319,7 +319,7 @@ python3 aegistrace_agent.py`;
             {/* ── BACKGROUND SERVICE ── */}
             <section id="service" className="agent-scan-section" style={{marginBottom:56}}>
               <div style={{marginBottom:28}}>
-                <div style={{fontSize:9,color:'#4DA3FF',letterSpacing:'0.18em',textTransform:'uppercase',...mono,marginBottom:8}}>◇ Background Service</div>
+                <div style={{fontSize:9,color:'#5A8A9F',letterSpacing:'0.18em',textTransform:'uppercase',...mono,marginBottom:8}}>◇ Background Service</div>
                 <h2 style={{fontSize:22,fontWeight:700,margin:0}}>Run as a persistent service</h2>
                 <p style={{fontSize:13,color:'rgba(240,240,248,0.5)',marginTop:8,...mono,fontWeight:300}}>Install the agent so it starts automatically and keeps running in the background.</p>
               </div>
@@ -362,7 +362,7 @@ python3 aegistrace_agent.py`;
                       {n:'5',t:'Advanced settings',d:'Check "Run whether user is logged on or not" + "Run with highest privileges"'},
                     ].map(({n,t,d})=>(
                       <div key={n} style={{display:'flex',gap:14,padding:'12px 16px',background:'rgba(255,255,255,0.02)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:8,alignItems:'flex-start'}}>
-                        <div style={{width:22,height:22,borderRadius:'50%',background:'rgba(77,163,255,0.12)',border:'1px solid rgba(77,163,255,0.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:'#4DA3FF',flexShrink:0,...mono}}>{n}</div>
+                        <div style={{width:22,height:22,borderRadius:'50%',background:'rgba(90,138,159,0.12)',border:'1px solid rgba(90,138,159,0.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:'#5A8A9F',flexShrink:0,...mono}}>{n}</div>
                         <div>
                           <div style={{fontWeight:600,fontSize:13,color:'#EBEBEB',marginBottom:3}}>{t}</div>
                           <div style={{fontSize:12,color:'rgba(240,240,248,0.5)',...mono,fontWeight:300}}>{d}</div>
@@ -379,7 +379,7 @@ python3 aegistrace_agent.py`;
             {/* ── WHAT IT COLLECTS ── */}
             <section id="collects" className="agent-scan-section" style={{marginBottom:56}}>
               <div style={{marginBottom:28}}>
-                <div style={{fontSize:9,color:'#4DA3FF',letterSpacing:'0.18em',textTransform:'uppercase',...mono,marginBottom:8}}>◇ Data Collection</div>
+                <div style={{fontSize:9,color:'#5A8A9F',letterSpacing:'0.18em',textTransform:'uppercase',...mono,marginBottom:8}}>◇ Data Collection</div>
                 <h2 style={{fontSize:22,fontWeight:700,margin:0}}>What it collects</h2>
                 <p style={{fontSize:13,color:'rgba(240,240,248,0.5)',marginTop:8,...mono,fontWeight:300}}>The agent auto-detects your OS and collects the relevant log sources. All data is sent over HTTPS.</p>
               </div>
@@ -402,7 +402,7 @@ python3 aegistrace_agent.py`;
                     <tbody>
                       {[['/var/log/auth.log','SSH logins, sudo, su'],['/var/log/syslog','System events'],['journalctl','Systemd service events'],['/var/log/nginx/access.log','Web access logs'],['/var/log/apache2/access.log','Web access logs'],['ps aux','Running processes snapshot'],['ss -tunp','Active network connections']].map(([src,desc],i)=>(
                         <tr key={src} style={{borderBottom:'1px solid rgba(255,255,255,0.04)',background:i%2===0?'rgba(255,255,255,0.01)':'transparent'}}>
-                          <td style={{padding:'9px 16px',...mono,fontSize:12,color:'#A78BFA'}}>{src}</td>
+                          <td style={{padding:'9px 16px',...mono,fontSize:12,color:'#8FAFC0'}}>{src}</td>
                           <td style={{padding:'9px 16px',color:'rgba(240,240,248,0.65)',fontSize:12}}>{desc}</td>
                         </tr>
                       ))}
@@ -423,7 +423,7 @@ python3 aegistrace_agent.py`;
                     <tbody>
                       {[['Windows Security Events','4624 login · 4625 failed · 4720 new user · 4726 deleted · 4698 task'],['Windows System Events','7045 new service · 7040 service changed'],['PowerShell History','All commands typed in PS'],['Process list','Get-Process snapshot'],['Network connections','Get-NetTCPConnection']].map(([src,desc],i)=>(
                         <tr key={src} style={{borderBottom:'1px solid rgba(255,255,255,0.04)',background:i%2===0?'rgba(255,255,255,0.01)':'transparent'}}>
-                          <td style={{padding:'9px 16px',...mono,fontSize:12,color:'#A78BFA'}}>{src}</td>
+                          <td style={{padding:'9px 16px',...mono,fontSize:12,color:'#8FAFC0'}}>{src}</td>
                           <td style={{padding:'9px 16px',color:'rgba(240,240,248,0.65)',fontSize:12}}>{desc}</td>
                         </tr>
                       ))}
@@ -438,9 +438,9 @@ python3 aegistrace_agent.py`;
             {/* ── CONFIG OPTIONS ── */}
             <section id="config" className="agent-scan-section" style={{marginBottom:56}}>
               <div style={{marginBottom:24}}>
-                <div style={{fontSize:9,color:'#4DA3FF',letterSpacing:'0.18em',textTransform:'uppercase',...mono,marginBottom:8}}>◇ Configuration</div>
+                <div style={{fontSize:9,color:'#5A8A9F',letterSpacing:'0.18em',textTransform:'uppercase',...mono,marginBottom:8}}>◇ Configuration</div>
                 <h2 style={{fontSize:22,fontWeight:700,margin:0}}>Config options</h2>
-                <p style={{fontSize:13,color:'rgba(240,240,248,0.5)',marginTop:8,...mono,fontWeight:300}}>Open <code style={{color:'#A78BFA',fontSize:12}}>aegistrace_agent.py</code> and adjust these variables near the top:</p>
+                <p style={{fontSize:13,color:'rgba(240,240,248,0.5)',marginTop:8,...mono,fontWeight:300}}>Open <code style={{color:'#8FAFC0',fontSize:12}}>aegistrace_agent.py</code> and adjust these variables near the top:</p>
               </div>
               {/* Config reference table */}
               <div style={{border:'1px solid rgba(255,255,255,0.07)',borderRadius:10,overflow:'hidden',marginTop:8}}>
@@ -463,7 +463,7 @@ python3 aegistrace_agent.py`;
                       ['AEGISTRACE_APPROVED_AI',   '',      'Comma list of approved AI domains (e.g. api.openai.com)'],
                     ].map(([v,d,desc],i)=>(
                       <tr key={v} style={{borderBottom:'1px solid rgba(255,255,255,0.04)',background:i%2===0?'rgba(255,255,255,0.01)':'transparent'}}>
-                        <td style={{padding:'8px 14px',...mono,fontSize:11,color:'#A78BFA'}}>{v}</td>
+                        <td style={{padding:'8px 14px',...mono,fontSize:11,color:'#8FAFC0'}}>{v}</td>
                         <td style={{padding:'8px 14px',...mono,fontSize:11,color:'#EAB308'}}>{d}</td>
                         <td style={{padding:'8px 14px',color:'rgba(240,240,248,0.55)',fontSize:12}}>{desc}</td>
                       </tr>
@@ -496,12 +496,12 @@ python3 aegistrace_agent.py`;
             </section>
 
             {/* ── CTA ── */}
-            <div style={{padding:'24px',background:'rgba(77,163,255,0.05)',border:'1px solid rgba(77,163,255,0.18)',borderRadius:12,display:'flex',alignItems:'center',gap:16,flexWrap:'wrap'}}>
+            <div style={{padding:'24px',background:'rgba(90,138,159,0.05)',border:'1px solid rgba(90,138,159,0.18)',borderRadius:12,display:'flex',alignItems:'center',gap:16,flexWrap:'wrap'}}>
               <div style={{flex:1,minWidth:200}}>
                 <div style={{fontWeight:700,fontSize:15,marginBottom:5}}>Ready to monitor your endpoints?</div>
                 <div style={{fontSize:12,color:'rgba(240,240,248,0.5)',...mono}}>Sign in to AegisTrace to get your ingest key and start collecting logs.</div>
               </div>
-              <button onClick={()=>navigate('/app/login')} style={{background:'#4DA3FF',color:'#fff',border:'none',borderRadius:8,padding:'11px 24px',fontSize:12,fontWeight:700,cursor:'pointer',...mono,letterSpacing:'0.08em',textTransform:'uppercase',flexShrink:0}}>
+              <button onClick={()=>navigate('/app/login')} style={{background:'#5A8A9F',color:'#fff',border:'none',borderRadius:8,padding:'11px 24px',fontSize:12,fontWeight:700,cursor:'pointer',...mono,letterSpacing:'0.08em',textTransform:'uppercase',flexShrink:0}}>
                 Sign In →
               </button>
             </div>

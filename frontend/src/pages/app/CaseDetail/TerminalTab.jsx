@@ -75,7 +75,7 @@ export default function TerminalTab({ caseData, caseId, updateCase }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {result ? (
             <>
-              <div className="at-card" style={{ padding: 14, borderLeft: '2px solid rgba(167,139,250,0.4)' }}>
+              <div className="at-card" style={{ padding: 14, borderLeft: '2px solid rgba(143,175,192,0.4)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                   <div className="section-label" style={{ margin: 0 }}>AI Parsed Result</div>
                   <span className="ai-badge">AI</span>
@@ -86,7 +86,7 @@ export default function TerminalTab({ caseData, caseId, updateCase }) {
                 {result.key_findings?.length > 0 && (
                   <div style={{ marginBottom: 10 }}>
                     <div style={{ fontSize: '0.68rem', color: '#787878', fontFamily: 'JetBrains Mono', textTransform: 'uppercase', marginBottom: 6 }}>Key Findings</div>
-                    {result.key_findings.map((f, i) => <div key={i} style={{ fontSize: '0.8rem', color: '#EBEBEB', padding: '3px 0', display: 'flex', gap: 8 }}><span style={{ color: '#4DA3FF' }}>→</span>{f}</div>)}
+                    {result.key_findings.map((f, i) => <div key={i} style={{ fontSize: '0.8rem', color: '#EBEBEB', padding: '3px 0', display: 'flex', gap: 8 }}><span style={{ color: '#5A8A9F' }}>→</span>{f}</div>)}
                   </div>
                 )}
 
@@ -103,7 +103,7 @@ export default function TerminalTab({ caseData, caseId, updateCase }) {
                   <div style={{ marginBottom: 10 }}>
                     <div style={{ fontSize: '0.68rem', color: '#787878', fontFamily: 'JetBrains Mono', textTransform: 'uppercase', marginBottom: 6 }}>MITRE Techniques</div>
                     {result.mitre_techniques.map((m, i) => (
-                      <div key={i} style={{ fontSize: '0.78rem', color: '#A78BFA', fontFamily: 'JetBrains Mono', padding: '2px 0' }}>{m.id} — {m.name}</div>
+                      <div key={i} style={{ fontSize: '0.78rem', color: '#8FAFC0', fontFamily: 'JetBrains Mono', padding: '2px 0' }}>{m.id} — {m.name}</div>
                     ))}
                   </div>
                 )}

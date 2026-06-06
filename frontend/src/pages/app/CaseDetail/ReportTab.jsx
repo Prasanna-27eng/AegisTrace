@@ -41,7 +41,7 @@ export default function ReportTab({ caseId, caseData }) {
 
   const reports = [
     {
-      icon: <File size={28} style={{ color: '#4DA3FF', marginBottom: 12 }} />,
+      icon: <File size={28} style={{ color: '#5A8A9F', marginBottom: 12 }} />,
       title: 'Standard PDF Report',
       desc: 'Full case report with executive summary, findings, IOC table, MITRE mapping, timeline, and commands.',
       url: `/api/reports/${caseId}/pdf`,
@@ -50,7 +50,7 @@ export default function ReportTab({ caseId, caseData }) {
       btnStyle: {},
     },
     {
-      icon: <FileText size={28} style={{ color: '#A78BFA', marginBottom: 12 }} />,
+      icon: <FileText size={28} style={{ color: '#8FAFC0', marginBottom: 12 }} />,
       title: 'Word Document',
       desc: 'Editable DOCX for sharing with stakeholders or including in SOC documentation.',
       url: `/api/reports/${caseId}/docx`,

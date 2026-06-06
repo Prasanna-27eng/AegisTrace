@@ -5,7 +5,7 @@ import useStore from '../../store/useStore';
 import { useNavigate } from 'react-router-dom';
 
 const OS_ICON = { windows: '🪟', linux: '🐧', mac: '🍎', unknown: '💻' };
-const SCORE_COLOR = (s) => s >= 80 ? '#EF4444' : s >= 60 ? '#4DA3FF' : s >= 40 ? '#EAB308' : s >= 20 ? '#A78BFA' : '#22C55E';
+const SCORE_COLOR = (s) => s >= 80 ? '#EF4444' : s >= 60 ? '#5A8A9F' : s >= 40 ? '#EAB308' : s >= 20 ? '#8FAFC0' : '#22C55E';
 const VERDICT_COLOR = { Malicious:'#EF4444', Suspicious:'#EAB308', Clean:'#22C55E', Unknown:'#787878' };
 
 const AEGISTRACE_URL = 'https://aegistrace-7qvn.onrender.com';
@@ -24,7 +24,7 @@ function ScoreBar({ score }) {
 function BatchRow({ batch, epId, navigate }) {
   return (
     <div className="at-card" style={{ padding:'10px 14px', cursor:'pointer', transition:'border-color 0.15s' }}
-      onMouseEnter={e => e.currentTarget.style.borderColor='rgba(77,163,255,0.3)'}
+      onMouseEnter={e => e.currentTarget.style.borderColor='rgba(90,138,159,0.3)'}
       onMouseLeave={e => e.currentTarget.style.borderColor='rgba(255,255,255,0.07)'}
       onClick={() => navigate(`/app/endpoints/${epId}/batch/${batch.id}`)}>
       <div style={{ display:'flex', alignItems:'center', gap:12 }}>
@@ -37,7 +37,7 @@ function BatchRow({ batch, epId, navigate }) {
           <div style={{ fontSize:'0.65rem', color:'#787878', marginTop:2 }}>{new Date(batch.created_at).toLocaleTimeString()}</div>
         </div>
         <ScoreBar score={batch.threat_score} />
-        {batch.case_id && <span style={{ fontSize:'0.65rem', background:'rgba(77,163,255,0.1)', border:'1px solid rgba(77,163,255,0.25)', color:'#4DA3FF', padding:'1px 6px', borderRadius:3, fontFamily:'JetBrains Mono', flexShrink:0 }}>CASE</span>}
+        {batch.case_id && <span style={{ fontSize:'0.65rem', background:'rgba(90,138,159,0.1)', border:'1px solid rgba(90,138,159,0.25)', color:'#5A8A9F', padding:'1px 6px', borderRadius:3, fontFamily:'JetBrains Mono', flexShrink:0 }}>CASE</span>}
       </div>
       {batch.ai_summary && <div style={{ fontSize:'0.72rem', color:'#787878', marginTop:5, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{batch.ai_summary}</div>}
     </div>
@@ -99,8 +99,8 @@ INGEST_KEY     = "${ingestKey || 'paste-your-key-here'}"`;
 
         {/* Header */}
         <div style={{ padding:'18px 20px', borderBottom:'1px solid rgba(255,255,255,0.07)', display:'flex', alignItems:'center', gap:12, flexShrink:0 }}>
-          <div style={{ width:36, height:36, background:'rgba(77,163,255,0.15)', border:'1px solid rgba(77,163,255,0.3)', borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <Terminal size={18} style={{ color:'#4DA3FF' }}/>
+          <div style={{ width:36, height:36, background:'rgba(90,138,159,0.15)', border:'1px solid rgba(90,138,159,0.3)', borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <Terminal size={18} style={{ color:'#5A8A9F' }}/>
           </div>
           <div>
             <div style={{ fontWeight:700, fontSize:'1rem' }}>Endpoint Agent Setup Guide</div>
@@ -126,7 +126,7 @@ INGEST_KEY     = "${ingestKey || 'paste-your-key-here'}"`;
             <div>
               <div style={{ marginBottom:20 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
-                  <div style={{ width:22, height:22, borderRadius:'50%', background:'rgba(77,163,255,0.2)', border:'1px solid rgba(77,163,255,0.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.72rem', fontWeight:700, color:'#4DA3FF', flexShrink:0 }}>1</div>
+                  <div style={{ width:22, height:22, borderRadius:'50%', background:'rgba(90,138,159,0.2)', border:'1px solid rgba(90,138,159,0.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.72rem', fontWeight:700, color:'#5A8A9F', flexShrink:0 }}>1</div>
                   <div style={{ fontWeight:600 }}>Get your Ingest Key</div>
                 </div>
                 {ingestKey ? (
@@ -141,10 +141,10 @@ INGEST_KEY     = "${ingestKey || 'paste-your-key-here'}"`;
 
               <div style={{ marginBottom:20 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
-                  <div style={{ width:22, height:22, borderRadius:'50%', background:'rgba(77,163,255,0.2)', border:'1px solid rgba(77,163,255,0.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.72rem', fontWeight:700, color:'#4DA3FF', flexShrink:0 }}>2</div>
+                  <div style={{ width:22, height:22, borderRadius:'50%', background:'rgba(90,138,159,0.2)', border:'1px solid rgba(90,138,159,0.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.72rem', fontWeight:700, color:'#5A8A9F', flexShrink:0 }}>2</div>
                   <div style={{ fontWeight:600 }}>Download &amp; configure the agent</div>
                 </div>
-                <div style={{ fontSize:'0.8rem', color:'#787878', marginBottom:8 }}>Download <code style={{color:'#A78BFA', fontFamily:'JetBrains Mono', fontSize:'0.78rem'}}>aegistrace_agent.py</code> then open it and set these two lines:</div>
+                <div style={{ fontSize:'0.8rem', color:'#787878', marginBottom:8 }}>Download <code style={{color:'#8FAFC0', fontFamily:'JetBrains Mono', fontSize:'0.78rem'}}>aegistrace_agent.py</code> then open it and set these two lines:</div>
                 <CodeBlock code={configSnippet} label="aegistrace_agent.py — edit these lines" />
                 <div style={{ marginTop:10 }}>
                   <a href={agentUrl} target="_blank" rel="noreferrer" className="btn-ghost" style={{ textDecoration:'none', fontSize:'0.75rem', display:'inline-flex', alignItems:'center', gap:6 }}>
@@ -155,7 +155,7 @@ INGEST_KEY     = "${ingestKey || 'paste-your-key-here'}"`;
 
               <div style={{ marginBottom:20 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
-                  <div style={{ width:22, height:22, borderRadius:'50%', background:'rgba(77,163,255,0.2)', border:'1px solid rgba(77,163,255,0.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.72rem', fontWeight:700, color:'#4DA3FF', flexShrink:0 }}>3</div>
+                  <div style={{ width:22, height:22, borderRadius:'50%', background:'rgba(90,138,159,0.2)', border:'1px solid rgba(90,138,159,0.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.72rem', fontWeight:700, color:'#5A8A9F', flexShrink:0 }}>3</div>
                   <div style={{ fontWeight:600 }}>Run it</div>
                 </div>
                 <CodeBlock code="python3 aegistrace_agent.py" label="Terminal" />
@@ -165,7 +165,7 @@ INGEST_KEY     = "${ingestKey || 'paste-your-key-here'}"`;
                 </div>
               </div>
 
-              <div style={{ padding:'12px 14px', background:'rgba(167,139,250,0.05)', border:'1px solid rgba(167,139,250,0.15)', borderRadius:6, fontSize:'0.78rem', color:'#A78BFA' }}>
+              <div style={{ padding:'12px 14px', background:'rgba(143,175,192,0.05)', border:'1px solid rgba(143,175,192,0.15)', borderRadius:6, fontSize:'0.78rem', color:'#8FAFC0' }}>
                 <strong>Note:</strong> Requires Python 3.7+ with no extra packages. Ships only new log lines on each run — no duplicates.
               </div>
             </div>
@@ -191,9 +191,9 @@ INGEST_KEY     = "${ingestKey || 'paste-your-key-here'}"`;
               <Collapsible title="Windows — Task Scheduler" icon={<span style={{fontSize:16}}>🪟</span>}>
                 <ol style={{ paddingLeft:18, margin:0, fontSize:'0.8rem', color:'#787878', lineHeight:1.9 }}>
                   <li>Open <strong style={{color:'#A8A8A8'}}>Task Scheduler</strong> → Create Basic Task</li>
-                  <li>Name: <code style={{color:'#A78BFA', fontFamily:'JetBrains Mono', fontSize:'0.76rem'}}>AegisTrace Agent</code></li>
+                  <li>Name: <code style={{color:'#8FAFC0', fontFamily:'JetBrains Mono', fontSize:'0.76rem'}}>AegisTrace Agent</code></li>
                   <li>Trigger: <strong style={{color:'#A8A8A8'}}>At startup</strong> + repeat every <strong style={{color:'#A8A8A8'}}>5 minutes</strong></li>
-                  <li>Action: <code style={{color:'#A78BFA', fontFamily:'JetBrains Mono', fontSize:'0.76rem'}}>python.exe "C:\path\to\aegistrace_agent.py"</code></li>
+                  <li>Action: <code style={{color:'#8FAFC0', fontFamily:'JetBrains Mono', fontSize:'0.76rem'}}>python.exe "C:\path\to\aegistrace_agent.py"</code></li>
                   <li>Run whether user is logged on or not: ✓</li>
                   <li>Run with highest privileges: ✓</li>
                 </ol>
@@ -225,7 +225,7 @@ INGEST_KEY     = "${ingestKey || 'paste-your-key-here'}"`;
                       ['ss -tunp', 'Active network connections'],
                     ].map(([src, type]) => (
                       <tr key={src} style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
-                        <td style={{ padding:'7px 8px', fontFamily:'JetBrains Mono', fontSize:'0.72rem', color:'#A78BFA' }}>{src}</td>
+                        <td style={{ padding:'7px 8px', fontFamily:'JetBrains Mono', fontSize:'0.72rem', color:'#8FAFC0' }}>{src}</td>
                         <td style={{ padding:'7px 8px', color:'#787878' }}>{type}</td>
                       </tr>
                     ))}
@@ -250,7 +250,7 @@ INGEST_KEY     = "${ingestKey || 'paste-your-key-here'}"`;
                       ['Network connections', 'Get-NetTCPConnection'],
                     ].map(([src, type]) => (
                       <tr key={src} style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
-                        <td style={{ padding:'7px 8px', fontFamily:'JetBrains Mono', fontSize:'0.72rem', color:'#A78BFA' }}>{src}</td>
+                        <td style={{ padding:'7px 8px', fontFamily:'JetBrains Mono', fontSize:'0.72rem', color:'#8FAFC0' }}>{src}</td>
                         <td style={{ padding:'7px 8px', color:'#787878' }}>{type}</td>
                       </tr>
                     ))}
@@ -263,7 +263,7 @@ INGEST_KEY     = "${ingestKey || 'paste-your-key-here'}"`;
           {/* ── CONFIG OPTIONS ── */}
           {activeTab === 'config' && (
             <div>
-              <div style={{ fontSize:'0.82rem', color:'#787878', marginBottom:14 }}>Open <code style={{color:'#A78BFA', fontFamily:'JetBrains Mono', fontSize:'0.78rem'}}>aegistrace_agent.py</code> and adjust these variables near the top:</div>
+              <div style={{ fontSize:'0.82rem', color:'#787878', marginBottom:14 }}>Open <code style={{color:'#8FAFC0', fontFamily:'JetBrains Mono', fontSize:'0.78rem'}}>aegistrace_agent.py</code> and adjust these variables near the top:</div>
               <CodeBlock code={`INTERVAL_SECONDS = 300     # How often to ship (default: 5 min)
 MAX_LINES        = 500     # Lines per log file per run
 AUTO_ANALYSE     = True    # AI analysis on arrival
@@ -359,10 +359,10 @@ export default function Endpoints() {
 
       {/* Ingest key panel */}
       {showKey && ingestKey && (
-        <div className="at-card" style={{ padding:14, marginBottom:16, borderColor:'rgba(77,163,255,0.2)' }}>
+        <div className="at-card" style={{ padding:14, marginBottom:16, borderColor:'rgba(90,138,159,0.2)' }}>
           <div className="section-label">Ingest API Key — paste into agent config</div>
           <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-            <code style={{ flex:1, fontFamily:'JetBrains Mono', fontSize:'0.78rem', color:'#A78BFA', background:'rgba(255,255,255,0.04)', padding:'8px 12px', borderRadius:6, border:'1px solid rgba(255,255,255,0.08)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{ingestKey}</code>
+            <code style={{ flex:1, fontFamily:'JetBrains Mono', fontSize:'0.78rem', color:'#8FAFC0', background:'rgba(255,255,255,0.04)', padding:'8px 12px', borderRadius:6, border:'1px solid rgba(255,255,255,0.08)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{ingestKey}</code>
             <button className="btn-ghost" onClick={() => { navigator.clipboard.writeText(ingestKey); addToast('Key copied!','success'); }} style={{ padding:'6px 10px', flexShrink:0 }}><Copy size={13}/></button>
           </div>
           <div style={{ fontSize:'0.68rem', color:'#787878', marginTop:8, fontFamily:'JetBrains Mono' }}>
@@ -375,7 +375,7 @@ export default function Endpoints() {
         <div style={{ textAlign:'center', padding:60, color:'#787878' }}><Loader2 size={20} className="spinner" style={{ margin:'0 auto 8px' }}/><div>Loading endpoints…</div></div>
       ) : endpoints.length === 0 ? (
         <div className="at-card" style={{ padding:40, textAlign:'center' }}>
-          <Monitor size={32} style={{ color:'rgba(77,163,255,0.3)', margin:'0 auto 12px' }}/>
+          <Monitor size={32} style={{ color:'rgba(90,138,159,0.3)', margin:'0 auto 12px' }}/>
           <div style={{ fontWeight:600, marginBottom:8 }}>No endpoints connected yet</div>
           <div style={{ fontSize:'0.82rem', color:'#787878', marginBottom:16 }}>Install the agent on any machine to start collecting logs.</div>
           <button onClick={() => setShowGuide(true)} className="btn-ghost" style={{ fontSize:'0.8rem' }}><FileText size={13}/> Setup Guide</button>
@@ -385,8 +385,8 @@ export default function Endpoints() {
           {/* Endpoint list */}
           <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
             {endpoints.map(ep => (
-              <div key={ep.id} className="at-card" style={{ padding:'14px 16px', cursor:'pointer', transition:'border-color 0.15s', borderColor: selected?.id === ep.id ? 'rgba(77,163,255,0.4)' : 'rgba(255,255,255,0.07)' }}
-                onMouseEnter={e => { if(selected?.id!==ep.id) e.currentTarget.style.borderColor='rgba(77,163,255,0.2)'; }}
+              <div key={ep.id} className="at-card" style={{ padding:'14px 16px', cursor:'pointer', transition:'border-color 0.15s', borderColor: selected?.id === ep.id ? 'rgba(90,138,159,0.4)' : 'rgba(255,255,255,0.07)' }}
+                onMouseEnter={e => { if(selected?.id!==ep.id) e.currentTarget.style.borderColor='rgba(90,138,159,0.2)'; }}
                 onMouseLeave={e => { if(selected?.id!==ep.id) e.currentTarget.style.borderColor='rgba(255,255,255,0.07)'; }}
                 onClick={() => loadBatches(ep)}>
                 <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
@@ -407,7 +407,7 @@ export default function Endpoints() {
                 </div>
                 {ep.tags?.length > 0 && (
                   <div style={{ display:'flex', gap:4, marginTop:6, flexWrap:'wrap' }}>
-                    {ep.tags.map(t => <span key={t} style={{ fontSize:'0.62rem', background:'rgba(167,139,250,0.08)', border:'1px solid rgba(167,139,250,0.2)', color:'#A78BFA', padding:'1px 6px', borderRadius:3, fontFamily:'JetBrains Mono' }}>{t}</span>)}
+                    {ep.tags.map(t => <span key={t} style={{ fontSize:'0.62rem', background:'rgba(143,175,192,0.08)', border:'1px solid rgba(143,175,192,0.2)', color:'#8FAFC0', padding:'1px 6px', borderRadius:3, fontFamily:'JetBrains Mono' }}>{t}</span>)}
                   </div>
                 )}
               </div>

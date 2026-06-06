@@ -15,7 +15,7 @@ function ResultRenderer({ toolKey, result }) {
   const summary = result.summary || result.ai_summary;
   const verdict = result.verdict || result.overall_threat_level || result.overall_risk_level;
   const isBAD = verdict && !['clean','low','info'].includes(verdict) && !verdict.includes('none');
-  const MITRE_COLOR = '#A78BFA';
+  const MITRE_COLOR = '#8FAFC0';
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {verdict && (
@@ -67,7 +67,7 @@ export default function ToolResult() {
         <Logo size={20} showText />
         <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.1)' }} />
         <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', fontFamily: 'JetBrains Mono' }}>Hardware Tools</span>
-        <span style={{ color: '#4DA3FF' }}>/</span>
+        <span style={{ color: '#5A8A9F' }}>/</span>
         <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{run?.tool_name?.replace(/_/g,' ')}</span>
         {run && <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.68rem', color: 'rgba(255,255,255,0.35)', marginLeft: 4 }}>Run #{runId}</span>}
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -95,7 +95,7 @@ export default function ToolResult() {
           <>
             <div style={{ marginBottom: 24 }}>
               <h1 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: 4 }}>{run.tool_name?.replace(/_/g, ' ')}</h1>
-              {run.case_id && <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.72rem', background: 'rgba(77,163,255,0.1)', border: '1px solid rgba(77,163,255,0.25)', color: '#4DA3FF', padding: '2px 8px', borderRadius: 3 }}>Linked to Case #{run.case_id}</span>}
+              {run.case_id && <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.72rem', background: 'rgba(90,138,159,0.1)', border: '1px solid rgba(90,138,159,0.25)', color: '#5A8A9F', padding: '2px 8px', borderRadius: 3 }}>Linked to Case #{run.case_id}</span>}
             </div>
             <ResultRenderer toolKey={run.tool_name} result={run.result} />
           </>

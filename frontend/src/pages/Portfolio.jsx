@@ -143,7 +143,7 @@ function TerminalWindow() {
   const [lines, setLines] = useState([]);
   const SEQUENCE = [
     {t:200,  text:'$ aegistrace --mode analyst --target "prasanna"', color:'rgba(240,240,248,0.9)'},
-    {t:900,  text:'[+] Profile loaded: Prasanna Kumar Surendran', color:'#4DA3FF'},
+    {t:900,  text:'[+] Profile loaded: Prasanna Kumar Surendran', color:'#5A8A9F'},
     {t:1600, text:'[+] Location: Dublin, Ireland', color:'rgba(240,240,248,0.5)'},
     {t:2300, text:'[+] Role: SOC Analyst · Blue Team L1', color:'rgba(240,240,248,0.5)'},
     {t:3000, text:'[*] Scanning certifications...', color:'#EAB308'},
@@ -151,8 +151,8 @@ function TerminalWindow() {
     {t:4200, text:'    ✓ Sec+   CompTIA Security+', color:'#22C55E'},
     {t:4700, text:'    ✓ TCM    Practical Ethical Hacking', color:'#22C55E'},
     {t:5400, text:'[*] Analysing projects...', color:'#EAB308'},
-    {t:6100, text:'    → AegisTrace v5.0  LIVE    [Trust OS · EDR]', color:'#4DA3FF'},
-    {t:6800, text:'    → WebSecGuard       SHIPPED [XSS/CSRF ext.]', color:'#A78BFA'},
+    {t:6100, text:'    → AegisTrace v5.0  LIVE    [Trust OS · EDR]', color:'#5A8A9F'},
+    {t:6800, text:'    → WebSecGuard       SHIPPED [XSS/CSRF ext.]', color:'#8FAFC0'},
     {t:7500, text:'[+] Threat intel stack: MITRE ATT&CK · KQL · SPL', color:'rgba(240,240,248,0.5)'},
     {t:8200, text:'[✓] Analysis complete. Open to hire.', color:'#22C55E'},
     {t:9000, text:'$ _', color:'rgba(240,240,248,0.5)'},
@@ -175,7 +175,7 @@ function TerminalWindow() {
           <div key={i} style={{fontSize:12,color:l.color,...mono,lineHeight:1.8,whiteSpace:'pre'}}>{l.text}</div>
         ))}
         {lines.length < SEQUENCE.length && (
-          <span style={{fontSize:12,color:'rgba(77,163,255,0.7)',...mono,animation:'blink 1s step-end infinite'}}>▋</span>
+          <span style={{fontSize:12,color:'rgba(90,138,159,0.7)',...mono,animation:'blink 1s step-end infinite'}}>▋</span>
         )}
       </div>
     </div>
@@ -200,22 +200,22 @@ function SkillBar({ label, pct, color }) {
 
 /* ─── Data ──────────────────────────────────────────────────────────────── */
 const SKILLS = [
-  { cat:'SIEM & Detection Engineering', color:'#4A8EDB', tags:['Microsoft Sentinel','Splunk SIEM','KQL','SPL','Log Correlation','Detection Rules','Alert Tuning'] },
-  { cat:'Endpoint & Identity Security', color:'#9C7CFF', tags:['MS Defender for Endpoint','Active Directory','Identity Protection','EDR Response','Group Policy','AWS Security'] },
+  { cat:'SIEM & Detection Engineering', color:'#4E7A8E', tags:['Microsoft Sentinel','Splunk SIEM','KQL','SPL','Log Correlation','Detection Rules','Alert Tuning'] },
+  { cat:'Endpoint & Identity Security', color:'#7AABB5', tags:['MS Defender for Endpoint','Active Directory','Identity Protection','EDR Response','Group Policy','AWS Security'] },
   { cat:'Offensive Security & PenTest', color:'#F5B84B', tags:['Burp Suite','Nmap','Nessus','Metasploit','OWASP Top 10','Wireshark','Gobuster'] },
   { cat:'Forensics & Threat Intel',     color:'#4BE38A', tags:['Email Forensics','PCAP Analysis','OSINT','MITRE ATT&CK','VirusTotal','Phishing Investigation','IOC Hunting'] },
-  { cat:'Cloud & DevSecOps',            color:'#4A8EDB', tags:['AWS EC2 / S3 / IAM','Docker','Terraform','Ansible','GitHub Actions','Python','Bash Scripting'] },
-  { cat:'Frameworks & Compliance',      color:'#9C7CFF', tags:['GDPR','ISO 27001','NIST CSF','SOC 2','DORA','Cyber Kill Chain','Diamond Model'] },
+  { cat:'Cloud & DevSecOps',            color:'#4E7A8E', tags:['AWS EC2 / S3 / IAM','Docker','Terraform','Ansible','GitHub Actions','Python','Bash Scripting'] },
+  { cat:'Frameworks & Compliance',      color:'#7AABB5', tags:['GDPR','ISO 27001','NIST CSF','SOC 2','DORA','Cyber Kill Chain','Diamond Model'] },
 ];
 
 const SKILL_BARS = [
-  {label:'Microsoft Sentinel / KQL',   pct:88, color:'#4A8EDB'},
+  {label:'Microsoft Sentinel / KQL',   pct:88, color:'#4E7A8E'},
   {label:'Incident Response',          pct:84, color:'#EF4444'},
-  {label:'MITRE ATT&CK Mapping',       pct:82, color:'#A78BFA'},
+  {label:'MITRE ATT&CK Mapping',       pct:82, color:'#8FAFC0'},
   {label:'Threat Intelligence',        pct:80, color:'#4BE38A'},
   {label:'Email Forensics',            pct:85, color:'#F5B84B'},
-  {label:'Python / Automation',        pct:78, color:'#4A8EDB'},
-  {label:'React / FastAPI (Tooling)',   pct:80, color:'#9C7CFF'},
+  {label:'Python / Automation',        pct:78, color:'#4E7A8E'},
+  {label:'React / FastAPI (Tooling)',   pct:80, color:'#7AABB5'},
   {label:'Cloud Security (AWS)',        pct:72, color:'#F5B84B'},
 ];
 
@@ -225,8 +225,8 @@ const CERTS = [
   { name:'TCM Practical Ethical Hacking',sub:'TCM Security',                    date:'Oct 2024', status:'completed', color:'#4BE38A' },
   { name:'TCM Practical Help Desk',      sub:'TCM Security',                    date:'Oct 2024', status:'completed', color:'#4BE38A' },
   { name:'AIG Shield Up',                sub:'Forage Job Simulation',           date:'Mar 2025', status:'completed', color:'#F5B84B' },
-  { name:'BTL1',                         sub:'Security Blue Team Level 1',      date:'55% — In Progress', status:'ongoing', color:'#4A8EDB' },
-  { name:'eJPT',                         sub:'eLearnSecurity Junior PenTester', date:'20% — In Progress', status:'ongoing', color:'#9C7CFF' },
+  { name:'BTL1',                         sub:'Security Blue Team Level 1',      date:'55% — In Progress', status:'ongoing', color:'#4E7A8E' },
+  { name:'eJPT',                         sub:'eLearnSecurity Junior PenTester', date:'20% — In Progress', status:'ongoing', color:'#7AABB5' },
   { name:'SC-300',                       sub:'Microsoft Identity & Access',     date:'15% — In Progress', status:'ongoing', color:'#0078D4' },
 ];
 
@@ -234,8 +234,8 @@ const PROJECTS = [
   { title:'AegisTrace — Trust Operating System · AI-Agent Era', period:'Jun 2025 — Present', desc:'Production-grade SOC control plane with full EDR. v5.0 ships Endpoint Agent with Honey Token Trap, DNS/DGA detection, YARA-lite engine, auto-block, USB + registry monitoring and guardian process alongside ITDR, Identity Graph, Trust Timeline, and Provenance Ledger.', tags:['React','FastAPI','Groq AI','VirusTotal','SQLite','Docker','Render','ITDR','EDR'], badge:'Live — v5.0', badgeColor:'#4BE38A', link:null, highlight:true,
     features:['Endpoint Agent v5.0 — 🍯 Honey Token Trap, DNS/DGA, YARA-lite, auto-block engine, guardian process','ITDR — credential stuffing, impossible travel, new device, privilege escalation (6 detectors)','Pluggable identity risk engine · Identity Graph · Trust Timeline · Provenance Ledger','Explainable AI — full reasoning chain on every verdict · 7-source IOC enrichment','18 hardware forensic tools · Email forensics (SPF/DKIM/DMARC) · DORA Article 19'] },
   { title:'WebSecGuard — Browser Vulnerability Scanner', period:'Jun–Sep 2025 · MSc Dissertation', desc:'Chrome extension (Manifest V3) for real-time XSS and CSRF detection. Detects 25+ injection points on OWASP Juice Shop during testing.', tags:['JavaScript','Chrome Extension API','Manifest V3','OWASP','Burp Suite'], badge:'Security Research', badgeColor:'#EF4444', link:'https://github.com/prasanna80564/web-scanner-', highlight:false },
-  { title:'Grand Line SOC Dashboard', period:'May 2026', desc:'Full-featured SOC dashboard with MITRE ATT&CK mapping, VirusTotal IOC enrichment, AI-generated case summaries, role-based access control, and one-click PDF report export.', tags:['React 18','Firebase','MITRE ATT&CK','VirusTotal API','Groq AI','RBAC'], badge:'Blue Team', badgeColor:'#9C7CFF', link:'https://github.com/Prasanna-27eng/grant-line-soc-', highlight:false },
-  { title:'Automated Cloud Deployment & CI/CD', period:'Jan–Mar 2025', desc:'End-to-end automated deployment pipeline to AWS EC2. Infrastructure-as-code with Terraform, configuration management via Ansible, CI/CD through GitHub Actions. Reduced deployment time by 70%.', tags:['Terraform','Ansible','Docker','AWS EC2','GitHub Actions','IaC'], badge:'Cloud/DevOps', badgeColor:'#4A8EDB', link:'https://github.com/prasanna80564/networking', highlight:false },
+  { title:'Grand Line SOC Dashboard', period:'May 2026', desc:'Full-featured SOC dashboard with MITRE ATT&CK mapping, VirusTotal IOC enrichment, AI-generated case summaries, role-based access control, and one-click PDF report export.', tags:['React 18','Firebase','MITRE ATT&CK','VirusTotal API','Groq AI','RBAC'], badge:'Blue Team', badgeColor:'#7AABB5', link:'https://github.com/Prasanna-27eng/grant-line-soc-', highlight:false },
+  { title:'Automated Cloud Deployment & CI/CD', period:'Jan–Mar 2025', desc:'End-to-end automated deployment pipeline to AWS EC2. Infrastructure-as-code with Terraform, configuration management via Ansible, CI/CD through GitHub Actions. Reduced deployment time by 70%.', tags:['Terraform','Ansible','Docker','AWS EC2','GitHub Actions','IaC'], badge:'Cloud/DevOps', badgeColor:'#4E7A8E', link:'https://github.com/prasanna80564/networking', highlight:false },
 ];
 
 const FOCUS = [
@@ -415,10 +415,10 @@ function GhostText({ text, style = {}, as: Tag = 'span' }) {
 function SectionHead({ label, title, accent }) {
   return (
     <div style={{marginBottom:32}}>
-      <div style={{fontSize:10,color:'#4A8EDB',...MONO,letterSpacing:'0.2em',textTransform:'uppercase',marginBottom:10}}>◇ {label}</div>
+      <div style={{fontSize:10,color:'#4E7A8E',...MONO,letterSpacing:'0.2em',textTransform:'uppercase',marginBottom:10}}>◇ {label}</div>
       <h2 style={{...SERIF,fontSize:'clamp(1.7rem,2.8vw,2.4rem)',fontWeight:400,letterSpacing:'-0.015em',lineHeight:1.1}}>
         <GhostText text={title} />{' '}
-        <span style={{color:'#4A8EDB',fontStyle:'italic'}}>
+        <span style={{color:'#4E7A8E',fontStyle:'italic'}}>
           <GhostText text={accent} />
         </span>
       </h2>
@@ -456,16 +456,16 @@ export default function Portfolio() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600;700&display=swap');
         @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-        ::selection{background:rgba(74,142,219,0.3);color:#fff}
-        .skill-tag{background:rgba(74,142,219,0.06);border:1px solid rgba(74,142,219,0.15);color:#6BABEC;font-size:0.71rem;padding:4px 10px;border-radius:4px;font-family:'JetBrains Mono',monospace}
+        ::selection{background:rgba(78,122,142,0.3);color:#fff}
+        .skill-tag{background:rgba(78,122,142,0.06);border:1px solid rgba(78,122,142,0.15);color:#6BABEC;font-size:0.71rem;padding:4px 10px;border-radius:4px;font-family:'JetBrains Mono',monospace}
         .proj-card{background:rgba(12,18,32,0.6);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:22px;transition:border-color 0.2s,transform 0.2s;display:flex;flex-direction:column}
-        .proj-card:hover{border-color:rgba(74,142,219,0.2);transform:translateY(-2px)}
-        .case-card{background:rgba(12,18,32,0.6);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:18px 20px;border-left:2px solid #4A8EDB;transition:border-color 0.2s}
-        .case-card:hover{border-color:rgba(74,142,219,0.4)}
+        .proj-card:hover{border-color:rgba(78,122,142,0.2);transform:translateY(-2px)}
+        .case-card{background:rgba(12,18,32,0.6);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:18px 20px;border-left:2px solid #4E7A8E;transition:border-color 0.2s}
+        .case-card:hover{border-color:rgba(78,122,142,0.4)}
         .focus-card{padding:20px;background:rgba(12,18,32,0.5);border:1px solid rgba(255,255,255,0.07);border-radius:10px;transition:border-color 0.2s,transform 0.2s}
-        .focus-card:hover{border-color:rgba(74,142,219,0.2);transform:translateY(-2px)}
+        .focus-card:hover{border-color:rgba(78,122,142,0.2);transform:translateY(-2px)}
         .sidebar-link{display:block;padding:8px 16px;font-size:0.72rem;color:#787878;text-decoration:none;border-radius:6px;transition:all 0.15s;font-family:'JetBrains Mono',monospace;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;background:none;border:none;text-align:left;width:100%}
-        .sidebar-link:hover,.sidebar-link.active{color:#4A8EDB;background:rgba(74,142,219,0.07)}
+        .sidebar-link:hover,.sidebar-link.active{color:#4E7A8E;background:rgba(78,122,142,0.07)}
         .mobile-nav-drawer{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.97);z-index:200;display:flex;flex-direction:column;padding:24px;backdrop-filter:blur(20px)}
         @media(max-width:900px){
           .port-sidebar{display:none!important}
@@ -494,7 +494,7 @@ export default function Portfolio() {
               <Github size={13}/> GitHub
             </a>
             <a href="mailto:Prasanna80564@gmail.com"
-              style={{display:'flex',alignItems:'center',gap:5,background:'#4A8EDB',border:'none',borderRadius:6,padding:'7px 14px',fontSize:'0.78rem',color:'white',textDecoration:'none',fontWeight:600}}>
+              style={{display:'flex',alignItems:'center',gap:5,background:'#4E7A8E',border:'none',borderRadius:6,padding:'7px 14px',fontSize:'0.78rem',color:'white',textDecoration:'none',fontWeight:600}}>
               <Mail size={13}/> Contact
             </a>
           </div>
@@ -527,7 +527,7 @@ export default function Portfolio() {
         <aside className="port-sidebar" style={{width:220,flexShrink:0,position:'sticky',top:57,height:'calc(100vh - 57px)',overflow:'auto',background:'rgba(0,0,0,0.6)',borderRight:'1px solid rgba(255,255,255,0.06)',display:'flex',flexDirection:'column',padding:'28px 12px'}}>
           {/* Mini profile */}
           <div style={{textAlign:'center',marginBottom:24,padding:'0 8px'}}>
-            <div style={{width:64,height:64,borderRadius:'50%',background:'rgba(74,142,219,0.1)',border:'2px solid rgba(74,142,219,0.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'1.2rem',fontWeight:700,color:'#4A8EDB',margin:'0 auto 10px',...MONO}}>PK</div>
+            <div style={{width:64,height:64,borderRadius:'50%',background:'rgba(78,122,142,0.1)',border:'2px solid rgba(78,122,142,0.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'1.2rem',fontWeight:700,color:'#4E7A8E',margin:'0 auto 10px',...MONO}}>PK</div>
             <div style={{fontSize:'0.8rem',fontWeight:600,color:'#EBEBEB'}}>Prasanna Kumar</div>
             <div style={{fontSize:'0.68rem',color:'#787878',...MONO,marginTop:3}}>SOC Analyst · Trust OS Builder</div>
             <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:5,marginTop:6}}>
@@ -560,15 +560,15 @@ export default function Portfolio() {
             <HeroBg/>
             <div style={{position:'relative',zIndex:10,padding:'80px 48px',width:'100%',display:'grid',gridTemplateColumns:'1fr 1fr',gap:40,alignItems:'center'}} className="hero-cols">
               <div>
-                <div style={{display:'inline-flex',alignItems:'center',gap:7,padding:'5px 12px',background:'rgba(74,142,219,0.1)',border:'1px solid rgba(74,142,219,0.22)',borderRadius:20,marginBottom:22}}>
+                <div style={{display:'inline-flex',alignItems:'center',gap:7,padding:'5px 12px',background:'rgba(78,122,142,0.1)',border:'1px solid rgba(78,122,142,0.22)',borderRadius:20,marginBottom:22}}>
                   <div style={{width:6,height:6,borderRadius:'50%',background:'#4Be38A',boxShadow:'0 0 6px #4Be38A'}}/>
                   <span style={{fontSize:'0.68rem',color:'#6BABEC',...MONO,letterSpacing:'0.1em'}}>Open to SOC / Blue Team Roles</span>
                 </div>
                 <h1 style={{...SERIF,fontSize:'clamp(2.4rem,5vw,4rem)',fontWeight:400,lineHeight:1.0,letterSpacing:'-0.015em',marginBottom:16}}>
                   <div style={{color:'#EBEBEB'}}>Prasanna Kumar</div>
-                  <div style={{color:'#4A8EDB',fontStyle:'italic'}}>Surendran.</div>
+                  <div style={{color:'#4E7A8E',fontStyle:'italic'}}>Surendran.</div>
                 </h1>
-                <div style={{fontSize:'0.9rem',color:'#9C7CFF',...MONO,marginBottom:14,display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+                <div style={{fontSize:'0.9rem',color:'#7AABB5',...MONO,marginBottom:14,display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
                   <span>SOC Analyst · Blue Team L1</span>
                   <span style={{color:'rgba(255,255,255,0.15)'}}>·</span>
                   <span style={{display:'flex',alignItems:'center',gap:4,color:'#787878'}}><MapPin size={12}/> Dublin, Ireland</span>
@@ -578,17 +578,17 @@ export default function Portfolio() {
                 </p>
                 <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:24}}>
                   {['SC-200 ✓','Security+ ✓','TCM PEH ✓','BTL1 — 55%','MITRE ATT&CK','KQL · SPL'].map(tag=>(
-                    <span key={tag} style={{background:'rgba(74,142,219,0.08)',border:'1px solid rgba(74,142,219,0.18)',color:'#6BABEC',fontSize:'0.72rem',padding:'4px 10px',borderRadius:4,...MONO}}>{tag}</span>
+                    <span key={tag} style={{background:'rgba(78,122,142,0.08)',border:'1px solid rgba(78,122,142,0.18)',color:'#6BABEC',fontSize:'0.72rem',padding:'4px 10px',borderRadius:4,...MONO}}>{tag}</span>
                   ))}
                 </div>
                 <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
-                  <a href="mailto:Prasanna80564@gmail.com" style={{display:'inline-flex',alignItems:'center',gap:7,background:'#4A8EDB',color:'white',borderRadius:7,padding:'11px 22px',fontSize:'0.85rem',fontWeight:600,textDecoration:'none'}}>
+                  <a href="mailto:Prasanna80564@gmail.com" style={{display:'inline-flex',alignItems:'center',gap:7,background:'#4E7A8E',color:'white',borderRadius:7,padding:'11px 22px',fontSize:'0.85rem',fontWeight:600,textDecoration:'none'}}>
                     <Mail size={15}/> Get in Touch
                   </a>
                   <a href="https://www.linkedin.com/in/prasannakumarsurendran" target="_blank" rel="noreferrer" style={{display:'inline-flex',alignItems:'center',gap:7,background:'rgba(255,255,255,0.05)',color:'#A8A8A8',border:'1px solid rgba(255,255,255,0.1)',borderRadius:7,padding:'11px 20px',fontSize:'0.85rem',textDecoration:'none'}}>
                     <Linkedin size={15}/> LinkedIn
                   </a>
-                  <button onClick={()=>navigate('/app/login')} style={{display:'inline-flex',alignItems:'center',gap:7,background:'rgba(156,124,255,0.08)',color:'#B9A4FF',border:'1px solid rgba(156,124,255,0.2)',borderRadius:7,padding:'11px 20px',fontSize:'0.85rem',cursor:'pointer'}}>
+                  <button onClick={()=>navigate('/app/login')} style={{display:'inline-flex',alignItems:'center',gap:7,background:'rgba(122,171,181,0.08)',color:'#B9A4FF',border:'1px solid rgba(122,171,181,0.2)',borderRadius:7,padding:'11px 20px',fontSize:'0.85rem',cursor:'pointer'}}>
                     <Activity size={15}/> Launch AegisTrace
                   </button>
                 </div>
@@ -606,9 +606,9 @@ export default function Portfolio() {
             <div style={{fontSize:'0.65rem',color:'#404040',...MONO,letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:12,textAlign:'center'}}>Live Platform Activity — AegisTrace</div>
             <div className="port-stat-grid" style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
               {[
-                {val:stats.total_cases,  label:'Cases Created',  color:'#4A8EDB'},
+                {val:stats.total_cases,  label:'Cases Created',  color:'#4E7A8E'},
                 {val:stats.closed_cases, label:'Cases Closed',   color:'#4Be38A'},
-                {val:stats.total_iocs,   label:'IOCs Tracked',   color:'#9C7CFF'},
+                {val:stats.total_iocs,   label:'IOCs Tracked',   color:'#7AABB5'},
                 {val:stats.vt_lookups,   label:'VT Lookups Run', color:'#F5B84B'},
               ].map(s=>(
                 <div key={s.label} style={{textAlign:'center',padding:'18px 14px',background:'rgba(12,18,32,0.6)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:10,borderTop:`2px solid ${s.color}`}}>
@@ -625,7 +625,7 @@ export default function Portfolio() {
             <div className="port-grid-3" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:14}}>
               {FOCUS.map(({Icon,label,desc})=>(
                 <div key={label} className="focus-card">
-                  <Icon size={18} style={{color:'#4A8EDB',marginBottom:10}}/>
+                  <Icon size={18} style={{color:'#4E7A8E',marginBottom:10}}/>
                   <div style={{fontWeight:600,fontSize:'0.86rem',marginBottom:7}}>{label}</div>
                   <div style={{fontSize:'0.74rem',color:'#787878',lineHeight:1.65}}>{desc}</div>
                 </div>
@@ -639,7 +639,7 @@ export default function Portfolio() {
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:24}} className="port-grid-2">
               {/* Skill tags */}
               <div>
-                <div style={{fontSize:'0.72rem',color:'#4A8EDB',...MONO,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:14}}>Skill Areas</div>
+                <div style={{fontSize:'0.72rem',color:'#4E7A8E',...MONO,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:14}}>Skill Areas</div>
                 <div style={{display:'flex',flexDirection:'column',gap:14}}>
                   {SKILLS.map(({cat,color,tags})=>(
                     <div key={cat} style={{background:'rgba(12,18,32,0.5)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:10,padding:'16px 18px'}}>
@@ -655,7 +655,7 @@ export default function Portfolio() {
               </div>
               {/* Skill bars */}
               <div>
-                <div style={{fontSize:'0.72rem',color:'#4A8EDB',...MONO,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:14}}>Proficiency</div>
+                <div style={{fontSize:'0.72rem',color:'#4E7A8E',...MONO,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:14}}>Proficiency</div>
                 <div style={{background:'rgba(12,18,32,0.5)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:10,padding:'20px'}}>
                   {SKILL_BARS.map(s=><SkillBar key={s.label} {...s}/>)}
                 </div>
@@ -687,7 +687,7 @@ export default function Portfolio() {
             <SectionHead label="Projects" title="Things I've" accent="built and shipped."/>
             <div style={{display:'flex',flexDirection:'column',gap:16}}>
               {PROJECTS.map(p=>(
-                <div key={p.title} className="proj-card" style={{borderColor:p.highlight?'rgba(74,142,219,0.2)':'rgba(255,255,255,0.07)'}}>
+                <div key={p.title} className="proj-card" style={{borderColor:p.highlight?'rgba(78,122,142,0.2)':'rgba(255,255,255,0.07)'}}>
                   <div style={{display:'grid',gridTemplateColumns:'1fr auto',gap:12,marginBottom:12,alignItems:'flex-start'}}>
                     <div>
                       <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8,flexWrap:'wrap'}}>
@@ -697,7 +697,7 @@ export default function Portfolio() {
                       <div style={{fontWeight:700,fontSize:'0.95rem'}}><GhostText text={p.title} /></div>
                     </div>
                     {p.link&&<a href={p.link} target="_blank" rel="noreferrer" style={{color:'#787878',textDecoration:'none'}} onMouseEnter={e=>e.currentTarget.style.color='#EBEBEB'} onMouseLeave={e=>e.currentTarget.style.color='#787878'}><Github size={15}/></a>}
-                    {!p.link&&p.highlight&&<span style={{fontSize:'0.65rem',color:'#4A8EDB',...MONO}}>aegistrace.io</span>}
+                    {!p.link&&p.highlight&&<span style={{fontSize:'0.65rem',color:'#4E7A8E',...MONO}}>aegistrace.io</span>}
                   </div>
                   <div style={{display:'grid',gridTemplateColumns:p.features?'1fr 1fr':'1fr',gap:16,alignItems:'start'}}>
                     <div>
@@ -709,10 +709,10 @@ export default function Portfolio() {
                       </div>
                     </div>
                     {p.features&&(
-                      <div style={{background:'rgba(74,142,219,0.04)',border:'1px solid rgba(74,142,219,0.1)',borderRadius:8,padding:'14px 16px'}}>
+                      <div style={{background:'rgba(78,122,142,0.04)',border:'1px solid rgba(78,122,142,0.1)',borderRadius:8,padding:'14px 16px'}}>
                         {p.features.map(f=>(
                           <div key={f} style={{display:'flex',alignItems:'center',gap:6,fontSize:'0.72rem',color:'#6BABEC',padding:'3px 0'}}>
-                            <ChevronRight size={10} style={{color:'#4A8EDB',flexShrink:0}}/>{f}
+                            <ChevronRight size={10} style={{color:'#4E7A8E',flexShrink:0}}/>{f}
                           </div>
                         ))}
                       </div>
@@ -735,14 +735,14 @@ export default function Portfolio() {
                     </div>
                     <div style={{fontWeight:600,fontSize:'0.9rem',marginBottom:8}}><GhostText text={c.title} /></div>
                     {c.ai_executive_summary&&<div style={{fontSize:'0.77rem',color:'#787878',lineHeight:1.7,marginBottom:14}}>{c.ai_executive_summary.slice(0,160)}…</div>}
-                    <button onClick={()=>navigate(`/public/${c.share_token}`)} style={{display:'inline-flex',alignItems:'center',gap:5,background:'none',border:'1px solid rgba(74,142,219,0.2)',color:'#4A8EDB',borderRadius:5,padding:'6px 12px',fontSize:'0.74rem',cursor:'pointer',...MONO}}>
+                    <button onClick={()=>navigate(`/public/${c.share_token}`)} style={{display:'inline-flex',alignItems:'center',gap:5,background:'none',border:'1px solid rgba(78,122,142,0.2)',color:'#4E7A8E',borderRadius:5,padding:'6px 12px',fontSize:'0.74rem',cursor:'pointer',...MONO}}>
                       Read Full Case <ArrowRight size={11}/>
                     </button>
                   </div>
                 ))}
               </div>
               <div style={{marginTop:20,textAlign:'center'}}>
-                <button onClick={()=>navigate('/public')} style={{display:'inline-flex',alignItems:'center',gap:7,background:'rgba(74,142,219,0.06)',border:'1px solid rgba(74,142,219,0.15)',color:'#6BABEC',borderRadius:7,padding:'10px 22px',fontSize:'0.8rem',cursor:'pointer'}}>
+                <button onClick={()=>navigate('/public')} style={{display:'inline-flex',alignItems:'center',gap:7,background:'rgba(78,122,142,0.06)',border:'1px solid rgba(78,122,142,0.15)',color:'#6BABEC',borderRadius:7,padding:'10px 22px',fontSize:'0.8rem',cursor:'pointer'}}>
                   View All Published Cases <ArrowRight size={13}/>
                 </button>
               </div>
@@ -754,8 +754,8 @@ export default function Portfolio() {
             <SectionHead label="Education" title="Academic" accent="foundation."/>
             <div className="port-grid-2" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:14}}>
               {[
-                {degree:'MSc Information Systems & Computing',school:'Dublin Business School (DBS)',year:'2024–2025',note:'Dissertation: WebSecGuard Chrome Extension — real-time XSS/CSRF detection',color:'#4A8EDB'},
-                {degree:'B.E. Electronics and Communication Engineering',school:'PSG College of Technology, Coimbatore',year:'2019–2023',note:'Strong foundation in electronics, embedded systems, signal processing, and hardware-software integration',color:'#9C7CFF'},
+                {degree:'MSc Information Systems & Computing',school:'Dublin Business School (DBS)',year:'2024–2025',note:'Dissertation: WebSecGuard Chrome Extension — real-time XSS/CSRF detection',color:'#4E7A8E'},
+                {degree:'B.E. Electronics and Communication Engineering',school:'PSG College of Technology, Coimbatore',year:'2019–2023',note:'Strong foundation in electronics, embedded systems, signal processing, and hardware-software integration',color:'#7AABB5'},
               ].map(e=>(
                 <div key={e.degree} style={{background:'rgba(12,18,32,0.5)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:10,padding:'22px',borderLeft:`2px solid ${e.color}`}}>
                   <div style={{fontWeight:600,fontSize:'0.9rem',marginBottom:5}}>{e.degree}</div>
@@ -775,7 +775,7 @@ export default function Portfolio() {
                 Seeking SOC Analyst, Blue Team, or Cybersecurity roles in Dublin and internationally. Available immediately. All enquiries responded to within 24 hours.
               </p>
               <div style={{display:'flex',flexDirection:'column',gap:10,maxWidth:360,margin:'0 auto'}}>
-                <a href="mailto:Prasanna80564@gmail.com" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:'#4A8EDB',color:'white',borderRadius:8,padding:'13px',fontSize:'0.85rem',fontWeight:600,textDecoration:'none'}}><Mail size={15}/> Prasanna80564@gmail.com</a>
+                <a href="mailto:Prasanna80564@gmail.com" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:'#4E7A8E',color:'white',borderRadius:8,padding:'13px',fontSize:'0.85rem',fontWeight:600,textDecoration:'none'}}><Mail size={15}/> Prasanna80564@gmail.com</a>
                 <a href="tel:+353899582880" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:'rgba(255,255,255,0.05)',color:'#A8A8A8',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'12px',fontSize:'0.85rem',textDecoration:'none'}}><Phone size={15}/> +353 089 958 2880</a>
                 <a href="https://www.linkedin.com/in/prasannakumarsurendran" target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:'rgba(255,255,255,0.05)',color:'#A8A8A8',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'12px',fontSize:'0.85rem',textDecoration:'none'}}><Linkedin size={15}/> LinkedIn Profile</a>
                 <a href="https://github.com/Prasanna-27eng" target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:'rgba(255,255,255,0.05)',color:'#A8A8A8',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'12px',fontSize:'0.85rem',textDecoration:'none'}}><Github size={15}/> GitHub Profile</a>

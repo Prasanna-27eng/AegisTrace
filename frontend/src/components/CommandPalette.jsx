@@ -139,7 +139,7 @@ export default function CommandPalette({ open, onClose, recentCases = [] }) {
 
   if (!open) return null;
 
-  const SEV_COLOR = { critical: '#C0392B', high: '#EF4444', medium: '#EAB308', low: '#A78BFA', info: '#787878' };
+  const SEV_COLOR = { critical: '#C0392B', high: '#EF4444', medium: '#EAB308', low: '#8FAFC0', info: '#787878' };
 
   let globalIdx = 0;
 

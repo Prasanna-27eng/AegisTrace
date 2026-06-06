@@ -10,11 +10,11 @@ const CATEGORY_META = {
   token_use:       { label: 'Token Use',         color: '#EAB308',  Icon: Key },
   privilege_change:{ label: 'Privilege Change',  color: '#F97316',  Icon: Shield },
   agent_action:    { label: 'Agent Action',      color: '#00BFFF',  Icon: Bot },
-  ai_output:       { label: 'AI Output',         color: '#A78BFA',  Icon: Bot },
+  ai_output:       { label: 'AI Output',         color: '#8FAFC0',  Icon: Bot },
   approval:        { label: 'Approved',          color: '#22C55E',  Icon: Check },
   rejection:       { label: 'Rejected',          color: '#EF4444',  Icon: X },
   policy_override: { label: 'Policy Override',   color: '#F97316',  Icon: AlertTriangle },
-  response_action: { label: 'Response Action',   color: '#4DA3FF',  Icon: Zap },
+  response_action: { label: 'Response Action',   color: '#5A8A9F',  Icon: Zap },
   action:          { label: 'Action',            color: '#787878',  Icon: Activity },
 };
 
@@ -25,7 +25,7 @@ const TRUST_COLOR = {
   revoked:    '#888888',
 };
 
-const ACTOR_TYPE_COLOR = { human: '#EBEBEB', ai: '#A78BFA', agent: '#00BFFF', system: '#787878' };
+const ACTOR_TYPE_COLOR = { human: '#EBEBEB', ai: '#8FAFC0', agent: '#00BFFF', system: '#787878' };
 
 function timeLabel(d) {
   if (!d) return '';
@@ -68,7 +68,7 @@ export default function TrustTimelineTab({ caseId }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <GitBranch size={17} style={{ color: '#A78BFA' }} />
+          <GitBranch size={17} style={{ color: '#8FAFC0' }} />
           <div>
             <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>Trust Timeline</div>
             <div style={{ fontSize: '0.7rem', color: '#787878', marginTop: 1 }}>Chain of trust events — logins, token use, privilege changes, agent actions, approvals</div>
@@ -81,7 +81,7 @@ export default function TrustTimelineTab({ caseId }) {
 
       {/* Add form */}
       {showAdd && (
-        <div className="at-card" style={{ padding: 16, marginBottom: 18, borderColor: 'rgba(167,139,250,0.2)' }}>
+        <div className="at-card" style={{ padding: 16, marginBottom: 18, borderColor: 'rgba(143,175,192,0.2)' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
             <div>
               <label className="at-label">Event Category</label>
@@ -161,7 +161,7 @@ export default function TrustTimelineTab({ caseId }) {
                   <div style={{ display: 'flex', gap: 12, fontSize: '0.68rem', color: '#787878', ...MONO }}>
                     {ev.actor && <span>Actor: <span style={{ color: ACTOR_TYPE_COLOR[ev.actor_type] || '#EBEBEB' }}>{ev.actor}</span></span>}
                     {ev.actor_type && <span style={{ color: ACTOR_TYPE_COLOR[ev.actor_type] || '#787878' }}>[{ev.actor_type}]</span>}
-                    {ev.evidence_ref && <span>Ref: <span style={{ color: '#A78BFA' }}>{ev.evidence_ref}</span></span>}
+                    {ev.evidence_ref && <span>Ref: <span style={{ color: '#8FAFC0' }}>{ev.evidence_ref}</span></span>}
                   </div>
                 </div>
               </div>

@@ -5,9 +5,9 @@ import api from '../../api/client';
 /* ── Category config ─────────────────────────────────────────────────────── */
 const CAT_COLOR = {
   auth:     '#22C55E',
-  case:     '#A78BFA',
+  case:     '#8FAFC0',
   ai:       '#EAB308',
-  evidence: '#4DA3FF',
+  evidence: '#5A8A9F',
   intel:    '#06B6D4',
   import:   '#F97316',
   admin:    '#EC4899',
@@ -48,7 +48,7 @@ function ActivityChart({ data }) {
         {data.map((d, i) => (
           <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
             <div style={{
-              width: '100%', background: `rgba(77,163,255,${0.3 + (d.count / max) * 0.7})`,
+              width: '100%', background: `rgba(90,138,159,${0.3 + (d.count / max) * 0.7})`,
               borderRadius: '3px 3px 0 0',
               height: `${Math.max(4, (d.count / max) * 56)}px`,
               transition: 'height 0.4s ease',
@@ -70,7 +70,7 @@ function LogRow({ log, isNew }) {
     <div style={{
       display: 'flex', gap: 10, alignItems: 'flex-start',
       padding: '9px 14px',
-      background: isNew ? 'rgba(77,163,255,0.06)' : '#111111',
+      background: isNew ? 'rgba(90,138,159,0.06)' : '#111111',
       borderRadius: 6,
       borderLeft: `2px solid ${color}`,
       transition: 'background 1s ease',
@@ -195,7 +195,7 @@ export default function AuditLog() {
               </span>
             </div>
             {liveCount > 0 && (
-              <span style={{ fontSize: '0.65rem', color: '#4DA3FF', fontFamily: 'JetBrains Mono', background: 'rgba(77,163,255,0.1)', padding: '2px 8px', borderRadius: 10 }}>
+              <span style={{ fontSize: '0.65rem', color: '#5A8A9F', fontFamily: 'JetBrains Mono', background: 'rgba(90,138,159,0.1)', padding: '2px 8px', borderRadius: 10 }}>
                 +{liveCount} new
               </span>
             )}
@@ -223,7 +223,7 @@ export default function AuditLog() {
         <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
           <StatCard label="Total Cases"   value={stats.total_cases}    color="#FFFFFF" />
           <StatCard label="Logins (24h)"  value={stats.logins_24h}     color="#22C55E" />
-          <StatCard label="Cases (7d)"    value={stats.cases_7d}       color="#A78BFA" />
+          <StatCard label="Cases (7d)"    value={stats.cases_7d}       color="#8FAFC0" />
           <StatCard label="AI Calls (7d)" value={stats.ai_calls_7d}    color="#EAB308" />
           <StatCard label="VT Lookups (7d)" value={stats.vt_lookups_7d} color="#06B6D4" />
           <StatCard label="Imports (7d)"  value={stats.alerts_7d}      color="#F97316" />
@@ -239,9 +239,9 @@ export default function AuditLog() {
               style={{
                 fontSize: '0.72rem', padding: '5px 12px', borderRadius: 5, cursor: 'pointer',
                 fontFamily: 'JetBrains Mono', border: '1px solid',
-                background: category === cat ? `${CAT_COLOR[cat] || 'rgba(77,163,255,1)'}18` : 'transparent',
-                borderColor: category === cat ? `${CAT_COLOR[cat] || '#4DA3FF'}50` : 'rgba(255,255,255,0.08)',
-                color: category === cat ? (CAT_COLOR[cat] || '#4DA3FF') : '#787878',
+                background: category === cat ? `${CAT_COLOR[cat] || 'rgba(90,138,159,1)'}18` : 'transparent',
+                borderColor: category === cat ? `${CAT_COLOR[cat] || '#5A8A9F'}50` : 'rgba(255,255,255,0.08)',
+                color: category === cat ? (CAT_COLOR[cat] || '#5A8A9F') : '#787878',
               }}>
               {cat === '' ? 'All' : CAT_LABELS[cat]}
             </button>
@@ -258,7 +258,7 @@ export default function AuditLog() {
       <div style={{ fontSize: '0.72rem', color: '#787878', marginBottom: 10, fontFamily: 'JetBrains Mono' }}>
         {filteredLogs.length} event{filteredLogs.length !== 1 ? 's' : ''}
         {category ? ` · filtered by ${CAT_LABELS[category]}` : ''}
-        {!paused && <span style={{ color: '#4DA3FF' }}> · auto-refreshing</span>}
+        {!paused && <span style={{ color: '#5A8A9F' }}> · auto-refreshing</span>}
       </div>
 
       {/* Log list */}

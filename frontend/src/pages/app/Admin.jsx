@@ -17,11 +17,11 @@ const TABS = [
   { id: 'system',       label: 'System',           Icon: Activity },
 ];
 
-const ROLE_COLOR = { admin: '#4DA3FF', analyst: '#A78BFA', viewer: '#787878' };
+const ROLE_COLOR = { admin: '#5A8A9F', analyst: '#8FAFC0', viewer: '#787878' };
 const ACTION_COLOR = {
-  login: '#22C55E', case_created: '#A78BFA', case_closed: '#22C55E',
-  case_deleted: '#EF4444', user_created: '#A78BFA', user_deleted: '#EF4444',
-  ai_generated: '#EAB308', alert_imported: '#4DA3FF', share_toggled: '#888888',
+  login: '#22C55E', case_created: '#8FAFC0', case_closed: '#22C55E',
+  case_deleted: '#EF4444', user_created: '#8FAFC0', user_deleted: '#EF4444',
+  ai_generated: '#EAB308', alert_imported: '#5A8A9F', share_toggled: '#888888',
   password_changed: '#EAB308', status_changed: '#FFFFFF',
 };
 
@@ -220,7 +220,7 @@ function UsersTab({ user, addToast }) {
       <div className="at-card" style={{ padding:16 }}>
         <div className="section-label">Your Account</div>
         <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:12 }}>
-          <div style={{ width:40, height:40, borderRadius:'50%', background:'rgba(77,163,255,0.15)', border:'1px solid rgba(77,163,255,0.3)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:600, color:'#4DA3FF' }}>{user?.name?.[0]}</div>
+          <div style={{ width:40, height:40, borderRadius:'50%', background:'rgba(90,138,159,0.15)', border:'1px solid rgba(90,138,159,0.3)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:600, color:'#5A8A9F' }}>{user?.name?.[0]}</div>
           <div>
             <div style={{ fontWeight:600, fontSize:'0.88rem' }}>{user?.name}</div>
             <div style={{ fontSize:'0.72rem', color:'#787878' }}>{user?.email}</div>
@@ -390,7 +390,7 @@ function WebhooksTab({ addToast }) {
 
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
-      <div className="at-card" style={{ padding:16, borderColor:'rgba(77,163,255,0.15)' }}>
+      <div className="at-card" style={{ padding:16, borderColor:'rgba(90,138,159,0.15)' }}>
         <div style={{ fontSize:'0.78rem', color:'#787878', lineHeight:1.65, marginBottom:8 }}>
           Webhooks fire HTTP POST requests to your URL when SOC events occur. Supports Slack, Microsoft Teams, and any generic JSON endpoint. HMAC-SHA256 signed if secret is configured.
         </div>
@@ -398,7 +398,7 @@ function WebhooksTab({ addToast }) {
       </div>
 
       {showAdd && (
-        <div className="at-card" style={{ padding:16, borderColor:'rgba(77,163,255,0.2)' }}>
+        <div className="at-card" style={{ padding:16, borderColor:'rgba(90,138,159,0.2)' }}>
           <div style={{ display:'flex', justifyContent:'space-between', marginBottom:12 }}>
             <div className="section-label" style={{ margin:0 }}>New Webhook</div>
             <button onClick={() => setShowAdd(false)} style={{ background:'none', border:'none', color:'#787878', cursor:'pointer' }}><X size={14}/></button>
@@ -412,7 +412,7 @@ function WebhooksTab({ addToast }) {
             <label className="at-label">Events to trigger</label>
             <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
               {EVENTS.map(ev => (
-                <button key={ev} onClick={() => toggleEvent(ev)} style={{ fontSize:'0.7rem', padding:'4px 10px', borderRadius:4, fontFamily:'JetBrains Mono', border:`1px solid ${form.events.includes(ev) ? 'rgba(77,163,255,0.5)' : 'rgba(255,255,255,0.1)'}`, background: form.events.includes(ev) ? 'rgba(77,163,255,0.12)' : 'transparent', color: form.events.includes(ev) ? '#4DA3FF' : '#787878', cursor:'pointer' }}>
+                <button key={ev} onClick={() => toggleEvent(ev)} style={{ fontSize:'0.7rem', padding:'4px 10px', borderRadius:4, fontFamily:'JetBrains Mono', border:`1px solid ${form.events.includes(ev) ? 'rgba(90,138,159,0.5)' : 'rgba(255,255,255,0.1)'}`, background: form.events.includes(ev) ? 'rgba(90,138,159,0.12)' : 'transparent', color: form.events.includes(ev) ? '#5A8A9F' : '#787878', cursor:'pointer' }}>
                   {ev}
                 </button>
               ))}
@@ -448,7 +448,7 @@ function WebhooksTab({ addToast }) {
                 </div>
                 <div style={{ display:'flex', gap:6, flexWrap:'wrap', alignItems:'center' }}>
                   {events.map(ev => (
-                    <span key={ev} style={{ fontSize:'0.65rem', background:'rgba(77,163,255,0.08)', border:'1px solid rgba(77,163,255,0.2)', color:'#4DA3FF', padding:'2px 7px', borderRadius:3, fontFamily:'JetBrains Mono' }}>{ev}</span>
+                    <span key={ev} style={{ fontSize:'0.65rem', background:'rgba(90,138,159,0.08)', border:'1px solid rgba(90,138,159,0.2)', color:'#5A8A9F', padding:'2px 7px', borderRadius:3, fontFamily:'JetBrains Mono' }}>{ev}</span>
                   ))}
                   {wh.last_fired_at && (
                     <span style={{ fontSize:'0.68rem', color:'#787878', marginLeft:'auto', fontFamily:'JetBrains Mono' }}>
@@ -721,7 +721,7 @@ function SchedulesTab({ addToast }) {
                 <span>📬 {emails.join(', ')}</span>
                 <span>🗓 {s.schedule_type} · {s.report_type.replace('_',' ')}</span>
                 <span>🕐 {s.schedule_hour}:00 UTC</span>
-                {s.next_run_at && <span style={{ color:'#A78BFA' }}>Next: {new Date(s.next_run_at).toLocaleString()}</span>}
+                {s.next_run_at && <span style={{ color:'#8FAFC0' }}>Next: {new Date(s.next_run_at).toLocaleString()}</span>}
                 {s.last_sent_at && <span>Last sent: {new Date(s.last_sent_at).toLocaleString()}</span>}
               </div>
             </div>
@@ -738,7 +738,7 @@ const EDR_PLATFORMS = [
   {
     id: 'crowdstrike',
     name: 'CrowdStrike Falcon',
-    color: '#4DA3FF',
+    color: '#5A8A9F',
     docs: 'https://developer.crowdstrike.com/crowdstrike/docs/authentication-overview',
     envVars: [
       { key: 'CROWDSTRIKE_CLIENT_ID',     desc: 'OAuth2 Client ID from Falcon API Clients page' },
@@ -756,7 +756,7 @@ const EDR_PLATFORMS = [
   {
     id: 'sentinelone',
     name: 'SentinelOne',
-    color: '#A78BFA',
+    color: '#8FAFC0',
     docs: 'https://usea1-partners.sentinelone.net/docs/en/generating-api-tokens.html',
     envVars: [
       { key: 'SENTINELONE_BASE_URL',  desc: 'Your console URL e.g. https://usea1.sentinelone.net' },
@@ -832,14 +832,14 @@ function IntegrationsTab({ addToast }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 860 }}>
 
       {/* Intro banner */}
-      <div className="at-card" style={{ padding: '14px 18px', borderColor: 'rgba(167,139,250,0.2)', background: 'rgba(167,139,250,0.04)' }}>
+      <div className="at-card" style={{ padding: '14px 18px', borderColor: 'rgba(143,175,192,0.2)', background: 'rgba(143,175,192,0.04)' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-          <Terminal size={15} style={{ color: '#A78BFA', marginTop: 2, flexShrink: 0 }} />
+          <Terminal size={15} style={{ color: '#8FAFC0', marginTop: 2, flexShrink: 0 }} />
           <div>
             <div style={{ fontWeight: 600, fontSize: '0.86rem', marginBottom: 4 }}>EDR Integration — Environment Variables</div>
             <div style={{ fontSize: '0.78rem', color: '#787878', lineHeight: 1.65 }}>
               AegisTrace connects to EDR platforms via API credentials stored as environment variables — not in the database.
-              On Render, add them at <strong style={{ color: '#A78BFA' }}>Dashboard → Your Service → Environment</strong> then redeploy.
+              On Render, add them at <strong style={{ color: '#8FAFC0' }}>Dashboard → Your Service → Environment</strong> then redeploy.
               Credentials are never logged or stored in SQLite.
             </div>
           </div>
@@ -850,7 +850,7 @@ function IntegrationsTab({ addToast }) {
       <div style={{ display: 'flex', gap: 10 }}>
         <a href="https://dashboard.render.com" target="_blank" rel="noreferrer"
           style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#EBEBEB', fontSize: '0.78rem', textDecoration: 'none', ...mono }}>
-          <ExternalLink size={12} style={{ color: '#A78BFA' }} /> Open Render Dashboard
+          <ExternalLink size={12} style={{ color: '#8FAFC0' }} /> Open Render Dashboard
         </a>
         <button className="btn-ghost" onClick={load} style={{ fontSize: '0.78rem', padding: '8px 14px' }}>
           <RefreshCw size={12} /> Refresh Status
@@ -938,7 +938,7 @@ function IntegrationsTab({ addToast }) {
 
                 {/* Docs link */}
                 <a href={platform.docs} target="_blank" rel="noreferrer"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.74rem', color: '#A78BFA', textDecoration: 'none', ...mono }}>
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.74rem', color: '#8FAFC0', textDecoration: 'none', ...mono }}>
                   <ExternalLink size={11} /> {platform.name} API Documentation
                 </a>
               </div>
@@ -974,8 +974,8 @@ export default function Admin() {
         {TABS.map(({ id, label, Icon }) => (
           <button key={id} onClick={() => setTab(id)}
             style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 16px', borderRadius:6, fontSize:'0.8rem', cursor:'pointer', border:'1px solid', fontFamily:'Inter', transition:'all 0.15s',
-              background: tab === id ? 'rgba(77,163,255,0.12)' : 'rgba(255,255,255,0.03)',
-              borderColor: tab === id ? 'rgba(77,163,255,0.4)' : 'rgba(255,255,255,0.08)',
+              background: tab === id ? 'rgba(90,138,159,0.12)' : 'rgba(255,255,255,0.03)',
+              borderColor: tab === id ? 'rgba(90,138,159,0.4)' : 'rgba(255,255,255,0.08)',
               color: tab === id ? '#EBEBEB' : '#787878',
             }}>
             <Icon size={14}/> {label}

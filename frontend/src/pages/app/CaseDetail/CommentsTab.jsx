@@ -6,7 +6,7 @@ import useStore from '../../../store/useStore';
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 
 const TYPE_COLOR = {
-  note:       { bg: 'rgba(167,139,250,0.08)', border: 'rgba(167,139,250,0.2)', color: '#A78BFA', label: 'Note' },
+  note:       { bg: 'rgba(143,175,192,0.08)', border: 'rgba(143,175,192,0.2)', color: '#8FAFC0', label: 'Note' },
   handoff:    { bg: 'rgba(234,179,8,0.08)',   border: 'rgba(234,179,8,0.2)',   color: '#EAB308', label: 'Handoff' },
   escalation: { bg: 'rgba(239,68,68,0.08)',   border: 'rgba(239,68,68,0.2)',   color: '#EF4444', label: 'Escalation' },
   decision:   { bg: 'rgba(34,197,94,0.08)',   border: 'rgba(34,197,94,0.2)',   color: '#22C55E', label: 'Decision' },
@@ -81,7 +81,7 @@ export default function CommentsTab({ caseId }) {
       {/* Composer */}
       <div className="at-card" style={{ padding: 16, marginBottom: 20 }}>
         <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-          <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(77,163,255,0.15)', border: '1px solid rgba(77,163,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#4DA3FF', fontSize: '0.8rem', flexShrink: 0 }}>
+          <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(90,138,159,0.15)', border: '1px solid rgba(90,138,159,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#5A8A9F', fontSize: '0.8rem', flexShrink: 0 }}>
             {user?.name?.[0] || 'A'}
           </div>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>

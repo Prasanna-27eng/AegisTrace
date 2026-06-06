@@ -147,7 +147,7 @@ export default function CaseList() {
           <div style={{ display: 'flex', gap: 12, marginTop: 4, fontSize: '0.7rem', fontFamily: 'JetBrains Mono' }}>
             <span style={{ color: '#787878' }}>{cases.length} total</span>
             {open > 0 && <span style={{ color: '#EF4444' }}>{open} open</span>}
-            {critical > 0 && <span style={{ color: '#4DA3FF' }}>{critical} critical</span>}
+            {critical > 0 && <span style={{ color: '#5A8A9F' }}>{critical} critical</span>}
             {pending > 0 && <span style={{ color: '#EAB308' }}>{pending} pending</span>}
           </div>
         </div>
@@ -177,9 +177,9 @@ export default function CaseList() {
             onClick={() => applyChip(idx, f)}
             style={{
               padding: '4px 12px', borderRadius: 20, fontSize: '0.72rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: activeChip === idx ? 600 : 400, transition: 'all 0.15s',
-              background: activeChip === idx ? '#4DA3FF' : 'rgba(255,255,255,0.04)',
+              background: activeChip === idx ? '#5A8A9F' : 'rgba(255,255,255,0.04)',
               color: activeChip === idx ? '#fff' : '#787878',
-              border: activeChip === idx ? '1px solid #4DA3FF' : '1px solid rgba(255,255,255,0.08)',
+              border: activeChip === idx ? '1px solid #5A8A9F' : '1px solid rgba(255,255,255,0.08)',
             }}
           >
             {f.label}
@@ -210,7 +210,7 @@ export default function CaseList() {
         <div style={{ textAlign: 'center', padding: 60, color: '#787878', fontSize: '0.82rem' }}>Loading cases…</div>
       ) : cases.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <FolderOpen size={36} style={{ color: 'rgba(77,163,255,0.2)', margin: '0 auto 14px', display: 'block' }} />
+          <FolderOpen size={36} style={{ color: 'rgba(90,138,159,0.2)', margin: '0 auto 14px', display: 'block' }} />
           <div style={{ fontWeight: 600, fontSize: '0.92rem', marginBottom: 8 }}>
             {q || severity || status ? 'No cases match your filters' : 'No cases yet'}
           </div>
@@ -246,7 +246,7 @@ export default function CaseList() {
                 key={c.id}
                 className="at-card"
                 style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', transition: 'border-color 0.15s', position: 'relative', overflow: 'hidden' }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(77,163,255,0.3)'}
+                onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(90,138,159,0.3)'}
                 onMouseLeave={e => e.currentTarget.style.borderColor = isSlaBreached ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.07)'}
                 onClick={() => navigate(`/app/cases/${c.id}`)}
                 style={{
@@ -257,7 +257,7 @@ export default function CaseList() {
               >
                 {/* Severity left bar */}
                 {c.severity === 'critical' && (
-                  <div className="critical-pulse" style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '8px 0 0 8px', background: '#4DA3FF' }} />
+                  <div className="critical-pulse" style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '8px 0 0 8px', background: '#5A8A9F' }} />
                 )}
                 {isSlaBreached && c.severity !== 'critical' && (
                   <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '8px 0 0 8px', background: '#EF4444', opacity: 0.6 }} />

@@ -13,7 +13,7 @@ const REFRESH_INTERVAL = 30; // seconds
 
 const SEV  = { critical: '#EF4444', high: '#F97316', medium: '#EAB308', low: '#22C55E' };
 const NODE_COLORS = {
-  user: '#4DA3FF', service_account: '#A78BFA', api_key: '#EAB308',
+  user: '#5A8A9F', service_account: '#8FAFC0', api_key: '#EAB308',
   token: '#F97316', device: '#22C55E', agent: '#2EE6D6', prompt: '#EC4899',
 };
 
@@ -34,7 +34,7 @@ function isOnline(lastSeen) {
 /* ══════════════════════════════════════════════════════════════════════════
    KPI CARD
 ══════════════════════════════════════════════════════════════════════════ */
-function KPICard({ label, value, sub, icon: Icon, color = '#4DA3FF', alert = false, onClick }) {
+function KPICard({ label, value, sub, icon: Icon, color = '#5A8A9F', alert = false, onClick }) {
   return (
     <div onClick={onClick}
       style={{
@@ -45,7 +45,7 @@ function KPICard({ label, value, sub, icon: Icon, color = '#4DA3FF', alert = fal
         transition: 'border-color 0.2s, background 0.2s',
         display: 'flex', alignItems: 'flex-start', gap: 14,
       }}
-      onMouseEnter={e => onClick && (e.currentTarget.style.borderColor = 'rgba(74,142,219,0.35)')}
+      onMouseEnter={e => onClick && (e.currentTarget.style.borderColor = 'rgba(78,122,142,0.35)')}
       onMouseLeave={e => onClick && (e.currentTarget.style.borderColor = alert ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.07)')}
     >
       <div style={{ width: 38, height: 38, borderRadius: 9, background: `${color}14`, border: `1px solid ${color}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -64,7 +64,7 @@ function KPICard({ label, value, sub, icon: Icon, color = '#4DA3FF', alert = fal
 /* ══════════════════════════════════════════════════════════════════════════
    PANEL WRAPPER
 ══════════════════════════════════════════════════════════════════════════ */
-function Panel({ title, icon: Icon, count, children, onNavigate, accentColor = '#4DA3FF', style = {} }) {
+function Panel({ title, icon: Icon, count, children, onNavigate, accentColor = '#5A8A9F', style = {} }) {
   return (
     <div style={{
       background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.07)',
@@ -108,11 +108,11 @@ function IdentityPanel({ nodes, navigate }) {
   const high = nodes.filter(n => n.risk_score >= 40 || n.is_compromised).slice(0, 12);
   return (
     <Panel title="High-Risk Identities" icon={Fingerprint} count={high.length}
-      onNavigate={() => navigate('/app/identity-graph')} accentColor="#A78BFA">
+      onNavigate={() => navigate('/app/identity-graph')} accentColor="#8FAFC0">
       {high.length === 0
         ? <EmptyState icon={CheckCircle} text="All identities within normal risk range" />
         : high.map(n => {
-          const c = NODE_COLORS[n.node_type] || '#4DA3FF';
+          const c = NODE_COLORS[n.node_type] || '#5A8A9F';
           const riskColor = n.risk_score >= 80 ? '#EF4444' : n.risk_score >= 60 ? '#F97316' : n.risk_score >= 40 ? '#EAB308' : '#A8A8A8';
           return (
             <div key={n.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, background: n.is_compromised ? 'rgba(239,68,68,0.05)' : 'rgba(255,255,255,0.02)', border: `1px solid ${n.is_compromised ? 'rgba(239,68,68,0.18)' : 'rgba(255,255,255,0.05)'}` }}>
@@ -147,7 +147,7 @@ function ActionQueuePanel({ actions, navigate }) {
   return (
     <Panel title="AI Action Queue" icon={Bot} count={pending.length}
       onNavigate={() => navigate('/app/agent-security')}
-      accentColor={pending.length > 0 ? '#EAB308' : '#4DA3FF'}>
+      accentColor={pending.length > 0 ? '#EAB308' : '#5A8A9F'}>
       {pending.length === 0
         ? <EmptyState icon={CheckCircle} text="No actions awaiting approval" />
         : pending.map(a => (
@@ -334,7 +334,7 @@ export default function ControlPlane() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-            <Activity size={20} style={{ color: '#4DA3FF' }} />
+            <Activity size={20} style={{ color: '#5A8A9F' }} />
             <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Control Plane</h1>
             <span style={{ fontSize: '0.6rem', color: '#22C55E', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', padding: '2px 8px', borderRadius: 10, ...MONO, fontWeight: 700 }}>LIVE</span>
           </div>
@@ -357,10 +357,10 @@ export default function ControlPlane() {
 
       {/* ── KPI Row ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
-        <KPICard label="Total Identities"   value={nodes.length}       sub={`${highRiskNodes} high-risk`}     icon={Fingerprint} color="#A78BFA"  onClick={() => navigate('/app/identity-graph')} />
+        <KPICard label="Total Identities"   value={nodes.length}       sub={`${highRiskNodes} high-risk`}     icon={Fingerprint} color="#8FAFC0"  onClick={() => navigate('/app/identity-graph')} />
         <KPICard label="Compromised"         value={compromised}        sub="identity nodes"                   icon={XCircle}     color="#EF4444"  alert={compromised > 0} onClick={() => navigate('/app/identity-graph')} />
         <KPICard label="Open Threats"        value={openAlerts}         sub="ITDR alerts"                      icon={AlertTriangle} color={openAlerts > 0 ? '#EF4444' : '#22C55E'} alert={openAlerts > 0} onClick={() => navigate('/app/itdr')} />
-        <KPICard label="Pending AI Actions"  value={pendingActions}     sub="awaiting approval"                icon={Bot}         color={pendingActions > 0 ? '#EAB308' : '#4DA3FF'} alert={pendingActions > 0} onClick={() => navigate('/app/agent-security')} />
+        <KPICard label="Pending AI Actions"  value={pendingActions}     sub="awaiting approval"                icon={Bot}         color={pendingActions > 0 ? '#EAB308' : '#5A8A9F'} alert={pendingActions > 0} onClick={() => navigate('/app/agent-security')} />
         <KPICard label="Endpoints Online"    value={`${onlineEndpoints}/${endpoints.length}`} sub="last 5 min" icon={Monitor}    color="#22C55E"  onClick={() => navigate('/app/endpoints')} />
       </div>
 
@@ -368,10 +368,10 @@ export default function ControlPlane() {
       {overview && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
           {[
-            { label: 'Open Cases',    value: overview.open_cases || 0,    color: '#4DA3FF', icon: Eye },
+            { label: 'Open Cases',    value: overview.open_cases || 0,    color: '#5A8A9F', icon: Eye },
             { label: 'SLA Breached',  value: overview.sla_breached || 0,  color: '#EF4444', icon: AlertTriangle, alert: (overview.sla_breached || 0) > 0 },
             { label: 'Critical Cases',value: overview.critical_open || 0, color: '#EF4444', icon: Zap, alert: (overview.critical_open || 0) > 0 },
-            { label: 'Avg Close Time',value: overview.avg_time_to_close ? `${overview.avg_time_to_close}h` : '—', color: '#A78BFA', icon: Clock },
+            { label: 'Avg Close Time',value: overview.avg_time_to_close ? `${overview.avg_time_to_close}h` : '—', color: '#8FAFC0', icon: Clock },
           ].map(k => (
             <div key={k.label} style={{ background: k.alert ? 'rgba(239,68,68,0.04)' : 'rgba(255,255,255,0.015)', border: `1px solid ${k.alert ? 'rgba(239,68,68,0.16)' : 'rgba(255,255,255,0.06)'}`, borderRadius: 10, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
               <k.icon size={15} style={{ color: k.color, flexShrink: 0 }} />

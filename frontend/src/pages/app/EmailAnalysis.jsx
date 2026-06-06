@@ -75,9 +75,9 @@ export default function EmailAnalysis() {
               <>
                 {/* AI Verdict */}
                 {aiData.verdict && (
-                  <div className="at-card" style={{ padding: 14, borderLeft: `2px solid ${aiData.verdict === 'Phishing' || aiData.verdict === 'BEC' ? '#4DA3FF' : aiData.verdict === 'Legitimate' ? '#22C55E' : '#EAB308'}` }}>
+                  <div className="at-card" style={{ padding: 14, borderLeft: `2px solid ${aiData.verdict === 'Phishing' || aiData.verdict === 'BEC' ? '#5A8A9F' : aiData.verdict === 'Legitimate' ? '#22C55E' : '#EAB308'}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                      <div style={{ fontWeight: 700, fontSize: '1.1rem', color: aiData.verdict === 'Phishing' || aiData.verdict === 'BEC' ? '#4DA3FF' : aiData.verdict === 'Legitimate' ? '#22C55E' : '#EAB308' }}>{aiData.verdict}</div>
+                      <div style={{ fontWeight: 700, fontSize: '1.1rem', color: aiData.verdict === 'Phishing' || aiData.verdict === 'BEC' ? '#5A8A9F' : aiData.verdict === 'Legitimate' ? '#22C55E' : '#EAB308' }}>{aiData.verdict}</div>
                       <span className="ai-badge">AI</span>
                       {aiData.confidence && <span style={{ fontSize: '0.75rem', color: '#787878' }}>{aiData.confidence}% confidence</span>}
                     </div>

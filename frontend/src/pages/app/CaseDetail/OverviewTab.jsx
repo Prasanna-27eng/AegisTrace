@@ -91,7 +91,7 @@ export default function OverviewTab({ caseData, updateCase, caseId, reload }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* AI Summary */}
           {caseData.ai_executive_summary && (
-            <div className="at-card" style={{ padding: 16, borderLeft: '2px solid rgba(167,139,250,0.4)' }}>
+            <div className="at-card" style={{ padding: 16, borderLeft: '2px solid rgba(143,175,192,0.4)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                 <div className="section-label" style={{ margin: 0 }}>Executive Summary</div>
                 <span className="ai-badge">AI</span>

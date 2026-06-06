@@ -9,8 +9,8 @@ import { SeverityBadge, StatusBadge } from '../../components/SeverityBadge';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 
-const SEV_COLOR  = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'#A78BFA', info:'#888888' };
-const STAT_COLOR = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'#A78BFA', info:'#787878' };
+const SEV_COLOR  = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'#8FAFC0', info:'#888888' };
+const STAT_COLOR = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'#8FAFC0', info:'#787878' };
 
 function timeAgo(dateStr) {
   if (!dateStr) return '';
@@ -48,7 +48,7 @@ function AttentionRow({ c, navigate }) {
       onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
       onMouseLeave={e => e.currentTarget.style.background = '#111111'}
     >
-      {c.severity === 'critical' && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, background: '#4DA3FF' }} />}
+      {c.severity === 'critical' && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, background: '#5A8A9F' }} />}
       <div style={{ flex: 1, minWidth: 0, paddingLeft: c.severity === 'critical' ? 6 : 0 }}>
         <div style={{ fontSize: '0.83rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
         <div style={{ fontSize: '0.67rem', color: '#787878', fontFamily: 'JetBrains Mono', marginTop: 1 }}>
@@ -69,7 +69,7 @@ function StatTile({ icon: Icon, label, value, sub, subColor, color, onClick }) {
       className="at-card"
       onClick={onClick}
       style={{ padding: '14px 16px', cursor: onClick ? 'pointer' : 'default', transition: 'border-color 0.15s' }}
-      onMouseEnter={e => onClick && (e.currentTarget.style.borderColor = 'rgba(77,163,255,0.3)')}
+      onMouseEnter={e => onClick && (e.currentTarget.style.borderColor = 'rgba(90,138,159,0.3)')}
       onMouseLeave={e => onClick && (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)')}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -206,10 +206,10 @@ export default function Dashboard() {
 
       {/* ── ATTENTION ZONE ── */}
       {attention.length > 0 && (
-        <div style={{ marginBottom: 24, padding: '16px 20px', background: '#080808', border: '1px solid rgba(255,255,255,0.07)', borderLeft: '2px solid #4DA3FF' }}>
+        <div style={{ marginBottom: 24, padding: '16px 20px', background: '#080808', border: '1px solid rgba(255,255,255,0.07)', borderLeft: '2px solid #5A8A9F' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <Zap size={12} style={{ color: '#4DA3FF' }} />
-            <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#4DA3FF', textTransform: 'uppercase', letterSpacing: '0.14em', ...MONO }}>
+            <Zap size={12} style={{ color: '#5A8A9F' }} />
+            <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#5A8A9F', textTransform: 'uppercase', letterSpacing: '0.14em', ...MONO }}>
               Needs Attention
             </span>
             <span style={{ marginLeft: 'auto', fontSize: '0.62rem', color: '#505050', cursor: 'pointer', ...MONO }} onClick={() => navigate('/app/cases')}>

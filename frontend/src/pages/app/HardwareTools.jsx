@@ -8,7 +8,7 @@ import useStore from '../../store/useStore';
 // ── Tool catalogue ────────────────────────────────────────────────────────────
 const CATEGORIES = [
   {
-    id: 'wifi', label: 'WiFi Attack', icon: Wifi, color: '#4DA3FF',
+    id: 'wifi', label: 'WiFi Attack', icon: Wifi, color: '#5A8A9F',
     tools: [
       { key: 'probe_request_analyser',   name: 'Probe Request Analyser',   desc: 'Identify aggressive WiFi scanners from PineAP logs', hint: 'Paste WiFi Pineapple PineAP log output.\nSupports JSON lines, CSV, or plain text.\n\nExample:\n{"type":"probe","client_mac":"AA:BB:CC:11:22:33","ssid":"HomeNet","channel":6}' },
       { key: 'evil_twin_detector',       name: 'Evil Twin Detector',       desc: 'Find rogue APs claiming a legitimate SSID',           hint: 'Paste beacon/AP scan log showing SSIDs and BSSIDs.\n\nExample:\nSSID: HomeNet | BSSID: AA:BB:CC:DD:EE:FF | Channel: 6' },
@@ -17,7 +17,7 @@ const CATEGORIES = [
     ],
   },
   {
-    id: 'rf', label: 'RF / Radio', icon: Radio, color: '#A78BFA',
+    id: 'rf', label: 'RF / Radio', icon: Radio, color: '#8FAFC0',
     tools: [
       { key: 'spectrum_analyser',        name: 'Spectrum Analyser',        desc: 'Map signal activity across RF bands',                 hint: 'Paste hackrf_sweep CSV output or RF spectrum scan data.\n\nhackrf_sweep format: date,time,hz_low,hz_high,hz_bin,samples,dBm...' },
       { key: 'replay_attack_detector',   name: 'Replay Attack Detector',   desc: 'Detect repeated RF signals (car fobs, remotes)',      hint: 'Paste RF signal capture log with frequency, strength, and timing data.' },
@@ -49,14 +49,14 @@ const CATEGORIES = [
     ],
   },
   {
-    id: 'endpoint', label: 'Endpoint', icon: Monitor, color: '#4DA3FF',
+    id: 'endpoint', label: 'Endpoint', icon: Monitor, color: '#5A8A9F',
     tools: [
       { key: 'sysmon_parser',            name: 'Sysmon Event Parser',        desc: 'LOLBin detection, LSASS access, process injection',   hint: 'Paste Windows Sysmon event log in XML or JSON format.\nEventIDs 1,3,7,8,10,11,12,13,22 are fully supported.' },
       { key: 'process_tree_analyser',    name: 'Process Tree Analyser',      desc: 'Risk-score every process, flag suspicious spawning',   hint: 'Paste process list from aegistrace_agent.py or any JSON/CSV/text with PID, PPID, and process name.' },
     ],
   },
   {
-    id: 'ai', label: 'Universal', icon: Bot, color: '#A78BFA',
+    id: 'ai', label: 'Universal', icon: Bot, color: '#8FAFC0',
     tools: [
       { key: 'ai_universal_parser',      name: 'AI Universal Parser',        desc: 'Any log format → auto-parsed, MITRE-tagged by AI',   hint: 'Paste ANY log from ANY security tool.\nAI will automatically identify the format, extract fields,\nand map to MITRE ATT&CK. Works on completely unknown formats.' },
     ],
@@ -68,7 +68,7 @@ const TOOL_MAP = {};
 CATEGORIES.forEach(cat => cat.tools.forEach(t => { TOOL_MAP[t.key] = { ...t, category: cat }; }));
 
 // ── Severity colour ───────────────────────────────────────────────────────────
-const SEV_COLOR = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'#A78BFA', info:'#787878' };
+const SEV_COLOR = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'#8FAFC0', info:'#787878' };
 const sevStyle = (s) => ({
   color: SEV_COLOR[s] || '#787878',
   background: `${SEV_COLOR[s] || '#888888'}18`,
@@ -174,7 +174,7 @@ function ResultRenderer({ toolKey, result }) {
             <KVPairs data={result} skip={['client_profiles','suspicious_clients','top_probed_ssids','summary']} />
             {result.suspicious_clients?.length > 0 && (
               <div style={{margin:'14px 16px 0'}}>
-                <div style={{fontSize:'0.68rem',color:'#4DA3FF',fontWeight:700,marginBottom:6,fontFamily:'JetBrains Mono',textTransform:'uppercase',letterSpacing:'0.06em'}}>Suspicious Clients</div>
+                <div style={{fontSize:'0.68rem',color:'#5A8A9F',fontWeight:700,marginBottom:6,fontFamily:'JetBrains Mono',textTransform:'uppercase',letterSpacing:'0.06em'}}>Suspicious Clients</div>
                 <DataTable rows={result.suspicious_clients} />
               </div>
             )}
@@ -192,7 +192,7 @@ function ResultRenderer({ toolKey, result }) {
             <KVPairs data={result} skip={['evil_twin_suspects','summary']} />
             {result.evil_twin_suspects?.length > 0 && (
               <div style={{margin:'14px 16px 0'}}>
-                <div style={{fontSize:'0.68rem',color:'#4DA3FF',fontWeight:700,marginBottom:6,fontFamily:'JetBrains Mono',textTransform:'uppercase',letterSpacing:'0.06em'}}>Evil Twin Suspects</div>
+                <div style={{fontSize:'0.68rem',color:'#5A8A9F',fontWeight:700,marginBottom:6,fontFamily:'JetBrains Mono',textTransform:'uppercase',letterSpacing:'0.06em'}}>Evil Twin Suspects</div>
                 <DataTable rows={result.evil_twin_suspects} cols={['ssid','bssid_count','channels','verdict','reason']} />
               </div>
             )}
@@ -257,7 +257,7 @@ function ResultRenderer({ toolKey, result }) {
               </div>
             </div>
             {result.ai_explanation && (
-              <div style={{margin:'12px 16px 0',padding:'10px 14px',background:'rgba(167,139,250,0.06)',border:'1px solid rgba(167,139,250,0.15)',borderRadius:6,fontSize:'0.8rem',color:'#A78BFA',fontStyle:'italic'}}>{result.ai_explanation}</div>
+              <div style={{margin:'12px 16px 0',padding:'10px 14px',background:'rgba(143,175,192,0.06)',border:'1px solid rgba(143,175,192,0.15)',borderRadius:6,fontSize:'0.8rem',color:'#8FAFC0',fontStyle:'italic'}}>{result.ai_explanation}</div>
             )}
             {result.mitre_technique && <div style={{padding:'8px 16px'}}><span className="hw-mitre-tag">{result.mitre_technique}</span></div>}
           </>
@@ -482,7 +482,7 @@ export default function HardwareTools() {
                     <div className="hw-tool-name">{t.name}</div>
                     <div className="hw-tool-key">{t.key}</div>
                   </div>
-                  {selected === t.key && <ChevronRight size={12} style={{ color: '#4DA3FF', flexShrink:0 }} />}
+                  {selected === t.key && <ChevronRight size={12} style={{ color: '#5A8A9F', flexShrink:0 }} />}
                 </div>
               ))}
             </div>
@@ -556,7 +556,7 @@ export default function HardwareTools() {
               <div className="hw-result-section">
                 <div className="hw-result-header">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Shield size={14} style={{ color: '#4DA3FF' }} />
+                    <Shield size={14} style={{ color: '#5A8A9F' }} />
                     <span style={{ fontWeight: 600, fontSize: '0.88rem' }}>{tool.name} — Analysis Complete</span>
                     {runId && <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono' }}>Run #{runId}</span>}
                   </div>

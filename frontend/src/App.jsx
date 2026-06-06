@@ -12,10 +12,10 @@ function LoadingScreen() {
       <div style={{ textAlign: 'center' }}>
         <div style={{
           width: 40, height: 40, borderRadius: '50%',
-          border: '3px solid #4DA3FF', borderTopColor: 'transparent',
+          border: '3px solid #5A8A9F', borderTopColor: 'transparent',
           animation: 'spin 0.8s linear infinite', margin: '0 auto 16px',
         }} />
-        <div style={{ color: '#4DA3FF', fontSize: 13, opacity: 0.7 }}>AegisTrace</div>
+        <div style={{ color: '#5A8A9F', fontSize: 13, opacity: 0.7 }}>AegisTrace</div>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     </div>

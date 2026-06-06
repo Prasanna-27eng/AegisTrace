@@ -6,8 +6,8 @@ import useStore from '../../../store/useStore';
 const EVENT_TYPES = ['detection','action','escalation','closure','intel','remediation'];
 
 const TYPE_CONFIG = {
-  detection:   { color: '#4DA3FF', bg: 'rgba(77,163,255,0.12)',   Icon: AlertCircle,  label: 'Detection'   },
-  action:      { color: '#A78BFA', bg: 'rgba(167,139,250,0.12)', Icon: Wrench,        label: 'Action'      },
+  detection:   { color: '#5A8A9F', bg: 'rgba(90,138,159,0.12)',   Icon: AlertCircle,  label: 'Detection'   },
+  action:      { color: '#8FAFC0', bg: 'rgba(143,175,192,0.12)', Icon: Wrench,        label: 'Action'      },
   escalation:  { color: '#EF4444', bg: 'rgba(239,68,68,0.12)',   Icon: TrendingUp,    label: 'Escalation'  },
   closure:     { color: '#22C55E', bg: 'rgba(34,197,94,0.12)',   Icon: CheckCircle,   label: 'Closure'     },
   intel:       { color: '#EAB308', bg: 'rgba(234,179,8,0.12)',   Icon: Search,        label: 'Intel'       },
@@ -62,7 +62,7 @@ export default function TimelineTab({ caseId }) {
       </div>
 
       {showAdd && (
-        <div className="at-card" style={{ padding: 14, marginBottom: 24, borderColor: 'rgba(77,163,255,0.25)' }}>
+        <div className="at-card" style={{ padding: 14, marginBottom: 24, borderColor: 'rgba(90,138,159,0.25)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
             <div className="section-label" style={{ margin: 0 }}>New Timeline Event</div>
             <button onClick={() => setShowAdd(false)} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={14} /></button>
@@ -96,7 +96,7 @@ export default function TimelineTab({ caseId }) {
 
       {events.length === 0 ? (
         <div className="at-card" style={{ padding: '40px 20px', textAlign: 'center' }}>
-          <Clock size={28} style={{ color: 'rgba(167,139,250,0.25)', margin: '0 auto 12px', display: 'block' }} />
+          <Clock size={28} style={{ color: 'rgba(143,175,192,0.25)', margin: '0 auto 12px', display: 'block' }} />
           <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 6 }}>No timeline events yet</div>
           <div style={{ fontSize: '0.78rem', color: '#787878', marginBottom: 16 }}>
             Document detections, actions taken, escalations, and findings as the investigation unfolds.
@@ -108,7 +108,7 @@ export default function TimelineTab({ caseId }) {
       ) : (
         <div style={{ position: 'relative', paddingLeft: 36 }}>
           {/* Spine */}
-          <div style={{ position: 'absolute', left: 11, top: 16, bottom: 20, width: 2, background: 'linear-gradient(180deg, rgba(77,163,255,0.5) 0%, rgba(77,163,255,0.05) 100%)', borderRadius: 1 }} />
+          <div style={{ position: 'absolute', left: 11, top: 16, bottom: 20, width: 2, background: 'linear-gradient(180deg, rgba(90,138,159,0.5) 0%, rgba(90,138,159,0.05) 100%)', borderRadius: 1 }} />
 
           {events.map((ev, i) => {
             const cfg = TYPE_CONFIG[ev.event_type] || TYPE_CONFIG.action;

@@ -6,7 +6,7 @@ import useStore from '../../store/useStore';
 
 const C = {
   bg: '#0A0A0A', card: '#111111', border: '#181818',
-  blue: '#4DA3FF', purple: '#A78BFA', green: '#34D399',
+  blue: '#5A8A9F', purple: '#8FAFC0', green: '#34D399',
   amber: '#FBBF24', red: '#F87171', muted: '#888888', text: '#E5E5E5',
 };
 

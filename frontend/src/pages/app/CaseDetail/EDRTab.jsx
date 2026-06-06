@@ -14,7 +14,7 @@ const PLATFORM_LABELS = {
 
 const PLATFORM_COLORS = {
   crowdstrike: '#EF4444',
-  sentinelone:  '#A78BFA',
+  sentinelone:  '#8FAFC0',
   carbonblack:  '#22C55E',
 };
 
@@ -302,9 +302,9 @@ export default function EDRTab({ caseData }) {
                   display: 'flex', alignItems: 'center', gap: 10,
                   padding: '9px 12px', borderRadius: 6, cursor: 'pointer',
                   background: selected?.endpoint_id === ep.endpoint_id
-                    ? 'rgba(77,163,255,0.08)' : '#111111',
+                    ? 'rgba(90,138,159,0.08)' : '#111111',
                   border: `1px solid ${selected?.endpoint_id === ep.endpoint_id
-                    ? 'rgba(77,163,255,0.25)' : 'transparent'}`,
+                    ? 'rgba(90,138,159,0.25)' : 'transparent'}`,
                   transition: 'all 0.15s',
                 }}
                 onMouseEnter={e => { if (selected?.endpoint_id !== ep.endpoint_id) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
@@ -429,7 +429,7 @@ export default function EDRTab({ caseData }) {
                   <tbody>
                     {filteredProcs.slice(0, 80).map((p, i) => (
                       <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: i % 2 ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
-                        <td style={{ padding: '4px 8px', color: '#A78BFA' }}>{p.pid}</td>
+                        <td style={{ padding: '4px 8px', color: '#8FAFC0' }}>{p.pid}</td>
                         <td style={{ padding: '4px 8px', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name || p.command || '—'}</td>
                         <td style={{ padding: '4px 8px', color: '#787878' }}>{p.user || '—'}</td>
                         <td style={{ padding: '4px 8px' }}>
@@ -558,7 +558,7 @@ export default function EDRTab({ caseData }) {
                     {a.status === 'success' ? '✓' : a.status === 'failed' ? '✗' : '…'}
                   </span>
                   <PlatformBadge platform={a.platform} />
-                  <span style={{ fontFamily: 'JetBrains Mono', color: '#A78BFA' }}>{a.action}</span>
+                  <span style={{ fontFamily: 'JetBrains Mono', color: '#8FAFC0' }}>{a.action}</span>
                   <span style={{ color: '#EBEBEB', fontWeight: 500 }}>{a.hostname || a.endpoint_id}</span>
                   {a.target && <span style={{ color: '#787878', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>{a.target}</span>}
                   <span style={{ marginLeft: 'auto', color: '#787878', fontFamily: 'JetBrains Mono', fontSize: '0.62rem', flexShrink: 0 }}>

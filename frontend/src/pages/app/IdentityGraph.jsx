@@ -11,9 +11,9 @@ import useStore from '../../store/useStore';
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 
 const NODE_TYPES = [
-  { id: 'user',            label: 'Human User',      color: '#4DA3FF',  Icon: User },
+  { id: 'user',            label: 'Human User',      color: '#5A8A9F',  Icon: User },
   { id: 'service_account', label: 'Service Account', color: '#EAB308',  Icon: Shield },
-  { id: 'api_key',         label: 'API Key',          color: '#A78BFA',  Icon: Key },
+  { id: 'api_key',         label: 'API Key',          color: '#8FAFC0',  Icon: Key },
   { id: 'token',           label: 'Token',            color: '#F97316',  Icon: Key },
   { id: 'device',          label: 'Device',           color: '#22C55E',  Icon: Monitor },
   { id: 'agent',           label: 'AI Agent',         color: '#00BFFF',  Icon: Bot },
@@ -36,7 +36,7 @@ function NodeIcon({ type, size = 14 }) {
 function riskColor(score) {
   if (score >= 80) return '#EF4444';
   if (score >= 50) return '#EAB308';
-  if (score >= 20) return '#A78BFA';
+  if (score >= 20) return '#8FAFC0';
   return '#22C55E';
 }
 
@@ -356,7 +356,7 @@ function NodePanel({ node, onMarkCompromised, onDelete, onClose, onScoreUpdate }
             <div style={{ fontSize: '0.6rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.08em', ...MONO, display: 'flex', alignItems: 'center', gap: 5 }}>
               <AlertTriangle size={10} style={{ color: '#F5B84B' }} /> Anomalies ({anomalies.length})
             </div>
-            <button onClick={() => setShowAddAnom(p => !p)} style={{ background: 'none', border: 'none', color: '#4A8EDB', cursor: 'pointer', fontSize: '0.68rem', ...MONO, display: 'flex', alignItems: 'center', gap: 3 }}>
+            <button onClick={() => setShowAddAnom(p => !p)} style={{ background: 'none', border: 'none', color: '#4E7A8E', cursor: 'pointer', fontSize: '0.68rem', ...MONO, display: 'flex', alignItems: 'center', gap: 3 }}>
               <Plus size={10} /> Add
             </button>
           </div>
@@ -412,7 +412,7 @@ function NodePanel({ node, onMarkCompromised, onDelete, onClose, onScoreUpdate }
         {/* ── RISK ENGINE SECTION ───────────────────────────── */}
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10 }}>
           <div style={{ fontSize: '0.6rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, ...MONO, display: 'flex', alignItems: 'center', gap: 5 }}>
-            <BarChart2 size={10} style={{ color: '#4A8EDB' }} /> Risk Engine
+            <BarChart2 size={10} style={{ color: '#4E7A8E' }} /> Risk Engine
           </div>
           <button className="btn-ghost" onClick={recalculate} disabled={recalcLoading} style={{ width: '100%', fontSize: '0.74rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
             {recalcLoading ? <Loader2 size={12} className="spinner" /> : <RefreshCw size={12} />}
@@ -420,8 +420,8 @@ function NodePanel({ node, onMarkCompromised, onDelete, onClose, onScoreUpdate }
           </button>
 
           {recalcResult && (
-            <div style={{ marginTop: 8, background: 'rgba(74,142,219,0.06)', border: '1px solid rgba(74,142,219,0.15)', borderRadius: 6, padding: 10 }}>
-              <div style={{ fontSize: '0.7rem', color: '#4A8EDB', ...MONO, marginBottom: 6 }}>
+            <div style={{ marginTop: 8, background: 'rgba(78,122,142,0.06)', border: '1px solid rgba(78,122,142,0.15)', borderRadius: 6, padding: 10 }}>
+              <div style={{ fontSize: '0.7rem', color: '#4E7A8E', ...MONO, marginBottom: 6 }}>
                 {recalcResult.old_score ?? '—'} → <strong>{recalcResult.new_score}</strong>
                 {recalcResult.new_score > (recalcResult.old_score ?? 0) ? ' ↑' : ' ↓'}
               </div>
@@ -535,7 +535,7 @@ export default function IdentityGraph() {
         <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Fingerprint size={14} style={{ color: '#A78BFA' }} />
+              <Fingerprint size={14} style={{ color: '#8FAFC0' }} />
               <span style={{ fontWeight: 600, fontSize: '0.82rem' }}>Identity Graph</span>
             </div>
             <button onClick={load} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', padding: 2 }}><RefreshCw size={12} /></button>
@@ -592,8 +592,8 @@ export default function IdentityGraph() {
                   style={{
                     padding: '8px 8px', borderRadius: 5, cursor: 'pointer', marginBottom: 2,
                     display: 'flex', alignItems: 'center', gap: 7,
-                    background: selected?.id === n.id ? 'rgba(167,139,250,0.08)' : 'transparent',
-                    border: `1px solid ${selected?.id === n.id ? 'rgba(167,139,250,0.2)' : 'transparent'}`,
+                    background: selected?.id === n.id ? 'rgba(143,175,192,0.08)' : 'transparent',
+                    border: `1px solid ${selected?.id === n.id ? 'rgba(143,175,192,0.2)' : 'transparent'}`,
                   }}
                   onMouseEnter={e => { if (selected?.id !== n.id) e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
                   onMouseLeave={e => { if (selected?.id !== n.id) e.currentTarget.style.background = 'transparent'; }}

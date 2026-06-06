@@ -187,9 +187,9 @@
 .hw-mitre-tag {
   display: inline-flex;
   align-items: center;
-  background: rgba(167,139,250,0.1);
-  border: 1px solid rgba(167,139,250,0.25);
-  color: #A78BFA;
+  background: rgba(143,175,192,0.1);
+  border: 1px solid rgba(143,175,192,0.25);
+  color: #8FAFC0;
   font-size: 0.65rem;
   font-weight: 600;
   padding: 2px 8px;

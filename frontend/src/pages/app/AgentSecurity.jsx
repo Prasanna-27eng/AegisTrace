@@ -11,10 +11,10 @@ import useStore from '../../store/useStore';
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 
 const ACTION_COLORS = {
-  case_create:      '#4DA3FF',
-  case_update:      '#4DA3FF',
+  case_create:      '#5A8A9F',
+  case_update:      '#5A8A9F',
   ioc_extraction:   '#EAB308',
-  ai_analysis:      '#A78BFA',
+  ai_analysis:      '#8FAFC0',
   report_generate:  '#22C55E',
   threat_score:     '#F97316',
   case_close:       '#EF4444',
@@ -73,7 +73,7 @@ function ActionCard({ action, onApprove, onReject, processing }) {
             {(action.action_type || 'unknown').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
           </div>
           <div style={{ fontSize: '0.65rem', color: '#787878', ...MONO, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            {action.model_used && <span style={{ color: '#A78BFA' }}>{action.model_used}</span>}
+            {action.model_used && <span style={{ color: '#8FAFC0' }}>{action.model_used}</span>}
             {action.actor && <span>by {action.actor}</span>}
             <span>{timeAgo(action.timestamp)}</span>
           </div>
@@ -106,7 +106,7 @@ function ActionCard({ action, onApprove, onReject, processing }) {
       {/* Case link + reasoning */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: isPending ? 12 : 0 }}>
         {action.case_id && (
-          <span style={{ fontSize: '0.65rem', ...MONO, color: '#4DA3FF', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span style={{ fontSize: '0.65rem', ...MONO, color: '#5A8A9F', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
             <FileText size={10} /> Case #{action.case_id}
           </span>
         )}
@@ -182,11 +182,11 @@ function SettingsPanel({ settings, onChange }) {
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
             <label style={{ fontSize: '0.76rem', color: '#909090' }}>Auto-approve threshold</label>
-            <span style={{ fontSize: '0.76rem', color: '#4DA3FF', ...MONO, fontWeight: 600 }}>{settings.threshold}%</span>
+            <span style={{ fontSize: '0.76rem', color: '#5A8A9F', ...MONO, fontWeight: 600 }}>{settings.threshold}%</span>
           </div>
           <input type="range" min={50} max={99} value={settings.threshold}
             onChange={e => onChange({ ...settings, threshold: parseInt(e.target.value) })}
-            style={{ width: '100%', accentColor: '#4DA3FF' }} />
+            style={{ width: '100%', accentColor: '#5A8A9F' }} />
           <div style={{ fontSize: '0.65rem', color: '#787878', ...MONO, marginTop: 3 }}>
             Actions with confidence ≥ {settings.threshold}% will auto-approve without human review
           </div>
@@ -203,7 +203,7 @@ function SettingsPanel({ settings, onChange }) {
                   const types = settings.required_types || [];
                   onChange({ ...settings, required_types: e.target.checked ? [...types, type] : types.filter(t => t !== type) });
                 }}
-                style={{ accentColor: '#4DA3FF' }} />
+                style={{ accentColor: '#5A8A9F' }} />
               <span style={{ fontSize: '0.76rem', color: '#909090', ...MONO }}>{type.replace(/_/g, ' ')}</span>
             </label>
           ))}
@@ -282,7 +282,7 @@ export default function AgentSecurity() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <Bot size={18} style={{ color: '#A78BFA' }} />
+            <Bot size={18} style={{ color: '#8FAFC0' }} />
             <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>AI Agent Security</h1>
             {pending.length > 0 && (
               <span style={{ fontSize: '0.65rem', ...MONO, background: 'rgba(234,179,8,0.15)', color: '#EAB308', border: '1px solid rgba(234,179,8,0.3)', padding: '2px 8px', borderRadius: 10, fontWeight: 700 }}>
@@ -296,7 +296,7 @@ export default function AgentSecurity() {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => setShowSettings(!showSettings)}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, background: showSettings ? 'rgba(77,163,255,0.1)' : 'rgba(255,255,255,0.04)', border: `1px solid ${showSettings ? 'rgba(77,163,255,0.3)' : 'rgba(255,255,255,0.1)'}`, color: showSettings ? '#4DA3FF' : '#787878', borderRadius: 7, padding: '7px 14px', fontSize: '0.78rem', cursor: 'pointer' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 6, background: showSettings ? 'rgba(90,138,159,0.1)' : 'rgba(255,255,255,0.04)', border: `1px solid ${showSettings ? 'rgba(90,138,159,0.3)' : 'rgba(255,255,255,0.1)'}`, color: showSettings ? '#5A8A9F' : '#787878', borderRadius: 7, padding: '7px 14px', fontSize: '0.78rem', cursor: 'pointer' }}>
             <Settings size={13} /> Settings
           </button>
           <button onClick={load} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#787878', borderRadius: 7, padding: '7px 14px', fontSize: '0.78rem', cursor: 'pointer' }}>
@@ -311,7 +311,7 @@ export default function AgentSecurity() {
           { label: 'Pending Review', val: pending.length,     color: pending.length ? '#EAB308' : '#787878', Icon: Clock,        onClick: () => setTab('pending') },
           { label: 'Approved',       val: approved.length,    color: '#22C55E',                              Icon: CheckCircle,  onClick: () => setTab('approved') },
           { label: 'Rejected',       val: rejected.length,    color: rejected.length ? '#EF4444' : '#787878', Icon: XCircle,     onClick: () => setTab('rejected') },
-          { label: 'Auto-Approved',  val: autoApproved.length,color: '#4DA3FF',                              Icon: Zap,          onClick: () => setTab('auto') },
+          { label: 'Auto-Approved',  val: autoApproved.length,color: '#5A8A9F',                              Icon: Zap,          onClick: () => setTab('auto') },
         ].map(({ label, val, color, Icon, onClick }) => (
           <div key={label} className="at-card" onClick={onClick}
             style={{ padding: '12px 14px', cursor: 'pointer', borderColor: tab === label.split(' ')[0].toLowerCase() ? `${color}40` : 'rgba(255,255,255,0.07)' }}
@@ -334,8 +334,8 @@ export default function AgentSecurity() {
       )}
 
       {/* How it works callout */}
-      <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(167,139,250,0.05)', border: '1px solid rgba(167,139,250,0.15)', borderRadius: 8, display: 'flex', gap: 10, alignItems: 'center' }}>
-        <Shield size={14} style={{ color: '#A78BFA', flexShrink: 0 }} />
+      <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(143,175,192,0.05)', border: '1px solid rgba(143,175,192,0.15)', borderRadius: 8, display: 'flex', gap: 10, alignItems: 'center' }}>
+        <Shield size={14} style={{ color: '#8FAFC0', flexShrink: 0 }} />
         <div style={{ fontSize: '0.76rem', color: '#909090', lineHeight: 1.6 }}>
           <strong style={{ color: '#EBEBEB' }}>Bounded Autonomy:</strong> Every AI action is logged to the Provenance Ledger before executing. Actions above {settings.threshold}% confidence auto-approve. All others queue here for human review. You remain in control.
         </div>
@@ -350,7 +350,7 @@ export default function AgentSecurity() {
           { key: 'auto',     label: `Auto-approved (${autoApproved.length})` },
         ].map(({ key, label }) => (
           <button key={key} onClick={() => setTab(key)}
-            style={{ padding: '8px 16px', background: 'none', border: 'none', borderBottom: tab === key ? '2px solid #4DA3FF' : '2px solid transparent', color: tab === key ? '#EBEBEB' : '#787878', cursor: 'pointer', fontSize: '0.78rem', fontWeight: tab === key ? 600 : 400, marginBottom: -1, ...MONO, transition: 'color 0.15s', whiteSpace: 'nowrap' }}>
+            style={{ padding: '8px 16px', background: 'none', border: 'none', borderBottom: tab === key ? '2px solid #5A8A9F' : '2px solid transparent', color: tab === key ? '#EBEBEB' : '#787878', cursor: 'pointer', fontSize: '0.78rem', fontWeight: tab === key ? 600 : 400, marginBottom: -1, ...MONO, transition: 'color 0.15s', whiteSpace: 'nowrap' }}>
             {label}
           </button>
         ))}
@@ -361,7 +361,7 @@ export default function AgentSecurity() {
         <div style={{ padding: 60, textAlign: 'center', color: '#787878', fontSize: '0.82rem' }}>Loading actions…</div>
       ) : visibleActions.length === 0 ? (
         <div style={{ padding: '48px 0', textAlign: 'center' }}>
-          <Bot size={32} style={{ color: 'rgba(167,139,250,0.2)', margin: '0 auto 12px', display: 'block' }} />
+          <Bot size={32} style={{ color: 'rgba(143,175,192,0.2)', margin: '0 auto 12px', display: 'block' }} />
           <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 6 }}>
             {tab === 'pending' ? 'No pending actions' : `No ${tab} actions`}
           </div>

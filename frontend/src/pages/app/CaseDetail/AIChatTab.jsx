@@ -46,16 +46,16 @@ export default function AIChatTab({ caseId, caseData }) {
         {messages.map((msg, i) => (
           <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
             {msg.role === 'assistant' && (
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Bot size={14} style={{ color: '#A78BFA' }} />
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(143,175,192,0.15)', border: '1px solid rgba(143,175,192,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Bot size={14} style={{ color: '#8FAFC0' }} />
               </div>
             )}
             <div style={{
               maxWidth: '75%',
               padding: '10px 14px',
               borderRadius: msg.role === 'user' ? '12px 12px 4px 12px' : '12px 12px 12px 4px',
-              background: msg.role === 'user' ? 'rgba(77,163,255,0.15)' : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${msg.role === 'user' ? 'rgba(77,163,255,0.25)' : 'rgba(255,255,255,0.07)'}`,
+              background: msg.role === 'user' ? 'rgba(90,138,159,0.15)' : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${msg.role === 'user' ? 'rgba(90,138,159,0.25)' : 'rgba(255,255,255,0.07)'}`,
               fontSize: '0.84rem',
               lineHeight: 1.65,
               color: '#EBEBEB',
@@ -63,26 +63,26 @@ export default function AIChatTab({ caseId, caseData }) {
             }}>
               {msg.content}
               {msg.role === 'assistant' && (
-                <div style={{ fontSize: '0.65rem', color: 'rgba(167,139,250,0.6)', marginTop: 6, fontFamily: 'JetBrains Mono' }}>
+                <div style={{ fontSize: '0.65rem', color: 'rgba(143,175,192,0.6)', marginTop: 6, fontFamily: 'JetBrains Mono' }}>
                   AegisTrace AI · case-scoped
                 </div>
               )}
             </div>
             {msg.role === 'user' && (
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(77,163,255,0.15)', border: '1px solid rgba(77,163,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <User size={14} style={{ color: '#4DA3FF' }} />
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(90,138,159,0.15)', border: '1px solid rgba(90,138,159,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <User size={14} style={{ color: '#5A8A9F' }} />
               </div>
             )}
           </div>
         ))}
         {loading && (
           <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-            <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Bot size={14} style={{ color: '#A78BFA' }} />
+            <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(143,175,192,0.15)', border: '1px solid rgba(143,175,192,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Bot size={14} style={{ color: '#8FAFC0' }} />
             </div>
             <div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px 12px 12px 4px', display: 'flex', gap: 5, alignItems: 'center' }}>
               {[0, 1, 2].map(d => (
-                <div key={d} style={{ width: 6, height: 6, borderRadius: '50%', background: '#A78BFA', animation: `spin 1s ease ${d * 0.2}s infinite`, opacity: 0.6 }} />
+                <div key={d} style={{ width: 6, height: 6, borderRadius: '50%', background: '#8FAFC0', animation: `spin 1s ease ${d * 0.2}s infinite`, opacity: 0.6 }} />
               ))}
             </div>
           </div>

@@ -17,7 +17,7 @@ const DETECTOR_META = {
   impossible_travel:               { label: 'Impossible Travel',          color: '#F97316', Icon: MapPin },
   new_device:                      { label: 'New Device Login',           color: '#EAB308', Icon: Smartphone },
   privilege_escalation:            { label: 'Privilege Escalation',       color: '#EF4444', Icon: Shield },
-  token_theft:                     { label: 'Token / Session Theft',      color: '#A78BFA', Icon: Key },
+  token_theft:                     { label: 'Token / Session Theft',      color: '#8FAFC0', Icon: Key },
   shadow_ai:                       { label: 'Shadow AI Usage',            color: '#2EE6D6', Icon: Bot },
 };
 
@@ -27,7 +27,7 @@ const EVENT_TYPE_LABELS = {
   logout:           { label: 'Logout',          color: '#787878' },
   privilege_change: { label: 'Priv. Change',    color: '#F97316' },
   mfa_challenge:    { label: 'MFA Challenge',   color: '#EAB308' },
-  password_reset:   { label: 'Pwd Reset',       color: '#A78BFA' },
+  password_reset:   { label: 'Pwd Reset',       color: '#8FAFC0' },
   account_lock:     { label: 'Account Lock',    color: '#EF4444' },
 };
 
@@ -81,10 +81,10 @@ function AddEventPanel({ onCreated, onClose }) {
   const lbl = { fontSize: '0.67rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.06em' };
 
   return (
-    <div className="at-card" style={{ padding: 20, marginBottom: 20, borderColor: 'rgba(74,142,219,0.2)' }}>
+    <div className="at-card" style={{ padding: 20, marginBottom: 20, borderColor: 'rgba(78,122,142,0.2)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <span style={{ fontWeight: 600, fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: 7 }}>
-          <Plus size={14} style={{ color: '#4A8EDB' }} /> Add Auth Event
+          <Plus size={14} style={{ color: '#4E7A8E' }} /> Add Auth Event
         </span>
         <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={14} /></button>
       </div>
@@ -172,10 +172,10 @@ function ParseLogPanel({ onParsed, onClose }) {
   };
 
   return (
-    <div className="at-card" style={{ padding: 20, marginBottom: 20, borderColor: 'rgba(74,142,219,0.2)' }}>
+    <div className="at-card" style={{ padding: 20, marginBottom: 20, borderColor: 'rgba(78,122,142,0.2)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <span style={{ fontWeight: 600, fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: 7 }}>
-          <FileText size={14} style={{ color: '#4A8EDB' }} /> AI Log Parser
+          <FileText size={14} style={{ color: '#4E7A8E' }} /> AI Log Parser
         </span>
         <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={14} /></button>
       </div>
@@ -336,9 +336,9 @@ function AlertsTab() {
         {STATUS_FILTERS.map(f => (
           <button key={f} onClick={() => setFilter(f)}
             style={{ padding: '5px 14px', borderRadius: 6, border: '1px solid', fontSize: '0.72rem', cursor: 'pointer', ...MONO, textTransform: 'uppercase', letterSpacing: '0.06em',
-              background: filter === f ? 'rgba(74,142,219,0.12)' : 'transparent',
+              background: filter === f ? 'rgba(78,122,142,0.12)' : 'transparent',
               color: filter === f ? '#6BABEC' : '#787878',
-              borderColor: filter === f ? 'rgba(74,142,219,0.3)' : 'rgba(255,255,255,0.07)',
+              borderColor: filter === f ? 'rgba(78,122,142,0.3)' : 'rgba(255,255,255,0.07)',
             }}>
             {f.replace('_', ' ')}
           </button>
@@ -432,7 +432,7 @@ function AnalyticsTab() {
 
   if (loading) return (
     <div style={{ textAlign: 'center', padding: 80 }}>
-      <Loader2 size={22} className="spinner" style={{ color: '#4A8EDB' }} />
+      <Loader2 size={22} className="spinner" style={{ color: '#4E7A8E' }} />
       <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 12, ...MONO }}>Loading analytics…</div>
     </div>
   );
@@ -452,7 +452,7 @@ function AnalyticsTab() {
   const KPICard = ({ label, value, sub, color = '#EBEBEB', icon: Icon }) => (
     <div className="at-card" style={{ padding: '18px 20px', display: 'flex', alignItems: 'flex-start', gap: 14 }}>
       {Icon && <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <Icon size={16} style={{ color: '#4A8EDB' }} />
+        <Icon size={16} style={{ color: '#4E7A8E' }} />
       </div>}
       <div>
         <div style={{ fontSize: '1.6rem', fontWeight: 700, color, lineHeight: 1.1, ...MONO }}>{value}</div>
@@ -474,9 +474,9 @@ function AnalyticsTab() {
           {[7, 14, 30, 60, 90].map(d => (
             <button key={d} onClick={() => setPeriod(d)}
               style={{ padding: '4px 11px', borderRadius: 5, border: '1px solid', fontSize: '0.7rem', cursor: 'pointer', ...MONO,
-                background: period === d ? 'rgba(74,142,219,0.12)' : 'transparent',
+                background: period === d ? 'rgba(78,122,142,0.12)' : 'transparent',
                 color: period === d ? '#6BABEC' : '#787878',
-                borderColor: period === d ? 'rgba(74,142,219,0.3)' : 'rgba(255,255,255,0.07)',
+                borderColor: period === d ? 'rgba(78,122,142,0.3)' : 'rgba(255,255,255,0.07)',
               }}>
               {d}d
             </button>
@@ -506,7 +506,7 @@ function AnalyticsTab() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {data.detector_fire_rates.map(d => {
-                const dm = DETECTOR_META[d.detector] || { label: d.detector, color: '#4A8EDB', Icon: Shield };
+                const dm = DETECTOR_META[d.detector] || { label: d.detector, color: '#4E7A8E', Icon: Shield };
                 const pct = Math.round((d.count / maxDetector) * 100);
                 return (
                   <div key={d.detector}>
@@ -563,7 +563,7 @@ function AnalyticsTab() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {Object.entries(data.status_breakdown).map(([st, count]) => {
-                  const c = { open: '#EF4444', investigating: '#F97316', resolved: '#22C55E', false_positive: '#787878' }[st] || '#4A8EDB';
+                  const c = { open: '#EF4444', investigating: '#F97316', resolved: '#22C55E', false_positive: '#787878' }[st] || '#4E7A8E';
                   const pct = Math.round((count / Math.max(1, data.total_alerts)) * 100);
                   return (
                     <div key={st}>
@@ -597,7 +597,7 @@ function AnalyticsTab() {
                 style={{ flex: 1, minWidth: 6, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, cursor: 'default' }}>
                 <div style={{
                   width: '100%', height: h,
-                  background: d.count > 0 ? (isToday ? '#4A8EDB' : 'rgba(74,142,219,0.55)') : 'rgba(255,255,255,0.05)',
+                  background: d.count > 0 ? (isToday ? '#4E7A8E' : 'rgba(78,122,142,0.55)') : 'rgba(255,255,255,0.05)',
                   borderRadius: '2px 2px 0 0',
                   transition: 'height 0.4s ease',
                 }} />
@@ -629,7 +629,7 @@ function AnalyticsTab() {
                     <span style={{ fontSize: '0.72rem', fontWeight: 600, color: i === 0 ? '#EF4444' : '#A8A8A8', ...MONO, flexShrink: 0 }}>{item.count} alert{item.count !== 1 ? 's' : ''}</span>
                   </div>
                   <div style={{ height: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 2, marginLeft: 26, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${pct}%`, background: i === 0 ? '#EF4444' : '#4A8EDB', borderRadius: 2, opacity: 0.7 }} />
+                    <div style={{ height: '100%', width: `${pct}%`, background: i === 0 ? '#EF4444' : '#4E7A8E', borderRadius: 2, opacity: 0.7 }} />
                   </div>
                 </div>
               );
@@ -699,7 +699,7 @@ export default function ITDRPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-            <Shield size={20} style={{ color: '#4A8EDB' }} />
+            <Shield size={20} style={{ color: '#4E7A8E' }} />
             <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Identity Threat Detection & Response</h1>
           </div>
           <div style={{ fontSize: '0.7rem', color: '#787878', ...MONO }}>
@@ -728,7 +728,7 @@ export default function ITDRPage() {
       {/* Run Analysis bar (Detection tab only) */}
       {tab === 'detection' && (
         <div className="at-card" style={{ padding: '12px 18px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <AlertTriangle size={14} style={{ color: '#4A8EDB', flexShrink: 0 }} />
+          <AlertTriangle size={14} style={{ color: '#4E7A8E', flexShrink: 0 }} />
           <div style={{ fontSize: '0.76rem', color: '#909090', flex: 1 }}>Run all 6 ITDR detectors for a specific identity</div>
           <input className="at-input" value={analyseForm.identity_label}
             onChange={e => setAnalyseForm(p => ({...p, identity_label: e.target.value}))}

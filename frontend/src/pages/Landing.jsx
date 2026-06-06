@@ -163,7 +163,7 @@ function HexFortress() {
         if (isAlert) {
           ctx.fillStyle = `rgba(239,68,68,${h.alert * 0.13})`;
         } else {
-          ctx.fillStyle = `rgba(77,163,255,${totalBright * 0.55})`;
+          ctx.fillStyle = `rgba(90,138,159,${totalBright * 0.55})`;
         }
         ctx.fill();
 
@@ -173,7 +173,7 @@ function HexFortress() {
           ctx.strokeStyle = `rgba(239,68,68,${Math.min(0.75, h.alert * 0.65)})`;
           ctx.lineWidth   = h.alert > 0.55 ? 1.2 : 0.65;
         } else {
-          ctx.strokeStyle = `rgba(77,163,255,${Math.min(0.28, totalBright * 2.8)})`;
+          ctx.strokeStyle = `rgba(90,138,159,${Math.min(0.28, totalBright * 2.8)})`;
           ctx.lineWidth   = mouseGlow > 0.1 ? 0.9 : 0.45;
         }
         ctx.stroke();
@@ -215,7 +215,7 @@ function AIDemo() {
     catch(e){ setResult({error:true,summary:e.response?.data?.detail||'Analysis failed'}); }
     setLoading(false);
   };
-  const riskColor={Critical:'#EF4444',High:'#4DA3FF',Medium:'#EAB308',Low:'#22C55E',Clean:'#22C55E',Unknown:'#888888'};
+  const riskColor={Critical:'#EF4444',High:'#5A8A9F',Medium:'#EAB308',Low:'#22C55E',Clean:'#22C55E',Unknown:'#888888'};
   const verdictColor={Malicious:'#EF4444',Suspicious:'#EAB308',Clean:'#22C55E',Unknown:'#888888'};
   const mono={fontFamily:'JetBrains Mono,monospace'};
   return (
@@ -227,7 +227,7 @@ function AIDemo() {
       </div>
       <div style={{display:'flex',gap:10}}>
         <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&analyse()} placeholder="Paste any IOC — IP, domain, URL, hash…" style={{flex:1,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:6,padding:'10px 14px',color:'#EBEBEB',outline:'none',fontSize:13,...mono}} />
-        <button onClick={()=>analyse()} disabled={loading} style={{background:'#4DA3FF',color:'#fff',border:'none',borderRadius:6,padding:'10px 20px',fontSize:12,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:8,...mono,whiteSpace:'nowrap'}}>
+        <button onClick={()=>analyse()} disabled={loading} style={{background:'#5A8A9F',color:'#fff',border:'none',borderRadius:6,padding:'10px 20px',fontSize:12,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:8,...mono,whiteSpace:'nowrap'}}>
           {loading?<Loader2 size={14} style={{animation:'spin 1s linear infinite'}}/>:<Zap size={14}/>}
           {loading?'Analysing…':'Analyse'}
         </button>
@@ -246,7 +246,7 @@ function AIDemo() {
           </div>
           <div style={{gridColumn:'1/-1',background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:8,padding:16}}>
             <div style={{fontSize:12,color:'rgba(240,240,248,0.8)',lineHeight:1.7,...mono}}>{result.summary}</div>
-            {result.recommendation&&<div style={{marginTop:8,fontSize:11,color:'rgba(240,240,248,0.5)',borderTop:'1px solid rgba(255,255,255,0.06)',paddingTop:8,...mono}}><strong style={{color:'#4DA3FF'}}>Next step:</strong> {result.recommendation}</div>}
+            {result.recommendation&&<div style={{marginTop:8,fontSize:11,color:'rgba(240,240,248,0.5)',borderTop:'1px solid rgba(255,255,255,0.06)',paddingTop:8,...mono}}><strong style={{color:'#5A8A9F'}}>Next step:</strong> {result.recommendation}</div>}
           </div>
         </div>
       )}
@@ -330,27 +330,27 @@ function LiveIngestionStream() {
 /* ─── DATA ──────────────────────────────────────────────────────────────── */
 const FEATURES = [
   { Icon:ShieldAlert,  title:'ITDR — Identity Threat Detection', desc:'Four real-time detectors: credential stuffing (5+ failed logins), impossible travel (different continents < 4h), new device login, unapproved privilege escalation. Paste auth logs or enter events manually.', color:'#EF4444' },
-  { Icon:Fingerprint,  title:'Identity Risk Engine',  desc:'Pluggable detector architecture: register new risk detectors without touching the core. Ships with AnomalyCountDetector, LastSeenDetector, CompromisedFlagDetector. Every recalculation is logged to audit trail.', color:'#4DA3FF' },
-  { Icon:FolderSearch, title:'Case Management',       desc:'13-tab lifecycle: overview, investigation, IOCs, terminal, timeline, trust timeline, playbook, AI analysis, AI chat, comments, provenance, report, EDR. Autosave, MITRE mapping, SLA breach badges.', color:'#A78BFA' },
+  { Icon:Fingerprint,  title:'Identity Risk Engine',  desc:'Pluggable detector architecture: register new risk detectors without touching the core. Ships with AnomalyCountDetector, LastSeenDetector, CompromisedFlagDetector. Every recalculation is logged to audit trail.', color:'#5A8A9F' },
+  { Icon:FolderSearch, title:'Case Management',       desc:'13-tab lifecycle: overview, investigation, IOCs, terminal, timeline, trust timeline, playbook, AI analysis, AI chat, comments, provenance, report, EDR. Autosave, MITRE mapping, SLA breach badges.', color:'#8FAFC0' },
   { Icon:GitMerge,     title:'Identity Graph + Trust', desc:'Force-directed canvas graph of users, service accounts, API keys, tokens, devices, AI agents. Add anomalies per node, recalculate risk scores, track trust events per investigation.', color:'#EAB308' },
   { Icon:Brain,        title:'Explainable AI',        desc:'Multi-model Groq routing with full reasoning chain. Every verdict shows evidence used, reasoning steps, what-could-be-wrong, and confidence. No black boxes. Provenance ledger records every AI action.', color:'#22C55E' },
-  { Icon:Shield,       title:'7-Source IOC Intel',    desc:'VirusTotal v3 + Shodan, MalwareBazaar, URLhaus, ThreatFox, GreyNoise, IPInfo — all queried in parallel. Results saved to history and correlated cross-case to detect campaigns.', color:'#4DA3FF' },
-  { Icon:Mail,         title:'Email Forensics',       desc:'Full RFC header parsing, SPF/DKIM/DMARC validation, routing hop extraction, AI phishing verdict with confidence scoring and MITRE ATT&CK technique mapping.', color:'#A78BFA' },
+  { Icon:Shield,       title:'7-Source IOC Intel',    desc:'VirusTotal v3 + Shodan, MalwareBazaar, URLhaus, ThreatFox, GreyNoise, IPInfo — all queried in parallel. Results saved to history and correlated cross-case to detect campaigns.', color:'#5A8A9F' },
+  { Icon:Mail,         title:'Email Forensics',       desc:'Full RFC header parsing, SPF/DKIM/DMARC validation, routing hop extraction, AI phishing verdict with confidence scoring and MITRE ATT&CK technique mapping.', color:'#8FAFC0' },
   { Icon:Monitor,      title:'Endpoint Agent v5',     desc:'Production-grade Python EDR for Windows/Linux/Mac. Honey Token Trap (canary files, zero false positives), DNS/DGA detection, auto-block engine, YARA-lite, USB + registry monitoring. Multi-backend failover. Guardian process.', color:'#EAB308' },
   { Icon:Terminal,     title:'Terminal Lab',          desc:'Private Linux-style analyst workspace. Simulated mode for 20+ commands. AI parses every output, extracts IOCs, maps to MITRE. Save sessions to cases.', color:'#22C55E' },
-  { Icon:Activity,     title:'Threat Hunting',        desc:'Cross-case IOC correlation, MITRE heatmap, campaign detection, saved queries. Spots attacker infrastructure reuse across all your investigations.', color:'#4DA3FF' },
-  { Icon:Globe,        title:'DORA Compliance',       desc:'One-click Article 19 Major ICT Incident Report PDF. Maps 5 DORA pillars to live case data. Built for EU financial services regulated firms.', color:'#A78BFA' },
+  { Icon:Activity,     title:'Threat Hunting',        desc:'Cross-case IOC correlation, MITRE heatmap, campaign detection, saved queries. Spots attacker infrastructure reuse across all your investigations.', color:'#5A8A9F' },
+  { Icon:Globe,        title:'DORA Compliance',       desc:'One-click Article 19 Major ICT Incident Report PDF. Maps 5 DORA pillars to live case data. Built for EU financial services regulated firms.', color:'#8FAFC0' },
   { Icon:Bell,         title:'Policy Engine + Alerts', desc:'Create access-control policies per identity type. Validate actions against allow/deny lists, IP restrictions, time windows. Slack-compatible HMAC-signed webhooks.', color:'#EAB308' },
 ];
 
 const HARDWARE_TOOLS = [
-  { cat:'WiFi Attack', color:'#4DA3FF', tools:['Probe Request Analyser','Evil Twin Detector','Deauth Attack Timeline','Handshake Inspector'] },
-  { cat:'RF / Radio',  color:'#A78BFA', tools:['Spectrum Analyser','Replay Attack Detector','Jamming Detector'] },
+  { cat:'WiFi Attack', color:'#5A8A9F', tools:['Probe Request Analyser','Evil Twin Detector','Deauth Attack Timeline','Handshake Inspector'] },
+  { cat:'RF / Radio',  color:'#8FAFC0', tools:['Spectrum Analyser','Replay Attack Detector','Jamming Detector'] },
   { cat:'USB / HID',   color:'#EAB308', tools:['Keystroke Injection Analyser','Payload Decoder','Encoded Command Decoder'] },
   { cat:'Network',     color:'#22C55E', tools:['Suricata IDS Parser','ARP Poison Detector','DNS Query Analyser','Lateral Movement Tracer'] },
   { cat:'RFID / NFC',  color:'#00bfff', tools:['Card Clone Detector','RFID Brute Force Detector'] },
-  { cat:'Endpoint',    color:'#4DA3FF', tools:['Sysmon Event Parser','Process Tree Analyser'] },
-  { cat:'Universal',   color:'#A78BFA', tools:['AI Universal Parser'] },
+  { cat:'Endpoint',    color:'#5A8A9F', tools:['Sysmon Event Parser','Process Tree Analyser'] },
+  { cat:'Universal',   color:'#8FAFC0', tools:['AI Universal Parser'] },
 ];
 
 const COMPARE = [
@@ -377,7 +377,7 @@ const CERTS = [
   { name:'Sec+',   full:'CompTIA Security+', color:'#C8102E', done:true },
   { name:'TCM PEH',full:'TCM Practical Ethical Hacking', color:'#22C55E', done:true },
   { name:'BTL1',   full:'Blue Team Level 1 (55%)', color:'#F97316', done:false },
-  { name:'eJPT',   full:'eLearnSecurity Junior Penetration Tester (20%)', color:'#A78BFA', done:false },
+  { name:'eJPT',   full:'eLearnSecurity Junior Penetration Tester (20%)', color:'#8FAFC0', done:false },
   { name:'SC-300', full:'Microsoft Identity & Access Administrator (15%)', color:'#0078D4', done:false },
 ];
 
@@ -391,14 +391,14 @@ const ROADMAP = [
     items:['AI Agent Security ✓ — human approval queue for all AI actions (shipped)','Shadow AI Detection — detect data sent to unauthorized AI services','SOAR Playbooks — automated response sequences per incident type','Control Plane view — live trust, policy, and agent health dashboard']
   },
   {
-    phase:'Planned — v5.0', status:'planned', color:'#A78BFA',
+    phase:'Planned — v5.0', status:'planned', color:'#8FAFC0',
     items:['Agent Supervision Console — supervise AI agents with kill switches','Attacker Path Reconstruction — visual kill-chain across human + machine actors','AI Memory across cases — pattern recognition from investigation history','Crypto + Quantum Readiness — certificate inventory, post-quantum flags','Machine Identity incidents — rogue API keys, service accounts','Future-narrative reporting — board-level attacker stories']
   }
 ];
 
 const PROBLEMS = [
-  { Icon:UserX,       title:'Attackers no longer break in — they become trusted', desc:'They log in with stolen credentials, abuse hijacked tokens, or impersonate service accounts. The breach starts the moment a malicious actor is granted trust. Traditional SOC tools track machines. AegisTrace tracks trust.', color:'#4DA3FF' },
-  { Icon:Bot,         title:'AI agents are becoming attack surfaces',   desc:'The rise of autonomous agents means attackers can hijack a workflow, poison an AI prompt, or impersonate an API key. Security teams need to supervise non-human identities the same way they supervise people.', color:'#A78BFA' },
+  { Icon:UserX,       title:'Attackers no longer break in — they become trusted', desc:'They log in with stolen credentials, abuse hijacked tokens, or impersonate service accounts. The breach starts the moment a malicious actor is granted trust. Traditional SOC tools track machines. AegisTrace tracks trust.', color:'#5A8A9F' },
+  { Icon:Bot,         title:'AI agents are becoming attack surfaces',   desc:'The rise of autonomous agents means attackers can hijack a workflow, poison an AI prompt, or impersonate an API key. Security teams need to supervise non-human identities the same way they supervise people.', color:'#8FAFC0' },
   { Icon:ShieldAlert, title:'Black-box AI is unacceptable in security', desc:'If your SIEM or AI tool cannot explain why it flagged something — cannot show you the evidence, the reasoning chain, and the confidence — then you cannot trust it in production. AegisTrace shows its work.', color:'#EAB308' },
   { Icon:Boxes,       title:'Static dashboards cannot handle machine-speed threats', desc:'Modern attacks happen faster than analysts can react. The future of security operations is a live control plane: identity states, agent actions, trust events, and policy decisions visible in real time.', color:'#22C55E' },
 ];
@@ -442,8 +442,8 @@ function BentoFeatures({ mono }) {
       </div>
 
       {/* Case Management */}
-      <div className="bento-card" style={{gridColumn:'span 4',background:'rgba(167,139,250,0.04)',border:'1px solid rgba(167,139,250,0.14)',borderRadius:14,padding:22}}>
-        <FolderSearch size={20} style={{color:'#A78BFA',marginBottom:10}}/>
+      <div className="bento-card" style={{gridColumn:'span 4',background:'rgba(143,175,192,0.04)',border:'1px solid rgba(143,175,192,0.14)',borderRadius:14,padding:22}}>
+        <FolderSearch size={20} style={{color:'#8FAFC0',marginBottom:10}}/>
         <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#EBEBEB'}}>Case Management</div>
         <div style={{fontSize:11,color:'rgba(240,240,248,0.45)',lineHeight:1.7,...mono,fontWeight:300}}>13-tab lifecycle: IOCs, terminal, timeline, trust timeline, playbook, AI analysis, AI chat, provenance, report, EDR. Autosave + MITRE mapping.</div>
       </div>
@@ -456,8 +456,8 @@ function BentoFeatures({ mono }) {
       </div>
 
       {/* IOC Intel */}
-      <div className="bento-card" style={{gridColumn:'span 4',background:'rgba(77,163,255,0.04)',border:'1px solid rgba(77,163,255,0.16)',borderRadius:14,padding:22}}>
-        <Shield size={20} style={{color:'#4DA3FF',marginBottom:10}}/>
+      <div className="bento-card" style={{gridColumn:'span 4',background:'rgba(90,138,159,0.04)',border:'1px solid rgba(90,138,159,0.16)',borderRadius:14,padding:22}}>
+        <Shield size={20} style={{color:'#5A8A9F',marginBottom:10}}/>
         <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#EBEBEB'}}>7-Source IOC Intel</div>
         <div style={{fontSize:11,color:'rgba(240,240,248,0.45)',lineHeight:1.7,...mono,fontWeight:300}}>VirusTotal v3 · Shodan · MalwareBazaar · URLhaus · ThreatFox · GreyNoise · IPInfo — all in parallel.</div>
       </div>
@@ -470,8 +470,8 @@ function BentoFeatures({ mono }) {
       </div>
 
       {/* Email Forensics */}
-      <div className="bento-card" style={{gridColumn:'span 5',background:'rgba(167,139,250,0.03)',border:'1px solid rgba(167,139,250,0.1)',borderRadius:14,padding:22}}>
-        <Mail size={20} style={{color:'#A78BFA',marginBottom:10}}/>
+      <div className="bento-card" style={{gridColumn:'span 5',background:'rgba(143,175,192,0.03)',border:'1px solid rgba(143,175,192,0.1)',borderRadius:14,padding:22}}>
+        <Mail size={20} style={{color:'#8FAFC0',marginBottom:10}}/>
         <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#EBEBEB'}}>Email Forensics</div>
         <div style={{fontSize:11,color:'rgba(240,240,248,0.45)',lineHeight:1.7,...mono,fontWeight:300}}>Full RFC header parsing, SPF/DKIM/DMARC validation, routing hop extraction, AI phishing verdict with MITRE ATT&CK mapping.</div>
       </div>
@@ -484,8 +484,8 @@ function BentoFeatures({ mono }) {
       </div>
 
       {/* Identity Auto-Discovery — v4.3 new */}
-      <div className="bento-card" style={{gridColumn:'span 4',background:'rgba(77,163,255,0.04)',border:'1px solid rgba(77,163,255,0.18)',borderRadius:14,padding:22}}>
-        <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#4DA3FF" strokeWidth={2} style={{marginBottom:10}}>
+      <div className="bento-card" style={{gridColumn:'span 4',background:'rgba(90,138,159,0.04)',border:'1px solid rgba(90,138,159,0.18)',borderRadius:14,padding:22}}>
+        <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#5A8A9F" strokeWidth={2} style={{marginBottom:10}}>
           <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
         </svg>
         <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#EBEBEB'}}>Identity Auto-Discovery</div>
@@ -493,8 +493,8 @@ function BentoFeatures({ mono }) {
       </div>
 
       {/* NHI Health Monitor — v4.3 new */}
-      <div className="bento-card" style={{gridColumn:'span 4',background:'rgba(167,139,250,0.04)',border:'1px solid rgba(167,139,250,0.16)',borderRadius:14,padding:22}}>
-        <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth={2} style={{marginBottom:10}}>
+      <div className="bento-card" style={{gridColumn:'span 4',background:'rgba(143,175,192,0.04)',border:'1px solid rgba(143,175,192,0.16)',borderRadius:14,padding:22}}>
+        <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#8FAFC0" strokeWidth={2} style={{marginBottom:10}}>
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
         </svg>
         <div style={{fontWeight:700,fontSize:'0.9rem',marginBottom:6,color:'#EBEBEB'}}>NHI Health Monitor</div>
@@ -533,21 +533,21 @@ export default function Landing() {
         @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
         @keyframes shimmer{0%{opacity:0.4}50%{opacity:1}100%{opacity:0.4}}
         @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-        ::selection{background:rgba(77,163,255,0.4);color:#fff}
+        ::selection{background:rgba(90,138,159,0.4);color:#fff}
         .fade-1{animation:fadeUp 0.9s cubic-bezier(.2,.7,.2,1) 0.05s both}
         .fade-2{animation:fadeUp 0.9s cubic-bezier(.2,.7,.2,1) 0.2s both}
         .fade-4{animation:fadeUp 0.9s cubic-bezier(.2,.7,.2,1) 0.65s both}
         .nav-link{color:rgba(240,240,248,0.5);text-decoration:none;transition:color 0.2s;font-size:11px;letter-spacing:0.12em;text-transform:uppercase}
-        .nav-link:hover{color:#4DA3FF}
+        .nav-link:hover{color:#5A8A9F}
         .bento-card{transition:transform 0.2s,border-color 0.2s;cursor:default}
         .bento-card:hover{transform:translateY(-3px)}
         .feat-card{background:rgba(240,240,248,0.02);border:1px solid rgba(240,240,248,0.07);border-radius:10px;padding:22px;transition:border-color 0.2s,background 0.2s,transform 0.2s;cursor:default}
-        .feat-card:hover{border-color:rgba(77,163,255,0.35);background:rgba(77,163,255,0.03);transform:translateY(-2px)}
+        .feat-card:hover{border-color:rgba(90,138,159,0.35);background:rgba(90,138,159,0.03);transform:translateY(-2px)}
         .hw-cat-card{background:rgba(240,240,248,0.02);border:1px solid rgba(240,240,248,0.07);border-radius:10px;padding:20px;transition:all 0.2s}
-        .hw-cat-card:hover{border-color:rgba(77,163,255,0.3);background:rgba(77,163,255,0.025)}
+        .hw-cat-card:hover{border-color:rgba(90,138,159,0.3);background:rgba(90,138,159,0.025)}
         .compare-row:hover td{background:rgba(255,255,255,0.02)}
         .pillar-card{background:rgba(240,240,248,0.02);border:1px solid rgba(240,240,248,0.06);border-radius:10px;padding:24px;transition:all 0.25s}
-        .pillar-card:hover{border-color:rgba(167,139,250,0.3);background:rgba(167,139,250,0.03);transform:translateY(-2px)}
+        .pillar-card:hover{border-color:rgba(143,175,192,0.3);background:rgba(143,175,192,0.03);transform:translateY(-2px)}
         .problem-card{background:rgba(240,240,248,0.02);border:1px solid rgba(240,240,248,0.07);border-radius:10px;padding:28px;transition:all 0.2s}
         .problem-card:hover{transform:translateY(-2px)}
         .stat-float{animation:floatY 3s ease-in-out infinite}
@@ -562,11 +562,18 @@ export default function Landing() {
           .hero-grid{grid-template-columns:1fr!important;gap:24px!important;padding:0 20px!important}
           .bento-grid-inner>div{grid-column:span 12!important;grid-row:span 1!important}
           .stat-float{animation:none!important}
+          .lp-footer-section{padding:48px 20px 36px!important}
+          .lp-footer-row{flex-direction:column!important;align-items:flex-start!important;gap:12px!important}
+          .lp-footer-cta{flex-direction:column!important;align-items:flex-start!important;gap:24px!important}
+          .lp-cta-buttons{flex-direction:column!important;width:100%!important}
+          .lp-cta-buttons>*{width:100%!important;text-align:center!important;justify-content:center!important}
+          .lp-footer-meta{flex-direction:column!important;align-items:flex-start!important;gap:8px!important;padding-top:20px!important}
         }
         @media(min-width:901px){.mobile-menu-btn{display:none!important}}
         @media(max-width:600px){
           .lp-grid-4{grid-template-columns:1fr!important}
           .lp-section{padding:36px 16px!important}
+          .lp-footer-section{padding:36px 16px 28px!important}
         }
       `}</style>
 
@@ -579,15 +586,15 @@ export default function Landing() {
           {NAV_LINKS.map(([href,label])=>(
             <a key={href} href={href} className="nav-link" onClick={e=>{e.preventDefault();document.querySelector(href)?.scrollIntoView({behavior:'smooth'});}}>{label}</a>
           ))}
-          <a href="/mission" className="nav-link" style={{color:'#4A8EDB'}}>Mission</a>
+          <a href="/mission" className="nav-link" style={{color:'#4E7A8E'}}>Mission</a>
           <a href="/portfolio" className="nav-link">Portfolio</a>
           <a href="/agent-setup" className="nav-link">Agent</a>
         </nav>
 
         <div style={{display:'flex',alignItems:'center',gap:12}}>
-          <div style={{width:7,height:7,borderRadius:'50%',background:'#4DA3FF',animation:'pulse-dot 1.8s ease-in-out infinite'}}/>
+          <div style={{width:7,height:7,borderRadius:'50%',background:'#5A8A9F',animation:'pulse-dot 1.8s ease-in-out infinite'}}/>
           <Clock/>
-          <button onClick={openApp} style={{background:'#4DA3FF',color:'white',border:'none',borderRadius:6,padding:'8px 18px',fontSize:11,fontWeight:600,cursor:'pointer',...mono,letterSpacing:'0.08em',textTransform:'uppercase'}}>Launch App</button>
+          <button onClick={openApp} style={{background:'#5A8A9F',color:'white',border:'none',borderRadius:6,padding:'8px 18px',fontSize:11,fontWeight:600,cursor:'pointer',...mono,letterSpacing:'0.08em',textTransform:'uppercase'}}>Launch App</button>
           {/* Mobile menu toggle */}
           <button className="mobile-menu-btn" onClick={()=>setMobileNav(true)} style={{background:'none',border:'1px solid rgba(240,240,248,0.15)',borderRadius:6,padding:'7px 9px',cursor:'pointer',color:'#EBEBEB',display:'flex',alignItems:'center'}}>
             <Menu size={16}/>
@@ -607,9 +614,9 @@ export default function Landing() {
           ].map(([href,label,accent])=>(
             <a key={href} href={href}
               onClick={e=>{if(href.startsWith('#')){e.preventDefault();setMobileNav(false);document.querySelector(href)?.scrollIntoView({behavior:'smooth'});}else{setMobileNav(false);}}}
-              style={{display:'block',padding:'14px 0',fontSize:16,color:accent?'#4DA3FF':'rgba(240,240,248,0.75)',textDecoration:'none',borderBottom:'1px solid rgba(255,255,255,0.05)',...mono,letterSpacing:'0.08em',textTransform:'uppercase'}}>{label}</a>
+              style={{display:'block',padding:'14px 0',fontSize:16,color:accent?'#5A8A9F':'rgba(240,240,248,0.75)',textDecoration:'none',borderBottom:'1px solid rgba(255,255,255,0.05)',...mono,letterSpacing:'0.08em',textTransform:'uppercase'}}>{label}</a>
           ))}
-          <button onClick={()=>{openApp();setMobileNav(false);}} style={{marginTop:24,background:'#4DA3FF',color:'#fff',border:'none',borderRadius:8,padding:'14px',fontSize:13,fontWeight:700,cursor:'pointer',...mono,letterSpacing:'0.08em',textTransform:'uppercase'}}>Launch App →</button>
+          <button onClick={()=>{openApp();setMobileNav(false);}} style={{marginTop:24,background:'#5A8A9F',color:'#fff',border:'none',borderRadius:8,padding:'14px',fontSize:13,fontWeight:700,cursor:'pointer',...mono,letterSpacing:'0.08em',textTransform:'uppercase'}}>Launch App →</button>
         </div>
       )}
 
@@ -618,13 +625,13 @@ export default function Landing() {
         <ThreatStream opacity={0.45} />
         <div className="lp-rails" style={{position:'absolute',left:20,top:'50%',transform:'translateY(-50%)',zIndex:10,display:'flex',flexDirection:'column',alignItems:'center',gap:12}}>
           <span style={{writingMode:'vertical-rl',fontSize:10,color:'rgba(240,240,248,0.3)',letterSpacing:'0.15em',textTransform:'uppercase',...mono}}>Transmission № 01</span>
-          <div style={{width:1,height:48,background:'rgba(77,163,255,0.3)'}}/>
+          <div style={{width:1,height:48,background:'rgba(90,138,159,0.3)'}}/>
           <span style={{writingMode:'vertical-rl',fontSize:10,color:'rgba(240,240,248,0.25)',letterSpacing:'0.12em',...mono}}>SOC · Intel · Trace</span>
         </div>
         <div className="lp-rails" style={{position:'absolute',right:20,top:'50%',transform:'translateY(-50%)',zIndex:10,display:'flex',flexDirection:'column',alignItems:'flex-end',gap:10}}>
           <span style={{writingMode:'vertical-rl',transform:'rotate(180deg)',fontSize:10,color:'rgba(240,240,248,0.3)',letterSpacing:'0.12em',...mono}}>Vanishing pt.</span>
-          <div style={{width:1,height:36,background:'rgba(77,163,255,0.3)'}}/>
-          <span style={{writingMode:'vertical-rl',transform:'rotate(180deg)',fontSize:10,color:'rgba(77,163,255,0.5)',letterSpacing:'0.1em',...mono}}>x{coord.x} · y{coord.y}</span>
+          <div style={{width:1,height:36,background:'rgba(90,138,159,0.3)'}}/>
+          <span style={{writingMode:'vertical-rl',transform:'rotate(180deg)',fontSize:10,color:'rgba(90,138,159,0.5)',letterSpacing:'0.1em',...mono}}>x{coord.x} · y{coord.y}</span>
         </div>
 
         {/* Split hero content */}
@@ -632,19 +639,19 @@ export default function Landing() {
           <div className="fade-4 hero-grid" style={{maxWidth:1200,margin:'0 auto',padding:'0 56px',width:'100%',display:'grid',gridTemplateColumns:'1.2fr 0.8fr',gap:56,alignItems:'center'}}>
             {/* Left: headline */}
             <div>
-              <div className="void-compile" style={{fontSize:10,letterSpacing:'0.45em',textTransform:'uppercase',color:'#4DA3FF',...mono,marginBottom:16,display:'flex',alignItems:'center',gap:8}}>
-                <span style={{border:'1px solid rgba(77,163,255,0.4)',width:12,height:12,display:'inline-block'}}/>
+              <div className="void-compile" style={{fontSize:10,letterSpacing:'0.45em',textTransform:'uppercase',color:'#5A8A9F',...mono,marginBottom:16,display:'flex',alignItems:'center',gap:8}}>
+                <span style={{border:'1px solid rgba(90,138,159,0.4)',width:12,height:12,display:'inline-block'}}/>
                 Trust · Identity · Provenance · Control Plane
               </div>
               <h1 style={{fontFamily:'Instrument Serif,Georgia,serif',lineHeight:0.92,letterSpacing:'-0.015em',marginBottom:28}}>
                 <div className="void-compile void-compile-d1" style={{fontSize:'clamp(2.8rem,7vw,8.5rem)',color:'#EBEBEB',fontWeight:400}}>Attackers no longer break in.</div>
-                <div className="void-compile void-compile-d2" style={{fontSize:'clamp(2.8rem,7vw,8.5rem)',color:'#4DA3FF',fontStyle:'italic',fontWeight:400}}>They become trusted.</div>
+                <div className="void-compile void-compile-d2" style={{fontSize:'clamp(2.8rem,7vw,8.5rem)',color:'#5A8A9F',fontStyle:'italic',fontWeight:400}}>They become trusted.</div>
               </h1>
               <p className="void-compile void-compile-d3" style={{maxWidth:520,fontSize:13,color:'rgba(240,240,248,0.5)',lineHeight:1.8,...mono,fontWeight:300,marginBottom:14}}>
                 AegisTrace is not just a SOC dashboard — it is a security control plane built for the AI-agent era. Identity-centric. Provenance-aware. Explainable.
               </p>
-              <p className="void-compile void-compile-d4" style={{maxWidth:520,fontSize:12,color:'rgba(77,163,255,0.7)',lineHeight:1.7,...mono,fontWeight:300,marginBottom:28,borderLeft:'2px solid rgba(77,163,255,0.3)',paddingLeft:12}}>
-                The average enterprise has <strong style={{color:'#4DA3FF'}}>144 machine identities</strong> for every human. Most are unmonitored.
+              <p className="void-compile void-compile-d4" style={{maxWidth:520,fontSize:12,color:'rgba(90,138,159,0.7)',lineHeight:1.7,...mono,fontWeight:300,marginBottom:28,borderLeft:'2px solid rgba(90,138,159,0.3)',paddingLeft:12}}>
+                The average enterprise has <strong style={{color:'#5A8A9F'}}>144 machine identities</strong> for every human. Most are unmonitored.
               </p>
               <div className="void-compile void-compile-d5" style={{display:'flex',gap:12,flexWrap:'wrap'}}>
                 <button onClick={openApp} style={{background:'#FFFFFF',color:'#000000',border:'none',padding:'12px 28px',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:'JetBrains Mono,monospace',letterSpacing:'0.14em',textTransform:'uppercase',display:'flex',alignItems:'center',gap:8,transition:'opacity 0.2s'}}
@@ -663,9 +670,9 @@ export default function Landing() {
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
               {[
                 {val:stats.total_cases,    label:'Cases Investigated', color:'#EBEBEB', sub:'Platform data', delay:'0s'},
-                {val:stats.total_iocs,     label:'IOCs Correlated',    color:'#4DA3FF',  sub:'Cross-case intel', delay:'0.4s'},
+                {val:stats.total_iocs,     label:'IOCs Correlated',    color:'#5A8A9F',  sub:'Cross-case intel', delay:'0.4s'},
                 {val:stats.critical_cases, label:'Critical Incidents', color:'#EAB308',  sub:'High-severity', delay:'0.8s'},
-                {val:stats.vt_lookups,     label:'VT Lookups Run',     color:'#A78BFA',  sub:'Enrichment queries', delay:'1.2s'},
+                {val:stats.vt_lookups,     label:'VT Lookups Run',     color:'#8FAFC0',  sub:'Enrichment queries', delay:'1.2s'},
               ].map(({val,label,color,sub,delay})=>(
                 <div key={label} className="stat-float" style={{animationDelay:delay,padding:'20px',background:'rgba(8,12,20,0.8)',border:'1px solid rgba(240,240,248,0.08)',borderRadius:12,backdropFilter:'blur(12px)'}}>
                   <div style={{fontSize:'1.9rem',fontWeight:700,color,...mono,lineHeight:1}}>{(val||0).toLocaleString()}</div>
@@ -685,10 +692,10 @@ export default function Landing() {
         <div style={{maxWidth:1200,margin:'0 auto'}}>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:56,alignItems:'start',marginBottom:52}} className="lp-2col">
             <div>
-              <div style={{fontSize:10,color:'#4DA3FF',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:12}}>◇ The Problem</div>
+              <div style={{fontSize:10,color:'#5A8A9F',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:12}}>◇ The Problem</div>
               <h2 style={{fontFamily:'Instrument Serif,serif',fontSize:'clamp(2rem,4vw,3.4rem)',fontWeight:400,letterSpacing:'-0.02em',lineHeight:1.1,maxWidth:600}}>
                 Cybersecurity is changing faster<br/>
-                <span style={{color:'#4DA3FF',fontStyle:'italic'}}>than most platforms can follow.</span>
+                <span style={{color:'#5A8A9F',fontStyle:'italic'}}>than most platforms can follow.</span>
               </h2>
               <p style={{marginTop:18,fontSize:13,color:'rgba(240,240,248,0.5)',lineHeight:1.85,...mono,fontWeight:300,maxWidth:540}}>
                 The SOC tools built in 2015 were designed for a world of firewalls, malware, and network anomalies. That world still exists — but it is now layered on top of AI agents, machine identities, stolen tokens, and automated attacks that move faster than any human analyst.
@@ -697,8 +704,8 @@ export default function Landing() {
             {/* Stats panel */}
             <div style={{display:'flex',flexDirection:'column',gap:14}}>
               {[
-                {stat:'83%',label:'of breaches in 2024 involved a compromised identity, credential, or token — not a technical exploit.',color:'#4DA3FF'},
-                {stat:'10–15yr',label:'window before AI-native attackers, quantum-harvested keys, and autonomous agent exploits become the dominant threat model.',color:'#A78BFA'},
+                {stat:'83%',label:'of breaches in 2024 involved a compromised identity, credential, or token — not a technical exploit.',color:'#5A8A9F'},
+                {stat:'10–15yr',label:'window before AI-native attackers, quantum-harvested keys, and autonomous agent exploits become the dominant threat model.',color:'#8FAFC0'},
                 {stat:'$0',label:'cost to deploy AegisTrace. No license. No vendor lock-in. Full SOC platform, open stack, runs on free-tier Render.',color:'#EAB308'},
               ].map(({stat,label,color})=>(
                 <div key={stat} style={{display:'flex',gap:18,alignItems:'flex-start',padding:'18px 20px',background:'rgba(240,240,248,0.02)',border:`1px solid rgba(240,240,248,0.07)`,borderLeft:`3px solid ${color}`,borderRadius:'0 8px 8px 0'}}>
@@ -725,9 +732,9 @@ export default function Landing() {
         <div style={{maxWidth:1200,margin:'0 auto'}}>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:64,alignItems:'start',marginBottom:56}} className="lp-2col">
             <div>
-              <div style={{fontSize:10,color:'#A78BFA',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:12}}>◇ Future Vision</div>
+              <div style={{fontSize:10,color:'#8FAFC0',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:12}}>◇ Future Vision</div>
               <h2 style={{fontFamily:'Instrument Serif,serif',fontSize:'clamp(2rem,4vw,3.4rem)',fontWeight:400,letterSpacing:'-0.02em',lineHeight:1.1}}>
-                From SOC dashboard<br/>to <span style={{color:'#A78BFA',fontStyle:'italic'}}>Trust Operating System.</span>
+                From SOC dashboard<br/>to <span style={{color:'#8FAFC0',fontStyle:'italic'}}>Trust Operating System.</span>
               </h2>
               <p style={{marginTop:18,fontSize:13,color:'rgba(240,240,248,0.5)',lineHeight:1.85,...mono,fontWeight:300}}>
                 The next evolution of AegisTrace is not adding more tools. It is changing the fundamental model of how the platform thinks about security — tracking identities, trust relationships, agent actions, and provenance chains.
@@ -735,12 +742,12 @@ export default function Landing() {
             </div>
             <div style={{display:'flex',flexDirection:'column',gap:0}}>
               {[
-                {from:'Case manager',          to:'Trust orchestration platform',    color:'#4DA3FF'},
-                {from:'IOC dashboard',         to:'Identity investigation platform', color:'#A78BFA'},
+                {from:'Case manager',          to:'Trust orchestration platform',    color:'#5A8A9F'},
+                {from:'IOC dashboard',         to:'Identity investigation platform', color:'#8FAFC0'},
                 {from:'Alert viewer',          to:'Agent supervision console',       color:'#EAB308'},
                 {from:'Static reports',        to:'Future-narrative intelligence',   color:'#22C55E'},
-                {from:'Manual triage',         to:'Autonomous + human-approved',     color:'#4DA3FF'},
-                {from:'Black-box AI verdicts', to:'Explainable provenance chains',   color:'#A78BFA'},
+                {from:'Manual triage',         to:'Autonomous + human-approved',     color:'#5A8A9F'},
+                {from:'Black-box AI verdicts', to:'Explainable provenance chains',   color:'#8FAFC0'},
               ].map(({from,to,color})=>(
                 <div key={from} style={{display:'flex',alignItems:'center',gap:0,padding:'11px 0',borderBottom:'1px solid rgba(255,255,255,0.05)'}}>
                   <div style={{flex:1,fontSize:12,color:'rgba(240,240,248,0.3)',...mono,textDecoration:'line-through'}}>{from}</div>
@@ -753,7 +760,7 @@ export default function Landing() {
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(190px,1fr))',gap:14}}>
             {PILLARS.map(({Icon,label,desc})=>(
               <div key={label} className="pillar-card">
-                <Icon size={20} style={{color:'#A78BFA',marginBottom:12}}/>
+                <Icon size={20} style={{color:'#8FAFC0',marginBottom:12}}/>
                 <div style={{fontWeight:700,fontSize:13,marginBottom:8,color:'#EBEBEB'}}>{label}</div>
                 <div style={{fontSize:11,color:'rgba(240,240,248,0.45)',lineHeight:1.7,...mono,fontWeight:300}}>{desc}</div>
               </div>
@@ -767,9 +774,9 @@ export default function Landing() {
         <div style={{maxWidth:1200,margin:'0 auto'}}>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:56,alignItems:'center',marginBottom:52}} className="lp-2col">
             <div>
-              <div style={{fontSize:10,color:'#4DA3FF',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:10}}>◇ Session 6 — Live Now</div>
+              <div style={{fontSize:10,color:'#5A8A9F',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:10}}>◇ Session 6 — Live Now</div>
               <h2 style={{fontFamily:'Instrument Serif,serif',fontSize:'clamp(2rem,4vw,3.2rem)',fontWeight:400,letterSpacing:'-0.02em',lineHeight:1.1}}>
-                Hardware attack tools.<br/><span style={{color:'#4DA3FF',fontStyle:'italic'}}>Analysed by AI.</span>
+                Hardware attack tools.<br/><span style={{color:'#5A8A9F',fontStyle:'italic'}}>Analysed by AI.</span>
               </h2>
               <p style={{marginTop:18,fontSize:13,color:'rgba(240,240,248,0.5)',lineHeight:1.8,...mono,fontWeight:300}}>
                 The only free SOC tool that ingests logs from physical hardware attack tools — WiFi Pineapple, HackRF, Flipper Zero, Rubber Ducky, Proxmark 3, Suricata, Sysmon, and more.
@@ -777,8 +784,8 @@ export default function Landing() {
             </div>
             <div style={{display:'flex',flexDirection:'column',gap:10}}>
               {[{Icon:Wifi,label:'WiFi/RF attacks visible alongside endpoint events'},{Icon:Cpu,label:'AI auto-parses unknown log formats — no parser needed'},{Icon:Shield,label:'Every event auto-mapped to MITRE ATT&CK technique'},{Icon:Zap,label:'One-click case creation from any hardware alert'}].map(({Icon,label})=>(
-                <div key={label} style={{display:'flex',alignItems:'center',gap:10,fontSize:12,color:'rgba(240,240,248,0.7)',...mono,padding:'10px 14px',background:'rgba(77,163,255,0.05)',border:'1px solid rgba(77,163,255,0.12)',borderRadius:8}}>
-                  <Icon size={14} style={{color:'#4DA3FF',flexShrink:0}}/>{label}
+                <div key={label} style={{display:'flex',alignItems:'center',gap:10,fontSize:12,color:'rgba(240,240,248,0.7)',...mono,padding:'10px 14px',background:'rgba(90,138,159,0.05)',border:'1px solid rgba(90,138,159,0.12)',borderRadius:8}}>
+                  <Icon size={14} style={{color:'#5A8A9F',flexShrink:0}}/>{label}
                 </div>
               ))}
             </div>
@@ -800,7 +807,7 @@ export default function Landing() {
             ))}
           </div>
           <div style={{marginTop:28,textAlign:'center'}}>
-            <button onClick={openApp} style={{background:'#4DA3FF',color:'#fff',border:'none',borderRadius:6,padding:'12px 32px',fontSize:12,fontWeight:600,cursor:'pointer',...mono,letterSpacing:'0.08em',textTransform:'uppercase'}}>Open Hardware Tools →</button>
+            <button onClick={openApp} style={{background:'#5A8A9F',color:'#fff',border:'none',borderRadius:6,padding:'12px 32px',fontSize:12,fontWeight:600,cursor:'pointer',...mono,letterSpacing:'0.08em',textTransform:'uppercase'}}>Open Hardware Tools →</button>
           </div>
         </div>
       </section>
@@ -809,7 +816,7 @@ export default function Landing() {
       <section id="features" className="lp-section" style={{padding:'80px 48px',background:'#0A0A0A',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
         <div style={{maxWidth:1200,margin:'0 auto'}}>
           <div style={{marginBottom:48}}>
-            <div style={{fontSize:10,color:'#4DA3FF',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:10}}>◇ Platform Capabilities</div>
+            <div style={{fontSize:10,color:'#5A8A9F',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:10}}>◇ Platform Capabilities</div>
             <h2 style={{fontFamily:'Instrument Serif,serif',fontSize:'clamp(2rem,4vw,3.2rem)',fontWeight:400,letterSpacing:'-0.02em'}}>Everything a SOC analyst needs.<br/><span style={{color:'rgba(240,240,248,0.3)'}}>Nothing you don't.</span></h2>
           </div>
           <BentoFeatures mono={mono}/>
@@ -821,8 +828,8 @@ export default function Landing() {
         <div style={{maxWidth:1100,margin:'0 auto'}}>
           <div style={{marginBottom:40,display:'grid',gridTemplateColumns:'1fr 1fr',gap:32,alignItems:'flex-end'}} className="lp-2col">
             <div>
-              <div style={{fontSize:10,color:'#4DA3FF',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:10}}>◇ Live Intelligence Demo</div>
-              <h2 style={{fontFamily:'Instrument Serif,serif',fontSize:'clamp(2rem,4vw,3.2rem)',fontWeight:400,letterSpacing:'-0.02em',lineHeight:1.1}}>Try the AI<br/><span style={{color:'#4DA3FF',fontStyle:'italic'}}>right now.</span></h2>
+              <div style={{fontSize:10,color:'#5A8A9F',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:10}}>◇ Live Intelligence Demo</div>
+              <h2 style={{fontFamily:'Instrument Serif,serif',fontSize:'clamp(2rem,4vw,3.2rem)',fontWeight:400,letterSpacing:'-0.02em',lineHeight:1.1}}>Try the AI<br/><span style={{color:'#5A8A9F',fontStyle:'italic'}}>right now.</span></h2>
             </div>
             <p style={{fontSize:13,color:'rgba(240,240,248,0.45)',lineHeight:1.75,...mono,fontWeight:300}}>Paste any IOC — IP address, domain, URL, or hash. AegisTrace AI returns a real threat assessment in under 2 seconds using Groq's inference engine.</p>
           </div>
@@ -834,9 +841,9 @@ export default function Landing() {
       <section id="roadmap" className="lp-section" style={{padding:'90px 48px',background:'#0A0A0A',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
         <div style={{maxWidth:1200,margin:'0 auto'}}>
           <div style={{marginBottom:52}}>
-            <div style={{fontSize:10,color:'#A78BFA',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:12}}>◇ Product Roadmap</div>
+            <div style={{fontSize:10,color:'#8FAFC0',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:12}}>◇ Product Roadmap</div>
             <h2 style={{fontFamily:'Instrument Serif,serif',fontSize:'clamp(2rem,4vw,3.4rem)',fontWeight:400,letterSpacing:'-0.02em',lineHeight:1.1}}>
-              Where we are.<br/><span style={{color:'#A78BFA',fontStyle:'italic'}}>Where we're going.</span>
+              Where we are.<br/><span style={{color:'#8FAFC0',fontStyle:'italic'}}>Where we're going.</span>
             </h2>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))',gap:20}}>
@@ -866,15 +873,15 @@ export default function Landing() {
       <section style={{padding:'80px 48px',background:'#111111',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
         <div style={{maxWidth:1100,margin:'0 auto'}}>
           <div style={{marginBottom:44}}>
-            <div style={{fontSize:10,color:'#4DA3FF',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:10}}>◇ Competitive Benchmark</div>
-            <h2 style={{fontFamily:'Instrument Serif,serif',fontSize:'clamp(2rem,4vw,3.2rem)',fontWeight:400,letterSpacing:'-0.02em'}}>Free beats<br/><span style={{color:'#4DA3FF',fontStyle:'italic'}}>$50,000/year.</span></h2>
+            <div style={{fontSize:10,color:'#5A8A9F',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:10}}>◇ Competitive Benchmark</div>
+            <h2 style={{fontFamily:'Instrument Serif,serif',fontSize:'clamp(2rem,4vw,3.2rem)',fontWeight:400,letterSpacing:'-0.02em'}}>Free beats<br/><span style={{color:'#5A8A9F',fontStyle:'italic'}}>$50,000/year.</span></h2>
           </div>
           <div style={{overflowX:'auto'}}>
             <table style={{width:'100%',borderCollapse:'collapse'}}>
               <thead>
                 <tr>
                   <th style={{textAlign:'left',padding:'12px 16px',fontSize:12,color:'rgba(240,240,248,0.4)',fontWeight:400,borderBottom:'1px solid rgba(255,255,255,0.08)',...mono}}>Feature</th>
-                  {[{name:'AegisTrace',sub:'Free',color:'#4DA3FF'},{name:'CrowdStrike',sub:'$~15k/yr',color:'#A78BFA'},{name:'Splunk',sub:'$~25k/yr',color:'#F97316'}].map(h=>(
+                  {[{name:'AegisTrace',sub:'Free',color:'#5A8A9F'},{name:'CrowdStrike',sub:'$~15k/yr',color:'#8FAFC0'},{name:'Splunk',sub:'$~25k/yr',color:'#F97316'}].map(h=>(
                     <th key={h.name} style={{textAlign:'center',padding:'12px 24px',borderBottom:'1px solid rgba(255,255,255,0.08)'}}>
                       <div style={{fontWeight:700,fontSize:14,color:h.color}}>{h.name}</div>
                       <div style={{fontSize:10,color:'rgba(240,240,248,0.4)',...mono,marginTop:2}}>{h.sub}</div>
@@ -903,13 +910,13 @@ export default function Landing() {
       <section style={{padding:'80px 48px',background:'#0A0A0A',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
         <div style={{maxWidth:1200,margin:'0 auto'}}>
           <div style={{marginBottom:40}}>
-            <div style={{fontSize:10,color:'#4DA3FF',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:10}}>◇ AI Engine — 100% Free via Groq</div>
-            <h2 style={{fontFamily:'Instrument Serif,serif',fontSize:'clamp(2rem,4vw,3.2rem)',fontWeight:400,letterSpacing:'-0.02em'}}>Right model.<br/><span style={{color:'#4DA3FF',fontStyle:'italic'}}>Right task.</span></h2>
+            <div style={{fontSize:10,color:'#5A8A9F',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:10}}>◇ AI Engine — 100% Free via Groq</div>
+            <h2 style={{fontFamily:'Instrument Serif,serif',fontSize:'clamp(2rem,4vw,3.2rem)',fontWeight:400,letterSpacing:'-0.02em'}}>Right model.<br/><span style={{color:'#5A8A9F',fontStyle:'italic'}}>Right task.</span></h2>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:12}}>
             {[
-              {model:'llama-3.3-70b-versatile',task:'Case Analysis & Chat',  why:'Best reasoning for complex incident investigation and executive report writing',color:'#4DA3FF'},
-              {model:'mixtral-8x7b-32768',     task:'Email Classification',  why:'Large 32K context window for full header + body phishing analysis',color:'#A78BFA'},
+              {model:'llama-3.3-70b-versatile',task:'Case Analysis & Chat',  why:'Best reasoning for complex incident investigation and executive report writing',color:'#5A8A9F'},
+              {model:'mixtral-8x7b-32768',     task:'Email Classification',  why:'Large 32K context window for full header + body phishing analysis',color:'#8FAFC0'},
               {model:'gemma2-9b-it',           task:'IOC Extraction',        why:'3× faster than 70b for structured JSON extraction from terminal output',color:'#EAB308'},
               {model:'llama-3.1-8b-instant',   task:'Quick Security Q&A',    why:'Sub-200ms for simple binary security questions and quick classification',color:'#22C55E'},
             ].map(({model,task,why,color})=>(
@@ -929,12 +936,12 @@ export default function Landing() {
       <section style={{padding:'80px 48px',background:'#111111',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
         <div style={{maxWidth:1200,margin:'0 auto'}}>
           <div style={{marginBottom:48}}>
-            <div style={{fontSize:10,color:'#4DA3FF',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:10}}>◇ Investigation Workflow</div>
-            <h2 style={{fontFamily:'Instrument Serif,serif',fontSize:'clamp(2rem,4vw,3.2rem)',fontWeight:400,letterSpacing:'-0.02em'}}>Four steps.<br/><span style={{color:'#4DA3FF',fontStyle:'italic'}}>One investigation.</span></h2>
+            <div style={{fontSize:10,color:'#5A8A9F',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:10}}>◇ Investigation Workflow</div>
+            <h2 style={{fontFamily:'Instrument Serif,serif',fontSize:'clamp(2rem,4vw,3.2rem)',fontWeight:400,letterSpacing:'-0.02em'}}>Four steps.<br/><span style={{color:'#5A8A9F',fontStyle:'italic'}}>One investigation.</span></h2>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:0,position:'relative'}}>
             {/* Connector line */}
-            <div style={{position:'absolute',top:28,left:'12.5%',right:'12.5%',height:1,background:'linear-gradient(90deg,transparent,rgba(77,163,255,0.3),rgba(77,163,255,0.3),rgba(77,163,255,0.3),transparent)',zIndex:0,display:'block'}}/>
+            <div style={{position:'absolute',top:28,left:'12.5%',right:'12.5%',height:1,background:'linear-gradient(90deg,transparent,rgba(90,138,159,0.3),rgba(90,138,159,0.3),rgba(90,138,159,0.3),transparent)',zIndex:0,display:'block'}}/>
             {[
               {n:'01',title:'Deploy the Agent',     desc:'Drop aegistrace_agent.py on any machine. Python 3.8+, zero dependencies. Collects Sysmon events, auth logs, process trees, and persistence — ships every 5 minutes.'},
               {n:'02',title:'Import + Investigate',  desc:'Open a case. Import emails, paste hardware device logs, run VT lookups. AI scores every artifact and maps it to MITRE ATT&CK automatically.'},
@@ -942,7 +949,7 @@ export default function Landing() {
               {n:'04',title:'Report + Close',       desc:'AI writes executive summary and technical analysis with a full reasoning chain. Generate PDF, DOCX, or DORA Article 19 report. Closure checklist enforced before sealing.'},
             ].map(({n,title,desc},i)=>(
               <div key={n} style={{padding:'0 24px 0',position:'relative',zIndex:1}}>
-                <div style={{width:56,height:56,borderRadius:'50%',background:'#0A0A0A',border:'2px solid rgba(77,163,255,0.4)',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:20,...mono,fontSize:13,fontWeight:700,color:'#4DA3FF'}}>{n}</div>
+                <div style={{width:56,height:56,borderRadius:'50%',background:'#0A0A0A',border:'2px solid rgba(90,138,159,0.4)',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:20,...mono,fontSize:13,fontWeight:700,color:'#5A8A9F'}}>{n}</div>
                 <div style={{fontWeight:600,fontSize:15,marginBottom:8}}>{title}</div>
                 <div style={{fontSize:12,color:'rgba(240,240,248,0.45)',lineHeight:1.75,...mono,fontWeight:300}}>{desc}</div>
               </div>
@@ -955,8 +962,8 @@ export default function Landing() {
       <section style={{padding:'72px 48px',background:'#0A0A0A',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
         <div style={{maxWidth:1200,margin:'0 auto'}}>
           <div style={{marginBottom:40}}>
-            <div style={{fontSize:10,color:'#4DA3FF',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:10}}>◇ Technology Stack — All Free Tier</div>
-            <h2 style={{fontFamily:'Instrument Serif,serif',fontSize:'clamp(2rem,4vw,3rem)',fontWeight:400,letterSpacing:'-0.02em'}}>Enterprise-grade.<br/><span style={{color:'#4DA3FF',fontStyle:'italic'}}>Zero cost.</span></h2>
+            <div style={{fontSize:10,color:'#5A8A9F',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:10}}>◇ Technology Stack — All Free Tier</div>
+            <h2 style={{fontFamily:'Instrument Serif,serif',fontSize:'clamp(2rem,4vw,3rem)',fontWeight:400,letterSpacing:'-0.02em'}}>Enterprise-grade.<br/><span style={{color:'#5A8A9F',fontStyle:'italic'}}>Zero cost.</span></h2>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:12}}>
             {[
@@ -971,7 +978,7 @@ export default function Landing() {
             ].map(({name,role,note})=>(
               <div key={name} style={{background:'rgba(240,240,248,0.02)',border:'1px solid rgba(240,240,248,0.07)',borderRadius:8,padding:'14px 16px'}}>
                 <div style={{fontWeight:700,fontSize:13,color:'#EBEBEB',...mono,marginBottom:4}}>{name}</div>
-                <div style={{fontSize:11,color:'#4DA3FF',...mono,marginBottom:4}}>{role}</div>
+                <div style={{fontSize:11,color:'#5A8A9F',...mono,marginBottom:4}}>{role}</div>
                 <div style={{fontSize:10,color:'rgba(240,240,248,0.35)',...mono}}>{note}</div>
               </div>
             ))}
@@ -980,11 +987,11 @@ export default function Landing() {
       </section>
 
       {/* ══ ABOUT / CERTS ══ */}
-      <section id="certs" style={{padding:'80px 48px',background:'#111111',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
+      <section id="certs" className="lp-section" style={{padding:'80px 48px',background:'#111111',borderTop:'1px solid rgba(240,240,248,0.05)'}}>
         <div style={{maxWidth:1200,margin:'0 auto',display:'grid',gridTemplateColumns:'1fr 1fr',gap:64,alignItems:'start'}} className="lp-2col">
           <div>
-            <div style={{fontSize:10,color:'#4DA3FF',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:16}}>◇ About the Builder</div>
-            <h2 style={{fontFamily:'Instrument Serif,serif',fontSize:'clamp(1.8rem,3.5vw,2.8rem)',fontWeight:400,letterSpacing:'-0.02em',lineHeight:1.2,marginBottom:20}}>SOC Analyst.<br/><span style={{color:'#4DA3FF',fontStyle:'italic'}}>Dublin, Ireland.</span></h2>
+            <div style={{fontSize:10,color:'#5A8A9F',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:16}}>◇ About the Builder</div>
+            <h2 style={{fontFamily:'Instrument Serif,serif',fontSize:'clamp(1.8rem,3.5vw,2.8rem)',fontWeight:400,letterSpacing:'-0.02em',lineHeight:1.2,marginBottom:20}}>SOC Analyst.<br/><span style={{color:'#5A8A9F',fontStyle:'italic'}}>Dublin, Ireland.</span></h2>
             <p style={{fontSize:13,color:'rgba(240,240,248,0.55)',lineHeight:1.85,...mono,fontWeight:300,marginBottom:16}}>
               Prasanna Kumar Surendran — Blue Team analyst and security tooling developer. AegisTrace started as a personal investigation platform and grew into a full SOC control plane benchmarked against enterprise tools.
             </p>
@@ -997,7 +1004,7 @@ export default function Landing() {
             </div>
           </div>
           <div>
-            <div style={{fontSize:10,color:'#A78BFA',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:16}}>◇ Certifications</div>
+            <div style={{fontSize:10,color:'#8FAFC0',letterSpacing:'0.2em',textTransform:'uppercase',...mono,marginBottom:16}}>◇ Certifications</div>
             <div style={{display:'flex',flexDirection:'column',gap:10}}>
               {CERTS.map(({name,full,color,done})=>(
                 <div key={name} style={{display:'flex',alignItems:'center',gap:14,padding:'12px 16px',background:'rgba(255,255,255,0.02)',border:`1px solid ${done?`${color}30`:'rgba(255,255,255,0.06)'}`,borderRadius:8,opacity:done?1:0.65}}>
@@ -1015,20 +1022,20 @@ export default function Landing() {
       </section>
 
       {/* ══ CTA + FOOTER ══ */}
-      <section style={{padding:'80px 48px 48px',borderTop:'1px solid rgba(240,240,248,0.05)',background:'#0A0A0A'}}>
+      <section className="lp-footer-section" style={{padding:'80px 48px 48px',borderTop:'1px solid rgba(240,240,248,0.05)',background:'#0A0A0A'}}>
         <div style={{maxWidth:1200,margin:'0 auto'}}>
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:32,marginBottom:64}}>
+          <div className="lp-footer-cta" style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:32,marginBottom:64}}>
             <div>
-              <h2 style={{fontFamily:'Instrument Serif,serif',fontSize:'clamp(2rem,4vw,3.5rem)',fontWeight:400,letterSpacing:'-0.02em',lineHeight:1.05}}>Start your first<br/><span style={{color:'#4DA3FF',fontStyle:'italic'}}>investigation.</span></h2>
+              <h2 style={{fontFamily:'Instrument Serif,serif',fontSize:'clamp(2rem,4vw,3.5rem)',fontWeight:400,letterSpacing:'-0.02em',lineHeight:1.05}}>Start your first<br/><span style={{color:'#5A8A9F',fontStyle:'italic'}}>investigation.</span></h2>
               <p style={{marginTop:14,fontSize:13,color:'rgba(240,240,248,0.4)',...mono,maxWidth:420,lineHeight:1.7}}>No license. No credit card. Deploy in 5 minutes on Render or run locally. AegisTrace is free now and will stay free.</p>
             </div>
-            <div style={{display:'flex',gap:12,flexWrap:'wrap'}}>
-              <button onClick={openApp} style={{background:'#4DA3FF',color:'#fff',border:'none',borderRadius:6,padding:'12px 28px',fontSize:12,fontWeight:600,cursor:'pointer',...mono,letterSpacing:'0.08em',textTransform:'uppercase'}}>Launch App →</button>
+            <div className="lp-cta-buttons" style={{display:'flex',gap:12,flexWrap:'wrap'}}>
+              <button onClick={openApp} style={{background:'#5A8A9F',color:'#fff',border:'none',borderRadius:6,padding:'12px 28px',fontSize:12,fontWeight:600,cursor:'pointer',...mono,letterSpacing:'0.08em',textTransform:'uppercase'}}>Launch App →</button>
               <button onClick={()=>navigate('/public')} style={{background:'transparent',color:'rgba(240,240,248,0.6)',border:'1px solid rgba(240,240,248,0.15)',borderRadius:6,padding:'12px 24px',fontSize:12,cursor:'pointer',...mono,letterSpacing:'0.06em',textTransform:'uppercase'}}>Case Library</button>
-              <a href="/agent-setup" style={{display:'flex',alignItems:'center',background:'transparent',color:'rgba(240,240,248,0.6)',border:'1px solid rgba(240,240,248,0.12)',borderRadius:6,padding:'12px 24px',fontSize:12,cursor:'pointer',...mono,letterSpacing:'0.06em',textTransform:'uppercase',textDecoration:'none'}}>Agent Setup</a>
+              <a href="/agent-setup" style={{display:'flex',alignItems:'center',justifyContent:'center',background:'transparent',color:'rgba(240,240,248,0.6)',border:'1px solid rgba(240,240,248,0.12)',borderRadius:6,padding:'12px 24px',fontSize:12,cursor:'pointer',...mono,letterSpacing:'0.06em',textTransform:'uppercase',textDecoration:'none'}}>Agent Setup</a>
             </div>
           </div>
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:16,paddingTop:24,borderTop:'1px solid rgba(240,240,248,0.06)'}}>
+          <div className="lp-footer-meta" style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:16,paddingTop:24,borderTop:'1px solid rgba(240,240,248,0.06)'}}>
             <Logo size={20} showText/>
             <div style={{fontSize:11,color:'rgba(240,240,248,0.25)',...mono}}>Prasanna Kumar Surendran · Dublin, Ireland · 2025–2026</div>
             <div style={{fontSize:10,color:'rgba(240,240,248,0.2)',...mono,letterSpacing:'0.06em'}}>React · FastAPI · Groq · VirusTotal · Shodan · SQLite · Docker · Render</div>
