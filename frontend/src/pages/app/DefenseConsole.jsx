@@ -312,14 +312,21 @@ function EventCard({ event, onAction, processing }) {
 // DEFENSE CONSOLE — main page
 // ══════════════════════════════════════════════════════════════════════════════
 export default function DefenseConsole() {
-  const [events, setEvents]       = useState([]);
-  const [stats, setStats]         = useState({});
-  const [loading, setLoading]     = useState(true);
+  const [events, setEvents]         = useState([]);
+  const [stats, setStats]           = useState({});
+  const [loading, setLoading]       = useState(true);
   const [processing, setProcessing] = useState(false);
-  const [filter, setFilter]       = useState('all');   // all | pending_review | auto_handled | approved | dismissed
-  const [countdown, setCountdown] = useState(REFRESH_INTERVAL);
-  const [testLoading, setTestLoading] = useState(false);
+  const [filter, setFilter]         = useState('all');
+  const [countdown, setCountdown]   = useState(REFRESH_INTERVAL);
+  const [testLoading, setTestLoading]   = useState(false);
+  const [demoLoading, setDemoLoading]   = useState(false);
+  const [toast, setToast]               = useState(null);
   const timerRef = useRef(null);
+
+  const showToast = (msg, type = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   const load = useCallback(async () => {
     try {
@@ -353,8 +360,11 @@ export default function DefenseConsole() {
     try {
       await api.post(`/api/defense/events/${eventId}/review`, { action, notes });
       await load();
+      showToast(`Action applied: ${action.toUpperCase()}`, 'success');
     } catch (err) {
       console.error('Review error', err);
+      const msg = err?.response?.data?.detail || 'Action failed — check console';
+      showToast(msg, 'error');
     } finally {
       setProcessing(false);
     }
@@ -365,8 +375,10 @@ export default function DefenseConsole() {
     try {
       await api.post('/api/defense/test');
       await load();
+      showToast('Test event fired — check the feed below', 'success');
     } catch (err) {
       console.error('Test error', err);
+      showToast('Failed to fire test event', 'error');
     } finally {
       setTestLoading(false);
     }
@@ -381,6 +393,22 @@ export default function DefenseConsole() {
   return (
     <div style={{ background: '#000000', minHeight: '100vh', padding: '28px 32px', color: '#EBEBEB' }}>
 
+      {/* Toast notification */}
+      {toast && (
+        <div style={{
+          position: 'fixed', top: 20, right: 24, zIndex: 9999,
+          background: toast.type === 'success' ? '#0a1a0a' : '#1a0a0a',
+          border: `1px solid ${toast.type === 'success' ? '#22C55E' : '#EF4444'}`,
+          color: toast.type === 'success' ? '#22C55E' : '#EF4444',
+          padding: '10px 18px', borderRadius: 6, fontSize: '0.78rem',
+          fontFamily: 'JetBrains Mono, monospace',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.6)',
+          animation: 'aegis-slide-in 0.2s ease',
+        }}>
+          {toast.type === 'success' ? '✓' : '✗'} {toast.msg}
+        </div>
+      )}
+
       {/* CSS animations */}
       <style>{`
         @keyframes aegis-pulse {
@@ -390,6 +418,10 @@ export default function DefenseConsole() {
         @keyframes aegis-blink {
           0%, 100% { opacity: 1; }
           50%       { opacity: 0; }
+        }
+        @keyframes aegis-slide-in {
+          from { opacity: 0; transform: translateX(20px); }
+          to   { opacity: 1; transform: translateX(0); }
         }
       `}</style>
 
@@ -427,6 +459,29 @@ export default function DefenseConsole() {
             }}
           >
             <Zap size={11} /> {testLoading ? 'Firing…' : 'Test Event'}
+          </button>
+
+          {/* Load demo data */}
+          <button
+            onClick={async () => {
+              setDemoLoading(true);
+              try {
+                await api.post('/api/demo/seed/defense');
+                await load();
+                showToast('Demo data loaded — 5 realistic attack scenarios ready', 'success');
+              } catch (e) {
+                showToast('Failed to load demo data', 'error');
+              } finally { setDemoLoading(false); }
+            }}
+            disabled={demoLoading}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px',
+              background: 'rgba(156,124,255,0.08)', border: '1px solid rgba(156,124,255,0.25)',
+              color: '#9C7CFF', fontSize: '0.68rem', borderRadius: 5, cursor: 'pointer',
+              fontFamily: 'JetBrains Mono, monospace', opacity: demoLoading ? 0.5 : 1,
+            }}
+          >
+            <Activity size={11} /> {demoLoading ? 'Loading…' : 'Load Demo'}
           </button>
 
           {/* Manual refresh */}
