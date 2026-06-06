@@ -673,6 +673,60 @@ async def ingest_telemetry(
                 evidence=json.dumps(alert),
             ))
 
+        elif alert_type == "honey_token_access":
+            itdr_alerts.append(ITDRAlert(
+                alert_type="honey_token_access",
+                severity="critical",
+                identity_label=hostname,
+                description=alert.get("description", f"Honey token file accessed on {hostname}"),
+                evidence=json.dumps(alert),
+            ))
+
+        elif alert_type == "yara_match":
+            itdr_alerts.append(ITDRAlert(
+                alert_type="yara_match",
+                severity="critical",
+                identity_label=hostname,
+                description=alert.get("description", f"YARA signature match on {hostname}"),
+                evidence=json.dumps(alert),
+            ))
+
+        elif alert_type == "dga_domain":
+            itdr_alerts.append(ITDRAlert(
+                alert_type="dga_domain",
+                severity="high",
+                identity_label=hostname,
+                description=alert.get("description", f"Suspected DGA/C2 domain on {hostname}: {alert.get('domain','')}"),
+                evidence=json.dumps(alert),
+            ))
+
+        elif alert_type == "suspicious_lineage":
+            itdr_alerts.append(ITDRAlert(
+                alert_type="suspicious_lineage",
+                severity="high",
+                identity_label=hostname,
+                description=alert.get("description", f"Suspicious process lineage on {hostname}"),
+                evidence=json.dumps(alert),
+            ))
+
+        elif alert_type == "usb_inserted":
+            itdr_alerts.append(ITDRAlert(
+                alert_type="usb_inserted",
+                severity="medium",
+                identity_label=hostname,
+                description=alert.get("description", f"Removable media inserted on {hostname}"),
+                evidence=json.dumps(alert),
+            ))
+
+        elif alert_type == "registry_change":
+            itdr_alerts.append(ITDRAlert(
+                alert_type="registry_change",
+                severity="high",
+                identity_label=hostname,
+                description=alert.get("description", f"Registry persistence key modified on {hostname}"),
+                evidence=json.dumps(alert),
+            ))
+
         elif alert_type in ("privilege_escalation", "fim_change", "new_destination", "behavioural_anomaly"):
             severity = {"privilege_escalation": "critical", "fim_change": "high"}.get(alert_type, "medium")
             itdr_alerts.append(ITDRAlert(
