@@ -59,7 +59,7 @@ function StatCard({ icon: Icon, label, value, color = '#5A8A9F', sub }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    ENDPOINT DETAIL — full enterprise view
 ───────────────────────────────────────────────────────────────────────────── */
-function EndpointDetail({ ep, onClose, addToast }) {
+function EndpointDetail({ ep, onClose, onDelete, addToast }) {
   const navigate = useNavigate();
   const [tab, setTab]           = useState('overview');
   const [detail, setDetail]     = useState(null);
@@ -523,6 +523,27 @@ function EndpointDetail({ ep, onClose, addToast }) {
                 Stop pauses monitoring — agent can be restarted manually on the machine. Uninstall removes all agent files and stops monitoring permanently.
               </div>
             </div>
+
+            <div style={{ background:'rgba(239,68,68,0.02)', border:'1px solid rgba(239,68,68,0.08)', borderRadius:8, padding:'16px' }}>
+              <div style={{ fontSize:'0.65rem', color:'#EF4444', textTransform:'uppercase', letterSpacing:'0.1em', ...MONO, marginBottom:14 }}>◇ Delete Endpoint</div>
+              <button
+                onClick={() => {
+                  if (window.confirm(
+                    `DELETE ENDPOINT: ${ep.hostname}\n\n` +
+                    `This will:\n` +
+                    `• Send uninstall command to the agent (self-destructs)\n` +
+                    `• Delete ALL endpoint data (logs, alerts, processes)\n` +
+                    `• Remove the endpoint permanently from the dashboard\n\n` +
+                    `This cannot be undone. Continue?`
+                  )) onDelete(ep.id);
+                }}
+                style={{ background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', color:'#EF4444', borderRadius:7, padding:'10px 18px', cursor:'pointer', fontWeight:600, fontSize:'0.8rem', display:'flex', alignItems:'center', gap:8, ...MONO }}>
+                🗑 Delete Endpoint & Destroy Agent
+              </button>
+              <div style={{ fontSize:'0.66rem', color:'#555', marginTop:10, ...MONO }}>
+                Sends uninstall command to the agent, then permanently removes all data for this endpoint from the database. Cannot be undone.
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -628,6 +649,16 @@ export default function Endpoints() {
       .catch(() => addToast('Unable to retrieve agent token — check your session', 'error'));
   };
 
+  const deleteEndpoint = (epId) => {
+    api.delete(`/api/ingest/endpoints/${epId}`)
+      .then(() => {
+        addToast('Uninstall command sent — agent will self-destruct. All data wiped in 30s.', 'success');
+        setSelected(null);
+        loadEndpoints();
+      })
+      .catch(e => addToast(e.response?.data?.detail || 'Delete failed', 'error'));
+  };
+
   const isOnline = (ep) => (Date.now() - new Date(ep.last_seen).getTime()) / 1000 < 120;
   const online  = endpoints.filter(isOnline).length;
   const offline = endpoints.length - online;
@@ -708,6 +739,7 @@ export default function Endpoints() {
               key={selected.id}
               ep={selected}
               onClose={() => setSelected(null)}
+              onDelete={deleteEndpoint}
               addToast={addToast}
             />
           )}

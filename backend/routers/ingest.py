@@ -1102,6 +1102,89 @@ def dispatch_command(
     return {"ok": True, "command_id": cmd.id}
 
 
+def _do_delete_endpoint(ep_id: int, hostname: str):
+    """
+    Background cleanup — runs 30s after delete request so agent has
+    time to pick up the uninstall command and self-destruct first.
+    """
+    import time as _time
+    _time.sleep(30)
+
+    from database import engine as _engine
+    from sqlmodel import Session as _S
+    from models import (LogBatch as _LB, RawLogEvent as _RL,
+                        ShadowAIEvent as _SA, AgentCommand as _AC,
+                        ITDRAlert as _IA, Endpoint as _EP)
+
+    with _S(_engine) as s:
+        for model, field in [
+            (_LB, _LB.endpoint_id),
+            (_RL, _RL.endpoint_id),
+            (_SA, _SA.agent_id),
+            (_AC, _AC.agent_id),
+        ]:
+            rows = s.exec(select(model).where(field == ep_id)).all()
+            for row in rows:
+                s.delete(row)
+        alerts = s.exec(select(_IA).where(_IA.identity_label == hostname)).all()
+        for a in alerts:
+            s.delete(a)
+        ep = s.get(_EP, ep_id)
+        if ep:
+            s.delete(ep)
+        s.commit()
+
+
+@router.delete("/endpoints/{ep_id}")
+def delete_endpoint(
+    ep_id: int,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """
+    Delete an endpoint.
+    Step 1 (immediate): queue uninstall_agent command + mark endpoint offline.
+    Step 2 (30s later):  background thread wipes all data after agent self-destructs.
+    The 30s gap lets the agent pick up and execute the command before its records vanish.
+    """
+    ep = session.get(Endpoint, ep_id)
+    if not ep:
+        raise HTTPException(404, "Endpoint not found")
+
+    hostname = ep.hostname
+
+    # 1. Queue uninstall command FIRST — keep it alive so agent can pick it up
+    cmd = AgentCommand(
+        agent_id     = ep.id,
+        command_type = "uninstall_agent",
+        payload      = json.dumps({"reason": f"Deleted from dashboard by {user.email}"}),
+        status       = "pending",
+        created_by   = user.id,
+    )
+    session.add(cmd)
+
+    # 2. Mark offline so it disappears from the dashboard immediately
+    ep.is_active = False
+    ep.last_seen = datetime.utcnow() - timedelta(hours=1)
+    session.add(ep)
+    session.commit()
+
+    # 3. Background thread deletes all data 30s later (after agent self-destructs)
+    import threading as _threading
+    t = _threading.Thread(
+        target=_do_delete_endpoint,
+        args=(ep_id, hostname),
+        daemon=True,
+        name=f"ep-delete-{ep_id}",
+    )
+    t.start()
+
+    return {
+        "ok":      True,
+        "message": f"Uninstall command sent to agent on '{hostname}'. All data will be wiped in 30 seconds.",
+    }
+
+
 @router.post("/offline/{agent_id}")
 async def mark_offline(
     agent_id: str,
