@@ -6,6 +6,7 @@ import {
   AlertTriangle, Cpu, Wifi, Check, ArrowLeft
 } from 'lucide-react';
 import Logo from '../components/Logo';
+import ThreatStream from '../components/ThreatStream';
 
 const AEGISTRACE_URL = 'https://aegistrace-7qvn.onrender.com';
 const AGENT_RAW_URL  = 'https://raw.githubusercontent.com/Prasanna-27eng/AegisTrace/main/agent/aegistrace_agent.py';
@@ -123,7 +124,8 @@ python3 aegistrace_agent.py`;
   },[]);
 
   return (
-    <div style={{minHeight:'100vh',background:'#050505',color:'#EBEBEB'}}>
+    <div style={{minHeight:'100vh',background:'#000000',color:'#EBEBEB',position:'relative'}}>
+      <ThreatStream opacity={0.30} />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&display=swap');
         ::selection{background:rgba(77,163,255,0.3);color:#fff}

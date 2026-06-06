@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import Logo from '../components/Logo';
 import api from '../api/client';
+import ThreatStream from '../components/ThreatStream';
 
 const openApp = () => window.open('/app/login', '_blank', 'noopener,noreferrer');
 
@@ -614,7 +615,7 @@ export default function Landing() {
 
       {/* ══ HERO — SPLIT LAYOUT ══ */}
       <section style={{position:'relative',width:'100%',height:'100vh',overflow:'hidden'}}>
-        <HexFortress/>
+        <ThreatStream opacity={0.45} />
         <div className="lp-rails" style={{position:'absolute',left:20,top:'50%',transform:'translateY(-50%)',zIndex:10,display:'flex',flexDirection:'column',alignItems:'center',gap:12}}>
           <span style={{writingMode:'vertical-rl',fontSize:10,color:'rgba(240,240,248,0.3)',letterSpacing:'0.15em',textTransform:'uppercase',...mono}}>Transmission № 01</span>
           <div style={{width:1,height:48,background:'rgba(77,163,255,0.3)'}}/>

@@ -6,243 +6,118 @@ import api from '../api/client';
 import useStore from '../store/useStore';
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   IRIS SCANNER
-   ────────────
-   Biometric authentication rendered as a living canvas.
-
-   · Faint hex grid tiles the background — structural, not decorative.
-   · Four counter-rotating iris petal layers create a living starburst.
-   · Outer dial ring with 72 tick marks slowly drifts clockwise.
-   · Three cipher-text rings orbit at different radii + speeds:
-       inner  → hex opcodes  (CW)
-       middle → algorithm IDs (CCW)
-       outer  → status tokens (CW)
-   · A horizontal scan beam sweeps top-to-bottom, clipped to the iris.
-   · Corner targeting brackets frame the iris.
-   · Every ~10 s: "● BIOMETRIC VERIFIED" flashes green + a ring pulse fires.
+   CIPHER LOCK
+   ───────────
+   Four concentric cipher rings rotating in alternating directions,
+   each carrying security tokens. A central pulsing lock core.
+   Pure monochrome — white on absolute black.
 ═══════════════════════════════════════════════════════════════════════════ */
 
-function IrisScanner() {
+function CipherLock() {
   const cvRef = useRef(null);
 
   useEffect(() => {
     const cv = cvRef.current;
     if (!cv) return;
     const ctx = cv.getContext('2d');
-    let W, H, raf, t = 0, last = 0;
-    let scanY = 0, scanDir = 1;
-    let verifiedFlash = 0;
-    let verifiedCD = 9000 + Math.random() * 5000;
-    const pulses = [];
+    let W, H, raf;
+
+    const RINGS = [
+      { rMul:0.20, speed:0.00022, dir: 1,  tokens:['SHA','AES','RSA','0x3F','JWT','TLS','0xB8','HMAC','ECB','GCM','0xA2','SIG'],  thick:1.0, tokenAlpha:0.65, ringAlpha:0.35 },
+      { rMul:0.30, speed:0.00016, dir:-1,  tokens:['VERIFY','CERT','TOKEN','SEAL','LOCK','AUTH','SIGN','HASH','NONCE','SALT','IV','0xD4'], thick:0.75, tokenAlpha:0.45, ringAlpha:0.22 },
+      { rMul:0.40, speed:0.00010, dir: 1,  tokens:['ACCESS','DENIED','GUARD','POLICY','TRUST','TRACE','SCOPE','CLAIM','ROLE','MASK','BIND','CTRL'], thick:0.6, tokenAlpha:0.28, ringAlpha:0.14 },
+      { rMul:0.50, speed:0.00006, dir:-1,  tokens:['AEGISTRACE','IDENTITY','CONTROL','PLANE','PROVENANCE','TRUST','ENGINE','DETECT','RESPOND','MONITOR','ISOLATE','ENFORCE'], thick:0.45, tokenAlpha:0.14, ringAlpha:0.08 },
+    ];
 
     function resize() {
-      W = cv.offsetWidth;
-      H = cv.offsetHeight;
-      cv.width = W;
-      cv.height = H;
-      scanY = 0;
+      W = cv.offsetWidth; H = cv.offsetHeight;
+      cv.width = W; cv.height = H;
     }
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(cv);
 
-    // ── Cipher ring data ─────────────────────────────────────────────────
-    const RINGS = [
-      {
-        tokens: ['0x3F','0x7A','RSA','0x2B','HMAC','0x91','0x4E','TLS','0xAB','0x5C','0xFF','AES'],
-        speed: 0.000185, dir:  1, alpha: 0.24, rMul: 1.22,
-      },
-      {
-        tokens: ['SHA-256','VERIFY','AES-GCM','JWT','CERT','ECDSA','0x0F','4DA3FF','0xCC','0x11'],
-        speed: 0.000125, dir: -1, alpha: 0.16, rMul: 1.48,
-      },
-      {
-        tokens: ['ACCESS','GRANTED','FIREWALL','SCAN','0x1A','AUTH','0xBB','SECURE','ZONE','CTRL'],
-        speed: 0.000085, dir:  1, alpha: 0.09, rMul: 1.74,
-      },
-    ];
-
-    // ── Iris petal layers ────────────────────────────────────────────────
-    const LAYERS = [
-      { count: 34, inner: 0.31, outer: 0.73, speed: 0.000215, dir:  1, alpha: 0.38, lw: 0.9 },
-      { count: 26, inner: 0.23, outer: 0.59, speed: 0.000175, dir: -1, alpha: 0.28, lw: 0.7 },
-      { count: 18, inner: 0.14, outer: 0.44, speed: 0.000130, dir:  1, alpha: 0.20, lw: 0.6 },
-      { count: 12, inner: 0.07, outer: 0.27, speed: 0.000095, dir: -1, alpha: 0.14, lw: 0.5 },
-    ];
-
     function frame(ts) {
-      const dt = Math.min(ts - last, 40);
-      last = ts;
-      t += dt;
+      const cx = W / 2, cy = H / 2;
+      const base = Math.min(W, H);
 
-      ctx.fillStyle = '#080808';
+      ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, W, H);
 
-      const cx = W / 2, cy = H / 2;
-      const R = Math.min(W, H) * 0.36;
-
-      // ── Hex grid background ──────────────────────────────────────────
-      const HS = 30;
-      const HW = HS * 1.5, HH = HS * Math.sqrt(3);
-      ctx.strokeStyle = 'rgba(77,163,255,0.032)';
-      ctx.lineWidth = 0.5;
-      const cols = Math.ceil(W / HW) + 3, rows = Math.ceil(H / HH) + 3;
-      for (let c = -1; c < cols; c++) {
-        for (let r = -1; r < rows; r++) {
-          const hx = c * HW - HS;
-          const hy = r * HH + (c % 2 === 0 ? 0 : HH / 2) - HS;
-          ctx.beginPath();
-          for (let i = 0; i < 6; i++) {
-            const a = (i * Math.PI / 3) - Math.PI / 6;
-            const px = hx + (HS - 1) * Math.cos(a);
-            const py = hy + (HS - 1) * Math.sin(a);
-            i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-          }
-          ctx.closePath(); ctx.stroke();
+      // Subtle dot grid
+      ctx.fillStyle = 'rgba(255,255,255,0.022)';
+      for (let gx = 36; gx < W; gx += 36)
+        for (let gy = 36; gy < H; gy += 36) {
+          ctx.beginPath(); ctx.arc(gx, gy, 0.7, 0, Math.PI * 2); ctx.fill();
         }
-      }
 
-      // ── Cipher text rings ─────────────────────────────────────────────
       RINGS.forEach(ring => {
-        const ringR = R * ring.rMul;
-        const rot = t * ring.speed * ring.dir;
-        ctx.font = '7.5px JetBrains Mono, monospace';
+        const R   = base * ring.rMul;
+        const rot = ts * ring.speed * ring.dir;
+
+        // Ring line
+        ctx.beginPath();
+        ctx.arc(cx, cy, R, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(255,255,255,${ring.ringAlpha})`;
+        ctx.lineWidth = ring.thick;
+        ctx.stroke();
+
+        // Tick marks
+        const ticks = ring.tokens.length * 4;
+        for (let i = 0; i < ticks; i++) {
+          const a = (i / ticks) * Math.PI * 2 + rot;
+          const major = i % 4 === 0;
+          const r1 = R - (major ? 5 : 2.5);
+          const r2 = R + (major ? 5 : 2.5);
+          ctx.beginPath();
+          ctx.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
+          ctx.lineTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2);
+          ctx.strokeStyle = `rgba(255,255,255,${major ? ring.ringAlpha * 0.9 : ring.ringAlpha * 0.35})`;
+          ctx.lineWidth = major ? ring.thick : ring.thick * 0.5;
+          ctx.stroke();
+        }
+
+        // Token labels
+        const fontSize = Math.max(7, base * 0.016);
+        ctx.font = `${fontSize}px JetBrains Mono, monospace`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         const step = (Math.PI * 2) / ring.tokens.length;
         ring.tokens.forEach((tok, i) => {
           const a = i * step + rot;
-          const tx2 = cx + Math.cos(a) * ringR;
-          const ty2 = cy + Math.sin(a) * ringR;
           ctx.save();
-          ctx.translate(tx2, ty2);
+          ctx.translate(cx + Math.cos(a) * R, cy + Math.sin(a) * R);
           ctx.rotate(a + Math.PI / 2);
-          ctx.fillStyle = `rgba(77,163,255,${ring.alpha})`;
+          ctx.fillStyle = `rgba(255,255,255,${ring.tokenAlpha})`;
           ctx.fillText(tok, 0, 0);
           ctx.restore();
         });
-        // Ring circle
-        ctx.beginPath(); ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(77,163,255,${ring.alpha * 0.45})`;
-        ctx.lineWidth = 0.5; ctx.stroke();
       });
 
-      // ── Outer dial ring (tick marks) ──────────────────────────────────
-      const dialRot = t * 0.000072;
-      for (let i = 0; i < 72; i++) {
-        const a = (i / 72) * Math.PI * 2 + dialRot;
-        const major = i % 6 === 0;
-        const r1 = R * 0.985, r2 = R * (major ? 0.908 : 0.945);
-        ctx.beginPath();
-        ctx.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
-        ctx.lineTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2);
-        ctx.strokeStyle = `rgba(77,163,255,${major ? 0.62 : 0.25})`;
-        ctx.lineWidth = major ? 1.3 : 0.65; ctx.stroke();
-      }
-      // Outer rim circle
-      ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(77,163,255,0.55)';
-      ctx.lineWidth = 1.6; ctx.stroke();
+      // Central lock core — pulsing glow
+      const pulse  = 0.72 + 0.28 * Math.sin(ts * 0.0008);
+      const coreR  = base * 0.032;
 
-      // ── Iris petal layers ─────────────────────────────────────────────
-      LAYERS.forEach(layer => {
-        const rot = t * layer.speed * layer.dir;
-        const spread = (Math.PI / layer.count) * 0.55;
-        for (let i = 0; i < layer.count; i++) {
-          const a = (i / layer.count) * Math.PI * 2 + rot;
-          const rIn = R * layer.inner, rOut = R * layer.outer;
-          ctx.beginPath();
-          ctx.moveTo(cx + Math.cos(a - spread) * rIn, cy + Math.sin(a - spread) * rIn);
-          ctx.lineTo(cx + Math.cos(a) * rOut,         cy + Math.sin(a) * rOut);
-          ctx.lineTo(cx + Math.cos(a + spread) * rIn, cy + Math.sin(a + spread) * rIn);
-          ctx.strokeStyle = `rgba(77,163,255,${layer.alpha})`;
-          ctx.lineWidth = layer.lw; ctx.stroke();
-        }
-      });
+      const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR * 4);
+      grd.addColorStop(0,   `rgba(255,255,255,${0.22 * pulse})`);
+      grd.addColorStop(0.5, `rgba(255,255,255,${0.07 * pulse})`);
+      grd.addColorStop(1,   'rgba(255,255,255,0)');
+      ctx.beginPath(); ctx.arc(cx, cy, coreR * 4, 0, Math.PI * 2);
+      ctx.fillStyle = grd; ctx.fill();
 
-      // ── Inner limbal ring ─────────────────────────────────────────────
-      ctx.beginPath(); ctx.arc(cx, cy, R * 0.18, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(77,163,255,0.45)';
-      ctx.lineWidth = 1.0; ctx.stroke();
+      // Core ring
+      ctx.beginPath(); ctx.arc(cx, cy, coreR, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255,255,255,${0.7 * pulse})`;
+      ctx.lineWidth = 1.2; ctx.stroke();
 
-      // ── Scan beam (clipped to iris) ───────────────────────────────────
-      scanY += scanDir * dt * 0.16;
-      if (scanY > R * 2 + 4) scanDir = -1;
-      if (scanY < -4)         scanDir =  1;
-      const scanAbsY = cy - R + scanY;
+      // Core dot
+      ctx.beginPath(); ctx.arc(cx, cy, coreR * 0.3, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${pulse})`; ctx.fill();
 
-      ctx.save();
-      ctx.beginPath(); ctx.arc(cx, cy, R * 0.985, 0, Math.PI * 2); ctx.clip();
-      // Glow band
-      const sg = ctx.createLinearGradient(0, scanAbsY - 22, 0, scanAbsY + 22);
-      sg.addColorStop(0, 'transparent');
-      sg.addColorStop(0.5, 'rgba(77,163,255,0.14)');
-      sg.addColorStop(1, 'transparent');
-      ctx.fillStyle = sg; ctx.fillRect(cx - R, scanAbsY - 22, R * 2, 44);
-      // Bright line
-      ctx.beginPath(); ctx.moveTo(cx - R, scanAbsY); ctx.lineTo(cx + R, scanAbsY);
-      ctx.strokeStyle = 'rgba(77,163,255,0.60)'; ctx.lineWidth = 1.0; ctx.stroke();
-      ctx.restore();
-
-      // ── Pupil glow ────────────────────────────────────────────────────
-      const pupR = R * 0.135;
-      const pg = ctx.createRadialGradient(cx, cy, 0, cx, cy, pupR * 2.6);
-      pg.addColorStop(0, 'rgba(77,163,255,0.92)');
-      pg.addColorStop(0.38, 'rgba(77,163,255,0.26)');
-      pg.addColorStop(1, 'transparent');
-      ctx.beginPath(); ctx.arc(cx, cy, pupR * 2.6, 0, Math.PI * 2);
-      ctx.fillStyle = pg; ctx.fill();
-      ctx.beginPath(); ctx.arc(cx, cy, pupR, 0, Math.PI * 2);
-      ctx.fillStyle = '#4DA3FF'; ctx.fill();
-      ctx.beginPath(); ctx.arc(cx, cy, pupR * 0.42, 0, Math.PI * 2);
-      ctx.fillStyle = '#fff'; ctx.fill();
-
-      // ── Targeting brackets ────────────────────────────────────────────
-      const bLen = 20, bAlpha = 0.42;
-      const corners = [
-        [cx - R * 0.68, cy - R * 0.68, 1, 1],
-        [cx + R * 0.68, cy - R * 0.68, -1, 1],
-        [cx + R * 0.68, cy + R * 0.68, -1, -1],
-        [cx - R * 0.68, cy + R * 0.68, 1, -1],
-      ];
-      ctx.strokeStyle = `rgba(77,163,255,${bAlpha})`;
-      ctx.lineWidth = 1.6;
-      corners.forEach(([bx, by, dx, dy]) => {
-        ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + dx * bLen, by); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx, by + dy * bLen); ctx.stroke();
-      });
-
-      // ── Pulse rings ───────────────────────────────────────────────────
-      for (let i = pulses.length - 1; i >= 0; i--) {
-        pulses[i].r  += 0.048 * dt;
-        pulses[i].op -= 0.0018 * dt;
-        if (pulses[i].op <= 0) { pulses.splice(i, 1); continue; }
-        ctx.beginPath(); ctx.arc(cx, cy, pulses[i].r, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(${pulses[i].green ? '34,197,94' : '77,163,255'},${pulses[i].op})`;
-        ctx.lineWidth = 1.2; ctx.stroke();
-      }
-
-      // ── Verified flash ────────────────────────────────────────────────
-      verifiedCD -= dt;
-      if (verifiedCD <= 0) {
-        verifiedFlash = 1600;
-        verifiedCD = 9500 + Math.random() * 7000;
-        pulses.push({ r: R * 0.96, op: 0.75, green: true });
-      }
-      if (verifiedFlash > 0) {
-        verifiedFlash -= dt;
-        const progress = verifiedFlash / 1600;
-        const vAlpha   = Math.min(1, (1 - Math.abs(progress - 0.5) * 2) + 0.25);
-        ctx.font = '8.5px JetBrains Mono, monospace';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = `rgba(34,197,94,${vAlpha * 0.88})`;
-        ctx.fillText('● BIOMETRIC VERIFIED', cx, cy + R + 24);
-      }
-
-      // ── Radial vignette ───────────────────────────────────────────────
-      const vig = ctx.createRadialGradient(cx, cy, R * 0.45, cx, cy, Math.max(W, H) * 0.72);
+      // Vignette
+      const vig = ctx.createRadialGradient(cx, cy, base * 0.28, cx, cy, Math.max(W, H) * 0.78);
       vig.addColorStop(0, 'transparent');
-      vig.addColorStop(1, 'rgba(8,8,8,0.90)');
+      vig.addColorStop(1, 'rgba(0,0,0,0.92)');
       ctx.fillStyle = vig; ctx.fillRect(0, 0, W, H);
 
       raf = requestAnimationFrame(frame);
@@ -402,8 +277,8 @@ export default function Login() {
   return (
     <div style={{ minHeight: '100vh', background: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
 
-      {/* Iris Scanner — the main atmosphere */}
-      <IrisScanner />
+      {/* Cipher Lock — the main atmosphere */}
+      <CipherLock />
 
       {/* Hex Matrix — static, keypress-ripple capable */}
       <HexMatrix rippleRef={hexRef} />

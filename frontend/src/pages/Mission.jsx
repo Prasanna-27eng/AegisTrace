@@ -8,6 +8,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import Logo from '../components/Logo';
+import ThreatStream from '../components/ThreatStream';
 
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 const SERIF = { fontFamily: 'Instrument Serif, Georgia, serif' };
@@ -223,7 +224,7 @@ export default function Mission() {
 
       {/* ── HERO ── */}
       <section style={{position:'relative',height:'75vh',minHeight:540,overflow:'hidden',display:'flex',alignItems:'center'}}>
-        <HeroParticles/>
+        <ThreatStream opacity={0.40} />
         <div style={{position:'relative',zIndex:10,maxWidth:1100,margin:'0 auto',padding:'0 48px',width:'100%'}}>
           <div style={{display:'inline-flex',alignItems:'center',gap:8,padding:'6px 14px',background:'rgba(74,142,219,0.1)',border:'1px solid rgba(74,142,219,0.25)',borderRadius:20,marginBottom:28}}>
             <div style={{width:7,height:7,borderRadius:'50%',background:'#4A8EDB',animation:'pulse 2s ease-in-out infinite'}}/>

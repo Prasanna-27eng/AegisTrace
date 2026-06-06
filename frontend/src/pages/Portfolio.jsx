@@ -249,6 +249,117 @@ const FOCUS = [
 const MONO = { fontFamily:'JetBrains Mono, monospace' };
 const SERIF = { fontFamily:'Instrument Serif, Georgia, serif' };
 
+/* ─── Neural Field background animation ─────────────────────────────────── */
+function NeuralField() {
+  const cvRef = useRef(null);
+  const mRef  = useRef({ x: -9999, y: -9999 });
+
+  useEffect(() => {
+    const cv = cvRef.current;
+    if (!cv) return;
+    const ctx = cv.getContext('2d');
+    let W, H, raf;
+
+    const resize = () => {
+      W = cv.offsetWidth; H = cv.offsetHeight;
+      cv.width = W; cv.height = H;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+    const onMouse = e => { mRef.current = { x: e.clientX, y: e.clientY }; };
+    window.addEventListener('mousemove', onMouse);
+
+    const N = 90;
+    const pts = Array.from({ length: N }, () => ({
+      x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1200),
+      y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: (Math.random() - 0.5) * 0.25,
+      r:  0.8 + Math.random() * 1.4,
+      baseA: 0.12 + Math.random() * 0.28,
+    }));
+
+    function frame() {
+      ctx.fillStyle = 'rgba(0,0,0,0.07)';
+      ctx.fillRect(0, 0, W, H);
+
+      const mx = mRef.current.x, my = mRef.current.y;
+
+      pts.forEach(p => {
+        const dx = p.x - mx, dy = p.y - my;
+        const d  = Math.sqrt(dx * dx + dy * dy) || 1;
+
+        if (d < 110) {
+          // Repulsion
+          const f = ((110 - d) / 110) * 0.55;
+          p.vx += (dx / d) * f;
+          p.vy += (dy / d) * f;
+        } else if (d < 260) {
+          // Soft attraction
+          const f = ((d - 110) / 150) * 0.028;
+          p.vx -= (dx / d) * f;
+          p.vy -= (dy / d) * f;
+        }
+
+        // Centre gravity
+        p.vx += (W / 2 - p.x) * 0.00006;
+        p.vy += (H / 2 - p.y) * 0.00006;
+
+        p.vx *= 0.93; p.vy *= 0.93;
+        p.x += p.vx; p.y += p.vy;
+
+        if (p.x < 30) p.vx += 0.4;
+        if (p.x > W - 30) p.vx -= 0.4;
+        if (p.y < 30) p.vy += 0.4;
+        if (p.y > H - 30) p.vy -= 0.4;
+
+        const md   = Math.sqrt((p.x - mx) ** 2 + (p.y - my) ** 2);
+        const glow = Math.max(0, 1 - md / 180);
+        const alpha = Math.min(0.9, p.baseA + glow * 0.55);
+        const rr = p.r + glow * 2;
+
+        ctx.beginPath(); ctx.arc(p.x, p.y, rr, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${alpha})`; ctx.fill();
+      });
+
+      // Connections
+      for (let i = 0; i < N; i++) {
+        for (let j = i + 1; j < N; j++) {
+          const dx = pts[i].x - pts[j].x;
+          const dy = pts[i].y - pts[j].y;
+          const d  = Math.sqrt(dx * dx + dy * dy);
+          if (d < 85) {
+            ctx.beginPath();
+            ctx.moveTo(pts[i].x, pts[i].y);
+            ctx.lineTo(pts[j].x, pts[j].y);
+            ctx.strokeStyle = `rgba(255,255,255,${(1 - d / 85) * 0.10})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+
+      raf = requestAnimationFrame(frame);
+    }
+
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+    frame();
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', onMouse);
+    };
+  }, []);
+
+  return (
+    <canvas ref={cvRef} style={{
+      position: 'fixed', inset: 0, width: '100%', height: '100%',
+      pointerEvents: 'none', zIndex: 0,
+    }} />
+  );
+}
+
 /* ─── Alphanumeric Ghost Morph ─────────────────────────────────────────── */
 const GHOST_CHARS = '0123456789ABCDEF_$#@!%^&*<>?[]{}|~';
 
@@ -340,7 +451,8 @@ export default function Portfolio() {
   const scrollTo = id => { document.getElementById(id)?.scrollIntoView({behavior:'smooth'}); setMobileNav(false); };
 
   return (
-    <div style={{minHeight:'100vh',background:'#000000',color:'#EBEBEB',fontFamily:'Inter,system-ui,sans-serif'}}>
+    <div style={{minHeight:'100vh',background:'#000000',color:'#EBEBEB',fontFamily:'Inter,system-ui,sans-serif',position:'relative'}}>
+      <NeuralField />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600;700&display=swap');
         @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
@@ -409,7 +521,7 @@ export default function Portfolio() {
       )}
 
       {/* ── TWO-COLUMN LAYOUT ── */}
-      <div style={{display:'flex',paddingTop:57}}>
+      <div style={{display:'flex',paddingTop:57,position:'relative',zIndex:1}}>
 
         {/* LEFT SIDEBAR — sticky */}
         <aside className="port-sidebar" style={{width:220,flexShrink:0,position:'sticky',top:57,height:'calc(100vh - 57px)',overflow:'auto',background:'rgba(0,0,0,0.6)',borderRight:'1px solid rgba(255,255,255,0.06)',display:'flex',flexDirection:'column',padding:'28px 12px'}}>

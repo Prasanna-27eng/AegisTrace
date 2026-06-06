@@ -156,310 +156,226 @@ export default function Dashboard() {
     </div>
   );
 
-  return (
-    <div style={{ padding: '20px 24px', maxWidth: 1400 }}>
+  const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
+  return (
+    <div style={{ padding: '28px 32px', maxWidth: 1440, background: '#000000', minHeight: '100vh' }}>
+
+      {/* ── Header ── */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 32, paddingBottom: 24, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div>
-          <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Dashboard</h1>
-          <div style={{ fontSize: '0.7rem', color: '#787878', fontFamily: 'JetBrains Mono', marginTop: 2 }}>
+          <div style={{ fontSize: '0.62rem', color: '#505050', letterSpacing: '0.2em', textTransform: 'uppercase', ...MONO, marginBottom: 8 }}>
+            AEGISTRACE // CONTROL PLANE
+          </div>
+          <h1 style={{ fontSize: '2.2rem', fontWeight: 300, letterSpacing: '-0.04em', color: '#EBEBEB', lineHeight: 1, marginBottom: 6 }}>
+            Dashboard
+          </h1>
+          <div style={{ fontSize: '0.68rem', color: '#505050', ...MONO }}>
             {new Date().toLocaleDateString('en-IE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            {' · '}{new Date().toLocaleTimeString('en-IE', { hour: '2-digit', minute: '2-digit' })} UTC
           </div>
         </div>
-        <button className="btn-accent" onClick={() => navigate('/app/cases')} style={{ fontSize: '0.8rem' }}>
-          <Plus size={13} /> New Case
+        <button onClick={() => navigate('/app/cases')}
+          style={{ background: '#FFFFFF', color: '#000000', border: 'none', padding: '10px 22px', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.12em', textTransform: 'uppercase', ...MONO, display: 'flex', alignItems: 'center', gap: 7, transition: 'opacity 0.2s' }}
+          onMouseEnter={e => e.currentTarget.style.opacity = '0.82'}
+          onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+          <Plus size={12} /> NEW CASE
         </button>
+      </div>
+
+      {/* ── BIG KPI ROW ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, marginBottom: 32, background: 'rgba(255,255,255,0.06)' }}>
+        {[
+          { value: activeCases.length,    label: 'Active Cases',    sub: `${openCases.length} open · ${inProgress.length} in progress`, color: '#EBEBEB', alert: false, path: '/app/cases' },
+          { value: critical.length,        label: 'Critical',        sub: critical.length ? 'Immediate action required' : 'No critical cases', color: critical.length ? '#EF4444' : '#EBEBEB', alert: critical.length > 0, path: '/app/cases' },
+          { value: slaBreach.length,       label: 'SLA Breached',    sub: slaBreach.length ? 'Overdue right now' : 'All within SLA', color: slaBreach.length ? '#F97316' : '#EBEBEB', alert: slaBreach.length > 0, path: '/app/cases' },
+          { value: closedToday.length,     label: 'Closed Today',    sub: `${stats.total_cases || cases.length} total cases`, color: '#22C55E', alert: false, path: '/app/cases' },
+        ].map(kpi => (
+          <div key={kpi.label} onClick={() => navigate(kpi.path)}
+            style={{ background: kpi.alert ? 'rgba(239,68,68,0.04)' : '#080808', padding: '28px 24px', cursor: 'pointer', transition: 'background 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.background = kpi.alert ? 'rgba(239,68,68,0.07)' : 'rgba(255,255,255,0.03)'}
+            onMouseLeave={e => e.currentTarget.style.background = kpi.alert ? 'rgba(239,68,68,0.04)' : '#080808'}>
+            <div style={{ fontSize: '3rem', fontWeight: 300, color: kpi.color, lineHeight: 1, letterSpacing: '-0.04em', ...MONO, marginBottom: 10 }}>
+              {kpi.value}
+            </div>
+            <div style={{ fontSize: '0.7rem', color: '#EBEBEB', fontWeight: 500, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{kpi.label}</div>
+            <div style={{ fontSize: '0.65rem', color: '#505050', ...MONO }}>{kpi.sub}</div>
+          </div>
+        ))}
       </div>
 
       {/* ── ATTENTION ZONE ── */}
       {attention.length > 0 && (
-        <div style={{ marginBottom: 20, padding: '14px 16px', background: 'rgba(77,163,255,0.04)', border: '1px solid rgba(77,163,255,0.15)', borderRadius: 8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
-            <Zap size={13} style={{ color: '#4DA3FF' }} />
-            <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#4DA3FF', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'JetBrains Mono' }}>
-              Needs attention now
+        <div style={{ marginBottom: 24, padding: '16px 20px', background: '#080808', border: '1px solid rgba(255,255,255,0.07)', borderLeft: '2px solid #4DA3FF' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <Zap size={12} style={{ color: '#4DA3FF' }} />
+            <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#4DA3FF', textTransform: 'uppercase', letterSpacing: '0.14em', ...MONO }}>
+              Needs Attention
             </span>
-            <span style={{ marginLeft: 'auto', fontSize: '0.68rem', color: '#787878', cursor: 'pointer' }} onClick={() => navigate('/app/cases')}>
-              View all →
+            <span style={{ marginLeft: 'auto', fontSize: '0.62rem', color: '#505050', cursor: 'pointer', ...MONO }} onClick={() => navigate('/app/cases')}>
+              VIEW ALL →
             </span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {attention.map(c => <AttentionRow key={c.id} c={c} navigate={navigate} />)}
           </div>
         </div>
       )}
 
-      {/* ── PRIMARY STATS ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, marginBottom: 20 }}>
-        <StatTile icon={AlertTriangle} label="Critical Open"   value={critical.length}     color="#4DA3FF"  sub={critical.length ? 'Act now' : 'None active'} subColor={critical.length ? '#EF4444' : '#22C55E'} onClick={() => navigate('/app/cases?severity=critical&status=open')} />
-        <StatTile icon={Clock}        label="Pending Closure"  value={pending.length}      color="#EAB308"  sub={pending.length ? 'Awaiting review' : 'Queue clear'} subColor={pending.length ? '#EAB308' : '#22C55E'} onClick={() => navigate('/app/cases?status=pending_closure')} />
-        <StatTile icon={Activity}     label="In Progress"      value={inProgress.length}   color="#A78BFA"  sub={`${openCases.length} open`} subColor="#888888" onClick={() => navigate('/app/cases?status=in_progress')} />
-        <StatTile icon={TrendingUp}   label="SLA Breach"       value={slaBreach.length}    color={slaBreach.length ? '#EF4444' : '#22C55E'} sub={slaBreach.length ? 'Overdue' : 'All within SLA'} subColor={slaBreach.length ? '#EF4444' : '#22C55E'} />
-        <StatTile icon={CheckCircle}  label="Closed Today"     value={closedToday.length}  color="#22C55E"  sub="Cases resolved" />
-        <StatTile icon={Shield}       label="VT Today"         value={vtHistory.length}    color="#A78BFA"  sub={maliciousVt ? `${maliciousVt} malicious` : 'None malicious'} subColor={maliciousVt ? '#EF4444' : '#888888'} onClick={() => navigate('/app/vt-lookup')} />
-        <StatTile icon={GitMerge}     label="Total IOCs"       value={stats.total_iocs || 0} color="#22C55E" sub="Correlated" />
-        <StatTile icon={BarChart2}    label="Total Cases"      value={stats.total_cases || cases.length} color="#FFFFFF" sub={`${stats.closed_cases || closedToday.length} closed`} subColor="#888888" />
-      </div>
-
-      {/* ── ANALYTICS TRENDS ── */}
-      {analytics && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
-
-          {/* Severity breakdown bar chart */}
-          <div className="at-card" style={{ padding: '14px 16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <div className="section-label" style={{ margin: 0 }}>Severity Breakdown</div>
-              <button onClick={() => navigate('/app/analytics')} style={{ fontSize: '0.68rem', color: '#787878', background: 'none', border: 'none', cursor: 'pointer' }}>Full analytics →</button>
-            </div>
-            {(() => {
-              const sevData = analytics.severity || {};
-              const order = ['critical', 'high', 'medium', 'low', 'info'];
-              const colors = { critical: '#EF4444', high: '#F97316', medium: '#EAB308', low: '#A78BFA', info: '#888888' };
-              const total = order.reduce((s, k) => s + (sevData[k] || 0), 0) || 1;
-              return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-                  {order.map(sev => {
-                    const count = sevData[sev] || 0;
-                    const pct = Math.round((count / total) * 100);
-                    return (
-                      <div key={sev} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontSize: '0.62rem', fontFamily: 'JetBrains Mono', color: colors[sev], textTransform: 'uppercase', letterSpacing: '0.05em', width: 50, flexShrink: 0 }}>{sev}</span>
-                        <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,0.05)', borderRadius: 3, overflow: 'hidden' }}>
-                          <div style={{ height: '100%', width: `${pct}%`, background: colors[sev], borderRadius: 3, transition: 'width 0.6s ease', opacity: count ? 1 : 0 }} />
-                        </div>
-                        <span style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono', color: count ? colors[sev] : '#787878', width: 20, textAlign: 'right', flexShrink: 0 }}>{count}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })()}
-          </div>
-
-          {/* SLA status */}
-          <div className="at-card" style={{ padding: '14px 16px' }}>
-            <div className="section-label" style={{ marginBottom: 12 }}>SLA Status</div>
-            {(() => {
-              const sla = analytics.sla || {};
-              const breached   = sla.breached   || slaBreach.length;
-              const atRisk     = sla.at_risk    || activeCases.filter(c => {
-                const hrs = (Date.now() - new Date(c.created_at).getTime()) / 3600000;
-                const limit = { critical:4, high:8, medium:48, low:168 }[c.severity] || 48;
-                return c.status !== 'closed' && hrs > limit * 0.8 && hrs <= limit;
-              }).length;
-              const onTrack = Math.max(0, activeCases.length - breached - atRisk);
-              const items = [
-                { label: 'Breached',  count: breached, color: '#EF4444', bg: 'rgba(239,68,68,0.08)' },
-                { label: 'At Risk',   count: atRisk,   color: '#EAB308', bg: 'rgba(234,179,8,0.08)'  },
-                { label: 'On Track',  count: onTrack,  color: '#22C55E', bg: 'rgba(34,197,94,0.08)'  },
-              ];
-              return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-                  {items.map(({ label, count, color, bg }) => (
-                    <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 6, background: bg, border: `1px solid ${color}22` }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                        <div style={{ width: 7, height: 7, borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}66` }} />
-                        <span style={{ fontSize: '0.76rem', color: '#909090' }}>{label}</span>
-                      </div>
-                      <span style={{ fontSize: '1rem', fontWeight: 700, color, fontFamily: 'JetBrains Mono' }}>{count}</span>
-                    </div>
-                  ))}
-                  <div style={{ paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.05)', fontSize: '0.65rem', color: '#787878', fontFamily: 'JetBrains Mono', textAlign: 'right' }}>
-                    {activeCases.length} active cases total
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-        </div>
-      )}
-
       {/* ── MAIN GRID ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 20 }}>
 
-        {/* Case Queue */}
-        <div className="at-card" style={{ padding: '14px 16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-            <div className="section-label" style={{ margin: 0 }}>Case Queue</div>
-            <button onClick={() => navigate('/app/cases')} style={{ fontSize: '0.7rem', color: '#4DA3FF', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-              All cases <ExternalLink size={10} />
+        {/* ── LEFT: Case Queue ── */}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <div style={{ fontSize: '0.62rem', color: '#505050', letterSpacing: '0.16em', textTransform: 'uppercase', ...MONO }}>
+              Case Queue
+            </div>
+            <button onClick={() => navigate('/app/cases')}
+              style={{ background: 'none', border: 'none', color: '#505050', cursor: 'pointer', fontSize: '0.62rem', ...MONO, letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: 4 }}>
+              ALL CASES <ExternalLink size={10} />
             </button>
           </div>
 
           {recentCases.length === 0 ? (
-            <div style={{ padding: '32px 0', textAlign: 'center' }}>
-              <FolderOpen size={28} style={{ color: 'rgba(77,163,255,0.2)', margin: '0 auto 10px' }} />
-              <div style={{ fontSize: '0.84rem', fontWeight: 500, marginBottom: 6 }}>No cases yet</div>
-              <div style={{ fontSize: '0.76rem', color: '#787878', marginBottom: 14 }}>Start your first investigation to build your SOC queue.</div>
-              <button className="btn-accent" onClick={() => navigate('/app/cases')} style={{ fontSize: '0.78rem' }}>
-                <Plus size={13} /> Create First Case
+            <div style={{ padding: '48px 0', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)', background: '#080808' }}>
+              <FolderOpen size={24} style={{ color: 'rgba(255,255,255,0.08)', margin: '0 auto 12px' }} />
+              <div style={{ fontSize: '0.82rem', color: '#505050', marginBottom: 6 }}>No cases yet</div>
+              <div style={{ fontSize: '0.7rem', color: '#383838', marginBottom: 20, ...MONO }}>Start your first investigation</div>
+              <button onClick={() => navigate('/app/cases')}
+                style={{ background: '#FFFFFF', color: '#000000', border: 'none', padding: '9px 20px', fontSize: '0.68rem', fontWeight: 700, cursor: 'pointer', ...MONO, letterSpacing: '0.1em' }}>
+                + NEW CASE
               </button>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-              {recentCases.map(c => (
-                <div
-                  key={c.id}
-                  onClick={() => navigate(`/app/cases/${c.id}`)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', background: '#111111', borderRadius: 6, cursor: 'pointer', transition: 'background 0.15s', position: 'relative', overflow: 'hidden' }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
-                  onMouseLeave={e => e.currentTarget.style.background = '#111111'}
-                >
-                  {c.severity === 'critical' && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, background: '#4DA3FF' }} />}
-                  <div style={{ flex: 1, minWidth: 0, paddingLeft: c.severity === 'critical' ? 6 : 0 }}>
-                    <div style={{ fontSize: '0.82rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
-                    <div style={{ fontSize: '0.67rem', color: '#787878', fontFamily: 'JetBrains Mono', marginTop: 1, display: 'flex', gap: 8 }}>
-                      <span>{c.case_number}</span>
-                      {c.analyst_name && <span>· {c.analyst_name}</span>}
-                      <span style={{ color: ageColor(c.created_at, c.severity) }}>· {caseAge(c.created_at)} old</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: 'rgba(255,255,255,0.04)' }}>
+              {recentCases.map((c, i) => {
+                const sevColors = { critical: '#EF4444', high: '#F97316', medium: '#EAB308', low: '#22C55E', info: '#505050' };
+                const sc = sevColors[c.severity] || '#505050';
+                return (
+                  <div key={c.id} onClick={() => navigate(`/app/cases/${c.id}`)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', background: '#080808', cursor: 'pointer', transition: 'background 0.15s', borderLeft: `2px solid ${sc}` }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                    onMouseLeave={e => e.currentTarget.style.background = '#080808'}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '0.84rem', fontWeight: 500, color: '#EBEBEB', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 4 }}>{c.title}</div>
+                      <div style={{ fontSize: '0.64rem', color: '#505050', ...MONO, display: 'flex', gap: 10 }}>
+                        <span>{c.case_number}</span>
+                        {c.analyst_name && <span>{c.analyst_name}</span>}
+                        <span style={{ color: ageColor(c.created_at, c.severity) }}>{caseAge(c.created_at)} old</span>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+                      <SeverityBadge severity={c.severity} />
+                      <StatusBadge status={c.status} />
+                      <span style={{ fontSize: '0.62rem', color: '#383838', ...MONO, minWidth: 38, textAlign: 'right' }}>{timeAgo(c.updated_at)}</span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 5, alignItems: 'center', flexShrink: 0 }}>
-                    <SeverityBadge severity={c.severity} />
-                    <StatusBadge status={c.status} />
-                  </div>
-                  <div style={{ fontSize: '0.65rem', color: '#787878', fontFamily: 'JetBrains Mono', flexShrink: 0, minWidth: 40, textAlign: 'right' }}>
-                    {timeAgo(c.updated_at)}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
 
-        {/* Right column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {/* ── RIGHT: Stats column ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-          {/* Pending closure alert */}
-          {pending.length > 0 && (
-            <div style={{ background: 'rgba(234,179,8,0.05)', border: '1px solid rgba(234,179,8,0.18)', borderRadius: 8, padding: '12px 14px' }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#EAB308', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <AlertTriangle size={12} /> {pending.length} case{pending.length > 1 ? 's' : ''} pending closure
+          {/* Severity breakdown */}
+          {analytics && (
+            <div style={{ background: '#080808', border: '1px solid rgba(255,255,255,0.06)', padding: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <div style={{ fontSize: '0.62rem', color: '#505050', letterSpacing: '0.16em', textTransform: 'uppercase', ...MONO }}>Severity Breakdown</div>
+                <button onClick={() => navigate('/app/analytics')} style={{ background: 'none', border: 'none', color: '#383838', cursor: 'pointer', fontSize: '0.6rem', ...MONO }}>ANALYTICS →</button>
               </div>
-              {pending.slice(0, 3).map(c => (
-                <div key={c.id} onClick={() => navigate(`/app/cases/${c.id}`)} style={{ fontSize: '0.76rem', color: '#787878', cursor: 'pointer', padding: '4px 0', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>{c.title}</span>
-                  <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.65rem', flexShrink: 0 }}>{caseAge(c.created_at)}</span>
-                </div>
-              ))}
+              {(() => {
+                const sevData = analytics.severity || {};
+                const order = ['critical', 'high', 'medium', 'low', 'info'];
+                const colors = { critical: '#EF4444', high: '#F97316', medium: '#EAB308', low: '#22C55E', info: '#505050' };
+                const total = order.reduce((s, k) => s + (sevData[k] || 0), 0) || 1;
+                return order.map(sev => {
+                  const count = sevData[sev] || 0;
+                  const pct   = Math.round((count / total) * 100);
+                  return (
+                    <div key={sev} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 9 }}>
+                      <span style={{ fontSize: '0.6rem', color: colors[sev], textTransform: 'uppercase', letterSpacing: '0.08em', width: 48, flexShrink: 0, ...MONO }}>{sev}</span>
+                      <div style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.05)' }}>
+                        <div style={{ height: '100%', width: `${pct}%`, background: colors[sev], opacity: count ? 0.9 : 0 }} />
+                      </div>
+                      <span style={{ fontSize: '0.68rem', fontWeight: 700, color: count ? colors[sev] : '#383838', width: 18, textAlign: 'right', flexShrink: 0, ...MONO }}>{count}</span>
+                    </div>
+                  );
+                });
+              })()}
             </div>
           )}
 
-          {/* Recent VT lookups */}
-          <div className="at-card" style={{ padding: '14px 16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <div className="section-label" style={{ margin: 0 }}>Recent VT Lookups</div>
-              <button onClick={() => navigate('/app/vt-lookup')} style={{ fontSize: '0.68rem', color: '#787878', background: 'none', border: 'none', cursor: 'pointer' }}>All →</button>
-            </div>
-            {vtHistory.length === 0 ? (
-              <div style={{ padding: '16px 0', textAlign: 'center', color: '#787878', fontSize: '0.78rem' }}>
-                No lookups yet.{' '}
-                <span style={{ color: '#A78BFA', cursor: 'pointer' }} onClick={() => navigate('/app/vt-lookup')}>Run one →</span>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                {vtHistory.map(v => (
-                  <div key={v.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.76rem', padding: '3px 0' }}>
-                    <span style={{ fontFamily: 'JetBrains Mono', color: '#909090', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 150, fontSize: '0.72rem' }}>{v.ioc}</span>
-                    <span className={`verdict-${v.verdict}`} style={{ fontSize: '0.65rem', fontWeight: 600, fontFamily: 'JetBrains Mono', flexShrink: 0 }}>{v.verdict?.toUpperCase()}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* ── EDR Status Widget ── */}
-          <div className="at-card" style={{ padding: '14px 16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Shield size={12} style={{ color: '#22C55E' }} />
-                <div className="section-label" style={{ margin: 0 }}>EDR Platforms</div>
-              </div>
-            </div>
-
-            {/* Platform dots */}
-            {edrStatus ? (
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: edrRecent.length ? 10 : 0 }}>
-                {Object.entries(edrStatus.platforms).map(([name, info]) => (
-                  <div key={name} style={{
-                    display: 'flex', alignItems: 'center', gap: 5,
-                    padding: '3px 8px', borderRadius: 4, fontSize: '0.68rem',
-                    background: info.configured ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)',
-                    border: '1px solid rgba(255,255,255,0.06)',
-                    opacity: info.configured ? 1 : 0.45,
-                  }}>
-                    <span style={{
-                      width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
-                      background: info.connected ? '#22C55E' : (info.configured ? '#EF4444' : '#888888'),
-                      boxShadow: info.connected ? '0 0 5px #22C55E44' : 'none',
-                    }} />
-                    <span style={{ fontFamily: 'JetBrains Mono', textTransform: 'uppercase', fontSize: '0.62rem' }}>{name}</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div style={{ fontSize: '0.72rem', color: '#787878', marginBottom: 8 }}>Loading EDR status…</div>
-            )}
-
-            {/* Recent EDR Actions */}
-            {edrRecent.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <div style={{ fontSize: '0.62rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>Recent Actions</div>
-                {edrRecent.map(a => {
-                  const ActionIcon = { isolate: Lock, un_isolate: Unlock, kill_process: XCircle, run_command: Terminal, list_processes: Cpu }[a.action] || Shield;
-                  return (
-                    <div
-                      key={a.id}
-                      onClick={() => a.case_id && navigate(`/app/cases/${a.case_id}`)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 7, fontSize: '0.7rem',
-                        padding: '3px 0', cursor: a.case_id ? 'pointer' : 'default',
-                      }}
-                    >
-                      <ActionIcon size={11} style={{ color: a.status === 'success' ? '#22C55E' : a.status === 'failed' ? '#EF4444' : '#EAB308', flexShrink: 0 }} />
-                      <span style={{ fontFamily: 'JetBrains Mono', color: '#787878', fontSize: '0.62rem', flexShrink: 0, textTransform: 'uppercase' }}>{a.platform}</span>
-                      <span style={{ color: '#EBEBEB', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.hostname || a.endpoint_id}</span>
-                      <span style={{ marginLeft: 'auto', color: '#787878', fontSize: '0.62rem', fontFamily: 'JetBrains Mono', flexShrink: 0 }}>
-                        {a.action.replace('_', ' ')}
-                      </span>
+          {/* SLA Status */}
+          {analytics && (
+            <div style={{ background: '#080808', border: '1px solid rgba(255,255,255,0.06)', padding: '20px' }}>
+              <div style={{ fontSize: '0.62rem', color: '#505050', letterSpacing: '0.16em', textTransform: 'uppercase', ...MONO, marginBottom: 16 }}>SLA Status</div>
+              {(() => {
+                const sla = analytics.sla || {};
+                const breached = sla.breached || slaBreach.length;
+                const atRisk   = sla.at_risk  || activeCases.filter(c => {
+                  const hrs = (Date.now() - new Date(c.created_at).getTime()) / 3600000;
+                  const limit = { critical:4, high:8, medium:48, low:168 }[c.severity] || 48;
+                  return c.status !== 'closed' && hrs > limit * 0.8 && hrs <= limit;
+                }).length;
+                const onTrack = Math.max(0, activeCases.length - breached - atRisk);
+                return [
+                  { label: 'Breached', count: breached, color: '#EF4444' },
+                  { label: 'At Risk',  count: atRisk,   color: '#F97316' },
+                  { label: 'On Track', count: onTrack,  color: '#22C55E' },
+                ].map(({ label, count, color }) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ width: 5, height: 5, borderRadius: '50%', background: color }} />
+                      <span style={{ fontSize: '0.74rem', color: '#787878' }}>{label}</span>
                     </div>
-                  );
-                })}
-              </div>
-            )}
+                    <span style={{ fontSize: '1.2rem', fontWeight: 300, color, ...MONO }}>{count}</span>
+                  </div>
+                ));
+              })()}
+            </div>
+          )}
 
-            {edrStatus && !edrStatus.any_configured && (
-              <div style={{ fontSize: '0.7rem', color: '#787878', marginTop: 4 }}>
-                No EDR configured.{' '}
-                <span style={{ color: '#A78BFA', cursor: 'pointer' }} onClick={() => navigate('/app/admin?tab=integrations')}>Configure integrations →</span>
-              </div>
-            )}
-          </div>
-
-          {/* Quick actions */}
-          <div className="at-card" style={{ padding: '14px 16px' }}>
-            <div className="section-label">Quick Actions</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+          {/* Quick Actions */}
+          <div style={{ background: '#080808', border: '1px solid rgba(255,255,255,0.06)', padding: '20px' }}>
+            <div style={{ fontSize: '0.62rem', color: '#505050', letterSpacing: '0.16em', textTransform: 'uppercase', ...MONO, marginBottom: 14 }}>Quick Access</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: 'rgba(255,255,255,0.04)' }}>
               {[
-                { label: 'New Case',       path: '/app/cases',         color: '#4DA3FF' },
-                { label: 'VT Lookup',      path: '/app/vt-lookup',     color: '#A78BFA' },
-                { label: 'Email Analysis', path: '/app/email',          color: '#22C55E' },
-                { label: 'Terminal Lab',   path: '/app/terminal-lab',   color: '#22C55E' },
-                { label: 'Identity Graph', path: '/app/identity-graph', color: '#A78BFA' },
-                { label: 'Threat Hunt',    path: '/app/hunt',           color: '#4DA3FF' },
-                { label: 'Log Invest.',    path: '/app/logs',           color: '#EAB308' },
-                { label: 'Tools Hub',      path: '/app/tools',          color: '#787878' },
-              ].map(({ label, path, color }) => (
-                <button key={path} onClick={() => navigate(path)} className="btn-ghost"
-                  style={{ fontSize: '0.76rem', padding: '7px 10px', justifyContent: 'flex-start', gap: 6 }}>
-                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: color, flexShrink: 0 }} />
-                  {label}
+                { label: 'VT Lookup',      path: '/app/vt-lookup'     },
+                { label: 'Email Forensics',path: '/app/email'          },
+                { label: 'Terminal Lab',   path: '/app/terminal-lab'   },
+                { label: 'Threat Hunt',    path: '/app/hunt'           },
+                { label: 'Identity Graph', path: '/app/identity-graph' },
+                { label: 'Tools Hub',      path: '/app/tools'          },
+              ].map(({ label, path }) => (
+                <button key={path} onClick={() => navigate(path)}
+                  style={{ background: '#080808', border: 'none', color: '#787878', padding: '11px 12px', fontSize: '0.7rem', cursor: 'pointer', textAlign: 'left', ...MONO, transition: 'color 0.15s, background 0.15s', letterSpacing: '0.02em' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = '#EBEBEB'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = '#787878'; e.currentTarget.style.background = '#080808'; }}>
+                  {label} →
                 </button>
               ))}
             </div>
           </div>
 
+          {/* Recent VT */}
+          {vtHistory.length > 0 && (
+            <div style={{ background: '#080808', border: '1px solid rgba(255,255,255,0.06)', padding: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                <div style={{ fontSize: '0.62rem', color: '#505050', letterSpacing: '0.16em', textTransform: 'uppercase', ...MONO }}>Recent VT Lookups</div>
+                <button onClick={() => navigate('/app/vt-lookup')} style={{ background: 'none', border: 'none', color: '#383838', cursor: 'pointer', fontSize: '0.6rem', ...MONO }}>ALL →</button>
+              </div>
+              {vtHistory.map(v => (
+                <div key={v.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                  <span style={{ fontSize: '0.68rem', color: '#505050', ...MONO, overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 140 }}>{v.ioc}</span>
+                  <span className={`verdict-${v.verdict}`} style={{ fontSize: '0.6rem', fontWeight: 700, ...MONO, flexShrink: 0 }}>{v.verdict?.toUpperCase()}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
