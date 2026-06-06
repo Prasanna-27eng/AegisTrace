@@ -5,16 +5,22 @@ import {
   Wrench, Globe, Settings, LogOut, ChevronLeft, ChevronRight,
   Crosshair, ScrollText, Monitor, Network, Rss, Cpu,
   Terminal, Fingerprint, BarChart2, ShieldAlert, ShieldCheck, Bot,
-  Plug, Activity, Brain
+  Plug, Activity, Brain, Radio
 } from 'lucide-react';
 import Logo from './Logo';
 import useStore from '../store/useStore';
 
 const NAV_GROUPS = [
   {
+    label: 'Control',
+    items: [
+      { to: '/app/control-plane',  label: 'Control Plane',     Icon: Radio },
+      { to: '/app/dashboard',      label: 'Dashboard',         Icon: LayoutDashboard },
+    ],
+  },
+  {
     label: 'Investigation',
     items: [
-      { to: '/app/dashboard',      label: 'Dashboard',         Icon: LayoutDashboard },
       { to: '/app/cases',          label: 'Cases',             Icon: FolderOpen },
       { to: '/app/analytics',      label: 'Analytics',         Icon: BarChart2 },
       { to: '/app/hunt',           label: 'Threat Hunt',       Icon: Crosshair },

@@ -467,7 +467,7 @@ react, react-dom, react-router-dom, axios, zustand, lucide-react, react-scripts
 ### Priority 3 — Trust OS Features
 - [x] Shadow AI Detection dashboard — `/app/shadow-ai` — completed v4.3
 - [ ] **SOAR Playbooks engine** — builder UI + automated execution: trigger → action sequence → approval gate
-- [ ] **Control Plane View** — `/app/control-plane` — live: identity trust scores, active AI agent actions, policy violations, endpoint heartbeats
+- [x] **Control Plane View** — `/app/control-plane` — live: 5 KPI cards, high-risk identity panel, AI action queue, ITDR threat feed, endpoint heartbeats, live activity ticker. Auto-refresh 30s. Added to Sidebar as top nav item.
 
 ### Priority 4 — Identity Graph Enhancements
 - [ ] Click device node → Device Details panel (OS, IP, last seen, risk score, recent activity, create-case button)
@@ -504,7 +504,7 @@ Start a new Claude session and paste this file. Then say:
 
 > "Read AEGISTRACE_CONTEXT.md — I want to work on [task from backlog above]"
 
-**Highest priority items (as of v5.1):** DPDPA Compliance Report, SOAR Playbooks engine, Control Plane View, email notifications on ITDR anomaly.
+**Highest priority items (as of v5.1):** SOAR Playbooks engine, email notifications on ITDR anomaly, Trust score trending, DPDPA Compliance Report.
 
 Do NOT give Claude the full codebase — this file is sufficient context for any continuation task.
 
