@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Navigate, Outlet, useNavigate, NavLink } from 'react-router-dom';
-import { Search, Menu, LayoutDashboard, FolderOpen, Crosshair, Monitor, Settings, ChevronDown, LogOut, Home } from 'lucide-react';
+import { Navigate, Outlet, useNavigate, NavLink, useLocation } from 'react-router-dom';
+import { Search, Menu, LayoutDashboard, FolderOpen, Crosshair, Monitor, Settings, ChevronDown, LogOut, Home, ArrowLeft } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import CommandPalette from '../../components/CommandPalette';
 import useStore from '../../store/useStore';
@@ -60,6 +60,8 @@ export default function AppShell() {
   };
 
   const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+  const location = useLocation();
+  const canGoBack = window.history.length > 1;
 
   return (
     <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)', overflow: 'hidden' }}>
@@ -87,6 +89,17 @@ export default function AppShell() {
             style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', padding: 4, display: 'none' }}>
             <Menu size={18} />
           </button>
+
+          {/* Back button */}
+          {canGoBack && (
+            <button onClick={() => navigate(-1)}
+              title="Go back"
+              style={{ background: 'none', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 7, padding: '5px 9px', cursor: 'pointer', color: '#787878', display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.75rem', transition: 'all 0.15s', flexShrink: 0 }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#EBEBEB'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = '#787878'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}>
+              <ArrowLeft size={14} />
+            </button>
+          )}
 
           {/* Search bar with Cmd+K hint */}
           <div style={{ flex: 1, maxWidth: 400, position: 'relative' }}>
