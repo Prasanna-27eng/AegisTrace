@@ -1224,7 +1224,21 @@ _log_lock = threading.Lock()
 _raw_log_queue: list = []       # accumulates raw logs between cycles
 
 # Persist cursor to file so restarts don't re-read old events
-_LOG_CURSOR_FILE = Path.home() / ".aegistrace_log_cursor"
+_LOG_CURSOR_FILE   = Path.home() / ".aegistrace_log_cursor"
+_STOP_FILE         = Path.home() / ".aegistrace_STOP"       # sentinel: guardian won't restart if this exists
+_PID_FILE          = Path.home() / ".aegistrace.pid"        # main agent PID
+_GUARDIAN_PID_FILE = Path.home() / ".aegistrace_guardian.pid"  # guardian PID
+
+def _write_pid_files():
+    """Write agent + guardian PID files on startup."""
+    try: _PID_FILE.write_text(str(os.getpid()))
+    except Exception: pass
+
+def _clear_pid_files():
+    """Remove PID files on clean exit."""
+    for f in (_PID_FILE, _GUARDIAN_PID_FILE):
+        try: f.unlink(missing_ok=True)
+        except Exception: pass
 
 def _load_log_cursor() -> str:
     try:
@@ -2180,6 +2194,95 @@ def poll_commands_loop():
         time.sleep(COMMAND_POLL_INTERVAL)
 
 
+def _do_stop_agent(reason: str = "Stopped", uninstall: bool = False):
+    """
+    Cleanly stop the agent and prevent guardian from restarting it.
+    Steps:
+      1. Write STOP_FILE sentinel → guardian will not restart on next check
+      2. Kill guardian process via PID file
+      3. Stop systemd service if running
+      4. Optionally clean up honey tokens + cursor (uninstall=True)
+      5. Exit this process
+    """
+    import sys as _sys
+
+    logger.warning(f"[stop] Initiating {'uninstall' if uninstall else 'stop'}: {reason}")
+
+    # 1. Write stop sentinel FIRST so guardian won't restart
+    try:
+        _STOP_FILE.write_text(f"{reason}\n{datetime.utcnow().isoformat()}")
+        logger.info(f"[stop] Stop sentinel written: {_STOP_FILE}")
+    except Exception as e:
+        logger.error(f"[stop] Could not write sentinel: {e}")
+
+    # 2. Kill the guardian process
+    try:
+        gpid_str = _GUARDIAN_PID_FILE.read_text().strip()
+        gpid = int(gpid_str)
+        os.kill(gpid, signal.SIGTERM)
+        logger.info(f"[stop] Guardian (PID {gpid}) terminated")
+    except Exception as e:
+        logger.debug(f"[stop] Guardian kill: {e}")
+
+    # 3. Stop systemd service if this is running under systemd
+    try:
+        result = subprocess.run(
+            ["systemctl", "is-active", "aegistrace-agent"],
+            capture_output=True, text=True, timeout=5
+        )
+        if result.stdout.strip() == "active":
+            subprocess.run(["systemctl", "stop", "aegistrace-agent"], timeout=10)
+            subprocess.run(["systemctl", "disable", "aegistrace-agent"], timeout=10)
+            logger.info("[stop] systemd service stopped and disabled")
+    except Exception as e:
+        logger.debug(f"[stop] systemd: {e}")
+
+    if uninstall:
+        # 4. Remove honey tokens, cursor, PID files
+        try:
+            _honey.cleanup()
+            logger.info("[stop] Honey tokens removed")
+        except Exception: pass
+        try:
+            _LOG_CURSOR_FILE.unlink(missing_ok=True)
+            logger.info("[stop] Log cursor cleared")
+        except Exception: pass
+        _clear_pid_files()
+        logger.warning(f"[stop] Agent uninstalled. To redeploy: set env vars and run aegistrace_agent.py")
+    else:
+        _clear_pid_files()
+        logger.warning(f"[stop] Agent stopped. To restart: systemctl start aegistrace-agent OR run aegistrace_agent.py")
+
+    # 5. Notify backend — mark this endpoint offline immediately
+    try:
+        _transport.send({
+            "priority":    "offline",
+            "system_info": {"hostname": AGENT_ID, "ip_address": ""},
+            "processes": [], "network_connections": [], "file_events": [],
+            "alerts": [], "login_events": [], "raw_logs": [],
+        })
+        # Also hit the dedicated offline endpoint
+        url = f"{BACKEND_URLS[0].rstrip('/')}/api/ingest/offline/{AGENT_ID}"
+        req = urllib_request.Request(
+            url,
+            data=json.dumps({"reason": reason}).encode(),
+            headers={
+                "Content-Type":  "application/json",
+                "X-Agent-Token": AGENT_TOKEN,
+            },
+            method="POST",
+        )
+        urllib_request.urlopen(req, timeout=5)
+        logger.info("[stop] Backend notified — endpoint marked offline")
+    except Exception as e:
+        logger.debug(f"[stop] Backend notify: {e}")
+
+    # 6. Exit
+    global _main_loop_running
+    _main_loop_running = False
+    _sys.exit(0)
+
+
 def _execute_command(cmd: dict):
     command_type = cmd.get("command", "")
     payload      = cmd.get("payload", {})
@@ -2270,22 +2373,14 @@ def _execute_command(cmd: dict):
             logger.warning(f"[command] STOP AGENT — reason: {reason}")
             result = {"status": "stopping", "reason": reason}
             _transport.post_command_result(command_id, result, True)
-            global _main_loop_running
-            _main_loop_running = False
-            import sys as _sys
-            _sys.exit(0)
+            _do_stop_agent(reason, uninstall=False)
 
         elif command_type == "uninstall_agent":
             reason = payload.get("reason", "Remote uninstall command received")
             logger.warning(f"[command] UNINSTALL AGENT — reason: {reason}")
-            # Remove honey tokens and cursor file
-            _honey.cleanup()
-            _LOG_CURSOR_FILE.unlink(missing_ok=True)
-            result = {"status": "uninstalled", "reason": reason}
+            result = {"status": "uninstalling", "reason": reason}
             _transport.post_command_result(command_id, result, True)
-            _main_loop_running = False
-            import sys as _sys
-            _sys.exit(0)
+            _do_stop_agent(reason, uninstall=True)
 
         else:
             result  = {"error": f"Unknown command: {command_type}"}
@@ -2330,21 +2425,39 @@ def _guardian_target(main_pid: int, agent_script: str):
     """
     Runs in a SEPARATE OS process (not a thread).
     Monitors the main agent process and restarts it if it dies.
-
-    Why a separate process and not just a thread?
-    If an attacker kills the main Python interpreter (SIGKILL), all threads
-    die instantly. A separate OS process survives and can restart the agent.
+    Respects the STOP_FILE sentinel — if present, exits without restarting.
     """
     import sys, os, time, subprocess
+    from pathlib import Path as _Path
+
+    _stop  = _Path.home() / ".aegistrace_STOP"
+    _gpid  = _Path.home() / ".aegistrace_guardian.pid"
+    _mpid  = _Path.home() / ".aegistrace.pid"
+
+    # Write guardian PID so the main agent can kill us
+    try: _gpid.write_text(str(os.getpid()))
+    except Exception: pass
 
     restart_count = 0
     MAX_RESTARTS  = 20
 
     while restart_count < MAX_RESTARTS:
         time.sleep(5)
+
+        # Honour stop sentinel — exit immediately without restarting
+        if _stop.exists():
+            print(f"[guardian] Stop sentinel detected — exiting without restart.", flush=True)
+            try: _gpid.unlink(missing_ok=True)
+            except Exception: pass
+            sys.exit(0)
+
         try:
             import psutil as _ps
             if not _ps.pid_exists(main_pid):
+                # Check stop sentinel one more time before restarting
+                if _stop.exists():
+                    print(f"[guardian] Stop sentinel — not restarting.", flush=True)
+                    sys.exit(0)
                 restart_count += 1
                 print(f"[guardian] Main agent (PID {main_pid}) died. Restart #{restart_count}", flush=True)
                 proc = subprocess.Popen(
@@ -2352,9 +2465,15 @@ def _guardian_target(main_pid: int, agent_script: str):
                     env=os.environ.copy(),
                 )
                 main_pid = proc.pid
+                try: _mpid.write_text(str(main_pid))
+                except Exception: pass
                 print(f"[guardian] Restarted as PID {main_pid}", flush=True)
         except Exception as e:
             print(f"[guardian] Error: {e}", flush=True)
+
+    print("[guardian] Max restarts reached — giving up.", flush=True)
+    try: _gpid.unlink(missing_ok=True)
+    except Exception: pass
 
 
 def start_guardian() -> Optional[multiprocessing.Process]:
@@ -2568,6 +2687,17 @@ def main_loop():
     """Main collection loop with error recovery and buffer flush."""
     global _heartbeat_ts, _main_loop_running
     logger.info(f"AegisTrace Agent v{AGENT_VERSION} — main loop starting")
+
+    # Clear any leftover stop sentinel from a previous stop (fresh start)
+    try:
+        if _STOP_FILE.exists():
+            _STOP_FILE.unlink()
+            logger.info("[start] Cleared leftover stop sentinel — fresh start")
+    except Exception: pass
+
+    # Write PID file so stop command can find us
+    _write_pid_files()
+
     _flush_buffer()
 
     # Start real-time journalctl follower (Linux only)

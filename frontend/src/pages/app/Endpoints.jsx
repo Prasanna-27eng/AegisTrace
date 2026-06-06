@@ -615,7 +615,12 @@ export default function Endpoints() {
     setLoading(true);
     api.get('/api/ingest/endpoints').then(r => { setEndpoints(r.data); setLoading(false); }).catch(() => setLoading(false));
   };
-  useEffect(() => { loadEndpoints(); }, []);
+  useEffect(() => {
+    loadEndpoints();
+    // Auto-refresh endpoint list every 30s so online/offline status stays current
+    const interval = setInterval(loadEndpoints, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchKey = () => {
     api.get('/api/ingest/key')

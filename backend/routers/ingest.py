@@ -342,7 +342,7 @@ def list_endpoints(
             "last_seen": ep.last_seen,
             "total_batches": ep.total_batches,
             "threat_score_avg": round(ep.threat_score_avg, 1),
-            "is_active": ep.is_active,
+            "is_active": (datetime.utcnow() - ep.last_seen).total_seconds() < 90,
             "tags": json.loads(ep.tags or "[]"),
             "created_at": ep.created_at,
             "last_verdict": recent_batch.ai_verdict if recent_batch else None,
@@ -1100,6 +1100,26 @@ def dispatch_command(
     session.commit()
     session.refresh(cmd)
     return {"ok": True, "command_id": cmd.id}
+
+
+@router.post("/offline/{agent_id}")
+async def mark_offline(
+    agent_id: str,
+    data: dict,
+    session: Session = Depends(get_session),
+    x_agent_token: Optional[str] = Header(None),
+):
+    """Agent calls this before stopping so dashboard shows it offline immediately."""
+    expected_key = _get_ingest_key()
+    if not x_agent_token or not hmac.compare_digest(x_agent_token, expected_key):
+        raise HTTPException(401, "Invalid agent token")
+    endpoint = session.exec(select(Endpoint).where(Endpoint.hostname == agent_id)).first()
+    if endpoint:
+        endpoint.is_active    = False
+        endpoint.last_seen    = datetime.utcnow() - timedelta(minutes=10)  # force offline
+        session.add(endpoint)
+        session.commit()
+    return {"ok": True, "reason": data.get("reason", "stopped")}
 
 
 @router.get("/raw-logs/{endpoint_id}")
