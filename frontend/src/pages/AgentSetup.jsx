@@ -102,11 +102,24 @@ python3 aegistrace_agent.py`;
   };
 
   useEffect(()=>{
-    const observer = new IntersectionObserver(entries=>{
+    // Active section tracker
+    const navObs = new IntersectionObserver(entries=>{
       entries.forEach(e=>{ if(e.isIntersecting) setActiveSection(e.target.id); });
     },{threshold:0.3,rootMargin:'-60px 0px -60% 0px'});
-    SIDEBAR_SECTIONS.forEach(s=>{ const el=document.getElementById(s.id); if(el) observer.observe(el); });
-    return()=>observer.disconnect();
+    SIDEBAR_SECTIONS.forEach(s=>{ const el=document.getElementById(s.id); if(el) navObs.observe(el); });
+
+    // Void Core laser scan reveal — fires on each section as it enters viewport
+    const scanObs = new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          entry.target.classList.add('void-scan-reveal');
+          scanObs.unobserve(entry.target);
+        }
+      });
+    },{threshold:0.05});
+    document.querySelectorAll('.agent-scan-section').forEach(el=>scanObs.observe(el));
+
+    return()=>{ navObs.disconnect(); scanObs.disconnect(); };
   },[]);
 
   return (
@@ -203,7 +216,7 @@ python3 aegistrace_agent.py`;
           <div className="agent-content" style={{maxWidth:780,margin:'0 auto',padding:'40px 48px 80px'}}>
 
             {/* ── OVERVIEW ── */}
-            <section id="overview" style={{marginBottom:56}}>
+            <section id="overview" className="agent-scan-section" style={{marginBottom:56}}>
               <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:20}}>
                 <div style={{width:44,height:44,background:'rgba(77,163,255,0.1)',border:'1px solid rgba(77,163,255,0.3)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center'}}>
                   <Terminal size={22} style={{color:'#4DA3FF'}}/>
@@ -259,7 +272,7 @@ python3 aegistrace_agent.py`;
             <div style={{width:'100%',height:1,background:'rgba(255,255,255,0.06)',marginBottom:48}}/>
 
             {/* ── QUICK START ── */}
-            <section id="quickstart" style={{marginBottom:56}}>
+            <section id="quickstart" className="agent-scan-section" style={{marginBottom:56}}>
               <div style={{marginBottom:28}}>
                 <div style={{fontSize:9,color:'#4DA3FF',letterSpacing:'0.18em',textTransform:'uppercase',...mono,marginBottom:8}}>◇ Quick Start</div>
                 <h2 style={{fontSize:22,fontWeight:700,margin:0}}>Up and running in 3 steps</h2>
@@ -302,7 +315,7 @@ python3 aegistrace_agent.py`;
             <div style={{width:'100%',height:1,background:'rgba(255,255,255,0.06)',marginBottom:48}}/>
 
             {/* ── BACKGROUND SERVICE ── */}
-            <section id="service" style={{marginBottom:56}}>
+            <section id="service" className="agent-scan-section" style={{marginBottom:56}}>
               <div style={{marginBottom:28}}>
                 <div style={{fontSize:9,color:'#4DA3FF',letterSpacing:'0.18em',textTransform:'uppercase',...mono,marginBottom:8}}>◇ Background Service</div>
                 <h2 style={{fontSize:22,fontWeight:700,margin:0}}>Run as a persistent service</h2>
@@ -362,7 +375,7 @@ python3 aegistrace_agent.py`;
             <div style={{width:'100%',height:1,background:'rgba(255,255,255,0.06)',marginBottom:48}}/>
 
             {/* ── WHAT IT COLLECTS ── */}
-            <section id="collects" style={{marginBottom:56}}>
+            <section id="collects" className="agent-scan-section" style={{marginBottom:56}}>
               <div style={{marginBottom:28}}>
                 <div style={{fontSize:9,color:'#4DA3FF',letterSpacing:'0.18em',textTransform:'uppercase',...mono,marginBottom:8}}>◇ Data Collection</div>
                 <h2 style={{fontSize:22,fontWeight:700,margin:0}}>What it collects</h2>
@@ -421,7 +434,7 @@ python3 aegistrace_agent.py`;
             <div style={{width:'100%',height:1,background:'rgba(255,255,255,0.06)',marginBottom:48}}/>
 
             {/* ── CONFIG OPTIONS ── */}
-            <section id="config" style={{marginBottom:56}}>
+            <section id="config" className="agent-scan-section" style={{marginBottom:56}}>
               <div style={{marginBottom:24}}>
                 <div style={{fontSize:9,color:'#4DA3FF',letterSpacing:'0.18em',textTransform:'uppercase',...mono,marginBottom:8}}>◇ Configuration</div>
                 <h2 style={{fontSize:22,fontWeight:700,margin:0}}>Config options</h2>
@@ -461,7 +474,7 @@ python3 aegistrace_agent.py`;
             <div style={{width:'100%',height:1,background:'rgba(255,255,255,0.06)',marginBottom:48}}/>
 
             {/* ── TROUBLESHOOTING ── */}
-            <section id="troubleshoot" style={{marginBottom:56}}>
+            <section id="troubleshoot" className="agent-scan-section" style={{marginBottom:56}}>
               <div style={{marginBottom:24}}>
                 <div style={{fontSize:9,color:'#EAB308',letterSpacing:'0.18em',textTransform:'uppercase',...mono,marginBottom:8}}>◇ Troubleshooting</div>
                 <h2 style={{fontSize:22,fontWeight:700,margin:0}}>Common issues</h2>

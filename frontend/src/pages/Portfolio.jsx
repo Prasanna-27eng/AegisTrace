@@ -249,13 +249,67 @@ const FOCUS = [
 const MONO = { fontFamily:'JetBrains Mono, monospace' };
 const SERIF = { fontFamily:'Instrument Serif, Georgia, serif' };
 
+/* ─── Alphanumeric Ghost Morph ─────────────────────────────────────────── */
+const GHOST_CHARS = '0123456789ABCDEF_$#@!%^&*<>?[]{}|~';
+
+function GhostText({ text, style = {}, as: Tag = 'span' }) {
+  const [display, setDisplay] = useState(text);
+  const [morphing, setMorphing] = useState(false);
+  const frameRef = useRef(null);
+
+  const scramble = () => {
+    if (morphing) return;
+    setMorphing(true);
+    const original = text;
+    const totalMs  = 320;
+    const fps      = 28;
+    const steps    = Math.round((totalMs / 1000) * fps);
+    let step = 0;
+
+    const tick = () => {
+      step++;
+      const progress = step / steps;
+      // Each character: resolve left-to-right as progress increases
+      const scrambled = original.split('').map((ch, i) => {
+        const charProgress = progress - (i / original.length) * 0.55;
+        if (ch === ' ') return ' ';
+        if (charProgress >= 1) return ch;
+        return GHOST_CHARS[Math.floor(Math.random() * GHOST_CHARS.length)];
+      }).join('');
+      setDisplay(scrambled);
+
+      if (step < steps) {
+        frameRef.current = setTimeout(tick, 1000 / fps);
+      } else {
+        setDisplay(original);
+        setMorphing(false);
+      }
+    };
+    frameRef.current = setTimeout(tick, 0);
+  };
+
+  useEffect(() => () => clearTimeout(frameRef.current), []);
+
+  return (
+    <Tag
+      style={{ cursor: 'default', display: 'inline', ...style }}
+      onMouseEnter={scramble}
+    >
+      {display}
+    </Tag>
+  );
+}
+
 /* ─── Section heading ──────────────────────────────────────────────────── */
 function SectionHead({ label, title, accent }) {
   return (
     <div style={{marginBottom:32}}>
       <div style={{fontSize:10,color:'#4A8EDB',...MONO,letterSpacing:'0.2em',textTransform:'uppercase',marginBottom:10}}>◇ {label}</div>
       <h2 style={{...SERIF,fontSize:'clamp(1.7rem,2.8vw,2.4rem)',fontWeight:400,letterSpacing:'-0.015em',lineHeight:1.1}}>
-        {title} <span style={{color:'#4A8EDB',fontStyle:'italic'}}>{accent}</span>
+        <GhostText text={title} />{' '}
+        <span style={{color:'#4A8EDB',fontStyle:'italic'}}>
+          <GhostText text={accent} />
+        </span>
       </h2>
     </div>
   );
@@ -528,7 +582,7 @@ export default function Portfolio() {
                         <span style={{background:`${p.badgeColor}15`,border:`1px solid ${p.badgeColor}35`,color:p.badgeColor,fontSize:'0.65rem',fontWeight:600,padding:'3px 9px',borderRadius:4,...MONO}}>{p.badge}</span>
                         <span style={{fontSize:'0.68rem',color:'#787878',...MONO}}>{p.period}</span>
                       </div>
-                      <div style={{fontWeight:700,fontSize:'0.95rem'}}>{p.title}</div>
+                      <div style={{fontWeight:700,fontSize:'0.95rem'}}><GhostText text={p.title} /></div>
                     </div>
                     {p.link&&<a href={p.link} target="_blank" rel="noreferrer" style={{color:'#787878',textDecoration:'none'}} onMouseEnter={e=>e.currentTarget.style.color='#EBEBEB'} onMouseLeave={e=>e.currentTarget.style.color='#787878'}><Github size={15}/></a>}
                     {!p.link&&p.highlight&&<span style={{fontSize:'0.65rem',color:'#4A8EDB',...MONO}}>aegistrace.io</span>}
@@ -567,7 +621,7 @@ export default function Portfolio() {
                     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
                       <span style={{fontSize:'0.68rem',color:'#787878',...MONO}}>{c.case_number}</span>
                     </div>
-                    <div style={{fontWeight:600,fontSize:'0.9rem',marginBottom:8}}>{c.title}</div>
+                    <div style={{fontWeight:600,fontSize:'0.9rem',marginBottom:8}}><GhostText text={c.title} /></div>
                     {c.ai_executive_summary&&<div style={{fontSize:'0.77rem',color:'#787878',lineHeight:1.7,marginBottom:14}}>{c.ai_executive_summary.slice(0,160)}…</div>}
                     <button onClick={()=>navigate(`/public/${c.share_token}`)} style={{display:'inline-flex',alignItems:'center',gap:5,background:'none',border:'1px solid rgba(74,142,219,0.2)',color:'#4A8EDB',borderRadius:5,padding:'6px 12px',fontSize:'0.74rem',cursor:'pointer',...MONO}}>
                       Read Full Case <ArrowRight size={11}/>

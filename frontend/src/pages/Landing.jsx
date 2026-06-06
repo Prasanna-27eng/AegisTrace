@@ -265,6 +265,67 @@ function Ticker() {
   );
 }
 
+/* ─── Live Ingestion Stream ──────────────────────────────────────────────── */
+const INGESTION_LOGS = [
+  'sys_init // core pipeline mapped',
+  'nhi_trace // link recognized // cursor-bot-04',
+  'session_verify // token hash active',
+  'mcp_gateway // protocol handshake secure',
+  'policy_engine // least agency enforced',
+  'itdr_scan // credential stuffing // blocked',
+  'identity_graph // edge updated // SVC → AGT',
+  'honey_token // access detected // CRITICAL',
+  'audit_log // immutable entry // written',
+  'provenance // ai_action // awaiting approval',
+  'edr_agent // dns_dga // entropy_score: 4.82',
+  'trust_score // node_id:47 // recalculated: 91',
+];
+
+function LiveIngestionStream() {
+  const [stream, setStream] = useState([]);
+  const mono = { fontFamily: 'JetBrains Mono, monospace' };
+
+  useEffect(() => {
+    let i = 0;
+    // Seed 3 lines immediately
+    setStream(INGESTION_LOGS.slice(0, 3));
+    i = 3;
+    const iv = setInterval(() => {
+      setStream(prev => [INGESTION_LOGS[i % INGESTION_LOGS.length], ...prev.slice(0, 4)]);
+      i++;
+    }, 2600);
+    return () => clearInterval(iv);
+  }, []);
+
+  return (
+    <div style={{
+      position:'absolute', bottom:32, right:0, width:340, zIndex:11,
+      padding:'16px 20px', background:'rgba(0,0,0,0.88)',
+      borderTop:'1px solid #111111', borderLeft:'1px solid #111111',
+    }}>
+      <div style={{fontSize:9,color:'#555555',letterSpacing:'0.18em',textTransform:'uppercase',...mono,marginBottom:12}}>
+        ● LIVE INGESTION MATRIX
+      </div>
+      {stream.map((log, idx) => (
+        <div key={idx} style={{
+          display:'flex', alignItems:'center', gap:8, marginBottom:6,
+          opacity: idx === 0 ? 1 : Math.max(0.08, 1 - idx * 0.22),
+          transition:'opacity 0.4s',
+        }}>
+          <span style={{
+            width:5, height:5, borderRadius:'50%', flexShrink:0,
+            background: idx === 0 ? '#00FF66' : '#1A1A1A',
+            boxShadow: idx === 0 ? '0 0 6px #00FF66' : 'none',
+          }}/>
+          <span style={{fontSize:10,color: idx === 0 ? '#00FF66' : '#2A2A2A',...mono,letterSpacing:'0.02em'}}>
+            {log}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ─── DATA ──────────────────────────────────────────────────────────────── */
 const FEATURES = [
   { Icon:ShieldAlert,  title:'ITDR — Identity Threat Detection', desc:'Four real-time detectors: credential stuffing (5+ failed logins), impossible travel (different continents < 4h), new device login, unapproved privilege escalation. Paste auth logs or enter events manually.', color:'#EF4444' },
@@ -570,25 +631,30 @@ export default function Landing() {
           <div className="fade-4 hero-grid" style={{maxWidth:1200,margin:'0 auto',padding:'0 56px',width:'100%',display:'grid',gridTemplateColumns:'1.2fr 0.8fr',gap:56,alignItems:'center'}}>
             {/* Left: headline */}
             <div>
-              <div style={{fontSize:10,letterSpacing:'0.45em',textTransform:'uppercase',color:'#4DA3FF',...mono,marginBottom:16,display:'flex',alignItems:'center',gap:8}}>
+              <div className="void-compile" style={{fontSize:10,letterSpacing:'0.45em',textTransform:'uppercase',color:'#4DA3FF',...mono,marginBottom:16,display:'flex',alignItems:'center',gap:8}}>
                 <span style={{border:'1px solid rgba(77,163,255,0.4)',width:12,height:12,display:'inline-block'}}/>
                 Trust · Identity · Provenance · Control Plane
               </div>
               <h1 style={{fontFamily:'Instrument Serif,Georgia,serif',lineHeight:0.92,letterSpacing:'-0.015em',marginBottom:28}}>
-                <div style={{fontSize:'clamp(2.8rem,7vw,8.5rem)',color:'#EBEBEB',fontWeight:400}}>Attackers no longer break in.</div>
-                <div style={{fontSize:'clamp(2.8rem,7vw,8.5rem)',color:'#4DA3FF',fontStyle:'italic',fontWeight:400}}>They become trusted.</div>
+                <div className="void-compile void-compile-d1" style={{fontSize:'clamp(2.8rem,7vw,8.5rem)',color:'#EBEBEB',fontWeight:400}}>Attackers no longer break in.</div>
+                <div className="void-compile void-compile-d2" style={{fontSize:'clamp(2.8rem,7vw,8.5rem)',color:'#4DA3FF',fontStyle:'italic',fontWeight:400}}>They become trusted.</div>
               </h1>
-              <p style={{maxWidth:520,fontSize:13,color:'rgba(240,240,248,0.5)',lineHeight:1.8,...mono,fontWeight:300,marginBottom:14}}>
+              <p className="void-compile void-compile-d3" style={{maxWidth:520,fontSize:13,color:'rgba(240,240,248,0.5)',lineHeight:1.8,...mono,fontWeight:300,marginBottom:14}}>
                 AegisTrace is not just a SOC dashboard — it is a security control plane built for the AI-agent era. Identity-centric. Provenance-aware. Explainable.
               </p>
-              <p style={{maxWidth:520,fontSize:12,color:'rgba(77,163,255,0.7)',lineHeight:1.7,...mono,fontWeight:300,marginBottom:28,borderLeft:'2px solid rgba(77,163,255,0.3)',paddingLeft:12}}>
+              <p className="void-compile void-compile-d4" style={{maxWidth:520,fontSize:12,color:'rgba(77,163,255,0.7)',lineHeight:1.7,...mono,fontWeight:300,marginBottom:28,borderLeft:'2px solid rgba(77,163,255,0.3)',paddingLeft:12}}>
                 The average enterprise has <strong style={{color:'#4DA3FF'}}>144 machine identities</strong> for every human. Most are unmonitored.
               </p>
-              <div style={{display:'flex',gap:12,flexWrap:'wrap'}}>
-                <button onClick={openApp} style={{background:'#4DA3FF',color:'#fff',border:'none',borderRadius:6,padding:'12px 28px',fontSize:12,fontWeight:600,cursor:'pointer',...mono,letterSpacing:'0.08em',textTransform:'uppercase',display:'flex',alignItems:'center',gap:8}}>
-                  <ArrowUpRight size={14}/>Launch Platform
+              <div className="void-compile void-compile-d5" style={{display:'flex',gap:12,flexWrap:'wrap'}}>
+                <button onClick={openApp} style={{background:'#FFFFFF',color:'#000000',border:'none',padding:'12px 28px',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:'JetBrains Mono,monospace',letterSpacing:'0.14em',textTransform:'uppercase',display:'flex',alignItems:'center',gap:8,transition:'opacity 0.2s'}}
+                  onMouseEnter={e=>e.currentTarget.style.opacity='0.82'} onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
+                  <ArrowUpRight size={13}/>INITIALIZE TERMINAL
                 </button>
-                <button onClick={()=>navigate('/portfolio')} style={{background:'transparent',color:'rgba(240,240,248,0.5)',border:'1px solid rgba(240,240,248,0.15)',borderRadius:6,padding:'12px 22px',fontSize:12,cursor:'pointer',...mono,letterSpacing:'0.06em',textTransform:'uppercase'}}>View Portfolio →</button>
+                <button onClick={()=>navigate('/portfolio')} style={{background:'transparent',color:'rgba(235,235,235,0.45)',border:'1px solid rgba(235,235,235,0.12)',padding:'12px 22px',fontSize:11,cursor:'pointer',fontFamily:'JetBrains Mono,monospace',letterSpacing:'0.1em',textTransform:'uppercase',transition:'color 0.2s,border-color 0.2s'}}
+                  onMouseEnter={e=>{e.currentTarget.style.color='rgba(235,235,235,0.9)';e.currentTarget.style.borderColor='rgba(235,235,235,0.35)'}}
+                  onMouseLeave={e=>{e.currentTarget.style.color='rgba(235,235,235,0.45)';e.currentTarget.style.borderColor='rgba(235,235,235,0.12)'}}>
+                  VIEW PORTFOLIO →
+                </button>
               </div>
             </div>
 
@@ -609,6 +675,7 @@ export default function Landing() {
             </div>
           </div>
         </div>
+        <LiveIngestionStream/>
         <Ticker/>
       </section>
 

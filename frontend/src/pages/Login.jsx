@@ -255,6 +255,31 @@ function IrisScanner() {
   return <canvas ref={cvRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />;
 }
 
+/* ─── Hex Matrix Background ─────────────────────────────────────────────── */
+// Generated ONCE on module load — never flickering
+const HEX_CELLS = Array.from({ length: 192 }, () =>
+  Math.floor(Math.random() * 256).toString(16).padStart(2, '0').toUpperCase()
+);
+
+function HexMatrix({ rippleRef }) {
+  return (
+    <div ref={rippleRef} style={{
+      position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
+      display: 'grid', gridTemplateColumns: 'repeat(16, 1fr)',
+      gap: 0, padding: '20px', overflow: 'hidden',
+    }}>
+      {HEX_CELLS.map((h, i) => (
+        <span key={i} data-hex={i} style={{
+          fontSize: '10px', color: '#111111',
+          fontFamily: 'JetBrains Mono, monospace',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '4px 0', userSelect: 'none', transition: 'color 0.4s, opacity 0.4s',
+        }}>{h}</span>
+      ))}
+    </div>
+  );
+}
+
 /* ─── Login Form ─────────────────────────────────────────────────────────── */
 export default function Login() {
   const [email, setEmail]       = useState('');
@@ -266,10 +291,49 @@ export default function Login() {
   const [mfaRequired, setMfa]   = useState(false);
   const [pendingToken, setPend]  = useState('');
   const [mfaCode, setMfaCode]   = useState('');
+  // Void Core
+  const [collapsing, setCollapse] = useState(false);
+  const hexRef    = useRef(null);
+  const cardRef   = useRef(null);
+  const pendingNav = useRef(null);
 
   const { setAuth }  = useStore();
   const navigate     = useNavigate();
   const mono         = { fontFamily: 'JetBrains Mono, monospace' };
+
+  /* ── Keypress hex ripple ─────────────────────────────────────────────── */
+  useEffect(() => {
+    const onKey = () => {
+      if (!hexRef.current) return;
+      const cells = hexRef.current.querySelectorAll('span[data-hex]');
+      const total = cells.length;
+      // Pick 8–14 random cells and pulse them
+      const count = 8 + Math.floor(Math.random() * 7);
+      for (let i = 0; i < count; i++) {
+        const idx = Math.floor(Math.random() * total);
+        const el = cells[idx];
+        if (!el) continue;
+        el.style.color = '#FFFFFF';
+        el.style.opacity = '0.55';
+        setTimeout(() => {
+          if (el) { el.style.color = '#111111'; el.style.opacity = '1'; }
+        }, 480 + Math.random() * 220);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  /* ── Horizon collapse helper ─────────────────────────────────────────── */
+  const collapseAndNavigate = (token, user) => {
+    setAuth(token, user);
+    if (cardRef.current) {
+      setCollapse(true);
+      setTimeout(() => navigate('/app/dashboard'), 720);
+    } else {
+      navigate('/app/dashboard');
+    }
+  };
 
   /* ── Step 1: password login ──────────────────────────────────────────── */
   const submit = async (e) => {
@@ -285,13 +349,12 @@ export default function Login() {
       if (res.data.mfa_required) {
         setPend(res.data.pending_token);
         setMfa(true);
+        setLoad(false);
       } else {
-        setAuth(res.data.token, res.data.user);
-        navigate('/app/dashboard');
+        collapseAndNavigate(res.data.token, res.data.user);
       }
     } catch (err) {
       setError(err.response?.data?.detail || 'Invalid credentials. Please try again.');
-    } finally {
       setLoad(false);
     }
   };
@@ -308,152 +371,149 @@ export default function Login() {
         pending_token: pendingToken,
         code: clean,
       });
-      setAuth(res.data.token, res.data.user);
-      navigate('/app/dashboard');
+      collapseAndNavigate(res.data.token, res.data.user);
     } catch (err) {
       setError(err.response?.data?.detail || 'Invalid or expired code. Try again.');
-    } finally {
       setLoad(false);
     }
   };
 
-  const inputStyle = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(77,163,255,0.13)' };
-  const lblStyle   = { fontSize: '0.67rem', color: 'rgba(235,235,235,0.38)', display: 'block', marginBottom: 7, letterSpacing: '0.08em', textTransform: 'uppercase', ...mono };
+  /* ── Styles ──────────────────────────────────────────────────────────── */
+  const inputStyle = {
+    background: '#000000', border: '1px solid #1A1A1A',
+    borderRadius: 0, color: '#FFFFFF',
+    fontFamily: 'JetBrains Mono, monospace', fontSize: '0.82rem',
+    padding: '11px 12px', width: '100%', outline: 'none', boxSizing: 'border-box',
+    transition: 'border-color 0.25s cubic-bezier(0.16,1,0.3,1)',
+  };
+  const lblStyle = {
+    display: 'block', fontSize: '0.6rem', color: '#555555',
+    letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 8, ...mono,
+  };
+  const btnStyle = (active) => ({
+    width: '100%', background: active ? '#FFFFFF' : 'rgba(255,255,255,0.5)',
+    color: '#000000', border: 'none', padding: '13px',
+    fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.18em',
+    textTransform: 'uppercase', cursor: active ? 'pointer' : 'not-allowed',
+    marginTop: 8, fontFamily: 'JetBrains Mono, monospace',
+    transition: 'opacity 0.2s',
+  });
 
   return (
-    <div style={{ minHeight: '100vh', background: '#050505', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
 
-      {/* Iris Scanner animation */}
+      {/* Iris Scanner — the main atmosphere */}
       <IrisScanner />
 
-      {/* Centre vignette */}
+      {/* Hex Matrix — static, keypress-ripple capable */}
+      <HexMatrix rippleRef={hexRef} />
+
+      {/* Deep centre vignette so card reads cleanly */}
       <div style={{
         position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
-        background: 'radial-gradient(ellipse 48% 55% at 50% 50%, rgba(5,5,5,0.72) 0%, rgba(5,5,5,0.3) 50%, transparent 100%)',
+        background: 'radial-gradient(ellipse 52% 58% at 50% 50%, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.45) 55%, transparent 100%)',
       }} />
 
-      {/* Card */}
-      <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 390, padding: '0 20px' }}>
+      {/* Card — horizon collapse target */}
+      <div ref={cardRef} className={collapsing ? 'void-collapse' : ''}
+        style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 360, padding: '0 20px' }}>
 
-        <div style={{ textAlign: 'center', marginBottom: 30 }}>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
-            <Logo size={44} showText={false} />
+        {/* ── Header ── */}
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{ fontSize: '0.6rem', letterSpacing: '0.28em', color: '#555555', ...mono, marginBottom: 6 }}>
+            AEGISTRACE // CORE v5.1
           </div>
-          <div style={{ fontSize: '1.45rem', fontWeight: 700, letterSpacing: '-0.02em', color: '#EBEBEB', marginBottom: 4 }}>
-            AegisTrace
-          </div>
-          <div style={{ fontSize: '0.65rem', color: 'rgba(235,235,235,0.28)', letterSpacing: '0.18em', textTransform: 'uppercase', ...mono }}>
-            Trust Operating System
+          <div className="void-compile" style={{ fontSize: '1.05rem', fontWeight: 300, letterSpacing: '-0.03em', color: '#FFFFFF' }}>
+            analyst gateway
           </div>
         </div>
 
+        {/* ── Vault panel ── */}
         <div style={{
-          background: 'rgba(5,5,5,0.92)',
-          border: '1px solid rgba(77,163,255,0.13)',
-          borderRadius: 14, padding: '30px 28px',
-          backdropFilter: 'blur(28px)',
-          boxShadow: '0 0 60px rgba(77,163,255,0.05), 0 24px 64px rgba(0,0,0,0.65)',
+          background: 'rgba(5,5,5,0.94)',
+          border: '1px solid #111111',
+          padding: '32px 28px',
+          backdropFilter: 'blur(32px)',
         }}>
-
           {/* ── MFA step ── */}
           {mfaRequired ? (
             <>
-              <div style={{ textAlign: 'center', marginBottom: 22 }}>
-                <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'rgba(74,142,219,0.12)', border: '1px solid rgba(74,142,219,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                  <Lock size={18} style={{ color: '#4DA3FF' }} />
-                </div>
-                <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#EBEBEB', marginBottom: 5 }}>Two-Factor Verification</div>
-                <div style={{ fontSize: '0.72rem', color: 'rgba(235,235,235,0.45)', ...mono }}>Enter the 6-digit code from your authenticator app</div>
+              <div style={{ fontSize: '0.6rem', color: '#555555', letterSpacing: '0.14em', textTransform: 'uppercase', ...mono, marginBottom: 24, textAlign: 'center' }}>
+                TWO-FACTOR VERIFICATION
               </div>
-
               {error && (
-                <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.22)', borderRadius: 7, padding: '10px 12px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', color: '#EF4444' }}>
-                  <AlertCircle size={13} />{error}
+                <div style={{ fontSize: '0.72rem', color: '#FF3333', marginBottom: 16, ...mono, borderLeft: '2px solid #FF3333', paddingLeft: 10 }}>
+                  {error}
                 </div>
               )}
-
-              <form onSubmit={submitMfa} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <form onSubmit={submitMfa} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div>
                   <label style={lblStyle}>Authenticator Code</label>
-                  <input className="at-input" type="text" inputMode="numeric" pattern="[0-9 ]*"
-                    maxLength={7} placeholder="000 000" autoFocus
-                    value={mfaCode} onChange={e => setMfaCode(e.target.value)}
-                    style={{ ...inputStyle, textAlign: 'center', fontSize: '1.4rem', letterSpacing: '0.25em', ...mono }} />
+                  <input className="at-input" type="text" inputMode="numeric" maxLength={7}
+                    placeholder="000 000" autoFocus value={mfaCode}
+                    onChange={e => setMfaCode(e.target.value)}
+                    style={{ ...inputStyle, textAlign: 'center', fontSize: '1.5rem', letterSpacing: '0.3em' }}
+                    onFocus={e => e.target.style.borderColor = '#333333'}
+                    onBlur={e => e.target.style.borderColor = '#1A1A1A'} />
                 </div>
-                <button type="submit" disabled={loading} style={{
-                  background: loading ? 'rgba(77,163,255,0.45)' : '#4DA3FF',
-                  color: '#fff', border: 'none', borderRadius: 8, padding: '11px', marginTop: 4,
-                  fontSize: '0.82rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  transition: 'background 0.2s', ...mono, letterSpacing: '0.06em',
-                }}>
-                  {loading
-                    ? <><span style={{ width: 13, height: 13, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'lg-spin 0.8s linear infinite' }} /> Verifying…</>
-                    : <>Verify <ArrowRight size={13} /></>}
+                <button type="submit" style={btnStyle(!loading)}>
+                  {loading ? 'VERIFYING…' : 'VERIFY IDENTITY'}
                 </button>
               </form>
-
               <button onClick={() => { setMfa(false); setPend(''); setMfaCode(''); setError(''); }}
-                style={{ background: 'none', border: 'none', color: 'rgba(235,235,235,0.3)', cursor: 'pointer', fontSize: '0.7rem', ...mono, display: 'block', margin: '14px auto 0', textDecoration: 'underline' }}>
-                ← Back to login
+                style={{ background: 'none', border: 'none', color: '#333333', cursor: 'pointer', fontSize: '0.62rem', ...mono, display: 'block', margin: '16px auto 0', letterSpacing: '0.1em' }}>
+                ← BACK
               </button>
             </>
           ) : (
             /* ── Password step ── */
             <>
-              <div style={{ fontSize: '0.62rem', textTransform: 'uppercase', letterSpacing: '0.16em', color: 'rgba(235,235,235,0.26)', ...mono, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 7 }}>
-                <Lock size={10} style={{ color: '#4DA3FF' }} />
-                Analyst Secure Access
+              <div style={{ fontSize: '0.6rem', color: '#555555', letterSpacing: '0.14em', textTransform: 'uppercase', ...mono, marginBottom: 24 }}>
+                ANALYST ID + PASSPHRASE
               </div>
-
               {error && (
-                <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.22)', borderRadius: 7, padding: '10px 12px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', color: '#EF4444' }}>
-                  <AlertCircle size={13} />{error}
+                <div style={{ fontSize: '0.72rem', color: '#FF3333', marginBottom: 16, ...mono, borderLeft: '2px solid #FF3333', paddingLeft: 10 }}>
+                  {error}
                 </div>
               )}
-
-              <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div>
-                  <label style={lblStyle}>Email</label>
-                  <input type="email" className="at-input" placeholder="analyst@corp.io"
-                    value={email} onChange={e => setEmail(e.target.value)}
-                    autoComplete="email" autoFocus style={inputStyle} />
+                  <label style={lblStyle}>Analyst ID</label>
+                  <input type="email" placeholder="analyst@corp.io" value={email}
+                    onChange={e => setEmail(e.target.value)} autoComplete="email" autoFocus
+                    style={inputStyle}
+                    onFocus={e => e.target.style.borderColor = '#333333'}
+                    onBlur={e => e.target.style.borderColor = '#1A1A1A'} />
                 </div>
-
                 <div>
-                  <label style={lblStyle}>Password</label>
+                  <label style={lblStyle}>Signature Passphrase</label>
                   <div style={{ position: 'relative' }}>
-                    <input type={showPw ? 'text' : 'password'} className="at-input"
-                      placeholder="••••••••" value={password} onChange={e => setPw(e.target.value)}
-                      autoComplete="current-password" style={{ ...inputStyle, paddingRight: 40 }} />
+                    <input type={showPw ? 'text' : 'password'} placeholder="••••••••"
+                      value={password} onChange={e => setPw(e.target.value)}
+                      autoComplete="current-password"
+                      style={{ ...inputStyle, paddingRight: 40 }}
+                      onFocus={e => e.target.style.borderColor = '#333333'}
+                      onBlur={e => e.target.style.borderColor = '#1A1A1A'} />
                     <button type="button" onClick={() => setShowPw(s => !s)}
-                      style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(235,235,235,0.3)', cursor: 'pointer', padding: 4 }}>
-                      {showPw ? <EyeOff size={13} /> : <Eye size={13} />}
+                      style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#444444', cursor: 'pointer', padding: 4 }}>
+                      {showPw ? <EyeOff size={12} /> : <Eye size={12} />}
                     </button>
                   </div>
                 </div>
-
-                <button type="submit" disabled={loading} style={{
-                  background: loading ? 'rgba(77,163,255,0.45)' : '#4DA3FF',
-                  color: '#fff', border: 'none', borderRadius: 8, padding: '11px', marginTop: 4,
-                  fontSize: '0.82rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  transition: 'background 0.2s', ...mono, letterSpacing: '0.06em',
-                }}>
-                  {loading
-                    ? <><span style={{ width: 13, height: 13, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'lg-spin 0.8s linear infinite' }} /> Authenticating…</>
-                    : <>Sign In <ArrowRight size={13} /></>}
+                <button type="submit" style={btnStyle(!loading)}>
+                  {loading ? 'AUTHENTICATING…' : 'AUTHENTICATE'}
                 </button>
               </form>
             </>
           )}
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: 18 }}>
-          <a href="/" style={{ fontSize: '0.7rem', color: 'rgba(235,235,235,0.18)', textDecoration: 'none', ...mono, transition: 'color 0.2s' }}
-            onMouseEnter={e => e.target.style.color = 'rgba(235,235,235,0.55)'}
-            onMouseLeave={e => e.target.style.color = 'rgba(235,235,235,0.18)'}>
-            ← Back to landing
+        {/* ── Footer ── */}
+        <div style={{ textAlign: 'center', marginTop: 20 }}>
+          <a href="/" style={{ fontSize: '0.6rem', color: '#333333', textDecoration: 'none', ...mono, letterSpacing: '0.1em', transition: 'color 0.2s' }}
+            onMouseEnter={e => e.target.style.color = '#888888'}
+            onMouseLeave={e => e.target.style.color = '#333333'}>
+            ← RETURN TO BASE
           </a>
         </div>
       </div>

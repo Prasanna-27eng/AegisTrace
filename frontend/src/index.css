@@ -105,13 +105,77 @@ h1,h2,h3,h4,h5,h6 {
   letter-spacing: -0.02em;
 }
 
-/* ── Animations ────────────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════════
+   VOID CORE — Kinetic Library v1.0
+   Premium, zero-dependency animation suite for AegisTrace.
+   Timing function: cubic-bezier(0.16, 1, 0.3, 1) — elastic deceleration.
+══════════════════════════════════════════════════════════════════════════════ */
+
+/* 1. Compile Text — text clips open left→right like a terminal printing */
+@keyframes compileText {
+  from { clip-path: inset(0 100% 0 0); opacity: 0; }
+  to   { clip-path: inset(0 0% 0 0);   opacity: 1; }
+}
+.void-compile {
+  animation: compileText 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.void-compile-d1 { animation-delay: 0.12s; }
+.void-compile-d2 { animation-delay: 0.28s; }
+.void-compile-d3 { animation-delay: 0.44s; }
+.void-compile-d4 { animation-delay: 0.60s; }
+.void-compile-d5 { animation-delay: 0.76s; }
+
+/* 2. Laser Scan Reveal — element rises + brightens as scan line passes */
+@keyframes laserScanReveal {
+  0%   { opacity: 0; transform: translateY(10px); filter: brightness(2.4); }
+  60%  { filter: brightness(1.1); }
+  100% { opacity: 1; transform: translateY(0);    filter: brightness(1); }
+}
+.void-scan-reveal {
+  opacity: 0;
+  animation: laserScanReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.void-scan-d1 { animation-delay: 0.08s; }
+.void-scan-d2 { animation-delay: 0.18s; }
+.void-scan-d3 { animation-delay: 0.30s; }
+.void-scan-d4 { animation-delay: 0.44s; }
+.void-scan-d5 { animation-delay: 0.60s; }
+
+/* 3. Horizon Collapse — panel flattens to 1px then the page transitions */
+@keyframes horizonCollapse {
+  0%   { transform: scaleY(1);    opacity: 1; }
+  40%  { transform: scaleY(0.04); opacity: 1; }
+  55%  { transform: scaleY(0.04); opacity: 1; }
+  100% { transform: scaleY(0);    opacity: 0; }
+}
+.void-collapse {
+  animation: horizonCollapse 0.72s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: center;
+}
+
+/* 4. Fade Up — retained for app UI */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .fade-up { animation: fadeUp 0.4s ease both; }
 
+/* 5. Hex Ripple — opacity pulse on hex grid cells */
+@keyframes hexRipple {
+  0%   { opacity: 0.03; }
+  50%  { opacity: 0.22; color: #FFFFFF; }
+  100% { opacity: 0.03; }
+}
+.void-hex-pulse { animation: hexRipple 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* 6. Ghost Morph — used for portfolio text scramble trigger */
+@keyframes ghostIn {
+  from { opacity: 0.35; letter-spacing: 0.25em; }
+  to   { opacity: 1;    letter-spacing: inherit; }
+}
+.void-ghost-resolve { animation: ghostIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* ── App animations (unchanged) ────────────────────────────────────────────── */
 @keyframes criticalPulse {
   0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
   50%     { box-shadow: 0 0 0 6px rgba(239,68,68,0); }

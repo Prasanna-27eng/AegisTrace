@@ -13,6 +13,28 @@ const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 const SERIF = { fontFamily: 'Instrument Serif, Georgia, serif' };
 const CONTACT_EMAIL = 'prasanna80564@gmail.com';
 
+/* ── Laser Scan Reveal hook ──────────────────────────────────────────────── */
+function useScanReveal(delay = 0) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          el.style.animationDelay = `${delay}s`;
+          el.classList.add('void-scan-reveal');
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.08 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [delay]);
+  return ref;
+}
+
 /* ── Hero particles ───────────────────────────────────────────────────── */
 function HeroParticles() {
   const ref = useRef(null);
@@ -112,6 +134,23 @@ export default function Mission() {
   ];
 
   const scrollTo = id => { document.getElementById(id)?.scrollIntoView({behavior:'smooth'}); setMobileNav(false); };
+
+  /* ── Global scan-reveal observer — watches all .mission-section > div ── */
+  useEffect(() => {
+    const targets = document.querySelectorAll('.mission-section > div');
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          el.style.animationDelay = `${i * 0.06}s`;
+          el.classList.add('void-scan-reveal');
+          obs.unobserve(el);
+        }
+      });
+    }, { threshold: 0.06 });
+    targets.forEach(t => obs.observe(t));
+    return () => obs.disconnect();
+  }, []);
 
   return (
     <div style={{background:'#000000',color:'#EBEBEB',minHeight:'100vh',overflowX:'hidden'}}>
