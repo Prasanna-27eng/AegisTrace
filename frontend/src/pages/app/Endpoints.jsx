@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Monitor, RefreshCw, Loader2, AlertTriangle, CheckCircle, Clock, Shield, FileText, ChevronRight, Copy, X, Download, Terminal, Settings, Database, ChevronDown, ChevronUp } from 'lucide-react';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
@@ -322,7 +322,7 @@ export default function Endpoints() {
   const [rawLogs, setRawLogs] = useState([]);
   const [logsLoading, setLogsLoading] = useState(false);
   const [logFilter, setLogFilter] = useState('all');
-  const logsRef = React.useRef(null);
+  const logsRef = useRef(null);
 
   const loadEndpoints = () => {
     setLoading(true);

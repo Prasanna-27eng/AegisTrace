@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Navigate, Outlet, useNavigate, NavLink, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useNavigate, NavLink } from 'react-router-dom';
 import { Search, Menu, LayoutDashboard, FolderOpen, Crosshair, Monitor, Settings, ChevronDown, LogOut, Home, ArrowLeft } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import CommandPalette from '../../components/CommandPalette';
@@ -60,7 +60,6 @@ export default function AppShell() {
   };
 
   const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform);
-  const location = useLocation();
   const canGoBack = window.history.length > 1;
 
   return (

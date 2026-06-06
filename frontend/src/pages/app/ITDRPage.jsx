@@ -10,8 +10,9 @@ import useStore from '../../store/useStore';
 
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 
-/* ── All 6 detector definitions ─────────────────────────────────────────── */
+/* ── All detector definitions (ITDR + endpoint agent alerts) ────────────── */
 const DETECTOR_META = {
+  // Identity detectors
   credential_stuffing:             { label: 'Credential Stuffing',        color: '#EF4444', Icon: Key },
   credential_stuffing_distributed: { label: 'Distributed Stuffing',       color: '#EF4444', Icon: Key },
   impossible_travel:               { label: 'Impossible Travel',          color: '#F97316', Icon: MapPin },
@@ -19,6 +20,20 @@ const DETECTOR_META = {
   privilege_escalation:            { label: 'Privilege Escalation',       color: '#EF4444', Icon: Shield },
   token_theft:                     { label: 'Token / Session Theft',      color: '#8FAFC0', Icon: Key },
   shadow_ai:                       { label: 'Shadow AI Usage',            color: '#2EE6D6', Icon: Bot },
+  // Endpoint agent alerts
+  honey_token_access:              { label: 'Honey Token Accessed',       color: '#EF4444', Icon: AlertTriangle },
+  suspicious_process:              { label: 'Suspicious Process',         color: '#F97316', Icon: Activity },
+  suspicious_lineage:              { label: 'Suspicious Process Chain',   color: '#F97316', Icon: Activity },
+  suspicious_port:                 { label: 'Suspicious Port',            color: '#EAB308', Icon: Zap },
+  fim_change:                      { label: 'File Integrity Change',      color: '#EAB308', Icon: Eye },
+  failed_login:                    { label: 'Failed Login',               color: '#EF4444', Icon: Key },
+  yara_match:                      { label: 'YARA Signature Match',       color: '#EF4444', Icon: Shield },
+  dga_domain:                      { label: 'DGA / C2 Domain',           color: '#F97316', Icon: Zap },
+  usb_inserted:                    { label: 'USB Device Inserted',        color: '#EAB308', Icon: AlertCircle },
+  registry_change:                 { label: 'Registry Persistence',       color: '#EF4444', Icon: AlertTriangle },
+  user_management:                 { label: 'User Account Change',        color: '#EF4444', Icon: User },
+  new_destination:                 { label: 'New Network Destination',    color: '#8FAFC0', Icon: Activity },
+  behavioural_anomaly:             { label: 'Behavioural Anomaly',        color: '#EAB308', Icon: AlertCircle },
 };
 
 const EVENT_TYPE_LABELS = {
