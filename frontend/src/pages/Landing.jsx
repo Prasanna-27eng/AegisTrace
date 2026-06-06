@@ -639,30 +639,30 @@ export default function Landing() {
         </div>
 
         {/* Split hero content */}
-        <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',zIndex:10,paddingTop:80,paddingBottom:160}}>
-          <div className="fade-4 hero-grid" style={{maxWidth:1200,margin:'0 auto',padding:'0 56px',width:'100%',display:'grid',gridTemplateColumns:'1.2fr 0.8fr',gap:56,alignItems:'center'}}>
+        <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',zIndex:10,paddingTop:72,paddingBottom:80}}>
+          <div className="fade-4 hero-grid" style={{maxWidth:1200,margin:'0 auto',padding:'0 48px',width:'100%',display:'grid',gridTemplateColumns:'1.3fr 0.7fr',gap:40,alignItems:'center'}}>
             {/* Left: headline */}
             <div>
-              <div className="void-compile" style={{fontSize:10,letterSpacing:'0.45em',textTransform:'uppercase',color:'#5A8A9F',...mono,marginBottom:16,display:'flex',alignItems:'center',gap:8}}>
-                <span style={{border:'1px solid rgba(90,138,159,0.4)',width:12,height:12,display:'inline-block'}}/>
+              <div className="void-compile" style={{fontSize:9,letterSpacing:'0.35em',textTransform:'uppercase',color:'#5A8A9F',...mono,marginBottom:10,display:'flex',alignItems:'center',gap:8}}>
+                <span style={{border:'1px solid rgba(90,138,159,0.4)',width:10,height:10,display:'inline-block'}}/>
                 Trust · Identity · Provenance · Control Plane
               </div>
-              <h1 style={{fontFamily:'Instrument Serif,Georgia,serif',lineHeight:0.92,letterSpacing:'-0.015em',marginBottom:28}}>
-                <div className="void-compile void-compile-d1" style={{fontSize:'clamp(2.8rem,7vw,8.5rem)',color:'#EBEBEB',fontWeight:400}}>Attackers no longer break in.</div>
-                <div className="void-compile void-compile-d2" style={{fontSize:'clamp(2.8rem,7vw,8.5rem)',color:'#5A8A9F',fontStyle:'italic',fontWeight:400}}>They become trusted.</div>
+              <h1 style={{fontFamily:'Instrument Serif,Georgia,serif',lineHeight:1.0,letterSpacing:'-0.015em',marginBottom:16}}>
+                <div className="void-compile void-compile-d1" style={{fontSize:'clamp(1.8rem,3.8vw,4rem)',color:'#EBEBEB',fontWeight:400}}>Attackers no longer break in.</div>
+                <div className="void-compile void-compile-d2" style={{fontSize:'clamp(1.8rem,3.8vw,4rem)',color:'#5A8A9F',fontStyle:'italic',fontWeight:400}}>They become trusted.</div>
               </h1>
-              <p className="void-compile void-compile-d3" style={{maxWidth:520,fontSize:13,color:'rgba(240,240,248,0.5)',lineHeight:1.8,...mono,fontWeight:300,marginBottom:14}}>
+              <p className="void-compile void-compile-d3" style={{maxWidth:500,fontSize:12,color:'rgba(240,240,248,0.5)',lineHeight:1.75,...mono,fontWeight:300,marginBottom:10}}>
                 AegisTrace is not just a SOC dashboard — it is a security control plane built for the AI-agent era. Identity-centric. Provenance-aware. Explainable.
               </p>
-              <p className="void-compile void-compile-d4" style={{maxWidth:520,fontSize:12,color:'rgba(90,138,159,0.7)',lineHeight:1.7,...mono,fontWeight:300,marginBottom:28,borderLeft:'2px solid rgba(90,138,159,0.3)',paddingLeft:12}}>
+              <p className="void-compile void-compile-d4" style={{maxWidth:500,fontSize:11,color:'rgba(90,138,159,0.7)',lineHeight:1.65,...mono,fontWeight:300,marginBottom:20,borderLeft:'2px solid rgba(90,138,159,0.3)',paddingLeft:12}}>
                 The average enterprise has <strong style={{color:'#5A8A9F'}}>144 machine identities</strong> for every human. Most are unmonitored.
               </p>
-              <div className="void-compile void-compile-d5" style={{display:'flex',gap:12,flexWrap:'wrap'}}>
-                <button onClick={openApp} style={{background:'#FFFFFF',color:'#000000',border:'none',padding:'12px 28px',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:'JetBrains Mono,monospace',letterSpacing:'0.14em',textTransform:'uppercase',display:'flex',alignItems:'center',gap:8,transition:'opacity 0.2s'}}
+              <div className="void-compile void-compile-d5" style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+                <button onClick={openApp} style={{background:'#FFFFFF',color:'#000000',border:'none',padding:'11px 24px',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:'JetBrains Mono,monospace',letterSpacing:'0.12em',textTransform:'uppercase',display:'flex',alignItems:'center',gap:7,transition:'opacity 0.2s'}}
                   onMouseEnter={e=>e.currentTarget.style.opacity='0.82'} onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
-                  <ArrowUpRight size={13}/>INITIALIZE TERMINAL
+                  <ArrowUpRight size={12}/>INITIALIZE TERMINAL
                 </button>
-                <button onClick={()=>navigate('/portfolio')} style={{background:'transparent',color:'rgba(235,235,235,0.45)',border:'1px solid rgba(235,235,235,0.12)',padding:'12px 22px',fontSize:11,cursor:'pointer',fontFamily:'JetBrains Mono,monospace',letterSpacing:'0.1em',textTransform:'uppercase',transition:'color 0.2s,border-color 0.2s'}}
+                <button onClick={()=>navigate('/portfolio')} style={{background:'transparent',color:'rgba(235,235,235,0.45)',border:'1px solid rgba(235,235,235,0.12)',padding:'11px 20px',fontSize:11,cursor:'pointer',fontFamily:'JetBrains Mono,monospace',letterSpacing:'0.09em',textTransform:'uppercase',transition:'color 0.2s,border-color 0.2s'}}
                   onMouseEnter={e=>{e.currentTarget.style.color='rgba(235,235,235,0.9)';e.currentTarget.style.borderColor='rgba(235,235,235,0.35)'}}
                   onMouseLeave={e=>{e.currentTarget.style.color='rgba(235,235,235,0.45)';e.currentTarget.style.borderColor='rgba(235,235,235,0.12)'}}>
                   VIEW PORTFOLIO →
@@ -671,17 +671,17 @@ export default function Landing() {
             </div>
 
             {/* Right: floating stat cards */}
-            <div className="hero-stat-cards" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+            <div className="hero-stat-cards" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
               {[
                 {val:stats.total_cases,    label:'Cases Investigated', color:'#EBEBEB', sub:'Platform data', delay:'0s'},
                 {val:stats.total_iocs,     label:'IOCs Correlated',    color:'#5A8A9F',  sub:'Cross-case intel', delay:'0.4s'},
                 {val:stats.critical_cases, label:'Critical Incidents', color:'#EAB308',  sub:'High-severity', delay:'0.8s'},
                 {val:stats.vt_lookups,     label:'VT Lookups Run',     color:'#8FAFC0',  sub:'Enrichment queries', delay:'1.2s'},
               ].map(({val,label,color,sub,delay})=>(
-                <div key={label} className="stat-float" style={{animationDelay:delay,padding:'20px',background:'rgba(8,12,20,0.8)',border:'1px solid rgba(240,240,248,0.08)',borderRadius:12,backdropFilter:'blur(12px)'}}>
-                  <div style={{fontSize:'1.9rem',fontWeight:700,color,...mono,lineHeight:1}}>{(val||0).toLocaleString()}</div>
-                  <div style={{fontSize:12,color:'rgba(240,240,248,0.65)',marginTop:6,fontWeight:500}}>{label}</div>
-                  <div style={{fontSize:10,color:'rgba(240,240,248,0.25)',marginTop:3,...mono}}>{sub}</div>
+                <div key={label} className="stat-float" style={{animationDelay:delay,padding:'14px',background:'rgba(8,12,20,0.8)',border:'1px solid rgba(240,240,248,0.08)',borderRadius:10,backdropFilter:'blur(12px)'}}>
+                  <div style={{fontSize:'1.5rem',fontWeight:700,color,...mono,lineHeight:1}}>{(val||0).toLocaleString()}</div>
+                  <div style={{fontSize:11,color:'rgba(240,240,248,0.6)',marginTop:5,fontWeight:500}}>{label}</div>
+                  <div style={{fontSize:9,color:'rgba(240,240,248,0.22)',marginTop:2,...mono}}>{sub}</div>
                 </div>
               ))}
             </div>
