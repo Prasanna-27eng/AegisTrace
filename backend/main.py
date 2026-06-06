@@ -99,22 +99,84 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 app.add_middleware(SecurityHeadersMiddleware)
 
 # ── AI Defense Engine — Request Fingerprinting Middleware ─────────────────────
+# Pure in-memory counters — zero DB hits on the hot path.
+# Only writes to DB when a threshold is actually crossed (rare).
+import threading as _threading
+
+_fp_lock = _threading.Lock()
+
 class DefenseFingerprintMiddleware(BaseHTTPMiddleware):
     """
-    Passively watches every API request. Builds per-IP behavioural profiles.
-    Fires async Groq triage when scanner patterns are detected.
-    Does NOT block requests — detection only. Response actions handled by the router.
+    Lightweight passive fingerprinter. Updates in-memory counters only.
+    Offloads DB write + Groq triage to a background thread when threshold crossed.
+    Never opens a DB session on the hot path — zero performance impact.
     """
     async def dispatch(self, request: Request, call_next):
-        # Run fingerprinting in background — never blocks the request
+        path = request.url.path
+        # Skip: health check, static files, defense endpoints themselves
+        if not path.startswith("/api/") or path.startswith("/api/defense") or path == "/api/health":
+            return await call_next(request)
+
         try:
-            from database import get_session as _gs
-            db = next(_gs())
-            import asyncio
-            asyncio.create_task(fingerprint_request(request, db))
+            ip  = (request.headers.get("X-Forwarded-For") or
+                   (request.client.host if request.client else "unknown")).split(",")[0].strip()
+            now = time.time()
+
+            with _fp_lock:
+                fp = _fingerprint[ip]
+                fp["requests"].append((now, path))
+                fp["endpoints"].add(path)
+                # Trim to last 60s in-memory (cheap)
+                cutoff = now - 60
+                fp["requests"] = [(t, p) for t, p in fp["requests"] if t > cutoff]
+                fp["endpoints"] = {p for _, p in fp["requests"]}
+                req_count  = len(fp["requests"])
+                unique_eps = len(fp["endpoints"])
+
+            # Only fire triage if threshold crossed AND not recently flagged
+            if req_count >= SCAN_THRESHOLD_REQ or unique_eps >= SCAN_THRESHOLD_EP:
+                last_flag = _last_flagged.get(ip, 0)
+                if now - last_flag > 300:   # max one triage per IP per 5 minutes
+                    _last_flagged[ip] = now
+                    ua = request.headers.get("User-Agent", "")
+                    # Offload entirely to background thread — request is not held
+                    _threading.Thread(
+                        target=_background_triage,
+                        args=(ip, path, req_count, unique_eps, ua),
+                        daemon=True
+                    ).start()
         except Exception:
-            pass  # Defense engine must never break the main app
+            pass  # defense engine must never break the main app
+
         return await call_next(request)
+
+# Tracks last triage timestamp per IP to avoid hammering Groq
+_last_flagged: dict = {}
+
+def _background_triage(ip, path, req_count, unique_eps, ua):
+    """Runs in a background thread. Opens its own DB session. Never blocks a request."""
+    try:
+        import asyncio
+        from database import get_session as _gs
+        db = next(_gs())
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        class _FakeRequest:
+            """Minimal request stand-in for the triage function."""
+            class client:
+                host = ip
+            headers = {"User-Agent": ua, "X-Forwarded-For": ip}
+            def __init__(self):
+                self.headers = type("H", (), {"get": lambda self, k, d="": ua if "User" in k else ip})()
+                self.client  = type("C", (), {"host": ip})()
+                self.url     = type("U", (), {"path": path})()
+
+        fake_req = _FakeRequest()
+        loop.run_until_complete(fingerprint_request(fake_req, db))
+        loop.close()
+    except Exception as e:
+        print(f"[defense] background triage error: {e}")
 
 app.add_middleware(DefenseFingerprintMiddleware)
 

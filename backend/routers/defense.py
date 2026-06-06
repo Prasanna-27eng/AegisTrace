@@ -215,55 +215,21 @@ async def _detect_and_triage(
     return event
 
 
-# ── Request Fingerprinting (called from middleware hook) ──────────────────────
-async def fingerprint_request(request: Request, db: Session):
+# ── Request Fingerprinting (called from background thread only) ───────────────
+async def fingerprint_request(request, db: Session):
     """
-    Called on every API request. Updates per-IP fingerprint.
-    Fires triage if scan pattern detected.
+    Called from a background thread when threshold is already crossed.
+    Runs Groq triage and persists DefenseEvent. Never on the hot request path.
     """
-    # Skip health check, static assets, and defense endpoints themselves
-    path = request.url.path
-    if any(path.startswith(p) for p in ["/api/health", "/static", "/api/defense"]):
-        return
+    ip   = _get_ip(request) if hasattr(request, 'client') else str(getattr(getattr(request, 'client', None), 'host', 'unknown'))
+    path = str(getattr(getattr(request, 'url', None), 'path', '/unknown'))
 
-    ip = _get_ip(request)
-    now = time.time()
-
-    # Update fingerprint
-    fp = _fingerprint[ip]
-    fp["requests"].append((now, path))
-    fp["endpoints"].add(path)
-    fp["ua_set"].add(request.headers.get("User-Agent", ""))
-
-    # Clean old data
-    _clean_fp(ip)
-
-    fp = _fingerprint[ip]
-    req_count  = len(fp["requests"])
-    unique_eps = len(fp["endpoints"])
-
-    # Check if already flagged recently (avoid duplicate events)
-    recent = db.exec(
-        select(DefenseEvent)
-        .where(DefenseEvent.attacker_ip == ip)
-        .where(DefenseEvent.detected_at > datetime.utcnow().replace(
-            minute=datetime.utcnow().minute - 5
-            if datetime.utcnow().minute >= 5
-            else 0
-        ))
-        .limit(1)
-    ).first()
-    if recent:
-        return
-
-    # Fire on scan pattern
-    if req_count >= SCAN_THRESHOLD_REQ or unique_eps >= SCAN_THRESHOLD_EP:
-        await _detect_and_triage(
-            request=request,
-            db=db,
-            attack_type="ai_agent_scan",
-            endpoint_hit=path,
-        )
+    await _detect_and_triage(
+        request=request,
+        db=db,
+        attack_type="ai_agent_scan",
+        endpoint_hit=path,
+    )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
