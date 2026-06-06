@@ -504,7 +504,22 @@ Start a new Claude session and paste this file. Then say:
 
 > "Read AEGISTRACE_CONTEXT.md — I want to work on [task from backlog above]"
 
-**Highest priority items (as of v5.1):** SOAR Playbooks engine, email notifications on ITDR anomaly, Trust score trending, DPDPA Compliance Report.
+**Highest priority items (as of v5.2):** SOAR Playbooks engine, email notifications on ITDR anomaly, Trust score trending, DPDPA Compliance Report.
+
+### v5.2 Completed (this session)
+
+**MITRE ATT&CK Simulation Engine**
+- [x] `SimulationRun` model added to `models.py` (technique_id, result, confidence, evidence, events_injected, run_by, run_at)
+- [x] `backend/routers/simulation.py` — 5 real technique simulators calling actual ITDR detector functions:
+  - T1110 Brute Force → `_detect_credential_stuffing` (7 failed_login events)
+  - T1078.001 Impossible Travel → `_detect_impossible_travel` (IE + CN logins, 2h apart)
+  - T1078.004 New Device Login → `_detect_new_device` (historical + unknown device)
+  - T1098 Privilege Escalation → `_detect_privilege_escalation` (unapproved priv_change)
+  - T1539 Session Hijacking → `_detect_token_theft` (same device_id, 2 user-agents)
+- [x] All synthetic events use `__sim_<uuid>__@aegistrace.internal` prefix, cleaned up after each run
+- [x] Registered in `main.py`
+- [x] `SimulationHub.jsx` at `/app/simulation` — Void Core UI: KPI row, technique list with LAUNCH buttons, live result with alphanumeric morph animation, evidence panel, run history, demo attack chain explainer
+- [x] Added to Sidebar under Lab group (Swords icon)
 
 Do NOT give Claude the full codebase — this file is sufficient context for any continuation task.
 

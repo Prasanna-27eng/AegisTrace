@@ -44,6 +44,7 @@ from routers.agent_security import router as agent_security_router
 from routers.connectors import router as connectors_router
 from routers.nhi import router as nhi_router
 from routers.health import router as health_router
+from routers.simulation import router as simulation_router
 from hardware_tools import router as hardware_router
 from ai_router import call_ai_json
 from core.identity_engine import register_default_detectors
@@ -104,7 +105,7 @@ for r in [auth_router, cases_router, vt_router, email_router, ioc_router,
           feeds_router, schedule_reports_router, hardware_router,
           identity_router, provenance_router, analytics_router, comments_router,
           policies_router, itdr_router, agent_security_router,
-          connectors_router, nhi_router, health_router]:
+          connectors_router, nhi_router, health_router, simulation_router]:
     app.include_router(r)
 
 

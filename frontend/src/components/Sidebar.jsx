@@ -5,7 +5,7 @@ import {
   Wrench, Globe, Settings, LogOut, ChevronLeft, ChevronRight,
   Crosshair, ScrollText, Monitor, Network, Rss, Cpu,
   Terminal, Fingerprint, BarChart2, ShieldAlert, ShieldCheck, Bot,
-  Plug, Activity, Brain, Radio
+  Plug, Activity, Brain, Radio, Swords
 } from 'lucide-react';
 import Logo from './Logo';
 import useStore from '../store/useStore';
@@ -53,6 +53,7 @@ const NAV_GROUPS = [
     label: 'Lab',
     items: [
       { to: '/app/terminal-lab',   label: 'Terminal Lab',      Icon: Terminal },
+      { to: '/app/simulation',     label: 'ATT&CK Simulation', Icon: Swords   },
     ],
   },
   {

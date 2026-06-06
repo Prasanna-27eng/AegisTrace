@@ -60,6 +60,7 @@ const ConnectorHub     = lazy(() => import('./pages/app/ConnectorHub'));
 const NHIHealth        = lazy(() => import('./pages/app/NHIHealth'));
 const ShadowAI         = lazy(() => import('./pages/app/ShadowAI'));
 const ControlPlane     = lazy(() => import('./pages/app/ControlPlane'));
+const SimulationHub    = lazy(() => import('./pages/app/SimulationHub'));
 
 export default function App() {
   return (
@@ -105,6 +106,7 @@ export default function App() {
             <Route path="nhi-health"        element={<NHIHealth />} />
             <Route path="shadow-ai"         element={<ShadowAI />} />
             <Route path="control-plane"     element={<ControlPlane />} />
+            <Route path="simulation"        element={<SimulationHub />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

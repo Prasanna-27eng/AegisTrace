@@ -621,6 +621,37 @@ class AgentCommand(SQLModel, table=True):
     executed_at: Optional[datetime] = Field(default=None)
 
 
+# ── MITRE ATT&CK Simulation Engine ───────────────────────────────────────────
+
+class SimulationRun(SQLModel, table=True):
+    """
+    Records a single MITRE ATT&CK simulation execution.
+    Each run injects real synthetic events into the ITDR pipeline
+    and records whether the corresponding detector fired.
+    """
+    id: Optional[int] = Field(default=None, primary_key=True)
+
+    # Technique metadata
+    technique_id: str = Field(index=True)        # e.g. "T1110"
+    technique_name: str                           # e.g. "Brute Force"
+    mitre_tactic: str                             # e.g. "Credential Access"
+
+    # Simulation execution
+    target_identity: str                          # __sim_<uuid>__@aegistrace.internal
+    events_injected: int = Field(default=0)       # synthetic events created
+    detector_name: Optional[str] = Field(default=None)  # which detector ran
+
+    # Result
+    result: str                                   # "DETECTED" | "NOT_DETECTED"
+    confidence: Optional[float] = Field(default=None)
+    description: Optional[str] = Field(default=None, sa_column=Column(Text))
+    evidence: Optional[str] = Field(default="{}", sa_column=Column(Text))  # JSON
+
+    # Audit
+    run_by: str                                   # user email
+    run_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 class ITDRAlert(SQLModel, table=True):
     """An ITDR detection alert from any detector."""
     id: Optional[int] = Field(default=None, primary_key=True)
