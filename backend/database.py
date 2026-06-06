@@ -1,10 +1,10 @@
-import os
+import os, stat
 from sqlmodel import SQLModel, create_engine, Session
-from sqlalchemy import event, text
+from sqlalchemy import event
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:////var/data/aegistrace.db")
 
-# Ensure /var/data exists if using default path
+# ── Ensure data directory exists ──────────────────────────────────────────────
 if DATABASE_URL.startswith("sqlite:////var/data"):
     os.makedirs("/var/data", exist_ok=True)
 
@@ -24,8 +24,27 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor.close()
 
 
+def _harden_db_file_permissions():
+    """
+    Restrict the SQLite DB file to owner read/write only (0o600).
+    Prevents other OS-level processes from reading the database file directly.
+    No-ops gracefully on Windows or if the file doesn't exist yet.
+    """
+    try:
+        # Extract file path from URL: sqlite:////var/data/aegistrace.db → /var/data/aegistrace.db
+        if DATABASE_URL.startswith("sqlite:///"):
+            db_path = DATABASE_URL[len("sqlite:///"):]
+            if db_path and os.path.exists(db_path):
+                current = stat.S_IMODE(os.stat(db_path).st_mode)
+                if current != 0o600:
+                    os.chmod(db_path, 0o600)
+    except (OSError, AttributeError):
+        pass  # Non-critical — ignore on Windows or read-only filesystems
+
+
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
+    _harden_db_file_permissions()
 
 
 def get_session():

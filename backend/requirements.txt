@@ -13,3 +13,4 @@ scapy==2.5.0
 bcrypt==4.1.2
 slowapi==0.1.9
 psutil==5.9.8
+pyotp==2.9.0

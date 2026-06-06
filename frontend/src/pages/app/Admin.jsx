@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Users, Webhook, ScrollText, Activity, Plus, Trash2,
   Edit, X, Shield, Key, CheckCircle, XCircle, Globe,
   AlertTriangle, RefreshCw, Loader2, Mail, Plug, Copy,
-  ExternalLink, Terminal, ChevronDown, ChevronRight
+  ExternalLink, Terminal, ChevronDown, ChevronRight, Lock, Smartphone
 } from 'lucide-react';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
@@ -26,6 +26,142 @@ const ACTION_COLOR = {
 };
 
 // ── Users Tab ─────────────────────────────────────────────────────────────────
+/* ── MFA Panel (self-contained) ─────────────────────────────────────────── */
+function MFAPanel({ addToast }) {
+  const MONO = { fontFamily: 'JetBrains Mono, monospace' };
+  const [mfaEnabled, setEnabled]  = useState(false);
+  const [step, setStep]           = useState('idle'); // idle | setup | verify | disable
+  const [secret, setSecret]       = useState('');
+  const [otpUri, setOtpUri]       = useState('');
+  const [code, setCode]           = useState('');
+  const [loading, setLoad]        = useState(false);
+
+  const loadStatus = useCallback(async () => {
+    try {
+      const r = await api.get('/api/auth/mfa/status');
+      setEnabled(r.data.mfa_enabled);
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => { loadStatus(); }, [loadStatus]);
+
+  const startSetup = async () => {
+    setLoad(true);
+    try {
+      const r = await api.post('/api/auth/mfa/setup');
+      setSecret(r.data.secret);
+      setOtpUri(r.data.otpauth_uri);
+      setStep('setup');
+    } catch (e) { addToast(e.response?.data?.detail || 'Setup failed', 'error'); }
+    setLoad(false);
+  };
+
+  const verify = async () => {
+    const clean = code.replace(/\s/g, '');
+    if (clean.length !== 6) { addToast('Enter the 6-digit code', 'error'); return; }
+    setLoad(true);
+    try {
+      await api.post('/api/auth/mfa/verify', { code: clean });
+      setEnabled(true); setStep('idle'); setCode(''); setSecret(''); setOtpUri('');
+      addToast('2FA enabled — your account is now protected', 'success');
+    } catch (e) { addToast(e.response?.data?.detail || 'Invalid code', 'error'); }
+    setLoad(false);
+  };
+
+  const disable = async () => {
+    const clean = code.replace(/\s/g, '');
+    if (clean.length !== 6) { addToast('Enter the 6-digit code to confirm', 'error'); return; }
+    setLoad(true);
+    try {
+      await api.post('/api/auth/mfa/disable', { code: clean });
+      setEnabled(false); setStep('idle'); setCode('');
+      addToast('2FA disabled', 'success');
+    } catch (e) { addToast(e.response?.data?.detail || 'Invalid code', 'error'); }
+    setLoad(false);
+  };
+
+  return (
+    <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: step !== 'idle' ? 16 : 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+          <Smartphone size={14} style={{ color: mfaEnabled ? '#22C55E' : '#787878' }} />
+          <div>
+            <div style={{ fontSize: '0.82rem', fontWeight: 500 }}>Two-Factor Authentication</div>
+            <div style={{ fontSize: '0.68rem', color: mfaEnabled ? '#22C55E' : '#787878', ...MONO }}>
+              {mfaEnabled ? '● ENABLED — TOTP authenticator active' : '○ DISABLED — adds extra login security'}
+            </div>
+          </div>
+        </div>
+        {step === 'idle' && (
+          mfaEnabled
+            ? <button className="btn-ghost" onClick={() => setStep('disable')} style={{ fontSize: '0.75rem', color: '#EF4444' }}>Disable 2FA</button>
+            : <button className="btn-ghost" onClick={startSetup} disabled={loading} style={{ fontSize: '0.75rem' }}>
+                {loading ? <Loader2 size={12} className="spinner" /> : <Lock size={12} />} Enable 2FA
+              </button>
+        )}
+      </div>
+
+      {/* ── Setup: show secret ── */}
+      {step === 'setup' && (
+        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ fontSize: '0.76rem', color: '#A8A8A8', lineHeight: 1.6 }}>
+            Open your authenticator app (Google Authenticator, Authy, or any TOTP app) and add a new account. Choose <strong style={{ color: '#EBEBEB' }}>Enter setup key</strong> and paste the secret below, or scan the QR code if your app supports otpauth:// links.
+          </div>
+          <div>
+            <div style={{ fontSize: '0.64rem', color: '#787878', ...MONO, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Secret Key</div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <code style={{ flex: 1, background: '#111111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '8px 12px', fontSize: '0.88rem', letterSpacing: '0.15em', color: '#EBEBEB', ...MONO, wordBreak: 'break-all' }}>
+                {secret}
+              </code>
+              <button className="btn-ghost" style={{ padding: '7px 10px', flexShrink: 0 }}
+                onClick={() => { navigator.clipboard.writeText(secret); addToast('Secret copied', 'success'); }}>
+                <Copy size={12} />
+              </button>
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: '0.64rem', color: '#787878', ...MONO, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>OTPAuth URI (for QR scanners)</div>
+            <div style={{ fontSize: '0.62rem', color: '#555', ...MONO, wordBreak: 'break-all', background: '#111111', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 6, padding: '6px 10px' }}>
+              {otpUri}
+            </div>
+          </div>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12 }}>
+            <div style={{ fontSize: '0.72rem', color: '#A8A8A8', marginBottom: 8 }}>Enter the 6-digit code your app shows to confirm setup:</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input className="at-input" type="text" inputMode="numeric" maxLength={7}
+                placeholder="000 000" value={code} onChange={e => setCode(e.target.value)}
+                style={{ width: 130, textAlign: 'center', fontSize: '1.1rem', letterSpacing: '0.2em', ...MONO }} />
+              <button className="btn-accent" onClick={verify} disabled={loading} style={{ fontSize: '0.78rem' }}>
+                {loading ? <Loader2 size={12} className="spinner" /> : <CheckCircle size={12} />} Activate 2FA
+              </button>
+              <button className="btn-ghost" onClick={() => { setStep('idle'); setCode(''); setSecret(''); }} style={{ fontSize: '0.78rem' }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Disable: confirm with code ── */}
+      {step === 'disable' && (
+        <div style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: 8, padding: 14 }}>
+          <div style={{ fontSize: '0.76rem', color: '#A8A8A8', marginBottom: 10 }}>
+            Enter your current authenticator code to confirm disabling 2FA:
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input className="at-input" type="text" inputMode="numeric" maxLength={7}
+              placeholder="000 000" value={code} onChange={e => setCode(e.target.value)} autoFocus
+              style={{ width: 130, textAlign: 'center', fontSize: '1.1rem', letterSpacing: '0.2em', ...MONO }} />
+            <button className="btn-danger" onClick={disable} disabled={loading} style={{ fontSize: '0.78rem' }}>
+              {loading ? <Loader2 size={12} className="spinner" /> : <XCircle size={12} />} Disable
+            </button>
+            <button className="btn-ghost" onClick={() => { setStep('idle'); setCode(''); }} style={{ fontSize: '0.78rem' }}>Cancel</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Users Tab ─────────────────────────────────────────────────────────── */
 function UsersTab({ user, addToast }) {
   const [users, setUsers]     = useState([]);
   const [showAdd, setShowAdd] = useState(false);
@@ -108,6 +244,8 @@ function UsersTab({ user, addToast }) {
             </div>
           </div>
         )}
+        {/* 2FA Section */}
+        <MFAPanel addToast={addToast} />
       </div>
 
       {/* User list */}

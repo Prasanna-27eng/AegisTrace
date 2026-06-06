@@ -257,15 +257,21 @@ function IrisScanner() {
 
 /* ─── Login Form ─────────────────────────────────────────────────────────── */
 export default function Login() {
-  const [email, setEmail]   = useState('');
-  const [password, setPw]   = useState('');
-  const [showPw, setShowPw] = useState(false);
-  const [loading, setLoad]  = useState(false);
-  const [error, setError]   = useState('');
-  const { setAuth }         = useStore();
-  const navigate            = useNavigate();
-  const mono                = { fontFamily: 'JetBrains Mono, monospace' };
+  const [email, setEmail]       = useState('');
+  const [password, setPw]       = useState('');
+  const [showPw, setShowPw]     = useState(false);
+  const [loading, setLoad]      = useState(false);
+  const [error, setError]       = useState('');
+  // MFA step
+  const [mfaRequired, setMfa]   = useState(false);
+  const [pendingToken, setPend]  = useState('');
+  const [mfaCode, setMfaCode]   = useState('');
 
+  const { setAuth }  = useStore();
+  const navigate     = useNavigate();
+  const mono         = { fontFamily: 'JetBrains Mono, monospace' };
+
+  /* ── Step 1: password login ──────────────────────────────────────────── */
   const submit = async (e) => {
     e.preventDefault();
     setError('');
@@ -276,8 +282,13 @@ export default function Login() {
         email: email.trim().toLowerCase(),
         password: password.trim(),
       });
-      setAuth(res.data.token, res.data.user);
-      navigate('/app/dashboard');
+      if (res.data.mfa_required) {
+        setPend(res.data.pending_token);
+        setMfa(true);
+      } else {
+        setAuth(res.data.token, res.data.user);
+        navigate('/app/dashboard');
+      }
     } catch (err) {
       setError(err.response?.data?.detail || 'Invalid credentials. Please try again.');
     } finally {
@@ -285,19 +296,43 @@ export default function Login() {
     }
   };
 
+  /* ── Step 2: TOTP verification ───────────────────────────────────────── */
+  const submitMfa = async (e) => {
+    e.preventDefault();
+    setError('');
+    const clean = mfaCode.replace(/\s/g, '');
+    if (clean.length !== 6) { setError('Enter the 6-digit code from your authenticator'); return; }
+    setLoad(true);
+    try {
+      const res = await api.post('/api/auth/login/mfa', {
+        pending_token: pendingToken,
+        code: clean,
+      });
+      setAuth(res.data.token, res.data.user);
+      navigate('/app/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Invalid or expired code. Try again.');
+    } finally {
+      setLoad(false);
+    }
+  };
+
+  const inputStyle = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(77,163,255,0.13)' };
+  const lblStyle   = { fontSize: '0.67rem', color: 'rgba(235,235,235,0.38)', display: 'block', marginBottom: 7, letterSpacing: '0.08em', textTransform: 'uppercase', ...mono };
+
   return (
     <div style={{ minHeight: '100vh', background: '#050505', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
 
-      {/* Iris Scanner animation fills the whole background */}
+      {/* Iris Scanner animation */}
       <IrisScanner />
 
-      {/* Centre vignette so card reads clearly over the animation */}
+      {/* Centre vignette */}
       <div style={{
         position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
         background: 'radial-gradient(ellipse 48% 55% at 50% 50%, rgba(5,5,5,0.72) 0%, rgba(5,5,5,0.3) 50%, transparent 100%)',
       }} />
 
-      {/* Login card */}
+      {/* Card */}
       <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 390, padding: '0 20px' }}>
 
         <div style={{ textAlign: 'center', marginBottom: 30 }}>
@@ -307,7 +342,7 @@ export default function Login() {
           <div style={{ fontSize: '1.45rem', fontWeight: 700, letterSpacing: '-0.02em', color: '#EBEBEB', marginBottom: 4 }}>
             AegisTrace
           </div>
-          <div style={{ fontSize: '0.65rem', color: 'rgba(240,240,248,0.28)', letterSpacing: '0.18em', textTransform: 'uppercase', ...mono }}>
+          <div style={{ fontSize: '0.65rem', color: 'rgba(235,235,235,0.28)', letterSpacing: '0.18em', textTransform: 'uppercase', ...mono }}>
             Trust Operating System
           </div>
         </div>
@@ -315,67 +350,109 @@ export default function Login() {
         <div style={{
           background: 'rgba(5,5,5,0.92)',
           border: '1px solid rgba(77,163,255,0.13)',
-          borderRadius: 14,
-          padding: '30px 28px',
+          borderRadius: 14, padding: '30px 28px',
           backdropFilter: 'blur(28px)',
           boxShadow: '0 0 60px rgba(77,163,255,0.05), 0 24px 64px rgba(0,0,0,0.65)',
         }}>
-          <div style={{ fontSize: '0.62rem', textTransform: 'uppercase', letterSpacing: '0.16em', color: 'rgba(240,240,248,0.26)', ...mono, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 7 }}>
-            <Lock size={10} style={{ color: '#4DA3FF' }} />
-            Analyst Secure Access
-          </div>
 
-          {error && (
-            <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.22)', borderRadius: 7, padding: '10px 12px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', color: '#EF4444' }}>
-              <AlertCircle size={13} />{error}
-            </div>
-          )}
-
-          <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div>
-              <label style={{ fontSize: '0.67rem', color: 'rgba(240,240,248,0.36)', display: 'block', marginBottom: 7, letterSpacing: '0.08em', textTransform: 'uppercase', ...mono }}>Email</label>
-              <input type="email" className="at-input"
-                placeholder="analyst@corp.io"
-                value={email} onChange={e => setEmail(e.target.value)}
-                autoComplete="email" autoFocus
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(77,163,255,0.13)' }} />
-            </div>
-
-            <div>
-              <label style={{ fontSize: '0.67rem', color: 'rgba(240,240,248,0.36)', display: 'block', marginBottom: 7, letterSpacing: '0.08em', textTransform: 'uppercase', ...mono }}>Password</label>
-              <div style={{ position: 'relative' }}>
-                <input type={showPw ? 'text' : 'password'} className="at-input"
-                  placeholder="••••••••"
-                  value={password} onChange={e => setPw(e.target.value)}
-                  autoComplete="current-password"
-                  style={{ paddingRight: 40, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(77,163,255,0.13)' }} />
-                <button type="button" onClick={() => setShowPw(s => !s)}
-                  style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(240,240,248,0.3)', cursor: 'pointer', padding: 4 }}>
-                  {showPw ? <EyeOff size={13} /> : <Eye size={13} />}
-                </button>
+          {/* ── MFA step ── */}
+          {mfaRequired ? (
+            <>
+              <div style={{ textAlign: 'center', marginBottom: 22 }}>
+                <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'rgba(74,142,219,0.12)', border: '1px solid rgba(74,142,219,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                  <Lock size={18} style={{ color: '#4DA3FF' }} />
+                </div>
+                <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#EBEBEB', marginBottom: 5 }}>Two-Factor Verification</div>
+                <div style={{ fontSize: '0.72rem', color: 'rgba(235,235,235,0.45)', ...mono }}>Enter the 6-digit code from your authenticator app</div>
               </div>
-            </div>
 
-            <button type="submit" disabled={loading}
-              style={{
-                background: loading ? 'rgba(77,163,255,0.45)' : '#4DA3FF',
-                color: '#fff', border: 'none', borderRadius: 8, padding: '11px', marginTop: 4,
-                fontSize: '0.82rem', fontWeight: 600,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                transition: 'background 0.2s', ...mono, letterSpacing: '0.06em',
-              }}>
-              {loading
-                ? <><span style={{ width: 13, height: 13, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'lg-spin 0.8s linear infinite' }} /> Authenticating…</>
-                : <>Sign In <ArrowRight size={13} /></>}
-            </button>
-          </form>
+              {error && (
+                <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.22)', borderRadius: 7, padding: '10px 12px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', color: '#EF4444' }}>
+                  <AlertCircle size={13} />{error}
+                </div>
+              )}
+
+              <form onSubmit={submitMfa} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div>
+                  <label style={lblStyle}>Authenticator Code</label>
+                  <input className="at-input" type="text" inputMode="numeric" pattern="[0-9 ]*"
+                    maxLength={7} placeholder="000 000" autoFocus
+                    value={mfaCode} onChange={e => setMfaCode(e.target.value)}
+                    style={{ ...inputStyle, textAlign: 'center', fontSize: '1.4rem', letterSpacing: '0.25em', ...mono }} />
+                </div>
+                <button type="submit" disabled={loading} style={{
+                  background: loading ? 'rgba(77,163,255,0.45)' : '#4DA3FF',
+                  color: '#fff', border: 'none', borderRadius: 8, padding: '11px', marginTop: 4,
+                  fontSize: '0.82rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  transition: 'background 0.2s', ...mono, letterSpacing: '0.06em',
+                }}>
+                  {loading
+                    ? <><span style={{ width: 13, height: 13, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'lg-spin 0.8s linear infinite' }} /> Verifying…</>
+                    : <>Verify <ArrowRight size={13} /></>}
+                </button>
+              </form>
+
+              <button onClick={() => { setMfa(false); setPend(''); setMfaCode(''); setError(''); }}
+                style={{ background: 'none', border: 'none', color: 'rgba(235,235,235,0.3)', cursor: 'pointer', fontSize: '0.7rem', ...mono, display: 'block', margin: '14px auto 0', textDecoration: 'underline' }}>
+                ← Back to login
+              </button>
+            </>
+          ) : (
+            /* ── Password step ── */
+            <>
+              <div style={{ fontSize: '0.62rem', textTransform: 'uppercase', letterSpacing: '0.16em', color: 'rgba(235,235,235,0.26)', ...mono, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 7 }}>
+                <Lock size={10} style={{ color: '#4DA3FF' }} />
+                Analyst Secure Access
+              </div>
+
+              {error && (
+                <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.22)', borderRadius: 7, padding: '10px 12px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', color: '#EF4444' }}>
+                  <AlertCircle size={13} />{error}
+                </div>
+              )}
+
+              <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div>
+                  <label style={lblStyle}>Email</label>
+                  <input type="email" className="at-input" placeholder="analyst@corp.io"
+                    value={email} onChange={e => setEmail(e.target.value)}
+                    autoComplete="email" autoFocus style={inputStyle} />
+                </div>
+
+                <div>
+                  <label style={lblStyle}>Password</label>
+                  <div style={{ position: 'relative' }}>
+                    <input type={showPw ? 'text' : 'password'} className="at-input"
+                      placeholder="••••••••" value={password} onChange={e => setPw(e.target.value)}
+                      autoComplete="current-password" style={{ ...inputStyle, paddingRight: 40 }} />
+                    <button type="button" onClick={() => setShowPw(s => !s)}
+                      style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(235,235,235,0.3)', cursor: 'pointer', padding: 4 }}>
+                      {showPw ? <EyeOff size={13} /> : <Eye size={13} />}
+                    </button>
+                  </div>
+                </div>
+
+                <button type="submit" disabled={loading} style={{
+                  background: loading ? 'rgba(77,163,255,0.45)' : '#4DA3FF',
+                  color: '#fff', border: 'none', borderRadius: 8, padding: '11px', marginTop: 4,
+                  fontSize: '0.82rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  transition: 'background 0.2s', ...mono, letterSpacing: '0.06em',
+                }}>
+                  {loading
+                    ? <><span style={{ width: 13, height: 13, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'lg-spin 0.8s linear infinite' }} /> Authenticating…</>
+                    : <>Sign In <ArrowRight size={13} /></>}
+                </button>
+              </form>
+            </>
+          )}
         </div>
 
         <div style={{ textAlign: 'center', marginTop: 18 }}>
-          <a href="/" style={{ fontSize: '0.7rem', color: 'rgba(240,240,248,0.18)', textDecoration: 'none', ...mono, transition: 'color 0.2s' }}
-            onMouseEnter={e => e.target.style.color = 'rgba(240,240,248,0.55)'}
-            onMouseLeave={e => e.target.style.color = 'rgba(240,240,248,0.18)'}>
+          <a href="/" style={{ fontSize: '0.7rem', color: 'rgba(235,235,235,0.18)', textDecoration: 'none', ...mono, transition: 'color 0.2s' }}
+            onMouseEnter={e => e.target.style.color = 'rgba(235,235,235,0.55)'}
+            onMouseLeave={e => e.target.style.color = 'rgba(235,235,235,0.18)'}>
             ← Back to landing
           </a>
         </div>

@@ -1,5 +1,5 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v4.3 | **Last updated:** June 2026
+**Version:** v5.1 | **Last updated:** June 2026
 **Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files.
 
 ---
@@ -15,7 +15,7 @@ You are working on AegisTrace, a security product built by Prasanna. Here is exa
 4. Never re-read the full codebase — this file is sufficient. If you need a specific file, read only that file.
 
 **Rules for every session:**
-- Keep the original dark navy theme (`#080C14`, `#4DA3FF`, `#A78BFA`) — never change colors
+- Theme is now **pure black** (v5.1): backgrounds #000000/#080808/#101010, text #EBEBEB/#A8A8A8/#686868, accent #4DA3FF/#4A8EDB/#9C7CFF. Never revert to blue-navy.
 - Use inline styles only — this codebase does NOT use Tailwind CSS
 - Do NOT add `@tanstack/react-query`, `recharts`, `alembic`, or any new npm packages without explicit approval
 - All models go in `backend/models.py` — never create separate model files
@@ -330,20 +330,52 @@ Shareable via token, PDF downloadable, AI summary callout at top
 - [x] Portfolio.jsx — AegisTrace project updated to v5.0, terminal animation updated
 - [x] AgentSetup.jsx — updated to v5.0: new description, 6 feature highlights, updated quick start (env var pattern), new config table with all AEGISTRACE_* vars, download link live
 
+### v5.1 Completed (this session — June 2026)
+
+**UI / Animations**
+- [x] Login.jsx — replaced Trust Verification animation with **Iris Scanner**: biometric iris starburst (4 counter-rotating petal layers), cipher text rings, tick-mark dial, scan beam, targeting brackets, periodic "● BIOMETRIC VERIFIED" flash. Black canvas background.
+- [x] Landing.jsx — replaced Identity Constellation animation with **Hex Fortress**: full-screen tessellated hex grid, defense pulse waves, edge attack events, mouse proximity glow. No dots/lines.
+- [x] **Pure black theme** applied across entire project (55 files): CSS vars shifted from blue-tinted navy to true black hierarchy (#000000 → #080808 → #101010 → #1A1A1A). Subtle typography: headings #EBEBEB, body #A8A8A8, labels #686868.
+
+**ITDR Analytics (Priority 2 — completed)**
+- [x] `GET /api/itdr/analytics?days=N` — returns detector fire rates, top targeted identities, 30-day trend, severity distribution, status breakdown, FP rate. Queries both IdentityAnomaly + ITDRAlert.
+- [x] ITDRPage.jsx — rebuilt as 3-tab layout: **Detection** (auth events + anomaly panel), **Alerts** (full alert management with status actions: Investigate / False Positive / Resolve), **Analytics** (KPI cards, detector fire rate bars, severity stacked bar, status breakdown, 30-day bar chart, top targeted identities ranked list). All 6 detectors now in DETECTOR_META (was 4).
+
+**2FA / TOTP Security (Priority 6 — completed)**
+- [x] `User` model: added `mfa_enabled: bool`, `mfa_secret: Optional[str]`
+- [x] `requirements.txt`: added `pyotp==2.9.0`
+- [x] `create_token()`: added optional `ttl` parameter
+- [x] Login flow: `POST /api/auth/login` now returns `{mfa_required: true, pending_token}` when MFA enabled
+- [x] `POST /api/auth/mfa/setup` — generates TOTP secret + otpauth:// URI
+- [x] `POST /api/auth/mfa/verify` — verifies first code, activates 2FA (±30s drift tolerance)
+- [x] `POST /api/auth/login/mfa` — validates pending token + TOTP code, issues full JWT
+- [x] `POST /api/auth/mfa/disable` — requires current TOTP code to confirm
+- [x] `GET /api/auth/mfa/status` — returns current MFA state
+- [x] Login.jsx — MFA challenge step: after password success, shows 6-digit TOTP code input. "Back to login" resets state.
+- [x] Admin.jsx — `<MFAPanel>` component in "Your Account" card: shows enabled/disabled state, setup flow (secret display + copy + otpauth URI), verify code to activate, disable flow with code confirmation.
+
+**Application Security Hardening (v5.1)**
+- [x] `database.py`: `_harden_db_file_permissions()` — sets SQLite file to 0o600 (owner read/write only) on every startup. No-ops gracefully on Windows/read-only filesystems.
+- [x] `auth.py`: UA fingerprinting — `_ua_hash()` computes SHA-256[:16] of User-Agent at login, embeds as `ua_hash` claim in JWT. `get_current_user` detects UA mismatches and logs to AuditLog as `session_ua_mismatch` (non-blocking ITDR signal — detection only, no lockout). Accept-Language intentionally excluded to avoid false positives from Render's proxy layer.
+- [x] SQL injection: confirmed safe throughout — all queries use SQLModel ORM parameterized selectors. No raw string interpolation anywhere in the codebase.
+- [x] Rate limiting: confirmed already live — VT 10/min, enrichment 20/min, global 200/min (slowapi v4.3). No changes needed.
+
 ### v4.3 Remaining (still to do)
 - [x] Shadow AI Detection dashboard UI — `/app/shadow-ai` — stats, filter tabs (All/Unreviewed/Reviewed), event rows with expand detail, Mark Reviewed + Create Case actions, AI service labels, explainer panel
-- [ ] ITDR analytics page — detector fire rates, top targeted identities, false positive trends
+- [x] ITDR analytics page — completed in v5.1 above
 - [ ] DPDPA Compliance Report — India market accelerator
 
 ### v5.0 / Future Planned
 - [ ] SCIM endpoint (/api/scim/v2) — enterprise push-based identity sync
 - [ ] Least Agency enforcement — per-agent scope definition + auto-reject
-- [ ] MCP Security Gateway — monitor MCP server connections, flag unapproved
+- [ ] MCP Security Gateway — monitor MCP server connections, flag unapproved (Python httpx proxy, not Go)
 - [ ] Agent Supervision Console — per-AI-agent kill switches + task scope enforcement
 - [ ] Attacker Path Reconstruction — visual kill-chain across human + machine actors
+- [ ] ITDR analytics: impossible travel geo-accuracy — MaxMind DB instead of IP lookup API
+- [ ] Control Plane View `/app/control-plane` — live: identity trust scores, active agent actions, policy violations, endpoint heartbeats
+- [ ] SOAR Playbooks engine — builder UI + automated execution: trigger → action → approval gate
 - [ ] Endpoint Agent Layer 3 (eBPF/Falco) — kernel-level visibility on Linux
 - [ ] Endpoint Agent Layer 4 (Memory Forensics) — Volatility 3 integration
-- [ ] Shadow AI dashboard (/app/shadow-ai) — investigation UI for ShadowAIEvent records
 
 ---
 
@@ -429,11 +461,11 @@ react, react-dom, react-router-dom, axios, zustand, lucide-react, react-scripts
 - [x] IP-based distributed attack detection — cross-user from same IP
 - [x] User-agent check for token theft
 - [x] Shadow AI ITDR integration — 3+ hits in 24h → alert
+- [x] ITDR analytics page — completed v5.1: GET /api/itdr/analytics + 3-tab ITDRPage
 - [ ] Impossible travel geo-accuracy improvement — use MaxMind DB instead of IP lookup API
-- [ ] ITDR analytics page — detector fire rates, top targeted identities, false positive trend
 
 ### Priority 3 — Trust OS Features
-- [ ] **Shadow AI Detection dashboard** — full investigation UI for ShadowAIEvent records at `/app/shadow-ai`
+- [x] Shadow AI Detection dashboard — `/app/shadow-ai` — completed v4.3
 - [ ] **SOAR Playbooks engine** — builder UI + automated execution: trigger → action sequence → approval gate
 - [ ] **Control Plane View** — `/app/control-plane` — live: identity trust scores, active AI agent actions, policy violations, endpoint heartbeats
 
@@ -443,20 +475,22 @@ react, react-dom, react-router-dom, axios, zustand, lucide-react, react-scripts
 - [ ] Filter by risk threshold — slider to show only nodes above risk score X
 
 ### Priority 5 — Analytics & Reporting
-- [ ] ITDR analytics — detector fire rate, top targeted identities, false positive trend
+- [x] ITDR analytics — completed v5.1
 - [ ] Trust score trending — IdentityRiskHistory model, track scores over time
 - [ ] DPDPA Compliance Report — mapped to India DPDPA 2025 obligations (major India sales accelerator)
 - [ ] RBI Cybersecurity Framework mapping panel
 
-### Priority 6 — Polish & UX
-- [ ] 2FA/TOTP for Admin users — `mfa_secret` + `mfa_enabled` on User model, `pyotp`
+### Priority 6 — Security & Polish (v5.1 completed)
+- [x] 2FA/TOTP for all users — pyotp==2.9.0, mfa_secret + mfa_enabled on User, full setup/verify/disable/login flow, MFAPanel in Admin.jsx, MFA challenge step in Login.jsx
+- [x] DB file permission hardening — SQLite file set to 0o600 on startup via _harden_db_file_permissions()
+- [x] Session UA fingerprinting — ua_hash embedded in JWT at login, mismatch logged as session_ua_mismatch AuditLog entry (non-blocking ITDR signal)
 - [ ] Email notifications on ITDR anomaly — SendGrid template
 - [ ] Portfolio: Trust OS phase roadmap (Phase 1 NOW → Phase 5 2030+)
 
-### Priority 7 — v5.0 Planned
+### Priority 7 — v5.0+ Planned
 - [ ] SCIM endpoint (`/api/scim/v2`) — enterprise push-based identity sync
 - [ ] Least Agency enforcement — per-agent scope definition, auto-reject out-of-scope actions
-- [ ] MCP Security Gateway — monitor MCP server connections, flag unapproved
+- [ ] MCP Security Gateway — Python httpx proxy layer intercepting MCP JSON-RPC (NOT Go; see architecture notes)
 - [ ] Agent Supervision Console — per-AI-agent kill switches + task scope enforcement
 - [ ] Attacker Path Reconstruction — visual kill-chain across human + machine actors
 - [ ] Endpoint Agent Layer 3 (eBPF) — Falco companion process on Linux
@@ -470,7 +504,7 @@ Start a new Claude session and paste this file. Then say:
 
 > "Read AEGISTRACE_CONTEXT.md — I want to work on [task from backlog above]"
 
-**Highest priority items:** ITDR analytics page, Shadow AI dashboard UI, DPDPA compliance report, DNS monitoring in agent.
+**Highest priority items (as of v5.1):** DPDPA Compliance Report, SOAR Playbooks engine, Control Plane View, email notifications on ITDR anomaly.
 
 Do NOT give Claude the full codebase — this file is sufficient context for any continuation task.
 

@@ -79,9 +79,12 @@ class User(SQLModel, table=True):
     name: str
     role: str = Field(default="analyst")        # admin / analyst / viewer
     is_active: bool = Field(default=True)
-    hashed_password: Optional[str] = Field(default=None)   # SHA-256 hex
+    hashed_password: Optional[str] = Field(default=None)   # bcrypt or legacy SHA-256
     org_id: int = Field(default=1)
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    # ── 2FA / TOTP (v5.1) ────────────────────────────────────────────────────
+    mfa_enabled: bool = Field(default=False)
+    mfa_secret: Optional[str] = Field(default=None)        # Base32 TOTP secret (server-side only)
 
 
 # ── Case ─────────────────────────────────────────────────────────────────────

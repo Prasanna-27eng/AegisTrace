@@ -747,6 +747,122 @@ def list_itdr_alerts(
     }
 
 
+@router.get("/analytics")
+def get_itdr_analytics(
+    days: int = Query(30, ge=7, le=90),
+    session: Session = Depends(get_session),
+    _user: User = Depends(get_current_user),
+):
+    """
+    ITDR Analytics dashboard data.
+    Returns: detector fire rates, top targeted identities, 30-day trend,
+             severity distribution, status breakdown, false-positive rate.
+    """
+    ITDR_TYPES = [
+        "credential_stuffing", "credential_stuffing_distributed",
+        "impossible_travel", "new_device", "privilege_escalation",
+        "token_theft", "shadow_ai",
+    ]
+    cutoff = datetime.utcnow() - timedelta(days=days)
+
+    # ── Raw data pulls ────────────────────────────────────────────────────────
+    anomalies = session.exec(
+        select(IdentityAnomaly).where(
+            IdentityAnomaly.anomaly_type.in_(ITDR_TYPES),
+            IdentityAnomaly.detected_at >= cutoff,
+        )
+    ).all()
+
+    alerts = session.exec(
+        select(ITDRAlert).where(ITDRAlert.detected_at >= cutoff)
+    ).all()
+
+    active_count = len(session.exec(
+        select(IdentityAnomaly).where(
+            IdentityAnomaly.anomaly_type.in_(ITDR_TYPES),
+            IdentityAnomaly.resolved == False,  # noqa: E712
+        )
+    ).all()) + sum(1 for a in alerts if (a.status or "open") == "open")
+
+    # ── 1. Detector fire rates (anomalies + agent alerts combined) ────────────
+    detector_counts: dict = {}
+    for a in anomalies:
+        detector_counts[a.anomaly_type] = detector_counts.get(a.anomaly_type, 0) + 1
+    for a in alerts:
+        if a.alert_type:
+            detector_counts[a.alert_type] = detector_counts.get(a.alert_type, 0) + 1
+
+    # ── 2. Top targeted identities ────────────────────────────────────────────
+    identity_counts: dict = {}
+    for a in alerts:
+        if a.identity_label:
+            identity_counts[a.identity_label] = identity_counts.get(a.identity_label, 0) + 1
+
+    top_identities = sorted(identity_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+
+    # ── 3. Daily trend — last 30 days capped ─────────────────────────────────
+    daily: dict = {}
+    for a in anomalies:
+        day = a.detected_at.strftime("%Y-%m-%d")
+        daily[day] = daily.get(day, 0) + 1
+    for a in alerts:
+        day = a.detected_at.strftime("%Y-%m-%d")
+        daily[day] = daily.get(day, 0) + 1
+
+    chart_days = min(days, 30)
+    trend = [
+        {
+            "date": (datetime.utcnow() - timedelta(days=chart_days - 1 - i)).strftime("%Y-%m-%d"),
+            "count": daily.get(
+                (datetime.utcnow() - timedelta(days=chart_days - 1 - i)).strftime("%Y-%m-%d"), 0
+            ),
+        }
+        for i in range(chart_days)
+    ]
+
+    # ── 4. Severity distribution ──────────────────────────────────────────────
+    sev_counts = {"critical": 0, "high": 0, "medium": 0, "low": 0}
+    for a in anomalies:
+        sev = (a.severity or "low").lower()
+        if sev in sev_counts:
+            sev_counts[sev] += 1
+    for a in alerts:
+        sev = (a.severity or "low").lower()
+        if sev in sev_counts:
+            sev_counts[sev] += 1
+
+    # ── 5. Alert status breakdown ─────────────────────────────────────────────
+    status_counts: dict = {}
+    for a in alerts:
+        st = a.status or "open"
+        status_counts[st] = status_counts.get(st, 0) + 1
+
+    # ── 6. False positive rate ────────────────────────────────────────────────
+    total_alerts = len(alerts)
+    fp_count = sum(1 for a in alerts if a.status == "false_positive")
+    fp_rate = round((fp_count / total_alerts * 100), 1) if total_alerts else 0.0
+
+    return {
+        "period_days": days,
+        "total_detections": len(anomalies) + len(alerts),
+        "active_threats": active_count,
+        "total_alerts": total_alerts,
+        "fp_count": fp_count,
+        "fp_rate": fp_rate,
+        "detector_fire_rates": sorted(
+            [{"detector": k, "count": v} for k, v in detector_counts.items()],
+            key=lambda x: x["count"],
+            reverse=True,
+        ),
+        "top_targeted_identities": [
+            {"identity": k, "count": v} for k, v in top_identities
+        ],
+        "daily_trend": trend,
+        "severity_distribution": sev_counts,
+        "status_breakdown": status_counts,
+    }
+
+
 @router.patch("/alerts/{alert_id}")
 def update_itdr_alert(
     alert_id: int,

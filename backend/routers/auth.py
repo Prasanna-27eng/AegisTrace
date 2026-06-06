@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 from typing import Optional
 import bcrypt
+import pyotp
 from fastapi import APIRouter, Depends, HTTPException, Header, Request
 from sqlmodel import Session, select
 from models import User, AuditLog, TokenBlocklist
@@ -52,9 +53,9 @@ def verify_password(pw: str, stored: str) -> bool:
     return hmac.compare_digest(legacy, stored)
 
 
-def create_token(payload: dict) -> str:
+def create_token(payload: dict, ttl: int = TTL) -> str:
     jti = str(uuid.uuid4())
-    p = {**payload, "exp": int(time.time()) + TTL, "iat": int(time.time()), "jti": jti}
+    p = {**payload, "exp": int(time.time()) + ttl, "iat": int(time.time()), "jti": jti}
     h = _b64(json.dumps({"alg": "HS256", "typ": "JWT"}).encode())
     b = _b64(json.dumps(p).encode())
     s = _b64(hmac.new(SECRET.encode(), f"{h}.{b}".encode(), hashlib.sha256).digest())
@@ -84,9 +85,51 @@ def verify_token(token: str, session: Session = None) -> dict:
         raise HTTPException(401, f"Invalid or expired token: {e}")
 
 
+# ── Session UA fingerprinting ─────────────────────────────────────────────────
+def _ua_hash(request: Optional[Request]) -> Optional[str]:
+    """
+    Returns a short SHA-256 hash of the User-Agent header only.
+    Accept-Language intentionally excluded — Render's proxy layer can strip/modify it,
+    causing false positives for legitimate users.
+    Returns None if no request context or UA is absent (e.g. server-to-server).
+    """
+    if not request:
+        return None
+    ua = request.headers.get("user-agent", "")
+    if not ua:
+        return None
+    return hashlib.sha256(ua.encode()).hexdigest()[:16]   # 16-char prefix is sufficient
+
+
+def _log_ua_mismatch(session: Session, user_id: int, user_email: str,
+                     stored_hash: str, current_hash: str) -> None:
+    """
+    Silently log a UA mismatch as a token_theft ITDR event.
+    Does NOT block the request — detection only.
+    Mismatches are common on legitimate browser updates; blocking would cause lockouts.
+    """
+    try:
+        session.add(AuditLog(
+            user_id=user_id, user_email=user_email,
+            action="session_ua_mismatch",
+            entity_type="user",
+            entity_id=str(user_id),
+            new_value=json.dumps({
+                "stored_ua_hash": stored_hash,
+                "current_ua_hash": current_hash,
+                "note": "UA fingerprint changed — possible session hijack or browser update",
+            }),
+        ))
+        # Non-blocking commit in a nested try so a DB error doesn't affect the request
+        session.commit()
+    except Exception:
+        pass
+
+
 # ── Dependencies ──────────────────────────────────────────────────────────────
 def get_current_user(
     authorization: Optional[str] = Header(None),
+    request: Request = None,
     session: Session = Depends(get_session),
 ) -> User:
     if not authorization or not authorization.startswith("Bearer "):
@@ -95,7 +138,16 @@ def get_current_user(
     user = session.get(User, payload["user_id"])
     if not user or not user.is_active:
         raise HTTPException(401, "User not found or inactive")
+
+    # ── UA fingerprint mismatch detection (non-blocking ITDR signal) ───────────
+    stored_ua = payload.get("ua_hash")
+    if stored_ua and request:
+        current_ua = _ua_hash(request)
+        if current_ua and stored_ua != current_ua:
+            _log_ua_mismatch(session, user.id, user.email, stored_ua, current_ua)
+
     return user
+
 
 def require_admin(user: User = Depends(get_current_user)) -> User:
     if user.role != "admin":
@@ -185,11 +237,19 @@ def login(data: dict, request: Request, session: Session = Depends(get_session))
         user.hashed_password = hash_password(password)
         session.add(user)
         session.commit()
-        print(f"[auth] Upgraded password hash for: {email}")
 
+    # ── MFA gate: if user has 2FA enabled, issue a short-lived pending token ──
+    if user.mfa_enabled and user.mfa_secret:
+        pending = create_token({
+            "user_id": user.id, "type": "mfa_pending",
+        }, ttl=300)   # 5 minutes
+        return {"mfa_required": True, "pending_token": pending}
+
+    ua = _ua_hash(request)
     token = create_token({
         "user_id": user.id, "email": user.email,
-        "role": user.role, "name": user.name
+        "role": user.role, "name": user.name,
+        **({"ua_hash": ua} if ua else {}),
     })
     _audit(session, "login", "user", str(user.id), user.id, user.email)
     session.commit()
@@ -322,3 +382,153 @@ def change_password(data: dict, user: User = Depends(get_current_user),
     _audit(session, "password_changed", "user", str(user.id), user.id, user.email)
     session.commit()
     return {"ok": True}
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 2FA / TOTP  (v5.1)
+# Flow:
+#   Setup:  POST /mfa/setup  → returns secret + otpauth URI
+#   Enable: POST /mfa/verify → verifies first code, sets mfa_enabled=True
+#   Login:  POST /login returns {mfa_required, pending_token} when enabled
+#           POST /login/mfa verifies code + pending_token → issues real JWT
+#   Remove: POST /mfa/disable → disables (requires current TOTP code)
+# ══════════════════════════════════════════════════════════════════════════════
+
+@router.post("/mfa/setup")
+def mfa_setup(user: User = Depends(get_current_user),
+              session: Session = Depends(get_session)):
+    """
+    Generate a new TOTP secret for the current user.
+    Returns the secret and an otpauth:// URI for any authenticator app.
+    Does NOT enable MFA yet — user must verify a code first via /mfa/verify.
+    """
+    secret = pyotp.random_base32()
+    # Store the pending secret (not yet active — mfa_enabled stays False)
+    user.mfa_secret = secret
+    session.add(user)
+    session.commit()
+
+    issuer = "AegisTrace"
+    label  = user.email.replace(" ", "_")
+    uri    = pyotp.totp.TOTP(secret).provisioning_uri(name=label, issuer_name=issuer)
+
+    return {
+        "secret": secret,
+        "otpauth_uri": uri,
+        "issuer": issuer,
+        "account": label,
+        "instructions": (
+            "Scan the QR code in your authenticator app (Google Authenticator, "
+            "Authy, etc.) or enter the secret manually. Then call POST /api/auth/mfa/verify "
+            "with a valid TOTP code to activate 2FA."
+        ),
+    }
+
+
+@router.post("/mfa/verify")
+def mfa_verify(data: dict,
+               user: User = Depends(get_current_user),
+               session: Session = Depends(get_session)):
+    """
+    Verify the first TOTP code and activate 2FA for this user.
+    Body: {code: "123456"}
+    """
+    code = str(data.get("code", "")).strip()
+    if not code:
+        raise HTTPException(400, "TOTP code required")
+    if not user.mfa_secret:
+        raise HTTPException(400, "Run /mfa/setup first to generate a secret")
+
+    totp = pyotp.TOTP(user.mfa_secret)
+    if not totp.verify(code, valid_window=1):   # ±30 s drift tolerance
+        raise HTTPException(401, "Invalid or expired TOTP code")
+
+    user.mfa_enabled = True
+    session.add(user)
+    _audit(session, "mfa_enabled", "user", str(user.id), user.id, user.email)
+    session.commit()
+    return {"ok": True, "message": "Two-factor authentication is now active on your account."}
+
+
+@router.post("/login/mfa")
+def login_mfa(data: dict, request: Request, session: Session = Depends(get_session)):
+    """
+    Second step of MFA login.
+    Body: {pending_token: str, code: str}
+    Verifies pending_token (type=mfa_pending), checks TOTP code, issues full JWT.
+    """
+    pending_token = (data.get("pending_token") or "").strip()
+    code          = str(data.get("code") or "").strip()
+    if not pending_token or not code:
+        raise HTTPException(400, "pending_token and code required")
+
+    # Decode and validate the pending token
+    try:
+        h, b, s = pending_token.split(".")
+        payload = json.loads(_unb64(b))
+    except Exception:
+        raise HTTPException(401, "Invalid pending token")
+
+    if payload.get("type") != "mfa_pending":
+        raise HTTPException(401, "Not a valid MFA pending token")
+    if payload.get("exp", 0) < int(time.time()):
+        raise HTTPException(401, "MFA session expired — please log in again")
+
+    # Verify HMAC signature
+    expected_sig = _b64(hmac.new(SECRET.encode(), f"{h}.{b}".encode(), hashlib.sha256).digest())
+    if not hmac.compare_digest(s, expected_sig):
+        raise HTTPException(401, "Token signature invalid")
+
+    user_id = payload.get("user_id")
+    user = session.get(User, user_id)
+    if not user or not user.is_active or not user.mfa_enabled or not user.mfa_secret:
+        raise HTTPException(401, "Invalid session")
+
+    totp = pyotp.TOTP(user.mfa_secret)
+    if not totp.verify(code, valid_window=1):
+        raise HTTPException(401, "Invalid or expired TOTP code")
+
+    ua = _ua_hash(request)
+    token = create_token({
+        "user_id": user.id, "email": user.email,
+        "role": user.role, "name": user.name,
+        **({"ua_hash": ua} if ua else {}),
+    })
+    _audit(session, "login_mfa", "user", str(user.id), user.id, user.email)
+    session.commit()
+    return {"token": token, "user": {
+        "id": user.id, "email": user.email,
+        "name": user.name, "role": user.role,
+    }}
+
+
+@router.post("/mfa/disable")
+def mfa_disable(data: dict,
+                user: User = Depends(get_current_user),
+                session: Session = Depends(get_session)):
+    """
+    Disable 2FA. Requires the current TOTP code as confirmation.
+    Body: {code: "123456"}
+    """
+    code = str(data.get("code", "")).strip()
+    if not code:
+        raise HTTPException(400, "TOTP code required to disable 2FA")
+    if not user.mfa_enabled or not user.mfa_secret:
+        raise HTTPException(400, "2FA is not currently enabled on this account")
+
+    totp = pyotp.TOTP(user.mfa_secret)
+    if not totp.verify(code, valid_window=1):
+        raise HTTPException(401, "Invalid TOTP code — cannot disable 2FA")
+
+    user.mfa_enabled = False
+    user.mfa_secret  = None
+    session.add(user)
+    _audit(session, "mfa_disabled", "user", str(user.id), user.id, user.email)
+    session.commit()
+    return {"ok": True, "message": "Two-factor authentication has been disabled."}
+
+
+@router.get("/mfa/status")
+def mfa_status(user: User = Depends(get_current_user)):
+    """Return whether 2FA is currently active for the authenticated user."""
+    return {"mfa_enabled": user.mfa_enabled, "email": user.email}
