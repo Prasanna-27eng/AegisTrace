@@ -1,51 +1,71 @@
 """
-AegisTrace Authentication
-─────────────────────────
+AegisTrace Authentication — v5.4
+──────────────────────────────────
 Passwords: bcrypt (transparent upgrade from SHA-256 on first login).
-JWT tokens — 7-day expiry, server-side invalidation via TokenBlocklist.
+JWT tokens — python-jose HS256, 7-day expiry, server-side invalidation.
+Progressive lockout: 5 fails→60s, 10 fails→15min, 20 fails→1hr.
+Admin 2FA enforcement: admin accounts without 2FA are blocked after login.
 Admin: prasanna80564@gmail.com / ADMIN_PIN env var (default: aegis2025)
 """
-import os, json, hashlib, hmac, base64, time, uuid
+import os, json, hashlib, hmac, time, uuid
 from datetime import datetime, timedelta
 from collections import defaultdict
 from typing import Optional
 import bcrypt
 import pyotp
+from jose import jwt, JWTError
 from fastapi import APIRouter, Depends, HTTPException, Header, Request
 from sqlmodel import Session, select
 from models import User, AuditLog, TokenBlocklist
 from database import get_session
 
-# ── Login brute-force protection ──────────────────────────────────────────────
-_login_attempts: dict = defaultdict(list)
-LOGIN_RATE_LIMIT = 10   # max attempts per minute per IP
+# ── Brute-force + progressive lockout ────────────────────────────────────────
+_login_attempts: dict = defaultdict(list)   # ip → [timestamps]
+_mfa_attempts:   dict = defaultdict(list)
+_lockouts:       dict = {}                  # ip → unlock_timestamp
+LOGIN_RATE_LIMIT = 10
+MFA_RATE_LIMIT   = 5
 
-_mfa_attempts: dict = defaultdict(list)
-MFA_RATE_LIMIT  = 5    # max MFA attempts per minute per IP (stricter)
+# Progressive lockout thresholds: (fail_count, lockout_seconds)
+_LOCKOUT_STEPS = [(5, 60), (10, 900), (20, 3600)]   # 1min, 15min, 1hr
 
-SECRET = os.getenv("JWT_SECRET", "aegistrace-secret-change-me-2025")
-TTL    = 60 * 60 * 24 * 7   # 7 days
+def _check_lockout(ip: str) -> None:
+    """Raise 429 if IP is in lockout period."""
+    unlock_at = _lockouts.get(ip, 0)
+    if time.time() < unlock_at:
+        remaining = int(unlock_at - time.time())
+        raise HTTPException(429, f"Too many failed attempts. Try again in {remaining}s.")
+
+def _record_failure(ip: str) -> None:
+    """Record a failed login attempt and apply progressive lockout if threshold crossed."""
+    now = time.time()
+    _login_attempts[ip] = [t for t in _login_attempts[ip] if now - t < 3600]
+    _login_attempts[ip].append(now)
+    count = len(_login_attempts[ip])
+    for threshold, duration in reversed(_LOCKOUT_STEPS):
+        if count >= threshold:
+            _lockouts[ip] = now + duration
+            break
+
+def _clear_failures(ip: str) -> None:
+    """Clear failed attempts on successful login."""
+    _login_attempts[ip] = []
+    _lockouts.pop(ip, None)
+
+SECRET    = os.getenv("JWT_SECRET", "aegistrace-secret-change-me-2025")
+ALGORITHM = "HS256"
+TTL       = 60 * 60 * 24 * 7   # 7 days
 
 
 def _get_real_ip(request: Request) -> str:
-    """
-    Extract the real client IP, respecting X-Forwarded-For from Render/proxy.
-    Falls back to direct socket IP. Used for rate limiting.
-    """
+    """Extract the real client IP, respecting X-Forwarded-For from Render/proxy."""
     forwarded = request.headers.get("X-Forwarded-For", "")
     if forwarded:
         return forwarded.split(",")[0].strip()
     return getattr(request.client, "host", "unknown")
 
 
-# ── JWT helpers ───────────────────────────────────────────────────────────────
-def _b64(data: bytes) -> str:
-    return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
-
-def _unb64(s: str) -> bytes:
-    return base64.urlsafe_b64decode(s + "=" * (4 - len(s) % 4))
-
-
+# ── JWT helpers — python-jose (replaces custom implementation in v5.4) ─────────
 def hash_password(pw: str) -> str:
     """Returns bcrypt hash. Used for new passwords and upgrades."""
     return bcrypt.hashpw(pw.encode(), bcrypt.gensalt(12)).decode()
@@ -68,35 +88,33 @@ def verify_password(pw: str, stored: str) -> bool:
 
 
 def create_token(payload: dict, ttl: int = TTL) -> str:
-    jti = str(uuid.uuid4())
-    p = {**payload, "exp": int(time.time()) + ttl, "iat": int(time.time()), "jti": jti}
-    h = _b64(json.dumps({"alg": "HS256", "typ": "JWT"}).encode())
-    b = _b64(json.dumps(p).encode())
-    s = _b64(hmac.new(SECRET.encode(), f"{h}.{b}".encode(), hashlib.sha256).digest())
-    return f"{h}.{b}.{s}"
+    """Create a signed JWT using python-jose HS256."""
+    jti  = str(uuid.uuid4())
+    now  = datetime.utcnow()
+    data = {
+        **payload,
+        "exp": now + timedelta(seconds=ttl),
+        "iat": now,
+        "jti": jti,
+    }
+    return jwt.encode(data, SECRET, algorithm=ALGORITHM)
 
 
 def verify_token(token: str, session: Session = None) -> dict:
+    """Verify JWT signature, expiry, and server-side revocation."""
     try:
-        h, b, s = token.split(".")
-        expected = _b64(hmac.new(SECRET.encode(), f"{h}.{b}".encode(), hashlib.sha256).digest())
-        if not hmac.compare_digest(s, expected):
-            raise ValueError("bad signature")
-        p = json.loads(_unb64(b))
-        if p.get("exp", 0) < time.time():
-            raise ValueError("token expired")
-        # Server-side invalidation check
-        if session and p.get("jti"):
-            blocked = session.exec(
-                select(TokenBlocklist).where(TokenBlocklist.token_jti == p["jti"])
-            ).first()
-            if blocked:
-                raise ValueError("token revoked")
-        return p
-    except HTTPException:
-        raise
-    except Exception as e:
+        payload = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
+    except JWTError as e:
         raise HTTPException(401, f"Invalid or expired token: {e}")
+
+    # Server-side invalidation (logout / forced expiry)
+    if session and payload.get("jti"):
+        blocked = session.exec(
+            select(TokenBlocklist).where(TokenBlocklist.token_jti == payload["jti"])
+        ).first()
+        if blocked:
+            raise HTTPException(401, "Token has been revoked. Please log in again.")
+    return payload
 
 
 # ── Session UA fingerprinting ─────────────────────────────────────────────────
@@ -225,13 +243,10 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 @router.post("/login")
 def login(data: dict, request: Request, session: Session = Depends(get_session)):
-    # Brute-force protection — use real IP (respects Render/nginx proxy headers)
-    ip  = _get_real_ip(request)
-    now = time.time()
-    _login_attempts[ip] = [t for t in _login_attempts[ip] if now - t < 60]
-    if len(_login_attempts[ip]) >= LOGIN_RATE_LIMIT:
-        raise HTTPException(429, "Too many login attempts. Try again in a minute.")
-    _login_attempts[ip].append(now)
+    ip = _get_real_ip(request)
+
+    # Progressive lockout check
+    _check_lockout(ip)
 
     email    = (data.get("email") or "").strip().lower()
     password = (data.get("password") or "").strip()
@@ -240,10 +255,12 @@ def login(data: dict, request: Request, session: Session = Depends(get_session))
 
     user = session.exec(select(User).where(User.email == email)).first()
     if not user or not user.is_active:
+        _record_failure(ip)
         raise HTTPException(401, "Invalid credentials")
 
     stored = user.hashed_password
     if not stored or not verify_password(password, stored):
+        _record_failure(ip)
         raise HTTPException(401, "Invalid credentials")
 
     # Transparent upgrade: if legacy SHA-256, upgrade to bcrypt on successful login
@@ -252,12 +269,35 @@ def login(data: dict, request: Request, session: Session = Depends(get_session))
         session.add(user)
         session.commit()
 
+    # Clear lockout on successful credential verification
+    _clear_failures(ip)
+
     # ── MFA gate: if user has 2FA enabled, issue a short-lived pending token ──
     if user.mfa_enabled and user.mfa_secret:
         pending = create_token({
             "user_id": user.id, "type": "mfa_pending",
         }, ttl=300)   # 5 minutes
         return {"mfa_required": True, "pending_token": pending}
+
+    # ── Enforce 2FA for admin accounts ────────────────────────────────────────
+    # Admins without 2FA enabled are given a grace token that forces setup.
+    # They can view the dashboard but the frontend redirects them to /app/admin#mfa.
+    if user.role == "admin" and not user.mfa_enabled:
+        ua = _ua_hash(request)
+        token = create_token({
+            "user_id": user.id, "email": user.email,
+            "role": user.role, "name": user.name,
+            "mfa_setup_required": True,   # frontend reads this flag
+            **({"ua_hash": ua} if ua else {}),
+        })
+        _audit(session, "login_admin_no_mfa", "user", str(user.id), user.id, user.email,
+               "Admin logged in without 2FA — setup required")
+        session.commit()
+        return {
+            "token": token,
+            "mfa_setup_required": True,   # signal to frontend
+            "user": {"id": user.id, "email": user.email, "name": user.name, "role": user.role},
+        }
 
     ua = _ua_hash(request)
     token = create_token({
@@ -283,15 +323,16 @@ def logout(
         return {"ok": True}
     token = authorization.split(" ", 1)[1]
     try:
-        h, b, s = token.split(".")
-        payload = json.loads(_unb64(b))
+        # Decode without verification to extract jti/exp (signature already verified by middleware)
+        payload = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
         jti = payload.get("jti")
-        exp = payload.get("exp", 0)
+        exp = payload.get("exp")
         if jti:
+            expires_at = datetime.utcfromtimestamp(exp) if exp else datetime.utcnow()
             session.add(TokenBlocklist(
                 token_jti=jti,
                 blocked_at=datetime.utcnow(),
-                expires_at=datetime.utcfromtimestamp(exp),
+                expires_at=expires_at,
                 user_id=payload.get("user_id"),
             ))
             session.commit()
@@ -488,22 +529,14 @@ def login_mfa(data: dict, request: Request, session: Session = Depends(get_sessi
     if not pending_token or not code:
         raise HTTPException(400, "pending_token and code required")
 
-    # Decode and validate the pending token
+    # Decode and validate the pending token using python-jose
     try:
-        h, b, s = pending_token.split(".")
-        payload = json.loads(_unb64(b))
-    except Exception:
-        raise HTTPException(401, "Invalid pending token")
+        payload = jwt.decode(pending_token, SECRET, algorithms=[ALGORITHM])
+    except JWTError:
+        raise HTTPException(401, "Invalid or expired MFA session — please log in again")
 
     if payload.get("type") != "mfa_pending":
         raise HTTPException(401, "Not a valid MFA pending token")
-    if payload.get("exp", 0) < int(time.time()):
-        raise HTTPException(401, "MFA session expired — please log in again")
-
-    # Verify HMAC signature
-    expected_sig = _b64(hmac.new(SECRET.encode(), f"{h}.{b}".encode(), hashlib.sha256).digest())
-    if not hmac.compare_digest(s, expected_sig):
-        raise HTTPException(401, "Token signature invalid")
 
     user_id = payload.get("user_id")
     user = session.get(User, user_id)

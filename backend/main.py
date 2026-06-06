@@ -369,10 +369,21 @@ async def startup():
 
     threading.Thread(target=_nightly_cleanup, daemon=True).start()
 
-    print("[AegisTrace v4.3] Server ready.")
+    # ── Auto-generate INGEST_API_KEY if not set ───────────────────────────────
+    if not os.getenv("INGEST_API_KEY"):
+        import secrets as _secrets
+        generated_key = _secrets.token_hex(32)
+        os.environ["INGEST_API_KEY"] = generated_key
+        print(f"[AegisTrace] INGEST_API_KEY auto-generated for this session.")
+        print(f"[AegisTrace] Add to env vars: INGEST_API_KEY={generated_key}")
+        print(f"[AegisTrace] Update your endpoint agents to use this key.")
+
+    print("[AegisTrace v5.4] Server ready.")
     print(f"[AegisTrace] Allowed origins: {ALLOWED_ORIGINS}")
     # ── Security warnings for weak defaults ──────────────────────────────────
     if os.getenv("JWT_SECRET", "") in ("", "aegistrace-secret-change-me-2025"):
         print("[SECURITY WARNING] JWT_SECRET is using the default value. Set a strong random secret in environment variables!")
     if os.getenv("ADMIN_PIN", "") in ("", "aegis2025"):
         print("[SECURITY WARNING] ADMIN_PIN is using the default value 'aegis2025'. Change it in environment variables!")
+    if not os.getenv("FERNET_KEY"):
+        print("[SECURITY WARNING] FERNET_KEY not set. Connector tokens encrypted with derived key. Set FERNET_KEY for stronger protection.")

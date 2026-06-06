@@ -12,8 +12,25 @@ v5.3: Prompt Injection Shield applied to all user-controlled input before Groq c
 """
 
 import os
+import time
+from collections import defaultdict
 from groq import Groq
 from core.prompt_shield import shield as _shield
+
+# ── Per-user Groq rate limiting ───────────────────────────────────────────────
+# Prevents a single compromised account from burning the entire API quota
+_groq_calls: dict = defaultdict(list)   # user_id_or_ip → [timestamps]
+GROQ_USER_LIMIT = 100   # calls per hour per user
+GROQ_IP_LIMIT   = 200   # calls per hour per IP (fallback)
+
+def _check_groq_limit(user_id: str = "anon") -> None:
+    now = time.time()
+    window = [t for t in _groq_calls[user_id] if now - t < 3600]
+    limit  = GROQ_IP_LIMIT if user_id == "anon" else GROQ_USER_LIMIT
+    if len(window) >= limit:
+        raise Exception(f"Groq rate limit reached ({limit}/hr). Try again later.")
+    window.append(now)
+    _groq_calls[user_id] = window
 
 # ── Model registry ────────────────────────────────────────────────────────────
 # Note: gemma2-9b-it and mixtral-8x7b-32768 were decommissioned by Groq.
@@ -112,6 +129,7 @@ def call_ai(
     temperature: float = 0.25,
     max_tokens: int = 1200,
     history: list = None,
+    _user_id: str = "anon",   # pass user.id as str to enable per-user limiting
 ) -> str:
     """
     Call the best Groq model for the given task.
@@ -120,6 +138,9 @@ def call_ai(
 
     v5.3: user_prompt is automatically sanitised by PromptShield before sending to Groq.
     """
+    # ── Per-user rate limit ───────────────────────────────────────────────────
+    _check_groq_limit(_user_id)
+
     # ── Prompt Injection Shield ───────────────────────────────────────────────
     shield_result = _shield.sanitise(user_prompt, context=task)
     safe_prompt   = shield_result.cleaned

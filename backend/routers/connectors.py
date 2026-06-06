@@ -14,6 +14,7 @@ from database import get_session
 from routers.auth import get_current_user, require_admin
 from models import User
 from core.events import event_bus, Events
+from core.encryption import enc   # v5.4: field-level encryption for tokens at rest
 
 logger = logging.getLogger("aegistrace.connectors")
 router = APIRouter(prefix="/api/connectors", tags=["connectors"])
@@ -129,7 +130,7 @@ async def okta_connect(
         select(IdentityConnector).where(IdentityConnector.connector_type == "okta")
     ).first()
     if existing:
-        existing.encrypted_token = api_token
+        existing.encrypted_token = enc.encrypt(api_token)   # v5.4: encrypt at rest
         existing.domain = okta_domain
         existing.is_active = True
         session.add(existing)
@@ -140,7 +141,7 @@ async def okta_connect(
             org_name=data.get("org_name", okta_domain),
             connector_type="okta",
             domain=okta_domain,
-            encrypted_token=api_token,
+            encrypted_token=enc.encrypt(api_token),          # v5.4: encrypt at rest
             created_by=user.id,
         )
         session.add(connector_db)
@@ -153,7 +154,7 @@ async def okta_connect(
         from sqlmodel import Session as S
         with S(session.bind) as new_session:
             db_conn = new_session.get(IdentityConnector, connector_db.id)
-            obj = OktaConnector(okta_domain=db_conn.domain, api_token=db_conn.encrypted_token)
+            obj = OktaConnector(okta_domain=db_conn.domain, api_token=enc.decrypt(db_conn.encrypted_token))
             await _import_identities(obj, db_conn, new_session)
 
     background_tasks.add_task(_bg_sync)
@@ -178,7 +179,7 @@ async def okta_sync(
         from sqlmodel import Session as S
         with S(session.bind) as new_session:
             db_conn = new_session.get(IdentityConnector, connector_db.id)
-            obj = OktaConnector(okta_domain=db_conn.domain, api_token=db_conn.encrypted_token)
+            obj = OktaConnector(okta_domain=db_conn.domain, api_token=enc.decrypt(db_conn.encrypted_token))
             await _import_identities(obj, db_conn, new_session)
 
     background_tasks.add_task(_bg_sync)

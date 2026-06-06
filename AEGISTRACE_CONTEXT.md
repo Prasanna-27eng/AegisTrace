@@ -504,7 +504,7 @@ Start a new Claude session and paste this file. Then say:
 
 > "Read AEGISTRACE_CONTEXT.md — I want to work on [task from backlog above]"
 
-**Highest priority items (as of v5.4):** SOAR Playbooks engine, email notifications on ITDR anomaly, Trust score trending, DPDPA Compliance Report.
+**Highest priority items (as of v5.5):** SOAR Playbooks engine, email notifications on ITDR anomaly, Trust score trending, DPDPA Compliance Report.
 
 ### v5.2 Completed (this session)
 
@@ -582,6 +582,44 @@ Start a new Claude session and paste this file. Then say:
 - [x] `Cache-Control: no-store, no-cache, must-revalidate` on all API routes
 
 **New file:** `backend/core/prompt_shield.py` — singleton `shield` object, importable anywhere
+
+### v5.5 Completed (this session)
+
+**JWT replaced with python-jose**
+- [x] `python-jose[cryptography]==3.3.0` + `cryptography==42.0.8` added to `requirements.txt`
+- [x] `create_token()` and `verify_token()` rewritten using `jose.jwt` HS256 — battle-tested library
+- [x] Pending token decoding in `login/mfa` updated to use python-jose
+- [x] Logout endpoint updated — clean token decoding for blocklist
+- [x] All existing sessions invalidated on deploy (clean break — security upgrade)
+
+**Progressive account lockout**
+- [x] `_record_failure(ip)` / `_check_lockout(ip)` / `_clear_failures(ip)` helpers
+- [x] Thresholds: 5 fails → 60s lockout, 10 fails → 15min, 20 fails → 1hr
+- [x] Lockout checked before credential verification — fails fast for locked IPs
+- [x] Failures cleared on successful login
+
+**Admin 2FA enforcement**
+- [x] Admins without 2FA get a `mfa_setup_required: True` flag in login response
+- [x] Token still issued (so they can access the dashboard) but frontend should redirect to `/app/admin#mfa`
+- [x] Login audited as `login_admin_no_mfa`
+
+**Connector token encryption at rest**
+- [x] `backend/core/encryption.py` — Fernet field encryption singleton (`enc`)
+- [x] `enc.encrypt()` / `enc.decrypt()` — backward-compatible (legacy plaintext falls through)
+- [x] `connectors.py` — Okta token encrypted on store, decrypted on use
+- [x] Key: `FERNET_KEY` env var (preferred) or derived from JWT_SECRET (fallback)
+
+**Auto-generate INGEST_API_KEY on startup**
+- [x] If `INGEST_API_KEY` not set, `secrets.token_hex(32)` generated and logged on startup
+- [x] Security warnings for missing `FERNET_KEY` added to startup
+
+**Per-user Groq rate limiting**
+- [x] `_check_groq_limit(user_id)` in `ai_router.py` — 100 calls/hr per user, 200/hr for anon
+- [x] Prevents single compromised account burning entire Groq quota
+
+**New env vars (add to Render/VPS):**
+- `FERNET_KEY` — base64url-encoded 32-byte key: `python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
+- `INGEST_API_KEY` — random hex string: `python3 -c "import secrets; print(secrets.token_hex(32))"`
 
 Do NOT give Claude the full codebase — this file is sufficient context for any continuation task.
 
