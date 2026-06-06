@@ -1220,9 +1220,25 @@ def collect_system_info() -> dict:
 #   • wtmp/btmp login history                   via last / lastb
 # ═══════════════════════════════════════════════════════════════════════════════
 
-_log_last_ts: str = ""          # ISO timestamp of last journalctl read
 _log_lock = threading.Lock()
 _raw_log_queue: list = []       # accumulates raw logs between cycles
+
+# Persist cursor to file so restarts don't re-read old events
+_LOG_CURSOR_FILE = Path.home() / ".aegistrace_log_cursor"
+
+def _load_log_cursor() -> str:
+    try:
+        return _LOG_CURSOR_FILE.read_text().strip()
+    except Exception:
+        return ""
+
+def _save_log_cursor(ts: str):
+    try:
+        _LOG_CURSOR_FILE.write_text(ts)
+    except Exception:
+        pass
+
+_log_last_ts: str = _load_log_cursor()  # survives restarts
 
 
 def _run_journalctl(args: list, timeout: int = 8) -> list:
@@ -1471,9 +1487,10 @@ def _collect_linux_logs_comprehensive():
     except Exception:
         pass
 
-    # Update cursor
+    # Persist cursor so restarts don't re-read old events
     with _log_lock:
         _log_last_ts = new_ts
+    _save_log_cursor(new_ts)
 
     return login_events, raw_logs[:300]
 

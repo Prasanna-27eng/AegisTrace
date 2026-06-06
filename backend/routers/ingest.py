@@ -6,7 +6,7 @@ Auth: X-AegisTrace-Key header (set INGEST_API_KEY env var).
 If not set, defaults to sha256 of ADMIN_PIN so no extra config needed.
 """
 import os, json, hashlib, hmac
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Header, Request
 from sqlmodel import Session, select, func
 from typing import Optional
@@ -822,52 +822,84 @@ async def ingest_telemetry(
         except Exception:
             pass
 
-        # Alert on EVERY failed login (not just after 10)
+        # Deduplicate failed logins — check if same user+ip+host already alerted in last 5 min
         if not ev.get("success"):
             src_ip   = ev.get("source_ip") or "local"
             username = ev.get("username") or "unknown"
-            itdr_alerts.append(ITDRAlert(
-                alert_type     = "failed_login",
-                severity       = "medium",
-                identity_label = hostname,
-                description    = f"Failed login attempt on {hostname}: user='{username}' from {src_ip} via {ev.get('source','ssh')}",
-                evidence       = json.dumps(ev),
-            ))
+            cutoff   = datetime.utcnow() - timedelta(minutes=5)
+            existing = session.exec(
+                select(ITDRAlert)
+                .where(ITDRAlert.alert_type == "failed_login")
+                .where(ITDRAlert.identity_label == hostname)
+                .where(ITDRAlert.detected_at >= cutoff)
+            ).first()
+            if not existing:
+                itdr_alerts.append(ITDRAlert(
+                    alert_type     = "failed_login",
+                    severity       = "medium",
+                    identity_label = hostname,
+                    description    = f"Failed login attempt on {hostname}: user='{username}' from {src_ip} via {ev.get('source','ssh')}",
+                    evidence       = json.dumps(ev),
+                ))
 
-        # Also forward to AuthEvent for ITDR correlation engine
+        # Deduplicate AuthEvent — same username+ip within last 2 min
         if not ev.get("success"):
             try:
                 from models import AuthEvent
-                session.add(AuthEvent(
-                    identity_label = ev.get("username", hostname),
-                    event_type     = "failed_login",
-                    success        = False,
-                    source_ip      = ev.get("source_ip") or "127.0.0.1",
-                    user_agent     = ev.get("event_type"),
-                    timestamp      = datetime.utcnow(),
-                ))
+                cutoff2 = datetime.utcnow() - timedelta(minutes=2)
+                existing_auth = session.exec(
+                    select(AuthEvent)
+                    .where(AuthEvent.identity_label == ev.get("username", hostname))
+                    .where(AuthEvent.source_ip == (ev.get("source_ip") or "127.0.0.1"))
+                    .where(AuthEvent.timestamp >= cutoff2)
+                ).first()
+                if not existing_auth:
+                    session.add(AuthEvent(
+                        identity_label = ev.get("username", hostname),
+                        event_type     = "failed_login",
+                        success        = False,
+                        source_ip      = ev.get("source_ip") or "127.0.0.1",
+                        user_agent     = ev.get("event_type"),
+                        timestamp      = datetime.utcnow(),
+                    ))
             except Exception:
                 pass
 
-        # Alert on sudo commands (privilege use tracking)
+        # Alert on sudo commands — deduplicate by command within 1 min
         if ev.get("event_type") == "sudo_command":
-            itdr_alerts.append(ITDRAlert(
-                alert_type     = "privilege_escalation",
-                severity       = "medium",
-                identity_label = hostname,
-                description    = f"sudo command on {hostname}: user='{ev.get('username','?')}' ran: {ev.get('sudo_command', ev.get('raw',''))[:200]}",
-                evidence       = json.dumps(ev),
-            ))
+            cutoff3 = datetime.utcnow() - timedelta(minutes=1)
+            existing_sudo = session.exec(
+                select(ITDRAlert)
+                .where(ITDRAlert.alert_type == "privilege_escalation")
+                .where(ITDRAlert.identity_label == hostname)
+                .where(ITDRAlert.detected_at >= cutoff3)
+            ).first()
+            if not existing_sudo:
+                itdr_alerts.append(ITDRAlert(
+                    alert_type     = "privilege_escalation",
+                    severity       = "medium",
+                    identity_label = hostname,
+                    description    = f"sudo on {hostname}: user='{ev.get('username','?')}' ran: {ev.get('sudo_command', ev.get('raw',''))[:200]}",
+                    evidence       = json.dumps(ev),
+                ))
 
-        # Alert on user management events
+        # Alert on user management events — deduplicate within 5 min
         if ev.get("event_type") == "user_management":
-            itdr_alerts.append(ITDRAlert(
-                alert_type     = "user_management",
-                severity       = "high",
-                identity_label = hostname,
-                description    = f"User account change on {hostname}: {ev.get('raw','')[:200]}",
-                evidence       = json.dumps(ev),
-            ))
+            cutoff4 = datetime.utcnow() - timedelta(minutes=5)
+            existing_usermgmt = session.exec(
+                select(ITDRAlert)
+                .where(ITDRAlert.alert_type == "user_management")
+                .where(ITDRAlert.identity_label == hostname)
+                .where(ITDRAlert.detected_at >= cutoff4)
+            ).first()
+            if not existing_usermgmt:
+                itdr_alerts.append(ITDRAlert(
+                    alert_type     = "user_management",
+                    severity       = "high",
+                    identity_label = hostname,
+                    description    = f"User account change on {hostname}: {ev.get('raw','')[:200]}",
+                    evidence       = json.dumps(ev),
+                ))
 
     session.commit()
 
