@@ -38,8 +38,15 @@ class Endpoint(SQLModel, table=True):
     total_batches: int = Field(default=0)
     threat_score_avg: float = Field(default=0.0)
     is_active: bool = Field(default=True)
-    tags: Optional[str] = Field(default="[]", sa_column=Column(Text))  # JSON list
+    tags: Optional[str] = Field(default="[]", sa_column=Column(Text))
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    # Live telemetry snapshot (updated every cycle)
+    last_processes:    Optional[str] = Field(default="[]", sa_column=Column(Text))   # JSON
+    last_connections:  Optional[str] = Field(default="[]", sa_column=Column(Text))   # JSON
+    last_system_info:  Optional[str] = Field(default="{}", sa_column=Column(Text))   # JSON
+    local_risk_score:  int = Field(default=0)   # 0-100 from agent
+    total_alerts:      int = Field(default=0)
+    total_failed_logins: int = Field(default=0)
 
 
 class LogBatch(SQLModel, table=True):

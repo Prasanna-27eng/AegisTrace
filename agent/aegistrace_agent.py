@@ -2265,6 +2265,28 @@ def _execute_command(cmd: dict):
             alerts = _fim.check()
             result = {"fim_alerts": alerts, "count": len(alerts)}
 
+        elif command_type == "stop_agent":
+            reason = payload.get("reason", "Remote stop command received")
+            logger.warning(f"[command] STOP AGENT — reason: {reason}")
+            result = {"status": "stopping", "reason": reason}
+            _transport.post_command_result(command_id, result, True)
+            global _main_loop_running
+            _main_loop_running = False
+            import sys as _sys
+            _sys.exit(0)
+
+        elif command_type == "uninstall_agent":
+            reason = payload.get("reason", "Remote uninstall command received")
+            logger.warning(f"[command] UNINSTALL AGENT — reason: {reason}")
+            # Remove honey tokens and cursor file
+            _honey.cleanup()
+            _LOG_CURSOR_FILE.unlink(missing_ok=True)
+            result = {"status": "uninstalled", "reason": reason}
+            _transport.post_command_result(command_id, result, True)
+            _main_loop_running = False
+            import sys as _sys
+            _sys.exit(0)
+
         else:
             result  = {"error": f"Unknown command: {command_type}"}
             success = False
@@ -2487,11 +2509,71 @@ def _run_collection_cycle() -> list:
     return alerts
 
 
+def _journal_realtime_follower():
+    """
+    Background thread: follows journalctl -f and ships events every 3 seconds.
+    Provides near-real-time (1-3s) log visibility without waiting for the 30s cycle.
+    Covers: SSH auth, sudo, PAM, kernel, service events as they happen.
+    """
+    SHIP_INTERVAL = 3   # seconds between mini-shipments
+    batch: list = []
+    last_ship = time.time()
+
+    cmd = ["journalctl", "-f", "--output=json", "--no-pager", "-n", "0"]
+    try:
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                stderr=subprocess.DEVNULL, text=True, bufsize=1)
+        logger.info("[stream] Real-time journalctl follower started")
+        for line in proc.stdout:
+            if not _main_loop_running:
+                proc.terminate()
+                break
+            try:
+                entry = json.loads(line.strip())
+                # Parse auth events for immediate alerting
+                ev = _parse_auth_entry(entry)
+                raw = _jentry_to_raw(entry,
+                    "auth" if int(entry.get("SYSLOG_FACILITY", 0)) == 10
+                    else "kernel" if entry.get("_TRANSPORT") == "kernel"
+                    else "system")
+
+                if ev:
+                    batch.append({"type": "login_event", "data": ev})
+                batch.append({"type": "raw_log", "data": raw})
+
+                # Ship every SHIP_INTERVAL seconds if we have data
+                now = time.time()
+                if now - last_ship >= SHIP_INTERVAL and batch:
+                    login_evs = [b["data"] for b in batch if b["type"] == "login_event"]
+                    raw_logs  = [b["data"] for b in batch if b["type"] == "raw_log"]
+                    _transport.send({
+                        "priority":            "stream",
+                        "system_info":         {"hostname": AGENT_ID, "ip_address": ""},
+                        "processes":           [],
+                        "network_connections": [],
+                        "file_events":         [],
+                        "alerts":              [],
+                        "login_events":        login_evs,
+                        "raw_logs":            raw_logs[:100],
+                    })
+                    batch.clear()
+                    last_ship = now
+            except Exception:
+                pass
+    except Exception as e:
+        logger.debug(f"[stream] journalctl follower stopped: {e}")
+
+
 def main_loop():
     """Main collection loop with error recovery and buffer flush."""
     global _heartbeat_ts, _main_loop_running
     logger.info(f"AegisTrace Agent v{AGENT_VERSION} — main loop starting")
     _flush_buffer()
+
+    # Start real-time journalctl follower (Linux only)
+    if platform.system().lower() == "linux":
+        t = threading.Thread(target=_journal_realtime_follower, daemon=True, name="journal-follower")
+        t.start()
 
     while _main_loop_running:
         try:

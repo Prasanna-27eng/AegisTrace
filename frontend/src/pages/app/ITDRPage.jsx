@@ -58,6 +58,16 @@ function timeAgo(d) {
   return new Date(d).toLocaleDateString();
 }
 
+function preciseTime(d) {
+  if (!d) return '';
+  const dt = new Date(d);
+  const date = dt.toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });
+  const time = dt.toLocaleTimeString(undefined, { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12: false });
+  const s = (Date.now() - dt.getTime()) / 1000;
+  const ago = s < 60 ? `${Math.round(s)}s ago` : s < 3600 ? `${Math.round(s/60)}m ago` : `${Math.round(s/3600)}h ago`;
+  return `${date} ${time} (${ago})`;
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
    ADD EVENT PANEL
 ══════════════════════════════════════════════════════════════════════════ */
@@ -249,7 +259,7 @@ function DetectionTab({ events, anomalies, loading }) {
                       {ev.source_ip && <span>{ev.source_ip}</span>}
                       {ev.country   && <span>{ev.country}</span>}
                       {ev.device_name && <span>{ev.device_name}</span>}
-                      <span style={{ marginLeft: 'auto' }}>{timeAgo(ev.timestamp)}</span>
+                      <span style={{ marginLeft: 'auto', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem' }}>{preciseTime(ev.timestamp)}</span>
                     </div>
                   </div>
                 </div>
@@ -448,7 +458,7 @@ function AlertsTab() {
                     {a.description && (
                       <div style={{ fontSize: '0.76rem', color: '#909090', lineHeight: 1.5 }}>{a.description}</div>
                     )}
-                    <div style={{ marginTop: 6, fontSize: '0.64rem', color: '#787878', ...MONO }}>{timeAgo(a.detected_at)}</div>
+                    <div style={{ marginTop: 6, fontSize: '0.64rem', color: '#787878', ...MONO }}>🕐 {preciseTime(a.detected_at)}</div>
                   </div>
                 </div>
 

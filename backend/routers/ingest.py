@@ -351,6 +351,97 @@ def list_endpoints(
     return result
 
 
+@router.get("/endpoints/{ep_id}/detail")
+def endpoint_detail(
+    ep_id: int,
+    _user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Rich endpoint detail — processes, connections, system info, recent alerts, stats."""
+    ep = session.get(Endpoint, ep_id)
+    if not ep:
+        raise HTTPException(404, "Endpoint not found")
+
+    # Recent ITDR alerts for this host
+    recent_alerts = session.exec(
+        select(ITDRAlert)
+        .where(ITDRAlert.identity_label == ep.hostname)
+        .order_by(ITDRAlert.detected_at.desc())
+        .limit(20)
+    ).all()
+
+    # Alert counts by severity
+    open_critical = sum(1 for a in recent_alerts if a.severity == "critical" and a.status == "open")
+    open_high     = sum(1 for a in recent_alerts if a.severity == "high"     and a.status == "open")
+
+    # Recent failed logins count
+    cutoff_day = datetime.utcnow() - timedelta(hours=24)
+    failed_logins_24h = session.exec(
+        select(RawLogEvent)
+        .where(RawLogEvent.endpoint_id == ep.id)
+        .where(RawLogEvent.event_type == "failed_login")
+        .where(RawLogEvent.ts >= cutoff_day)
+    ).all()
+
+    # Recent sudo commands
+    sudo_cmds = session.exec(
+        select(RawLogEvent)
+        .where(RawLogEvent.endpoint_id == ep.id)
+        .where(RawLogEvent.event_type == "sudo_command")
+        .order_by(RawLogEvent.ts.desc())
+        .limit(10)
+    ).all()
+
+    sys_info    = json.loads(ep.last_system_info  or "{}")
+    processes   = json.loads(ep.last_processes    or "[]")
+    connections = json.loads(ep.last_connections  or "[]")
+
+    # Mark suspicious processes/ports
+    for p in processes:
+        pname = (p.get("name") or "").lower()
+        p["suspicious"] = any(s in pname for s in _SUSPICIOUS_PROCESSES)
+    for c in connections:
+        rport = c.get("remote_port", 0)
+        try: c["suspicious"] = int(rport) in _SUSPICIOUS_PORTS
+        except: c["suspicious"] = False
+
+    return {
+        "id":              ep.id,
+        "hostname":        ep.hostname,
+        "os_type":         ep.os_type,
+        "ip_address":      ep.ip_address,
+        "agent_version":   ep.agent_version,
+        "last_seen":       ep.last_seen,
+        "is_active":       (datetime.utcnow() - ep.last_seen).total_seconds() < 120,
+        "local_risk_score": ep.local_risk_score,
+        "system_info":     sys_info,
+        "processes":       processes,
+        "connections":     connections,
+        "open_critical":   open_critical,
+        "open_high":       open_high,
+        "failed_logins_24h": len(failed_logins_24h),
+        "sudo_commands_24h": len(sudo_cmds),
+        "recent_alerts":   [
+            {
+                "id":          a.id,
+                "alert_type":  a.alert_type,
+                "severity":    a.severity,
+                "description": a.description,
+                "status":      a.status,
+                "detected_at": a.detected_at,
+                "evidence":    a.evidence,
+            } for a in recent_alerts
+        ],
+        "recent_sudo": [
+            {
+                "ts":       s.ts,
+                "username": s.username,
+                "raw":      s.raw,
+            } for s in sudo_cmds
+        ],
+    }
+
+
 @router.get("/endpoints/{ep_id}/batches")
 def list_batches(
     ep_id: int,
@@ -611,17 +702,29 @@ async def ingest_telemetry(
     endpoint = session.exec(
         select(Endpoint).where(Endpoint.hostname == hostname)
     ).first()
+    processes   = data.get("processes", [])
+    connections = data.get("network_connections", [])
+    risk_score  = data.get("local_anomaly_score", 0)
+
     if endpoint:
-        endpoint.last_seen     = datetime.utcnow()
-        endpoint.is_active     = True
-        endpoint.agent_version = version
-        if ip_addr: endpoint.ip_address = ip_addr
+        endpoint.last_seen        = datetime.utcnow()
+        endpoint.is_active        = True
+        endpoint.agent_version    = version
+        if ip_addr: endpoint.ip_address  = ip_addr
         if os_type != "unknown": endpoint.os_type = os_type
-        endpoint.total_batches += 1
+        endpoint.total_batches   += 1
+        endpoint.last_processes   = json.dumps(processes[:100])
+        endpoint.last_connections = json.dumps(connections[:50])
+        endpoint.last_system_info = json.dumps(data.get("system_info", {}))
+        endpoint.local_risk_score = int(risk_score) if risk_score else 0
     else:
         endpoint = Endpoint(
             hostname=hostname, os_type=os_type, ip_address=ip_addr,
             agent_version=version, total_batches=1, is_active=True,
+            last_processes=json.dumps(processes[:100]),
+            last_connections=json.dumps(connections[:50]),
+            last_system_info=json.dumps(data.get("system_info", {})),
+            local_risk_score=int(risk_score) if risk_score else 0,
         )
         session.add(endpoint)
         session.flush()
@@ -655,85 +758,52 @@ async def ingest_telemetry(
                 "agent_id": endpoint.id,
             })
 
-        elif alert_type == "suspicious_process":
-            itdr_alerts.append(ITDRAlert(
-                alert_type="suspicious_process",
-                severity="high",
-                identity_label=hostname,
-                description=f"Suspicious process detected on {hostname}: {alert.get('process_name')} (PID {alert.get('process_pid')})",
-                evidence=json.dumps(alert),
-            ))
+        elif alert_type in (
+            "suspicious_process", "suspicious_port", "honey_token_access",
+            "yara_match", "dga_domain", "suspicious_lineage", "usb_inserted",
+            "registry_change", "fim_change", "privilege_escalation",
+            "new_destination", "behavioural_anomaly",
+        ):
+            # Dedup window per alert_type per host (longer for noisy types)
+            dedup_minutes = {
+                "honey_token_access": 10,
+                "suspicious_process": 10,
+                "suspicious_port":    10,
+                "yara_match":         30,
+                "fim_change":         30,
+                "new_destination":    60,
+                "behavioural_anomaly": 60,
+            }.get(alert_type, 5)
 
-        elif alert_type == "suspicious_port":
-            itdr_alerts.append(ITDRAlert(
-                alert_type="suspicious_port",
-                severity="medium",
-                identity_label=hostname,
-                description=f"Suspicious outbound port on {hostname}: {alert.get('process_name')} → :{alert.get('remote_port')} ({alert.get('remote_ip')})",
-                evidence=json.dumps(alert),
-            ))
+            cutoff = datetime.utcnow() - timedelta(minutes=dedup_minutes)
+            already = session.exec(
+                select(ITDRAlert)
+                .where(ITDRAlert.alert_type == alert_type)
+                .where(ITDRAlert.identity_label == hostname)
+                .where(ITDRAlert.detected_at >= cutoff)
+            ).first()
+            if already:
+                continue   # skip duplicate within window
 
-        elif alert_type == "honey_token_access":
-            itdr_alerts.append(ITDRAlert(
-                alert_type="honey_token_access",
-                severity="critical",
-                identity_label=hostname,
-                description=alert.get("description", f"Honey token file accessed on {hostname}"),
-                evidence=json.dumps(alert),
-            ))
-
-        elif alert_type == "yara_match":
-            itdr_alerts.append(ITDRAlert(
-                alert_type="yara_match",
-                severity="critical",
-                identity_label=hostname,
-                description=alert.get("description", f"YARA signature match on {hostname}"),
-                evidence=json.dumps(alert),
-            ))
-
-        elif alert_type == "dga_domain":
-            itdr_alerts.append(ITDRAlert(
-                alert_type="dga_domain",
-                severity="high",
-                identity_label=hostname,
-                description=alert.get("description", f"Suspected DGA/C2 domain on {hostname}: {alert.get('domain','')}"),
-                evidence=json.dumps(alert),
-            ))
-
-        elif alert_type == "suspicious_lineage":
-            itdr_alerts.append(ITDRAlert(
-                alert_type="suspicious_lineage",
-                severity="high",
-                identity_label=hostname,
-                description=alert.get("description", f"Suspicious process lineage on {hostname}"),
-                evidence=json.dumps(alert),
-            ))
-
-        elif alert_type == "usb_inserted":
-            itdr_alerts.append(ITDRAlert(
-                alert_type="usb_inserted",
-                severity="medium",
-                identity_label=hostname,
-                description=alert.get("description", f"Removable media inserted on {hostname}"),
-                evidence=json.dumps(alert),
-            ))
-
-        elif alert_type == "registry_change":
-            itdr_alerts.append(ITDRAlert(
-                alert_type="registry_change",
-                severity="high",
-                identity_label=hostname,
-                description=alert.get("description", f"Registry persistence key modified on {hostname}"),
-                evidence=json.dumps(alert),
-            ))
-
-        elif alert_type in ("privilege_escalation", "fim_change", "new_destination", "behavioural_anomaly"):
-            severity = {"privilege_escalation": "critical", "fim_change": "high"}.get(alert_type, "medium")
+            sev_map = {
+                "honey_token_access": "critical",
+                "yara_match":         "critical",
+                "suspicious_process": "high",
+                "suspicious_lineage": "high",
+                "fim_change":         "high",
+                "dga_domain":         "high",
+                "registry_change":    "high",
+                "suspicious_port":    "medium",
+                "usb_inserted":       "medium",
+                "new_destination":    "medium",
+                "behavioural_anomaly":"medium",
+                "privilege_escalation":"critical",
+            }
             itdr_alerts.append(ITDRAlert(
                 alert_type=alert_type,
-                severity=severity,
+                severity=sev_map.get(alert_type, "medium"),
                 identity_label=hostname,
-                description=alert.get("description", f"{alert_type} detected on {hostname}"),
+                description=alert.get("description", f"{alert_type.replace('_',' ').title()} on {hostname}"),
                 evidence=json.dumps(alert),
             ))
 
@@ -742,26 +812,42 @@ async def ingest_telemetry(
     for proc in processes:
         pname = (proc.get("name") or "").lower()
         if any(s in pname for s in _SUSPICIOUS_PROCESSES):
-            itdr_alerts.append(ITDRAlert(
-                alert_type="suspicious_process",
-                severity="high",
-                identity_label=hostname,
-                description=f"Known malicious process '{proc.get('name')}' (PID {proc.get('pid')}) detected on {hostname}",
-                evidence=json.dumps(proc),
-            ))
+            cutoff_p = datetime.utcnow() - timedelta(minutes=10)
+            already_p = session.exec(
+                select(ITDRAlert)
+                .where(ITDRAlert.alert_type == "suspicious_process")
+                .where(ITDRAlert.identity_label == hostname)
+                .where(ITDRAlert.detected_at >= cutoff_p)
+            ).first()
+            if not already_p:
+                itdr_alerts.append(ITDRAlert(
+                    alert_type="suspicious_process",
+                    severity="high",
+                    identity_label=hostname,
+                    description=f"Known malicious process '{proc.get('name')}' (PID {proc.get('pid')}) detected on {hostname}",
+                    evidence=json.dumps(proc),
+                ))
 
     # ── Check network connections for suspicious ports ────────────────────────
     connections = data.get("network_connections", [])
     for conn in connections:
         rport = conn.get("remote_port", 0)
         if rport and int(rport) in _SUSPICIOUS_PORTS:
-            itdr_alerts.append(ITDRAlert(
-                alert_type="suspicious_port",
-                severity="high",
-                identity_label=hostname,
-                description=f"Connection to suspicious port {rport} from {hostname} (process: {conn.get('process_name', 'unknown')})",
-                evidence=json.dumps(conn),
-            ))
+            cutoff_c = datetime.utcnow() - timedelta(minutes=10)
+            already_c = session.exec(
+                select(ITDRAlert)
+                .where(ITDRAlert.alert_type == "suspicious_port")
+                .where(ITDRAlert.identity_label == hostname)
+                .where(ITDRAlert.detected_at >= cutoff_c)
+            ).first()
+            if not already_c:
+                itdr_alerts.append(ITDRAlert(
+                    alert_type="suspicious_port",
+                    severity="high",
+                    identity_label=hostname,
+                    description=f"Connection to suspicious port {rport} from {hostname} (process: {conn.get('process_name', 'unknown')})",
+                    evidence=json.dumps(conn),
+                ))
 
     # ── Save ITDR alerts ──────────────────────────────────────────────────────
     for alert_obj in itdr_alerts:
@@ -992,9 +1078,16 @@ def dispatch_command(
     if not agent_id:
         raise HTTPException(400, "agent_id required")
 
-    endpoint = session.get(Endpoint, agent_id)
+    # Accept both integer primary-key ID and hostname string
+    endpoint = None
+    try:
+        endpoint = session.get(Endpoint, int(agent_id))
+    except (ValueError, TypeError):
+        pass
     if not endpoint:
-        raise HTTPException(404, "Endpoint not found")
+        endpoint = session.exec(select(Endpoint).where(Endpoint.hostname == str(agent_id))).first()
+    if not endpoint:
+        raise HTTPException(404, f"Endpoint not found: {agent_id}")
 
     cmd = AgentCommand(
         agent_id=endpoint.id,
