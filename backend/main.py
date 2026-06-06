@@ -280,6 +280,36 @@ _HONEYPOT_PATHS = [
 for _hp in _HONEYPOT_PATHS:
     app.add_api_route(_hp, honeypot_handler, methods=["GET", "POST"], include_in_schema=False)
 
+# ── Agent File Downloads ──────────────────────────────────────────────────────
+# Served directly from the app so users don't need GitHub access.
+_AGENT_DIR = Path(__file__).parent / "agent_files"
+
+@app.get("/agent/aegistrace_agent.py")
+def download_agent():
+    """Download the AegisTrace endpoint agent script."""
+    f = _AGENT_DIR / "aegistrace_agent.py"
+    if not f.exists():
+        raise HTTPException(404, "Agent file not found — rebuild the Docker image.")
+    return FileResponse(
+        str(f),
+        media_type="text/x-python",
+        filename="aegistrace_agent.py",
+        headers={"Content-Disposition": 'attachment; filename="aegistrace_agent.py"'},
+    )
+
+@app.get("/agent/install.sh")
+def download_install_sh():
+    """Download the AegisTrace one-command installer."""
+    f = _AGENT_DIR / "install.sh"
+    if not f.exists():
+        raise HTTPException(404, "Installer not found — rebuild the Docker image.")
+    return FileResponse(
+        str(f),
+        media_type="text/x-shellscript",
+        filename="install.sh",
+        headers={"Content-Disposition": 'attachment; filename="install.sh"'},
+    )
+
 # ── Serve React SPA ───────────────────────────────────────────────────────────
 STATIC_DIR = Path(__file__).parent / "static"
 

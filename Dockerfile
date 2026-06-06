@@ -31,6 +31,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy backend source
 COPY backend/ ./
 
+# Copy agent files so they can be served as downloads
+COPY agent/aegistrace_agent.py ./agent_files/aegistrace_agent.py
+COPY agent/install.sh          ./agent_files/install.sh
+
 # Copy built frontend into backend/static
 COPY --from=frontend-build /app/frontend/build ./static
 

@@ -87,7 +87,7 @@ function SetupGuideModal({ onClose, ingestKey, onFetchKey }) {
     { id:'config', label:'Config Options' },
   ];
 
-  const agentUrl = `https://raw.githubusercontent.com/Prasanna-27eng/AegisTrace/main/agent/aegistrace_agent.py`;
+  const agentUrl = `${AEGISTRACE_URL}/agent/aegistrace_agent.py`;
 
   const configSnippet = `AEGISTRACE_URL = "${AEGISTRACE_URL}"
 INGEST_KEY     = "${ingestKey || 'paste-your-key-here'}"`;
