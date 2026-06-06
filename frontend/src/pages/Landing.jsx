@@ -299,9 +299,9 @@ function LiveIngestionStream() {
   }, []);
 
   return (
-    <div style={{
-      position:'absolute', bottom:32, right:0, width:340, zIndex:11,
-      padding:'16px 20px', background:'rgba(0,0,0,0.88)',
+    <div className="lp-ingestion-stream" style={{
+      position:'absolute', bottom:32, right:0, width:300, zIndex:11,
+      padding:'14px 18px', background:'rgba(0,0,0,0.88)',
       borderTop:'1px solid #111111', borderLeft:'1px solid #111111',
     }}>
       <div style={{fontSize:9,color:'#555555',letterSpacing:'0.18em',textTransform:'uppercase',...mono,marginBottom:12}}>
@@ -553,13 +553,17 @@ export default function Landing() {
         .stat-float{animation:floatY 3s ease-in-out infinite}
         /* Mobile nav drawer */
         .mobile-nav-drawer{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.97);z-index:200;display:flex;flex-direction:column;padding:24px;backdrop-filter:blur(20px)}
+        @media(max-width:1100px),(max-height:820px){
+          .lp-ingestion-stream{display:none!important}
+        }
         @media(max-width:900px){
           .lp-rails{display:none!important}
           .desktop-nav{display:none!important}
           .lp-section{padding:48px 20px!important}
           .lp-grid-4{grid-template-columns:1fr 1fr!important}
           .lp-2col{grid-template-columns:1fr!important;gap:28px!important}
-          .hero-grid{grid-template-columns:1fr!important;gap:24px!important;padding:0 20px!important}
+          .hero-grid{grid-template-columns:1fr!important;gap:20px!important;padding:0 20px!important}
+          .hero-stat-cards{display:none!important}
           .bento-grid-inner>div{grid-column:span 12!important;grid-row:span 1!important}
           .stat-float{animation:none!important}
           .lp-footer-section{padding:48px 20px 36px!important}
@@ -635,7 +639,7 @@ export default function Landing() {
         </div>
 
         {/* Split hero content */}
-        <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',zIndex:10,paddingTop:64}}>
+        <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',zIndex:10,paddingTop:80,paddingBottom:160}}>
           <div className="fade-4 hero-grid" style={{maxWidth:1200,margin:'0 auto',padding:'0 56px',width:'100%',display:'grid',gridTemplateColumns:'1.2fr 0.8fr',gap:56,alignItems:'center'}}>
             {/* Left: headline */}
             <div>
@@ -667,7 +671,7 @@ export default function Landing() {
             </div>
 
             {/* Right: floating stat cards */}
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+            <div className="hero-stat-cards" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
               {[
                 {val:stats.total_cases,    label:'Cases Investigated', color:'#EBEBEB', sub:'Platform data', delay:'0s'},
                 {val:stats.total_iocs,     label:'IOCs Correlated',    color:'#5A8A9F',  sub:'Cross-case intel', delay:'0.4s'},
