@@ -652,6 +652,47 @@ class SimulationRun(SQLModel, table=True):
     run_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+# ── v5.3 AI Defense Engine ───────────────────────────────────────────────────
+
+class DefenseEvent(SQLModel, table=True):
+    """
+    Records every threat detected by the AI Defense Engine.
+    Lifecycle: detected → triaged (Groq) → pending_review | auto_handled → resolved
+    """
+    id: Optional[int] = Field(default=None, primary_key=True)
+
+    # Attacker fingerprint
+    attacker_ip: str = Field(default="", index=True)
+    attack_type: str = Field(default="")            # ai_agent_scan | brute_force | honeypot_trigger | api_abuse | rate_abuse | prompt_injection
+    threat_source: str = Field(default="")          # fingerprinter | honeypot | rate_monitor | ingest
+
+    # Request context
+    endpoint_hit: str = Field(default="")           # /api/v1/admin/export etc.
+    request_count: int = Field(default=1)           # requests in detection window
+    user_agent: Optional[str] = Field(default=None, sa_column=Column(Text))
+    request_pattern: Optional[str] = Field(default=None, sa_column=Column(Text))  # JSON summary of pattern
+
+    # Groq triage result
+    ai_threat_type: Optional[str] = Field(default=None)       # e.g. "AI Agent Scanner"
+    ai_confidence: Optional[float] = Field(default=None)       # 0.0 – 1.0
+    ai_reasoning: Optional[str] = Field(default=None, sa_column=Column(Text))
+    ai_recommended_action: Optional[str] = Field(default=None) # watchlist | rate_limit | block | escalate
+    ai_model_used: Optional[str] = Field(default=None)
+
+    # Response status
+    status: str = Field(default="detecting")        # detecting | pending_review | auto_handled | approved | dismissed
+    response_action: Optional[str] = Field(default=None)       # watchlist | rate_limited | blocked | dismissed
+    reviewed_by: Optional[str] = Field(default=None)
+    review_notes: Optional[str] = Field(default=None, sa_column=Column(Text))
+
+    # Severity
+    severity: str = Field(default="medium")         # low | medium | high | critical
+
+    # Timestamps
+    detected_at: datetime = Field(default_factory=datetime.utcnow)
+    reviewed_at: Optional[datetime] = Field(default=None)
+
+
 class ITDRAlert(SQLModel, table=True):
     """An ITDR detection alert from any detector."""
     id: Optional[int] = Field(default=None, primary_key=True)

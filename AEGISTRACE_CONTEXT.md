@@ -504,7 +504,7 @@ Start a new Claude session and paste this file. Then say:
 
 > "Read AEGISTRACE_CONTEXT.md — I want to work on [task from backlog above]"
 
-**Highest priority items (as of v5.2):** SOAR Playbooks engine, email notifications on ITDR anomaly, Trust score trending, DPDPA Compliance Report.
+**Highest priority items (as of v5.3):** SOAR Playbooks engine, email notifications on ITDR anomaly, Trust score trending, DPDPA Compliance Report, Defense Engine prompt injection shield.
 
 ### v5.2 Completed (this session)
 
@@ -520,6 +520,32 @@ Start a new Claude session and paste this file. Then say:
 - [x] Registered in `main.py`
 - [x] `SimulationHub.jsx` at `/app/simulation` — Void Core UI: KPI row, technique list with LAUNCH buttons, live result with alphanumeric morph animation, evidence panel, run history, demo attack chain explainer
 - [x] Added to Sidebar under Lab group (Swords icon)
+
+### v5.3 Completed (this session)
+
+**AI Defense Engine**
+- [x] `DefenseEvent` model added to `models.py` — attacker_ip, attack_type, ai_confidence, ai_reasoning, ai_recommended_action, status, severity, reviewed_by, review_notes
+- [x] `backend/routers/defense.py` — full defense router:
+  - Request fingerprinting engine (per-IP: req count, unique endpoints, timing)
+  - Honeypot endpoints (8 fake routes: /api/v1/admin/export, /api/v1/users/all, etc.)
+  - Groq triage engine — classifies threat, returns type/confidence/reasoning/action (<1s)
+  - Auto-handles at ≥92% confidence, sends to HITL queue at ≥70%
+  - CRUD: GET /api/defense/events, POST /api/defense/events/{id}/review, GET /api/defense/stats
+  - POST /api/defense/test — dev trigger for manual test events
+- [x] `main.py` — DefenseFingerprintMiddleware (passive, non-blocking), honeypot routes registered, defense_router imported
+- [x] `DefenseConsole.jsx` at `/app/defense-console` — pure black v5.1:
+  - 4 KPI cards: Pending Review, Auto-Handled, Honeypot Hits, AI Agent Scans
+  - Filter tabs: All / Pending Review / Auto-Handled / Approved / Dismissed
+  - EventCard with expand: AI confidence bar, reasoning chain, key indicators, request context
+  - Inline HITL action panel: Block IP / Watchlist / Escalate / Dismiss + notes field
+  - 15s auto-refresh, Test Event button, engine status indicator
+  - All approvals logged to Provenance Ledger
+- [x] Sidebar — Defense Console added as first item in Control group (ShieldAlert icon)
+- [x] App.jsx — route `/app/defense-console` added
+
+**New router registered in main.py:** `defense` → `/api/defense`
+**New page:** `/app/defense-console` → `DefenseConsole.jsx`
+**New sidebar item:** Control group → Defense Console (top position)
 
 Do NOT give Claude the full codebase — this file is sufficient context for any continuation task.
 

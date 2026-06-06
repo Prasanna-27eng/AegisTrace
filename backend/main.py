@@ -45,6 +45,7 @@ from routers.connectors import router as connectors_router
 from routers.nhi import router as nhi_router
 from routers.health import router as health_router
 from routers.simulation import router as simulation_router
+from routers.defense import router as defense_router, honeypot_handler, fingerprint_request
 from hardware_tools import router as hardware_router
 from ai_router import call_ai_json
 from core.identity_engine import register_default_detectors
@@ -97,6 +98,26 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(SecurityHeadersMiddleware)
 
+# ── AI Defense Engine — Request Fingerprinting Middleware ─────────────────────
+class DefenseFingerprintMiddleware(BaseHTTPMiddleware):
+    """
+    Passively watches every API request. Builds per-IP behavioural profiles.
+    Fires async Groq triage when scanner patterns are detected.
+    Does NOT block requests — detection only. Response actions handled by the router.
+    """
+    async def dispatch(self, request: Request, call_next):
+        # Run fingerprinting in background — never blocks the request
+        try:
+            from database import get_session as _gs
+            db = next(_gs())
+            import asyncio
+            asyncio.create_task(fingerprint_request(request, db))
+        except Exception:
+            pass  # Defense engine must never break the main app
+        return await call_next(request)
+
+app.add_middleware(DefenseFingerprintMiddleware)
+
 # ── Routers ───────────────────────────────────────────────────────────────────
 for r in [auth_router, cases_router, vt_router, email_router, ioc_router,
           malware_router, terminal_router, terminal_lab_router, reports_router,
@@ -105,7 +126,8 @@ for r in [auth_router, cases_router, vt_router, email_router, ioc_router,
           feeds_router, schedule_reports_router, hardware_router,
           identity_router, provenance_router, analytics_router, comments_router,
           policies_router, itdr_router, agent_security_router,
-          connectors_router, nhi_router, health_router, simulation_router]:
+          connectors_router, nhi_router, health_router, simulation_router,
+          defense_router]:
     app.include_router(r)
 
 
@@ -145,6 +167,21 @@ Respond ONLY with valid JSON:
     result = call_ai_json("demo", prompt, temperature=0.2, max_tokens=400)
     return result
 
+
+# ── AI Defense Engine — Honeypot Routes ──────────────────────────────────────
+# These fake endpoints exist only to catch scanners. Real users never hit them.
+_HONEYPOT_PATHS = [
+    "/api/v1/admin/export",
+    "/api/v1/admin/dump",
+    "/api/v1/users/all",
+    "/api/v1/config/secrets",
+    "/api/v1/backup/download",
+    "/api/debug/vars",
+    "/api/internal/tokens",
+    "/api/v1/admin/keys",
+]
+for _hp in _HONEYPOT_PATHS:
+    app.add_api_route(_hp, honeypot_handler, methods=["GET", "POST"], include_in_schema=False)
 
 # ── Serve React SPA ───────────────────────────────────────────────────────────
 STATIC_DIR = Path(__file__).parent / "static"
