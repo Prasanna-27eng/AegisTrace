@@ -265,20 +265,45 @@ Respond ONLY with valid JSON:
 
 
 # ── AI CHAT ───────────────────────────────────────────────────────────────────
+# SECURITY: requires auth + org_id check + rate limiting + input length cap
+_chat_attempts: dict = {}   # ip → [timestamps]
+CHAT_RATE_LIMIT = 20        # messages per minute per IP
+
 @router.post("/{case_id}/chat")
-async def case_chat(case_id: int, data: dict, session: Session = Depends(get_session)):
+async def case_chat(
+    case_id: int,
+    data: dict,
+    request: Request,
+    user: User = Depends(get_current_user),   # FIXED: was missing entirely
+    session: Session = Depends(get_session),
+):
+    # Rate limit chat to prevent Groq quota drain
+    from routers.auth import _get_real_ip
+    ip  = _get_real_ip(request)
+    now = __import__("time").time()
+    _chat_attempts[ip] = [t for t in _chat_attempts.get(ip, []) if now - t < 60]
+    if len(_chat_attempts[ip]) >= CHAT_RATE_LIMIT:
+        raise HTTPException(429, "Too many messages. Slow down.")
+    _chat_attempts[ip].append(now)
+
     case = session.get(Case, case_id)
-    if not case:
+    if not case or case.org_id != user.org_id:   # FIXED: org isolation
         raise HTTPException(404, "Case not found")
+
+    # Input length cap — prevent prompt injection via long messages
+    message = (data.get("message") or "").strip()[:500]
+    if not message:
+        raise HTTPException(400, "Message required")
+
     history = data.get("history", [])
     context = f"""Case {case.case_number}: {case.title}
 Severity: {case.severity} | Type: {case.incident_type}
 Description: {case.description[:600]}
 Findings: {case.findings[:600]}
 IOCs: {case.iocs[:300]}
-MITRE: {case.mitre_techniques[:200]}
-Commands: {(case.commands_run or '')[:500]}"""
-    prompt = f"Context:\n{context}\n\nAnalyst: {data.get('message','')}"
+MITRE: {case.mitre_techniques[:200]}"""
+    # commands_run excluded from chat context — contains sensitive investigation steps
+    prompt = f"Context:\n{context}\n\nAnalyst: {message}"
     reply = call_ai("chat", prompt, temperature=0.35, max_tokens=700,
                     history=history[-6:])
     return {"reply": reply}

@@ -347,6 +347,7 @@ class TerminalSession(SQLModel, table=True):
     sandbox_id: Optional[str] = Field(default=None)
     status: str = Field(default="active")         # active | closed | destroyed
     notes: Optional[str] = Field(default="", sa_column=Column(Text))
+    created_by_id: Optional[int] = Field(default=None, foreign_key="user.id", index=True)  # v5.3 ownership
     created_at: datetime = Field(default_factory=datetime.utcnow)
     ended_at: Optional[datetime] = Field(default=None)
 

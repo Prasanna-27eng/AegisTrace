@@ -26,7 +26,7 @@ def sanitize_case(case: Case) -> dict:
         "ai_executive_summary": case.ai_executive_summary,
         "ai_technical_summary": case.ai_technical_summary,
         "ai_severity_score": case.ai_severity_score,
-        "commands_run": case.commands_run,
+        # commands_run intentionally excluded — contains sensitive analyst investigation steps
         "closure_notes": json.loads(case.closure_notes) if case.closure_notes else None,
         "share_token": case.share_token,
         "created_at": case.created_at,

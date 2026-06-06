@@ -20,8 +20,22 @@ from database import get_session
 _login_attempts: dict = defaultdict(list)
 LOGIN_RATE_LIMIT = 10   # max attempts per minute per IP
 
+_mfa_attempts: dict = defaultdict(list)
+MFA_RATE_LIMIT  = 5    # max MFA attempts per minute per IP (stricter)
+
 SECRET = os.getenv("JWT_SECRET", "aegistrace-secret-change-me-2025")
 TTL    = 60 * 60 * 24 * 7   # 7 days
+
+
+def _get_real_ip(request: Request) -> str:
+    """
+    Extract the real client IP, respecting X-Forwarded-For from Render/proxy.
+    Falls back to direct socket IP. Used for rate limiting.
+    """
+    forwarded = request.headers.get("X-Forwarded-For", "")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return getattr(request.client, "host", "unknown")
 
 
 # ── JWT helpers ───────────────────────────────────────────────────────────────
@@ -211,8 +225,8 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 @router.post("/login")
 def login(data: dict, request: Request, session: Session = Depends(get_session)):
-    # Brute-force protection
-    ip  = getattr(request.client, "host", "unknown")
+    # Brute-force protection — use real IP (respects Render/nginx proxy headers)
+    ip  = _get_real_ip(request)
     now = time.time()
     _login_attempts[ip] = [t for t in _login_attempts[ip] if now - t < 60]
     if len(_login_attempts[ip]) >= LOGIN_RATE_LIMIT:
@@ -309,6 +323,8 @@ def create_user(data: dict, admin: User = Depends(require_admin),
     role     = data.get("role", "analyst")
     if not email or not password or not name:
         raise HTTPException(400, "email, password, and name required")
+    if len(password) < 8:
+        raise HTTPException(400, "Password must be at least 8 characters")
     if role not in ("admin", "analyst", "viewer"):
         raise HTTPException(400, "Invalid role")
     if session.exec(select(User).where(User.email == email)).first():
@@ -375,6 +391,8 @@ def change_password(data: dict, user: User = Depends(get_current_user),
     new_pw = (data.get("new_password") or "").strip()
     if not old_pw or not new_pw:
         raise HTTPException(400, "Both passwords required")
+    if len(new_pw) < 8:
+        raise HTTPException(400, "New password must be at least 8 characters")
     if not user.hashed_password or not verify_password(old_pw, user.hashed_password):
         raise HTTPException(401, "Current password is incorrect")
     user.hashed_password = hash_password(new_pw)
@@ -457,6 +475,14 @@ def login_mfa(data: dict, request: Request, session: Session = Depends(get_sessi
     Body: {pending_token: str, code: str}
     Verifies pending_token (type=mfa_pending), checks TOTP code, issues full JWT.
     """
+    # Rate limit MFA attempts per IP
+    ip  = _get_real_ip(request)
+    now = time.time()
+    _mfa_attempts[ip] = [t for t in _mfa_attempts[ip] if now - t < 60]
+    if len(_mfa_attempts[ip]) >= MFA_RATE_LIMIT:
+        raise HTTPException(429, "Too many MFA attempts. Try again in a minute.")
+    _mfa_attempts[ip].append(now)
+
     pending_token = (data.get("pending_token") or "").strip()
     code          = str(data.get("code") or "").strip()
     if not pending_token or not code:
@@ -487,6 +513,17 @@ def login_mfa(data: dict, request: Request, session: Session = Depends(get_sessi
     totp = pyotp.TOTP(user.mfa_secret)
     if not totp.verify(code, valid_window=1):
         raise HTTPException(401, "Invalid or expired TOTP code")
+
+    # Invalidate the pending token so it cannot be replayed
+    pending_jti = payload.get("jti")
+    pending_exp = payload.get("exp", 0)
+    if pending_jti:
+        session.add(TokenBlocklist(
+            token_jti=pending_jti,
+            blocked_at=datetime.utcnow(),
+            expires_at=datetime.utcfromtimestamp(pending_exp),
+            user_id=user.id,
+        ))
 
     ua = _ua_hash(request)
     token = create_token({

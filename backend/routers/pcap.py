@@ -248,6 +248,15 @@ async def analyse_pcap(
     if len(data) < 24:
         raise HTTPException(400, "File is too small to be a valid PCAP")
 
+    # Validate PCAP magic bytes — reject non-PCAP files regardless of extension
+    # Standard PCAP: 0xd4c3b2a1 (little-endian) or 0xa1b2c3d4 (big-endian)
+    # PCAPNG:        0x0a0d0d0a
+    _PCAP_MAGIC = {b"\xd4\xc3\xb2\xa1", b"\xa1\xb2\xc3\xd4",
+                   b"\x4d\x3c\xb2\xa1", b"\xa1\xb2\x3c\x4d"}
+    _PCAPNG_MAGIC = b"\x0a\x0d\x0d\x0a"
+    if data[:4] not in _PCAP_MAGIC and data[:4] != _PCAPNG_MAGIC:
+        raise HTTPException(400, "File does not appear to be a valid PCAP/PCAPNG (magic bytes mismatch)")
+
     # ── Parse ──────────────────────────────────────────────────────────────
     parsed = _parse_pcap(data, filename)
     if "error" in parsed:

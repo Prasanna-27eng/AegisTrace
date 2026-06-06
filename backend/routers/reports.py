@@ -79,7 +79,7 @@ Generate a comprehensive, well-written incident report. Respond ONLY with valid 
 def download_pdf(case_id: int, session: Session = Depends(get_session),
                  user: User = Depends(get_current_user)):
     case = session.get(Case, case_id)
-    if not case:
+    if not case or case.org_id != user.org_id:
         raise HTTPException(404)
 
     try:
@@ -316,7 +316,7 @@ def download_pdf(case_id: int, session: Session = Depends(get_session),
 def download_docx(case_id: int, session: Session = Depends(get_session),
                   user: User = Depends(get_current_user)):
     case = session.get(Case, case_id)
-    if not case:
+    if not case or case.org_id != user.org_id:
         raise HTTPException(404)
     try:
         from docx import Document
@@ -390,7 +390,7 @@ def download_dora(case_id: int, session: Session = Depends(get_session),
     Maps the 5 DORA pillars to AegisTrace case data.
     """
     case = session.get(Case, case_id)
-    if not case:
+    if not case or case.org_id != user.org_id:
         raise HTTPException(404)
 
     try:

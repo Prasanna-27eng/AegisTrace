@@ -5,10 +5,11 @@ Fires HTTP POST to configured URLs when SOC events occur.
 Supports Slack-compatible and generic JSON payloads.
 Events: case_created | case_closed | case_status_changed | critical_case | malicious_ioc
 """
-import json, hashlib, hmac, threading
+import json, hashlib, hmac, threading, re
 from datetime import datetime
 from typing import Optional
 import httpx
+from urllib.parse import urlparse
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from models import WebhookConfig, AuditLog
@@ -22,6 +23,29 @@ VALID_EVENTS = [
     "case_created", "case_closed", "case_status_changed",
     "critical_case", "malicious_ioc", "all",
 ]
+
+# SSRF block list — private/internal IP ranges and cloud metadata endpoints
+_SSRF_BLOCK = re.compile(
+    r"^(localhost|127\.|0\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|"
+    r"169\.254\.|::1|fc00:|fe80:|0\.0\.0\.0|metadata\.google\.internal)",
+    re.IGNORECASE,
+)
+
+def _validate_webhook_url(url: str) -> None:
+    """Block SSRF attempts — internal IPs, localhost, cloud metadata endpoints."""
+    if not url.startswith(("http://", "https://")):
+        raise HTTPException(400, "Webhook URL must start with http:// or https://")
+    try:
+        parsed = urlparse(url)
+        host = parsed.hostname or ""
+    except Exception:
+        raise HTTPException(400, "Invalid webhook URL")
+    if _SSRF_BLOCK.match(host):
+        raise HTTPException(400, "Webhook URL cannot point to internal/private addresses")
+    # Block AWS/GCP/Azure metadata endpoints by hostname
+    if host in ("169.254.169.254", "metadata.google.internal",
+                "169.254.170.2", "fd00:ec2::254"):
+        raise HTTPException(400, "Webhook URL cannot point to cloud metadata endpoints")
 
 
 # ── CRUD ──────────────────────────────────────────────────────────────────────
@@ -44,8 +68,7 @@ def create_webhook(
     events = data.get("events", ["all"])
     if not name or not url:
         raise HTTPException(400, "name and url are required")
-    if not url.startswith("http"):
-        raise HTTPException(400, "url must start with http/https")
+    _validate_webhook_url(url)
     invalid = [e for e in events if e not in VALID_EVENTS]
     if invalid:
         raise HTTPException(400, f"Invalid events: {invalid}. Valid: {VALID_EVENTS}")
@@ -73,6 +96,7 @@ def update_webhook(
     if "name" in data:
         wh.name = data["name"]
     if "url" in data:
+        _validate_webhook_url(data["url"])
         wh.url = data["url"]
     if "events" in data:
         wh.events = json.dumps(data["events"])

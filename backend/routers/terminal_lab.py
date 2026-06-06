@@ -256,6 +256,7 @@ def create_session(
         session_name=data.get("session_name", f"Session {datetime.utcnow().strftime('%Y-%m-%d %H:%M')}"),
         case_id=data.get("case_id"),
         mode=data.get("mode", "simulated"),
+        created_by_id=user.id,   # ownership tracking
     )
     session.add(ts)
     session.add(AuditLog(action="terminal_session_created", entity_type="terminal_session",
@@ -272,7 +273,7 @@ def get_session_detail(
     _user: User = Depends(get_current_user),
 ):
     ts = db.get(TerminalSession, session_id)
-    if not ts:
+    if not ts or (ts.created_by_id and ts.created_by_id != _user.id):
         raise HTTPException(404, "Session not found")
     commands = db.exec(
         select(TerminalCommand).where(TerminalCommand.session_id == session_id)
@@ -289,7 +290,7 @@ def run_command(
     user: User = Depends(get_current_user),
 ):
     ts = db.get(TerminalSession, session_id)
-    if not ts:
+    if not ts or (ts.created_by_id and ts.created_by_id != user.id):
         raise HTTPException(404, "Session not found")
 
     command = (data.get("command") or "").strip()
@@ -364,14 +365,14 @@ def save_to_case(
     user: User = Depends(get_current_user),
 ):
     ts = db.get(TerminalSession, session_id)
-    if not ts:
+    if not ts or (ts.created_by_id and ts.created_by_id != user.id):
         raise HTTPException(404, "Session not found")
     case_id = data.get("case_id") or ts.case_id
     if not case_id:
         raise HTTPException(400, "case_id required")
 
     case = db.get(Case, case_id)
-    if not case:
+    if not case or case.org_id != user.org_id:
         raise HTTPException(404, "Case not found")
 
     # Get all commands for this session
@@ -417,7 +418,7 @@ def delete_session(
     _user: User = Depends(get_current_user),
 ):
     ts = db.get(TerminalSession, session_id)
-    if not ts:
+    if not ts or (ts.created_by_id and ts.created_by_id != _user.id):
         raise HTTPException(404, "Session not found")
     # Delete commands first
     commands = db.exec(select(TerminalCommand).where(TerminalCommand.session_id == session_id)).all()

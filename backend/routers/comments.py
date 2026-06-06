@@ -24,7 +24,7 @@ def get_comments(
     _user: User = Depends(get_current_user),
 ):
     case = session.get(Case, case_id)
-    if not case:
+    if not case or case.org_id != _user.org_id:
         raise HTTPException(404, "Case not found")
     comments = session.exec(
         select(CaseComment)
@@ -42,7 +42,7 @@ def add_comment(
     user: User = Depends(get_current_user),
 ):
     case = session.get(Case, case_id)
-    if not case:
+    if not case or case.org_id != user.org_id:
         raise HTTPException(404, "Case not found")
     body = (data.get("body") or "").strip()
     if not body:
