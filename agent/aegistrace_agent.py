@@ -1202,11 +1202,291 @@ def collect_system_info() -> dict:
     return info
 
 
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# § ENTERPRISE LOG COLLECTION
+# ───────────────────────────────────────────────────────────────────────────────
+# Comprehensive system monitoring covering every auth source on Linux:
+#   • SSH (success + failure + key-based)       via journalctl + auth.log
+#   • sudo commands (every command logged)       via journalctl SYSLOG_FACILITY=10
+#   • PAM events (GUI login, screen unlock)      via journalctl _COMM=login
+#   • su / su- privilege escalation             via journalctl
+#   • User management (useradd, passwd, etc.)   via journalctl
+#   • Kernel events (OOM, hardware errors)      via journalctl _TRANSPORT=kernel
+#   • Systemd service start/stop/fail           via journalctl
+#   • Package installs (apt/dpkg)               via journalctl
+#   • Cron job executions                       via journalctl
+#   • Network interface changes                 via journalctl
+#   • wtmp/btmp login history                   via last / lastb
+# ═══════════════════════════════════════════════════════════════════════════════
+
+_log_last_ts: str = ""          # ISO timestamp of last journalctl read
+_log_lock = threading.Lock()
+_raw_log_queue: list = []       # accumulates raw logs between cycles
+
+
+def _run_journalctl(args: list, timeout: int = 8) -> list:
+    """Run journalctl --output=json and return list of parsed entries."""
+    try:
+        result = subprocess.run(
+            ["journalctl", "--output=json", "--no-pager"] + args,
+            capture_output=True, text=True, timeout=timeout
+        )
+        entries = []
+        for line in result.stdout.splitlines():
+            try:
+                entries.append(json.loads(line))
+            except Exception:
+                pass
+        return entries
+    except Exception as e:
+        logger.debug(f"[logs] journalctl: {e}")
+        return []
+
+
+def _jentry_to_raw(entry: dict, category: str = "system") -> dict:
+    """Convert journalctl JSON entry → AegisTrace raw log dict."""
+    msg      = str(entry.get("MESSAGE", ""))
+    comm     = entry.get("_COMM", "")
+    unit     = entry.get("_SYSTEMD_UNIT", entry.get("UNIT", ""))
+    priority = int(entry.get("PRIORITY", 6))
+    uid      = entry.get("_UID", "")
+    pid      = entry.get("_PID", "")
+    rt       = entry.get("__REALTIME_TIMESTAMP")
+    try:
+        ts = datetime.utcfromtimestamp(int(rt) / 1_000_000).isoformat() + "Z" if rt else datetime.utcnow().isoformat() + "Z"
+    except Exception:
+        ts = datetime.utcnow().isoformat() + "Z"
+    sev = {0:"critical",1:"critical",2:"critical",3:"high",4:"high",5:"medium",6:"info",7:"debug"}.get(priority, "info")
+    return {
+        "timestamp":  ts,
+        "category":   category,
+        "source":     comm or unit.replace(".service", "") or "system",
+        "pid":        pid,
+        "uid":        uid,
+        "severity":   sev,
+        "priority":   priority,
+        "raw":        msg[:400],
+        "event_type": "log",
+    }
+
+
+def _parse_auth_entry(entry: dict):
+    """
+    Parse one journalctl auth entry.
+    Returns a login_event dict, or None if uninteresting.
+    """
+    msg   = str(entry.get("MESSAGE", ""))
+    lower = msg.lower()
+    comm  = entry.get("_COMM", "")
+
+    ev = _jentry_to_raw(entry, "auth")
+    ev["success"]    = True
+    ev["source_ip"]  = None
+    ev["username"]   = None
+
+    # Extract IP
+    ip_m = re.search(r"(?:from|rhost=)\s*(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", msg)
+    if ip_m:
+        ev["source_ip"] = ip_m.group(1)
+
+    # Extract username
+    user_m = re.search(r"(?:user |for |USER=)([^\s;,]+)", msg, re.IGNORECASE)
+    if user_m:
+        ev["username"] = user_m.group(1).rstrip(";,")
+
+    # ── Classify ──────────────────────────────────────────────────────────
+    if any(x in lower for x in ["failed password", "authentication failure",
+                                  "invalid user", "failed login", "no identification"]):
+        ev["event_type"] = "failed_login"
+        ev["success"]    = False
+        ev["severity"]   = "high"
+        ev["category"]   = "auth"
+        return ev
+
+    if any(x in lower for x in ["accepted password", "accepted publickey",
+                                  "accepted keyboard-interactive"]):
+        ev["event_type"] = "login_success"
+        ev["category"]   = "auth"
+        return ev
+
+    if "session opened" in lower:
+        ev["event_type"] = "session_open"
+        ev["category"]   = "auth"
+        return ev
+
+    if "session closed" in lower:
+        ev["event_type"] = "session_close"
+        ev["category"]   = "auth"
+        return ev
+
+    if comm == "sudo" and ("command" in lower or "tty=" in lower):
+        ev["event_type"] = "sudo_command"
+        ev["category"]   = "privilege"
+        ev["severity"]   = "medium"
+        cmd_m = re.search(r"COMMAND=(.+)$", msg, re.MULTILINE)
+        if cmd_m:
+            ev["sudo_command"] = cmd_m.group(1).strip()[:200]
+        ev["success"] = "not allowed" not in lower
+        return ev
+
+    if any(x in lower for x in ["new user:", "new group:", "delete user",
+                                  "useradd:", "userdel:", "usermod:", "groupadd:"]):
+        ev["event_type"] = "user_management"
+        ev["severity"]   = "high"
+        ev["category"]   = "user_mgmt"
+        return ev
+
+    if any(x in lower for x in ["su:", " su to ", " su from "]):
+        ev["event_type"] = "su_command"
+        ev["category"]   = "privilege"
+        ev["severity"]   = "medium"
+        return ev
+
+    if "password changed" in lower or "changed password" in lower:
+        ev["event_type"] = "password_change"
+        ev["severity"]   = "medium"
+        ev["category"]   = "auth"
+        return ev
+
+    return None   # uninteresting auth entry
+
+
+def _collect_linux_logs_comprehensive():
+    """
+    Enterprise-grade Linux log collection.
+    Returns (login_events: list, raw_logs: list).
+    Reads incrementally — only events since last call.
+    """
+    global _log_last_ts
+
+    login_events: list = []
+    raw_logs: list     = []
+    seen_raws: set     = set()
+
+    with _log_lock:
+        since = _log_last_ts
+
+    new_ts = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    since_args = ["--since", since] if since else ["-n", "300"]
+
+    def add_raw(ev: dict):
+        key = ev.get("raw", "")[:80]
+        if key and key not in seen_raws:
+            seen_raws.add(key)
+            raw_logs.append(ev)
+
+    # ── 1. ALL auth facility events (SSH, sudo, PAM, su, passwd, login) ───
+    for entry in _run_journalctl(since_args + ["SYSLOG_FACILITY=10"]):
+        ev = _parse_auth_entry(entry)
+        if ev:
+            login_events.append(ev)
+        add_raw(_jentry_to_raw(entry, "auth"))
+
+    # ── 2. SSH service (catches events that may miss auth facility) ─────────
+    for entry in _run_journalctl(since_args + ["-u", "ssh", "-u", "sshd"]):
+        ev = _parse_auth_entry(entry)
+        if ev:
+            key = ev.get("raw", "")[:80]
+            if key not in seen_raws:
+                login_events.append(ev)
+        add_raw(_jentry_to_raw(entry, "ssh"))
+
+    # ── 3. Kernel events (OOM killer, hardware errors, driver crashes) ─────
+    for entry in _run_journalctl(since_args + ["_TRANSPORT=kernel", "-p", "4"]):
+        ev = _jentry_to_raw(entry, "kernel")
+        ev["event_type"] = "kernel_event"
+        add_raw(ev)
+
+    # ── 4. Package installs (apt / dpkg) ───────────────────────────────────
+    for entry in _run_journalctl(since_args + ["_COMM=dpkg", "_COMM=apt",
+                                                "_COMM=apt-get"]):
+        ev = _jentry_to_raw(entry, "package")
+        ev["event_type"] = "package_install"
+        add_raw(ev)
+
+    # ── 5. Systemd service changes ─────────────────────────────────────────
+    for entry in _run_journalctl(since_args + ["_PID=1", "-p", "5"]):
+        msg = str(entry.get("MESSAGE", "")).lower()
+        if any(x in msg for x in ["started ", "stopped ", "failed ", "starting ", "stopping "]):
+            ev = _jentry_to_raw(entry, "service")
+            ev["event_type"] = "service_event"
+            add_raw(ev)
+
+    # ── 6. Cron job executions ─────────────────────────────────────────────
+    for entry in _run_journalctl(since_args + ["_COMM=cron", "_COMM=crond"]):
+        ev = _jentry_to_raw(entry, "cron")
+        ev["event_type"] = "cron_event"
+        add_raw(ev)
+
+    # ── 7. NetworkManager events ───────────────────────────────────────────
+    for entry in _run_journalctl(since_args + ["_COMM=NetworkManager"]):
+        ev = _jentry_to_raw(entry, "network")
+        ev["event_type"] = "network_event"
+        add_raw(ev)
+
+    # ── 8. Fallback: read auth.log directly if journalctl gave no logins ───
+    if not login_events:
+        for log_path in ["/var/log/auth.log", "/var/log/secure"]:
+            p = Path(log_path)
+            if not p.exists():
+                continue
+            try:
+                lines = p.read_text(errors="replace").splitlines()[-300:]
+                for line in lines:
+                    lower = line.lower()
+                    ev = {
+                        "raw": line[:300], "timestamp": datetime.utcnow().isoformat() + "Z",
+                        "success": True, "source_ip": None, "username": None,
+                        "event_type": "login", "category": "auth", "severity": "info",
+                    }
+                    ip_m   = re.search(r"from\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", line)
+                    user_m = re.search(r"(?:user|for)\s+(\S+)", line, re.IGNORECASE)
+                    if ip_m:   ev["source_ip"] = ip_m.group(1)
+                    if user_m: ev["username"]  = user_m.group(1)
+                    if any(x in lower for x in ["failed password", "authentication failure", "invalid user"]):
+                        ev["success"]    = False
+                        ev["event_type"] = "failed_login"
+                        ev["severity"]   = "high"
+                        login_events.append(ev)
+                    elif "accepted" in lower:
+                        login_events.append(ev)
+            except Exception as e:
+                logger.debug(f"[logs] auth.log fallback: {e}")
+
+    # ── 9. wtmp — recent successful logins via `last` ──────────────────────
+    try:
+        r = subprocess.run(["last", "-F", "-n", "20"], capture_output=True, text=True, timeout=5)
+        for line in r.stdout.splitlines():
+            if not line or "wtmp" in line or "reboot" in line:
+                continue
+            parts = line.split()
+            if len(parts) >= 2:
+                raw_logs.append({
+                    "timestamp": datetime.utcnow().isoformat() + "Z",
+                    "category": "auth", "source": "wtmp",
+                    "event_type": "login_history", "severity": "info",
+                    "raw": line[:200], "username": parts[0], "tty": parts[1],
+                })
+    except Exception:
+        pass
+
+    # Update cursor
+    with _log_lock:
+        _log_last_ts = new_ts
+
+    return login_events, raw_logs[:300]
+
+
 def collect_login_events() -> list:
     OS = platform.system().lower()
     try:
         if OS == "linux":
-            return _parse_linux_auth_logs()
+            login_events, raw_logs = _collect_linux_logs_comprehensive()
+            # Store raw logs in global queue for telemetry
+            global _raw_log_queue
+            _raw_log_queue.extend(raw_logs)
+            return login_events
         elif OS == "darwin":
             return _parse_mac_auth_logs()
         elif OS == "windows":
@@ -1217,6 +1497,7 @@ def collect_login_events() -> list:
 
 
 def _parse_linux_auth_logs() -> list:
+    """Legacy fallback — replaced by _collect_linux_logs_comprehensive."""
     events = []
     for log_path in ["/var/log/auth.log", "/var/log/secure"]:
         p = Path(log_path)
@@ -2169,6 +2450,11 @@ def _run_collection_cycle() -> list:
             "file_events":    [],
         })
 
+    # Drain raw logs collected during this cycle
+    global _raw_log_queue
+    raw_logs = _raw_log_queue[:400]
+    _raw_log_queue = _raw_log_queue[400:]
+
     # Full telemetry
     _transport.send({
         "system_info":         system_info,
@@ -2177,6 +2463,7 @@ def _run_collection_cycle() -> list:
         "login_events":        login_events,
         "file_events":         file_events[:50],
         "alerts":              alerts,
+        "raw_logs":            raw_logs,
         "local_anomaly_score": anomaly_score,
     })
 

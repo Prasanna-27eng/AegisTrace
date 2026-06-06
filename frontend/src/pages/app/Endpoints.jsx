@@ -318,6 +318,11 @@ export default function Endpoints() {
   const [ingestKey, setIngestKey] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [detailTab, setDetailTab] = useState('logs');   // 'logs' | 'batches'
+  const [rawLogs, setRawLogs] = useState([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [logFilter, setLogFilter] = useState('all');
+  const logsRef = React.useRef(null);
 
   const loadEndpoints = () => {
     setLoading(true);
@@ -330,6 +335,20 @@ export default function Endpoints() {
     setSelected(ep);
     setLoadingBatches(true);
     api.get(`/api/ingest/endpoints/${ep.id}/batches`).then(r => { setBatches(r.data); setLoadingBatches(false); }).catch(() => setLoadingBatches(false));
+  };
+
+  const loadRawLogs = (ep, filter = 'all') => {
+    setLogsLoading(true);
+    const params = filter !== 'all' ? `?category=${filter}` : '';
+    api.get(`/api/ingest/raw-logs/${ep.id}${params}`)
+      .then(r => { setRawLogs(r.data || []); setLogsLoading(false); })
+      .catch(() => setLogsLoading(false));
+  };
+
+  const selectEndpoint = (ep) => {
+    setSelected(ep);
+    loadRawLogs(ep, logFilter);
+    loadBatches(ep);
   };
 
   const fetchKey = () => {
@@ -399,7 +418,7 @@ export default function Endpoints() {
               <div key={ep.id} className="at-card" style={{ padding:'14px 16px', cursor:'pointer', transition:'border-color 0.15s', borderColor: selected?.id === ep.id ? 'rgba(90,138,159,0.4)' : 'rgba(255,255,255,0.07)' }}
                 onMouseEnter={e => { if(selected?.id!==ep.id) e.currentTarget.style.borderColor='rgba(90,138,159,0.2)'; }}
                 onMouseLeave={e => { if(selected?.id!==ep.id) e.currentTarget.style.borderColor='rgba(255,255,255,0.07)'; }}
-                onClick={() => loadBatches(ep)}>
+                onClick={() => selectEndpoint(ep)}>
                 <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
                   <span style={{ fontSize:18 }}>{OS_ICON[ep.os_type]||OS_ICON.unknown}</span>
                   <div style={{ flex:1, minWidth:0 }}>
@@ -425,27 +444,112 @@ export default function Endpoints() {
             ))}
           </div>
 
-          {/* Batch detail */}
-          {selected && (
-            <div>
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
-                <div>
-                  <div style={{ fontWeight:600, fontSize:'0.92rem' }}>{selected.hostname} — Log Batches</div>
-                  <div style={{ fontSize:'0.68rem', color:'#787878', fontFamily:'JetBrains Mono' }}>Avg threat score: {Math.round(selected.threat_score_avg)}/100</div>
+          {/* Endpoint detail panel */}
+          {selected && (() => {
+            const SEV_COLOR = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', info:'#5A8A9F', debug:'#555' };
+            const CAT_ICON  = { auth:'🔐', kernel:'⚙', service:'🔄', package:'📦', cron:'⏰', network:'🌐', ssh:'🔑', privilege:'⚡', user_mgmt:'👤', system:'💻' };
+            const LOG_CATS  = ['all','auth','kernel','service','package','cron','network'];
+            const mono = { fontFamily:'JetBrains Mono,monospace' };
+
+            return (
+              <div>
+                {/* Header */}
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
+                  <div>
+                    <div style={{ fontWeight:700, fontSize:'0.95rem' }}>{selected.hostname}</div>
+                    <div style={{ fontSize:'0.68rem', color:'#787878', ...mono }}>{selected.ip_address} · {selected.os_type} · agent {selected.agent_version}</div>
+                  </div>
+                  <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+                    <button onClick={() => { loadRawLogs(selected, logFilter); loadBatches(selected); }}
+                      className="btn-ghost" style={{ fontSize:'0.72rem', padding:'4px 8px' }}>
+                      <RefreshCw size={11}/> Refresh
+                    </button>
+                    <button className="btn-ghost" onClick={() => setSelected(null)} style={{ fontSize:'0.72rem' }}>✕ Close</button>
+                  </div>
                 </div>
-                <button className="btn-ghost" onClick={() => setSelected(null)} style={{ fontSize:'0.75rem' }}>Close</button>
+
+                {/* Tabs */}
+                <div style={{ display:'flex', gap:0, borderBottom:'1px solid rgba(255,255,255,0.07)', marginBottom:14 }}>
+                  {[['logs','📋 Live Logs'],['batches','📦 Batches']].map(([id,label]) => (
+                    <button key={id} onClick={() => setDetailTab(id)}
+                      style={{ padding:'7px 14px', background:'none', border:'none', fontSize:'0.76rem', cursor:'pointer', ...mono,
+                        borderBottom: detailTab===id ? '2px solid #5A8A9F' : '2px solid transparent',
+                        color: detailTab===id ? '#5A8A9F' : '#787878', marginBottom:-1 }}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* ── LIVE LOGS TAB ── */}
+                {detailTab === 'logs' && (
+                  <div>
+                    {/* Category filter */}
+                    <div style={{ display:'flex', gap:4, marginBottom:10, flexWrap:'wrap' }}>
+                      {LOG_CATS.map(c => (
+                        <button key={c} onClick={() => { setLogFilter(c); loadRawLogs(selected, c); }}
+                          style={{ padding:'3px 10px', borderRadius:5, border:'1px solid', fontSize:'0.65rem', cursor:'pointer', ...mono, textTransform:'uppercase',
+                            background: logFilter===c ? 'rgba(90,138,159,0.12)' : 'transparent',
+                            color: logFilter===c ? '#5A8A9F' : '#787878',
+                            borderColor: logFilter===c ? 'rgba(90,138,159,0.3)' : 'rgba(255,255,255,0.07)' }}>
+                          {CAT_ICON[c] || ''} {c}
+                        </button>
+                      ))}
+                      <span style={{ marginLeft:'auto', fontSize:'0.65rem', color:'#555', ...mono, alignSelf:'center' }}>
+                        {rawLogs.length} events
+                      </span>
+                    </div>
+
+                    {/* Log stream */}
+                    {logsLoading ? (
+                      <div style={{ textAlign:'center', padding:30 }}><Loader2 size={16} className="spinner" style={{ color:'#787878' }}/></div>
+                    ) : rawLogs.length === 0 ? (
+                      <div className="at-card" style={{ padding:30, textAlign:'center', color:'#787878', fontSize:'0.8rem' }}>
+                        No logs yet — agent ships on next 30s cycle.
+                      </div>
+                    ) : (
+                      <div ref={logsRef} style={{ background:'#050505', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, maxHeight:480, overflowY:'auto', fontFamily:'JetBrains Mono,monospace', fontSize:'0.71rem' }}>
+                        {rawLogs.map((log, i) => {
+                          const sc = SEV_COLOR[log.severity] || '#555';
+                          const cat = CAT_ICON[log.category] || '●';
+                          const ts  = log.ts ? new Date(log.ts).toLocaleTimeString() : '';
+                          return (
+                            <div key={i} style={{ display:'flex', gap:10, padding:'5px 12px', borderBottom:'1px solid rgba(255,255,255,0.03)', alignItems:'flex-start',
+                              background: log.event_type==='failed_login' ? 'rgba(239,68,68,0.04)' :
+                                          log.event_type==='sudo_command'  ? 'rgba(249,115,22,0.04)' : 'transparent' }}>
+                              <span style={{ color:'#444', flexShrink:0, minWidth:70 }}>{ts}</span>
+                              <span style={{ flexShrink:0, minWidth:16 }}>{cat}</span>
+                              <span style={{ color:sc, flexShrink:0, minWidth:55, textTransform:'uppercase', fontSize:'0.6rem', paddingTop:1 }}>{log.severity}</span>
+                              <span style={{ color:'#5A8A9F', flexShrink:0, minWidth:60 }}>{log.source}</span>
+                              {log.username && <span style={{ color:'#EAB308', flexShrink:0 }}>{log.username}</span>}
+                              {log.source_ip && <span style={{ color:'#22C55E', flexShrink:0 }}>← {log.source_ip}</span>}
+                              <span style={{ color: log.event_type==='failed_login' ? '#EF4444' : log.event_type==='sudo_command' ? '#F97316' : '#787878', flex:1, wordBreak:'break-all', lineHeight:1.5 }}>
+                                {log.raw}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── BATCHES TAB ── */}
+                {detailTab === 'batches' && (
+                  <div>
+                    {loadingBatches ? (
+                      <div style={{ textAlign:'center', padding:40, color:'#787878' }}><Loader2 size={16} className="spinner"/></div>
+                    ) : batches.length === 0 ? (
+                      <div className="at-card" style={{ padding:30, textAlign:'center', color:'#787878' }}>No batches received yet.</div>
+                    ) : (
+                      <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+                        {batches.map(b => <BatchRow key={b.id} batch={b} epId={selected.id} navigate={navigate}/>)}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              {loadingBatches ? (
-                <div style={{ textAlign:'center', padding:40, color:'#787878' }}><Loader2 size={16} className="spinner" style={{ margin:'0 auto 8px' }}/></div>
-              ) : batches.length === 0 ? (
-                <div className="at-card" style={{ padding:30, textAlign:'center', color:'#787878' }}>No batches received yet.</div>
-              ) : (
-                <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
-                  {batches.map(b => <BatchRow key={b.id} batch={b} epId={selected.id} navigate={navigate}/>)}
-                </div>
-              )}
-            </div>
-          )}
+            );
+          })()}
         </div>
       )}
     </div>

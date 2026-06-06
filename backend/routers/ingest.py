@@ -10,7 +10,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Header, Request
 from sqlmodel import Session, select, func
 from typing import Optional
-from models import Endpoint, LogBatch, Case, TimelineEvent, AuditLog, IOCCorrelation, ShadowAIEvent, AgentCommand, ITDRAlert
+from models import Endpoint, LogBatch, Case, TimelineEvent, AuditLog, IOCCorrelation, ShadowAIEvent, AgentCommand, ITDRAlert, RawLogEvent
 from database import get_session
 from routers.auth import get_current_user
 from models import User
@@ -773,23 +773,101 @@ async def ingest_telemetry(
             "details": {"hostname": hostname},
         })
 
-    # ── Forward login events to ITDR ──────────────────────────────────────────
+    # ── Store raw log events (comprehensive system logs from agent) ────────────
+    raw_logs = data.get("raw_logs", [])
+    for rl in raw_logs[:300]:
+        try:
+            extra = {k: v for k, v in rl.items()
+                     if k not in ("raw","category","event_type","source","severity",
+                                  "username","source_ip","success","timestamp","ts")}
+            session.add(RawLogEvent(
+                endpoint_id = endpoint.id,
+                hostname    = hostname,
+                category    = rl.get("category", "system"),
+                event_type  = rl.get("event_type", "log"),
+                source      = rl.get("source", ""),
+                severity    = rl.get("severity", "info"),
+                raw         = rl.get("raw", "")[:800],
+                username    = rl.get("username"),
+                source_ip   = rl.get("source_ip"),
+                success     = bool(rl.get("success", True)),
+                extra       = json.dumps(extra),
+                ts          = datetime.utcnow(),
+            ))
+        except Exception:
+            pass
+
+    # ── Forward login events to ITDR — alert on EVERY failed login ─────────
     login_events = data.get("login_events", [])
     for ev in login_events:
-        if not ev.get("success") and ev.get("source_ip"):
-            # Forward failed logins to ITDR engine
+        # Store ALL login events as RawLogEvent
+        try:
+            session.add(RawLogEvent(
+                endpoint_id = endpoint.id,
+                hostname    = hostname,
+                category    = ev.get("category", "auth"),
+                event_type  = ev.get("event_type", "login"),
+                source      = ev.get("source", "sshd"),
+                severity    = ev.get("severity", "info"),
+                raw         = ev.get("raw", "")[:800],
+                username    = ev.get("username"),
+                source_ip   = ev.get("source_ip"),
+                success     = bool(ev.get("success", True)),
+                extra       = json.dumps({k: v for k, v in ev.items()
+                                          if k not in ("raw","category","event_type",
+                                                        "source","severity","username",
+                                                        "source_ip","success")}),
+                ts          = datetime.utcnow(),
+            ))
+        except Exception:
+            pass
+
+        # Alert on EVERY failed login (not just after 10)
+        if not ev.get("success"):
+            src_ip   = ev.get("source_ip") or "local"
+            username = ev.get("username") or "unknown"
+            itdr_alerts.append(ITDRAlert(
+                alert_type     = "failed_login",
+                severity       = "medium",
+                identity_label = hostname,
+                description    = f"Failed login attempt on {hostname}: user='{username}' from {src_ip} via {ev.get('source','ssh')}",
+                evidence       = json.dumps(ev),
+            ))
+
+        # Also forward to AuthEvent for ITDR correlation engine
+        if not ev.get("success"):
             try:
                 from models import AuthEvent
                 session.add(AuthEvent(
-                    identity_label=ev.get("username", hostname),
-                    event_type="failed_login",
-                    success=False,
-                    source_ip=ev.get("source_ip"),
-                    user_agent=ev.get("event_type"),
-                    timestamp=datetime.utcnow(),
+                    identity_label = ev.get("username", hostname),
+                    event_type     = "failed_login",
+                    success        = False,
+                    source_ip      = ev.get("source_ip") or "127.0.0.1",
+                    user_agent     = ev.get("event_type"),
+                    timestamp      = datetime.utcnow(),
                 ))
             except Exception:
                 pass
+
+        # Alert on sudo commands (privilege use tracking)
+        if ev.get("event_type") == "sudo_command":
+            itdr_alerts.append(ITDRAlert(
+                alert_type     = "privilege_escalation",
+                severity       = "medium",
+                identity_label = hostname,
+                description    = f"sudo command on {hostname}: user='{ev.get('username','?')}' ran: {ev.get('sudo_command', ev.get('raw',''))[:200]}",
+                evidence       = json.dumps(ev),
+            ))
+
+        # Alert on user management events
+        if ev.get("event_type") == "user_management":
+            itdr_alerts.append(ITDRAlert(
+                alert_type     = "user_management",
+                severity       = "high",
+                identity_label = hostname,
+                description    = f"User account change on {hostname}: {ev.get('raw','')[:200]}",
+                evidence       = json.dumps(ev),
+            ))
 
     session.commit()
 
@@ -897,6 +975,40 @@ def dispatch_command(
     session.commit()
     session.refresh(cmd)
     return {"ok": True, "command_id": cmd.id}
+
+
+@router.get("/raw-logs/{endpoint_id}")
+def get_raw_logs(
+    endpoint_id: int,
+    category: Optional[str] = None,
+    severity: Optional[str] = None,
+    limit: int = 200,
+    user: "User" = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Get raw log events for an endpoint — SSH, sudo, kernel, service, auth, etc."""
+    q = select(RawLogEvent).where(RawLogEvent.endpoint_id == endpoint_id)
+    if category:
+        q = q.where(RawLogEvent.category == category)
+    if severity:
+        q = q.where(RawLogEvent.severity == severity)
+    q = q.order_by(RawLogEvent.ts.desc()).limit(limit)
+    rows = session.exec(q).all()
+    return [
+        {
+            "id":         r.id,
+            "category":   r.category,
+            "event_type": r.event_type,
+            "source":     r.source,
+            "severity":   r.severity,
+            "raw":        r.raw,
+            "username":   r.username,
+            "source_ip":  r.source_ip,
+            "success":    r.success,
+            "ts":         r.ts.isoformat() if r.ts else None,
+        }
+        for r in reversed(rows)   # chronological order
+    ]
 
 
 @router.get("/shadow-ai")

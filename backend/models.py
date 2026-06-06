@@ -9,6 +9,24 @@ def gen_uuid():
 
 
 # ── Endpoint Agent ────────────────────────────────────────────────────────────
+class RawLogEvent(SQLModel, table=True):
+    """Individual structured log event from the endpoint agent (journalctl, auth, kernel, etc.)."""
+    id:          Optional[int] = Field(default=None, primary_key=True)
+    endpoint_id: int           = Field(foreign_key="endpoint.id", index=True)
+    hostname:    str           = Field(default="", index=True)
+    category:    str           = Field(default="system")   # auth, kernel, service, package, cron, network
+    event_type:  str           = Field(default="log")      # failed_login, sudo_command, session_open, etc.
+    source:      str           = Field(default="")         # sshd, sudo, kernel, etc.
+    severity:    str           = Field(default="info")     # critical, high, medium, info, debug
+    raw:         str           = Field(default="", sa_column=Column(Text))
+    username:    Optional[str] = Field(default=None)
+    source_ip:   Optional[str] = Field(default=None)
+    success:     bool          = Field(default=True)
+    extra:       Optional[str] = Field(default="{}", sa_column=Column(Text))  # JSON extra fields
+    ts:          datetime      = Field(default_factory=datetime.utcnow, index=True)
+    created_at:  datetime      = Field(default_factory=datetime.utcnow)
+
+
 class Endpoint(SQLModel, table=True):
     """Represents a remote machine running the AegisTrace agent."""
     id: Optional[int] = Field(default=None, primary_key=True)
