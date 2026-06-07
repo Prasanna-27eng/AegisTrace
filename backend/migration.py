@@ -107,5 +107,23 @@ def run_migrations(engine):
 
     # ── 7. Endpoint + LogBatch + LogAnalysis tables (created by create_all, just verify) ──
     # SQLModel's create_all handles new tables automatically on startup.
-    # These are new models added in v2.1 — no ALTER needed, just creation.
+
+    # ── 8. New Endpoint columns (live telemetry snapshot + risk score) ────────
+    if "endpoint" in existing_tables:
+        ep_cols = [c["name"] for c in inspector.get_columns("endpoint")]
+        new_ep_cols = {
+            "last_processes":      "TEXT DEFAULT '[]'",
+            "last_connections":    "TEXT DEFAULT '[]'",
+            "last_system_info":    "TEXT DEFAULT '{}'",
+            "local_risk_score":    "INTEGER DEFAULT 0",
+            "total_alerts":        "INTEGER DEFAULT 0",
+            "total_failed_logins": "INTEGER DEFAULT 0",
+        }
+        for col, definition in new_ep_cols.items():
+            if col not in ep_cols:
+                with engine.connect() as conn:
+                    conn.execute(text(f"ALTER TABLE endpoint ADD COLUMN {col} {definition}"))
+                    conn.commit()
+                print(f"[migration] Added {col} to endpoint table")
+
     print("[migration] All migrations complete.")

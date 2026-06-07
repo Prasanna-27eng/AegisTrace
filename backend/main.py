@@ -3,7 +3,7 @@ from pathlib import Path
 from collections import defaultdict
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -347,7 +347,6 @@ print(f"[AegisTrace] ✓ Dashboard: {server_url}/app/endpoints")
 print(f"[AegisTrace] ✓ Logs: {{LOGFILE}}")
 print("[AegisTrace] You can close this terminal safely.")
 """
-    from fastapi.responses import PlainTextResponse
     return PlainTextResponse(script.strip(), media_type="text/plain")
 
 
