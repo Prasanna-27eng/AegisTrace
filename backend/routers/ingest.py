@@ -403,7 +403,7 @@ def endpoint_detail(
     for c in connections:
         rport = c.get("remote_port", 0)
         try: c["suspicious"] = int(rport) in _SUSPICIOUS_PORTS
-        except: c["suspicious"] = False
+        except (ValueError, TypeError): c["suspicious"] = False
 
     return {
         "id":              ep.id,

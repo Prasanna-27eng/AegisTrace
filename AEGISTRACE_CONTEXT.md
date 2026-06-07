@@ -1,5 +1,5 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v5.5 | **Last updated:** June 2026
+**Version:** v5.6 | **Last updated:** June 2026
 **Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files.
 
 ---
@@ -655,6 +655,58 @@ Start a new Claude session and paste this file. Then say:
 **New env vars (add to Render/VPS):**
 - `FERNET_KEY` — base64url-encoded 32-byte key: `python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
 - `INGEST_API_KEY` — random hex string: `python3 -c "import secrets; print(secrets.token_hex(32))"`
+
+### v5.6 Completed (June 2026 — enterprise endpoint agent + red team audit)
+
+**Endpoint Agent v5.1 — Enterprise upgrades**
+- [x] `_journal_realtime_follower()` thread — journalctl -f follower, ships every 3s (1-3s latency vs 30s before)
+- [x] `_collect_linux_logs_comprehensive()` — covers ALL auth sources: SSH, sudo, PAM, su, GUI login, user management, kernel events, package installs, service changes, cron, NetworkManager
+- [x] Log cursor persists across restarts (`~/.aegistrace_log_cursor`) — no re-reading old events
+- [x] `_do_stop_agent()` — 5-step reliable stop: STOP_FILE → kill guardian → stop systemd → notify backend → exit
+- [x] STOP_FILE sentinel (`~/.aegistrace_STOP`) — guardian checks before restarting
+- [x] PID files (`~/.aegistrace.pid`, `~/.aegistrace_guardian.pid`) — written on startup
+- [x] `stop_agent` / `uninstall_agent` commands — work correctly now (previously bypassed by guardian restart)
+- [x] `GET /api/install/{token}` — backend generates personalized Python bootstrap with token embedded
+
+**Endpoints page — complete enterprise rebuild (6-tab EDR console)**
+- [x] Overview: risk gauge (0-100 SVG), CPU/RAM/Disk meters, stat cards, recent alerts + sudo
+- [x] Live Logs: real-time terminal stream (3s auto-refresh), color-coded, category filter
+- [x] Processes: full list with Kill button per row, suspicious highlighted red
+- [x] Network: connections with Block IP per row
+- [x] Alerts: endpoint-specific alerts with evidence + response buttons
+- [x] Response: Collect Now, FIM Scan, Ping, Honey Status, Fast Mode, Stop/Uninstall/Isolate/Delete
+- [x] `DELETE /api/ingest/endpoints/{ep_id}` — queues uninstall, wipes all data after 30s
+- [x] `POST /api/ingest/offline/{agent_id}` — marks offline immediately in DB
+- [x] Dynamic online/offline from `last_seen < 90s`, auto-refreshes every 30s
+
+**New models/endpoints**
+- [x] `RawLogEvent` model — structured log events (category, event_type, source, severity, raw, username, source_ip, ts)
+- [x] New Endpoint columns: last_processes, last_connections, last_system_info, local_risk_score (migration added)
+- [x] `GET /api/ingest/endpoints/{ep_id}/detail` — rich snapshot
+- [x] `GET /api/ingest/raw-logs/{endpoint_id}` — live log stream
+
+**ITDR fixes**
+- [x] DETECTOR_META now includes ALL alert types (honey_token_access, suspicious_process, fim_change, failed_login, yara_match, dga_domain, etc.)
+- [x] Alert dedup covers ALL types with appropriate windows (10-60min)
+- [x] Precise timestamps — `preciseTime()` shows "Jun 7 14:32:01 (3m ago)"
+- [x] Alert detail panel — click to expand evidence + action buttons
+
+**Red team audit fixes**
+- [x] CRITICAL: `_fingerprint` / `_last_flagged` / `SCAN_THRESHOLD_*` never initialized → `DefenseFingerprintMiddleware` NameError fixed
+- [x] CRITICAL: `AuditLog` called with wrong fields in `agent_security.py` (`resource_type`/`resource_id`/`details` don't exist) — fixed to `entity_type`/`entity_id`/`new_value`
+- [x] HIGH: `Bell` icon not imported in `ITDRPage.jsx` → Analytics tab crashed (black screen) — fixed
+- [x] HIGH: `mfa_setup_required` never handled in Login.jsx — admins bypassed MFA redirect — fixed
+- [x] HIGH: `PlainTextResponse` imported inline — moved to top-level
+- [x] MEDIUM: 11 bare `except:` → `except Exception:` across ingest.py + hardware_tools.py
+- [x] MEDIUM: SQLite WAL mode crashes on network drives — wrapped in try/except with fallback
+- [x] LOW: `hardware-tools.css` never imported → entire page layout broken — fixed
+- [x] LOW: `useRef` used as `React.useRef` without import in Endpoints.jsx — fixed
+- [x] LOW: `_last_flagged` defined twice in main.py — duplicate removed
+
+**Rules added for future sessions:**
+- `_fingerprint`, `_last_flagged`, `SCAN_THRESHOLD_*` must be defined before `DefenseFingerprintMiddleware` in main.py
+- `AuditLog` correct fields: `user_id`, `user_email`, `action`, `entity_type`, `entity_id`, `new_value`
+- `current_user` in all routes must be typed `User`, never `dict`
 
 ### v5.5 Bug Fixes + Demo System (this session)
 

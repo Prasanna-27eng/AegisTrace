@@ -225,6 +225,10 @@ export default function Login() {
         setPend(res.data.pending_token);
         setMfa(true);
         setLoad(false);
+      } else if (res.data.mfa_setup_required) {
+        // Admin without 2FA — log in and redirect to MFA setup
+        collapseAndNavigate(res.data.token, res.data.user);
+        navigate('/app/admin');
       } else {
         collapseAndNavigate(res.data.token, res.data.user);
       }

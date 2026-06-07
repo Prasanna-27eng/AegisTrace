@@ -132,6 +132,11 @@ app.add_middleware(SecurityHeadersMiddleware)
 import threading as _threading
 
 _fp_lock = _threading.Lock()
+from collections import defaultdict as _defaultdict
+_fingerprint:   dict = _defaultdict(lambda: {"requests": [], "endpoints": set()})
+_last_flagged:  dict = {}
+SCAN_THRESHOLD_REQ = 50   # requests per minute before triage
+SCAN_THRESHOLD_EP  = 15   # unique endpoints per minute before triage
 
 class DefenseFingerprintMiddleware(BaseHTTPMiddleware):
     """
@@ -178,8 +183,7 @@ class DefenseFingerprintMiddleware(BaseHTTPMiddleware):
 
         return await call_next(request)
 
-# Tracks last triage timestamp per IP to avoid hammering Groq
-_last_flagged: dict = {}
+# _last_flagged and _fingerprint initialized above with DefenseFingerprintMiddleware
 
 def _background_triage(ip, path, req_count, unique_eps, ua):
     """Runs in a background thread. Opens its own DB session. Never blocks a request."""

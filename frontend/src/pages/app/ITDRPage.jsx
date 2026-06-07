@@ -3,7 +3,7 @@ import {
   Shield, AlertTriangle, Plus, Loader2, RefreshCw,
   MapPin, Smartphone, Key, User, Clock, ChevronRight,
   CheckCircle, X, Zap, FileText, BarChart3, Activity,
-  Bot, TrendingUp, Target, AlertCircle, Eye
+  Bot, TrendingUp, Target, AlertCircle, Eye, Bell
 } from 'lucide-react';
 import api from '../../api/client';
 import useStore from '../../store/useStore';

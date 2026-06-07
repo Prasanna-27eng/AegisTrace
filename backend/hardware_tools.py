@@ -569,13 +569,13 @@ def run_handshake_inspector(input_data: str) -> dict:
                     def parse_ms(ts):
                         for fmt in ["%Y-%m-%dT%H:%M:%S.%f","%Y-%m-%d %H:%M:%S.%f","%Y-%m-%dT%H:%M:%S","%Y-%m-%d %H:%M:%S"]:
                             try: return datetime.strptime(ts[:26], fmt)
-                            except: pass
+                            except Exception: pass
                         return None
                     t1 = parse_ms(ts_list[i-1])
                     t2 = parse_ms(ts_list[i])
                     if t1 and t2:
                         intervals.append(abs((t2-t1).total_seconds()*1000))
-                except: pass
+                except Exception: pass
             avg_interval = sum(intervals)/len(intervals) if intervals else 9999
             automated    = avg_interval < 10 and len(intervals) > 0
             results.append({
@@ -850,14 +850,14 @@ def run_keystroke_injection_analyser(input_data: str) -> dict:
                 def parse_ts(ts):
                     for fmt in ["%Y-%m-%dT%H:%M:%S.%f","%Y-%m-%d %H:%M:%S.%f","%Y-%m-%dT%H:%M:%S","%Y-%m-%d %H:%M:%S"]:
                         try: return datetime.strptime(ts[:26], fmt)
-                        except: pass
+                        except Exception: pass
                     return None
                 t1 = parse_ts(ts_list[0]); t2 = parse_ts(ts_list[-1])
                 if t1 and t2:
                     secs = max(0.1, abs((t2-t1).total_seconds()))
                     wpm  = (total_chars / 5) / (secs / 60)
                     automated = wpm > 300
-            except: pass
+            except Exception: pass
 
         cmds_found = []
         mitre_set  = set()
@@ -935,7 +935,7 @@ def run_payload_decoder(input_data: str) -> dict:
                 human = f"Comment: {arg}"
             elif cmd in ("DELAY", "DEFAULTDELAY", "DEFAULT_DELAY"):
                 try:    ms = int(re.search(r'\d+', arg).group()); total_delay += ms; human = f"Wait {ms}ms"
-                except: human = f"Delay: {arg}"
+                except Exception: human = f"Delay: {arg}"
             elif cmd == "STRING":
                 human = f"Type text: {arg[:60]}{'...' if len(arg)>60 else ''}"
                 for pat, (mt, reason) in DUCKY_MITRE.items():
@@ -1412,14 +1412,14 @@ def run_card_clone_detector(input_data: str) -> dict:
                             def parse_ts2(ts):
                                 for fmt in ["%Y-%m-%dT%H:%M:%S","%Y-%m-%d %H:%M:%S"]:
                                     try: return datetime.strptime(ts[:19],fmt)
-                                    except: pass
+                                    except (ValueError, TypeError): pass
                                 return None
                             t1 = parse_ts2(r1["timestamp"]); t2 = parse_ts2(r2["timestamp"])
                             if t1 and t2:
                                 gap = abs((t2-t1).total_seconds())
                                 if gap < 300:
                                     impossible_travel.append({"uid":uid,"reader_a":r1["reader"],"reader_b":r2["reader"],"time_gap_seconds":gap,"min_required":300})
-                        except: pass
+                        except Exception: pass
             # Rapid re-read check
             same_reader_reads = defaultdict(list)
             for r in uid_reads: same_reader_reads[r["reader"]].append(r)
@@ -1469,11 +1469,11 @@ def run_rfid_brute_force_detector(input_data: str) -> dict:
                 def parse_ts3(ts):
                     for fmt in ["%Y-%m-%dT%H:%M:%S","%Y-%m-%d %H:%M:%S"]:
                         try: return datetime.strptime(ts[:19],fmt)
-                        except: pass
+                        except Exception: pass
                     return None
                 t1 = parse_ts3(ts_list[0]); t2 = parse_ts3(ts_list[-1])
                 if t1 and t2: duration_min = max(0.01, abs((t2-t1).total_seconds())/60)
-            except: pass
+            except Exception: pass
 
         rpm = len(reads) / duration_min
         automated = rpm > 60
@@ -1485,7 +1485,7 @@ def run_rfid_brute_force_detector(input_data: str) -> dict:
             diffs = [uid_ints[i]-uid_ints[i-1] for i in range(1,min(20,len(uid_ints)))]
             sequential = len(diffs) >= 5 and all(d == diffs[0] for d in diffs) and diffs[0] <= 5
             seq_ranges = [{"start_uid":hex(uid_ints[0]),"end_uid":hex(uid_ints[-1]),"count":len(uid_ints),"increment":diffs[0] if diffs else 1}] if sequential else []
-        except:
+        except Exception:
             sequential = False; seq_ranges = []
 
         uid_range = f"{min(uids)} → {max(uids)}" if uids else "unknown"

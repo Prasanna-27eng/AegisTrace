@@ -69,15 +69,13 @@ def approve_action(
     record.approved_by = user.name or user.email
     session.add(record)
 
-    # Audit log
     audit = AuditLog(
         user_id=user.id,
         user_email=user.email,
         action="agent_action_approved",
-        resource_type="provenance_ledger",
-        resource_id=action_id,
-        details=f"Approved AI action: {record.action_type} (model: {record.model_used})",
-        ip_address="internal",
+        entity_type="provenance_ledger",
+        entity_id=str(action_id),
+        new_value=f"Approved AI action: {record.action_type} (model: {record.model_used})",
     )
     session.add(audit)
     session.commit()
@@ -102,19 +100,15 @@ def reject_action(
     reason = (data or {}).get("reason", "")
     record.approval_status = "rejected"
     record.approved_by = user.name or user.email
-    # Store rejection reason in reasoning field if it exists
-    if reason and hasattr(record, "reasoning"):
-        record.reasoning = f"[REJECTED] {reason}\n\n{record.reasoning or ''}"
     session.add(record)
 
     audit = AuditLog(
         user_id=user.id,
         user_email=user.email,
         action="agent_action_rejected",
-        resource_type="provenance_ledger",
-        resource_id=action_id,
-        details=f"Rejected AI action: {record.action_type}. Reason: {reason or 'No reason given'}",
-        ip_address="internal",
+        entity_type="provenance_ledger",
+        entity_id=str(action_id),
+        new_value=f"Rejected: {record.action_type}. Reason: {reason or 'No reason given'}",
     )
     session.add(audit)
     session.commit()
