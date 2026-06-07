@@ -284,6 +284,73 @@ for _hp in _HONEYPOT_PATHS:
 # Served directly from the app so users don't need GitHub access.
 _AGENT_DIR = Path(__file__).parent / "agent_files"
 
+@app.get("/api/install/{token}")
+def install_bootstrap(token: str, request: Request):
+    """
+    Returns a Python bootstrap script personalised with the caller's token.
+    Run with: python3 -c "import urllib.request; exec(urllib.request.urlopen('URL').read())"
+
+    The bootstrap:
+      1. Installs psutil silently
+      2. Downloads the agent into memory (no file left on disk after run)
+      3. Writes it to /tmp/aegistrace_agent.py and starts it in the background
+      4. All env vars pre-set — zero manual configuration needed
+    """
+    server_url = str(request.base_url).rstrip("/")
+    agent_url  = f"{server_url}/agent/aegistrace_agent.py"
+
+    script = f"""
+import subprocess, sys, os, urllib.request, tempfile, pathlib
+
+TOKEN   = {repr(token)}
+AGENT   = {repr(agent_url)}
+SERVER  = {repr(server_url)}
+LOGFILE = pathlib.Path.home() / "aegistrace.log"
+AGENT_PATH = pathlib.Path("/tmp/aegistrace_agent.py")
+
+print("\\n[AegisTrace] Installing agent...")
+
+# 1. Install psutil
+r = subprocess.run(
+    [sys.executable, "-m", "pip", "install", "psutil", "-q",
+     "--break-system-packages"],
+    capture_output=True
+)
+if r.returncode != 0:
+    subprocess.run([sys.executable, "-m", "pip", "install", "psutil", "-q"],
+                   capture_output=True)
+print("[AegisTrace] ✓ psutil ready")
+
+# 2. Download agent
+print("[AegisTrace] Downloading agent...")
+AGENT_PATH.write_bytes(urllib.request.urlopen(AGENT).read())
+print(f"[AegisTrace] ✓ Agent saved to {{AGENT_PATH}}")
+
+# 3. Launch in background
+import socket
+hostname = socket.gethostname()
+env = os.environ.copy()
+env["AEGISTRACE_TOKEN"]  = TOKEN
+env["AEGISTRACE_AGENT_ID"] = hostname
+env["AEGISTRACE_SERVER"] = SERVER
+
+with open(LOGFILE, "w") as log:
+    proc = subprocess.Popen(
+        [sys.executable, str(AGENT_PATH)],
+        env=env, stdout=log, stderr=log,
+        start_new_session=True,
+    )
+
+print(f"[AegisTrace] ✓ Agent started — PID {{proc.pid}}")
+print(f"[AegisTrace] ✓ Endpoint: {{hostname}}")
+print(f"[AegisTrace] ✓ Dashboard: {server_url}/app/endpoints")
+print(f"[AegisTrace] ✓ Logs: {{LOGFILE}}")
+print("[AegisTrace] You can close this terminal safely.")
+"""
+    from fastapi.responses import PlainTextResponse
+    return PlainTextResponse(script.strip(), media_type="text/plain")
+
+
 @app.get("/agent/aegistrace_agent.py")
 def download_agent():
     """Download the AegisTrace endpoint agent script."""

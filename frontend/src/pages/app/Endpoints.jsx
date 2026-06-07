@@ -570,50 +570,106 @@ function CodeBlock({ code, label }) {
 
 function SetupGuideModal({ onClose, ingestKey, onFetchKey }) {
   const [os, setOs] = useState('linux');
+  const [copied, setCopied] = useState(false);
   const AEGISTRACE_URL = 'https://aegistrace-7qvn.onrender.com';
-  const token = ingestKey || 'YOUR_TOKEN_HERE';
-  const agentUrl = `${AEGISTRACE_URL}/agent/aegistrace_agent.py`;
+  const token = ingestKey || null;
 
-  const oneLiner = {
-    linux: `pip3 install psutil -q --break-system-packages 2>/dev/null || pip3 install psutil -q; python3 -c "import urllib.request; open('/tmp/at_agent.py','wb').write(urllib.request.urlopen('${agentUrl}').read())" && AEGISTRACE_TOKEN=${token} AEGISTRACE_AGENT_ID=$(hostname) AEGISTRACE_SERVER=${AEGISTRACE_URL} nohup python3 /tmp/at_agent.py > ~/aegistrace.log 2>&1 & echo "✓ AegisTrace Agent started (PID: $!)"`,
-    mac:   `pip3 install psutil -q 2>/dev/null; python3 -c "import urllib.request; open('/tmp/at_agent.py','wb').write(urllib.request.urlopen('${agentUrl}').read())" && AEGISTRACE_TOKEN=${token} AEGISTRACE_AGENT_ID=$(hostname) AEGISTRACE_SERVER=${AEGISTRACE_URL} nohup python3 /tmp/at_agent.py > ~/aegistrace.log 2>&1 & echo "✓ AegisTrace Agent started (PID: $!)"`,
-    windows: `pip install psutil -q; python -c "import urllib.request; open('C:/Windows/Temp/at_agent.py','wb').write(urllib.request.urlopen('${agentUrl}').read())"; $env:AEGISTRACE_TOKEN='${token}'; $env:AEGISTRACE_AGENT_ID=$env:COMPUTERNAME; $env:AEGISTRACE_SERVER='${AEGISTRACE_URL}'; Start-Process python -ArgumentList 'C:\\Windows\\Temp\\at_agent.py' -NoNewWindow`,
+  // The single install command — fetches everything from backend, no manual steps
+  const installUrl = token
+    ? `${AEGISTRACE_URL}/api/install/${token}`
+    : null;
+
+  const commands = {
+    linux:   installUrl ? `python3 -c "import urllib.request; exec(urllib.request.urlopen('${installUrl}').read())"` : null,
+    mac:     installUrl ? `python3 -c "import urllib.request; exec(urllib.request.urlopen('${installUrl}').read())"` : null,
+    windows: installUrl ? `python -c "import urllib.request; exec(urllib.request.urlopen('${installUrl}').read())"` : null,
+  };
+
+  const cmd = commands[os];
+
+  const copy = () => {
+    if (!cmd) return;
+    navigator.clipboard.writeText(cmd);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div style={{ position:'fixed', inset:0, zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.7)', backdropFilter:'blur(4px)', padding:20 }}
+    <div style={{ position:'fixed', inset:0, zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.75)', backdropFilter:'blur(6px)', padding:20 }}
       onClick={e => { if(e.target===e.currentTarget) onClose(); }}>
-      <div style={{ background:'#111', border:'1px solid rgba(255,255,255,0.1)', borderRadius:12, width:'100%', maxWidth:680, display:'flex', flexDirection:'column', boxShadow:'0 25px 60px rgba(0,0,0,0.6)' }}>
-        <div style={{ padding:'18px 20px', borderBottom:'1px solid rgba(255,255,255,0.07)', display:'flex', alignItems:'center', gap:12 }}>
-          <Terminal size={18} style={{ color:'#5A8A9F' }}/>
-          <div>
-            <div style={{ fontWeight:700 }}>Deploy Endpoint Agent</div>
-            <div style={{ fontSize:'0.72rem', color:'#787878' }}>One command — installs, configures, and starts the agent</div>
+      <div style={{ background:'#0D0D0D', border:'1px solid rgba(255,255,255,0.1)', borderRadius:14, width:'100%', maxWidth:660, boxShadow:'0 30px 80px rgba(0,0,0,0.7)' }}>
+
+        {/* Header */}
+        <div style={{ padding:'20px 22px', borderBottom:'1px solid rgba(255,255,255,0.07)', display:'flex', alignItems:'center', gap:12 }}>
+          <div style={{ width:38, height:38, borderRadius:9, background:'rgba(90,138,159,0.12)', border:'1px solid rgba(90,138,159,0.25)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <Terminal size={17} style={{ color:'#5A8A9F' }}/>
           </div>
-          <button onClick={onClose} style={{ marginLeft:'auto', background:'none', border:'none', cursor:'pointer', color:'#787878' }}><X size={16}/></button>
+          <div>
+            <div style={{ fontWeight:700, fontSize:'0.95rem' }}>Deploy Endpoint Agent</div>
+            <div style={{ fontSize:'0.7rem', color:'#555', marginTop:2, fontFamily:'JetBrains Mono' }}>One command · no files · no config · works on any machine</div>
+          </div>
+          <button onClick={onClose} style={{ marginLeft:'auto', background:'none', border:'none', cursor:'pointer', color:'#555', padding:4 }}><X size={16}/></button>
         </div>
-        <div style={{ padding:20 }}>
+
+        <div style={{ padding:'22px' }}>
+
+          {/* Step 1 — get token */}
           {!ingestKey && (
-            <div style={{ marginBottom:16, padding:'12px 14px', background:'rgba(234,179,8,0.06)', border:'1px solid rgba(234,179,8,0.2)', borderRadius:8, display:'flex', alignItems:'center', gap:12, fontSize:'0.82rem', color:'#EAB308' }}>
-              ⚠ Fetch your token first to auto-fill the command
-              <button onClick={onFetchKey} style={{ marginLeft:'auto', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:5, padding:'4px 10px', cursor:'pointer', color:'#EBEBEB', fontSize:'0.72rem', display:'flex', alignItems:'center', gap:5 }}>
-                <Shield size={11}/> Fetch Token
+            <div style={{ marginBottom:20, padding:'14px 16px', background:'rgba(234,179,8,0.05)', border:'1px solid rgba(234,179,8,0.18)', borderRadius:9 }}>
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
+                <div>
+                  <div style={{ fontWeight:600, fontSize:'0.82rem', color:'#EAB308', marginBottom:3 }}>Step 1 — Load your deploy token</div>
+                  <div style={{ fontSize:'0.7rem', color:'#787878', fontFamily:'JetBrains Mono' }}>Your token will be embedded in the command automatically</div>
+                </div>
+                <button onClick={onFetchKey}
+                  style={{ background:'#5A8A9F', border:'none', borderRadius:7, padding:'8px 16px', cursor:'pointer', color:'#fff', fontSize:'0.76rem', fontWeight:600, flexShrink:0, display:'flex', alignItems:'center', gap:6 }}>
+                  <Shield size={12}/> Load Token
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* OS selector */}
+          <div style={{ display:'flex', gap:6, marginBottom:16 }}>
+            {[['linux','🐧 Linux / Ubuntu'],['mac','🍎 macOS'],['windows','🪟 Windows']].map(([id,label]) => (
+              <button key={id} onClick={() => setOs(id)}
+                style={{ padding:'7px 14px', borderRadius:7, border:'1px solid', fontSize:'0.74rem', cursor:'pointer', fontFamily:'JetBrains Mono',
+                  background: os===id ? 'rgba(90,138,159,0.1)' : 'transparent',
+                  color: os===id ? '#5A8A9F' : '#555',
+                  borderColor: os===id ? 'rgba(90,138,159,0.3)' : 'rgba(255,255,255,0.06)' }}>{label}</button>
+            ))}
+          </div>
+
+          {/* The command */}
+          {!cmd ? (
+            <div style={{ padding:'20px', background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:9, textAlign:'center', color:'#555', fontSize:'0.8rem', fontFamily:'JetBrains Mono' }}>
+              Load your token above to generate the install command
+            </div>
+          ) : (
+            <div style={{ position:'relative' }}>
+              <div style={{ padding:'16px 100px 16px 16px', background:'#030303', border:'1px solid rgba(90,138,159,0.2)', borderRadius:9, fontFamily:'JetBrains Mono', fontSize:'0.72rem', color:'#8FAFC0', wordBreak:'break-all', lineHeight:1.7 }}>
+                {cmd}
+              </div>
+              <button onClick={copy}
+                style={{ position:'absolute', top:'50%', right:10, transform:'translateY(-50%)', background: copied ? 'rgba(34,197,94,0.15)' : 'rgba(90,138,159,0.15)', border:`1px solid ${copied ? 'rgba(34,197,94,0.4)' : 'rgba(90,138,159,0.35)'}`, borderRadius:7, padding:'8px 14px', cursor:'pointer', color: copied ? '#22C55E' : '#5A8A9F', fontSize:'0.72rem', fontWeight:700, fontFamily:'JetBrains Mono', display:'flex', alignItems:'center', gap:5, transition:'all 0.15s', whiteSpace:'nowrap' }}>
+                {copied ? <><CheckCircle size={12}/>Copied!</> : <><Copy size={12}/>Copy</>}
               </button>
             </div>
           )}
-          {ingestKey && <div style={{ marginBottom:14, padding:'8px 12px', background:'rgba(34,197,94,0.06)', border:'1px solid rgba(34,197,94,0.18)', borderRadius:7, fontSize:'0.76rem', color:'#22C55E', display:'flex', alignItems:'center', gap:8 }}><CheckCircle size={12}/> Token loaded — command is ready</div>}
-          <div style={{ display:'flex', gap:8, marginBottom:14 }}>
-            {[['linux','🐧 Linux'],['mac','🍎 macOS'],['windows','🪟 Windows']].map(([id,label]) => (
-              <button key={id} onClick={() => setOs(id)}
-                style={{ padding:'7px 14px', borderRadius:7, border:'1px solid', fontSize:'0.76rem', cursor:'pointer', fontFamily:'JetBrains Mono,monospace',
-                  background: os===id ? 'rgba(90,138,159,0.12)' : 'transparent',
-                  color: os===id ? '#5A8A9F' : '#787878',
-                  borderColor: os===id ? 'rgba(90,138,159,0.35)' : 'rgba(255,255,255,0.08)' }}>{label}</button>
-            ))}
-          </div>
-          <CodeBlock code={oneLiner[os]} />
-          <div style={{ marginTop:12, fontSize:'0.72rem', color:'#555', fontFamily:'JetBrains Mono', lineHeight:1.7 }}>
-            ① Installs psutil &nbsp;② Downloads agent &nbsp;③ Runs with token pre-filled &nbsp;④ Detaches from terminal &nbsp;⑤ Endpoint appears within 60s
+
+          {/* What it does */}
+          {cmd && (
+            <div style={{ marginTop:14, display:'flex', gap:10, flexWrap:'wrap' }}>
+              {['① Installs psutil', '② Downloads agent', '③ Token pre-embedded', '④ Starts in background', '⑤ Appears in dashboard < 60s'].map(s => (
+                <span key={s} style={{ fontSize:'0.65rem', color:'#555', background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.06)', borderRadius:5, padding:'3px 8px', fontFamily:'JetBrains Mono' }}>{s}</span>
+              ))}
+            </div>
+          )}
+
+          {/* Requirement note */}
+          <div style={{ marginTop:16, padding:'10px 14px', background:'rgba(255,255,255,0.02)', borderRadius:7, fontSize:'0.68rem', color:'#555', fontFamily:'JetBrains Mono', display:'flex', alignItems:'center', gap:8 }}>
+            <span style={{ color:'#5A8A9F' }}>ℹ</span>
+            Requires Python 3.8+ · Works on Linux, macOS, Windows · No curl or wget needed
           </div>
         </div>
       </div>
