@@ -381,7 +381,7 @@ export default function Mission() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 2 }}>
                 {[
                   { icon: Shield, title: 'SOC analysts', body: 'Working in an environment where multiple tools need to be correlated manually. AegisTrace replaces the pivot — everything shares one timeline.' },
-                  { icon: User,   title: 'Security engineers', body: 'Building detection capabilities on top of a stack that wasn't designed for identity threats. AegisTrace gives you a working base to extend.' },
+                  { icon: User,   title: 'Security engineers', body: "Building detection capabilities on top of a stack that wasn’t designed for identity threats. AegisTrace gives you a working base to extend." },
                   { icon: Brain,  title: 'Students and researchers', body: 'Learning incident response with access to a realistic, deployable platform — not a sandboxed demo with no real telemetry.' },
                 ].map(({ icon: Icon, title, body }, i) => (
                   <Reveal key={title} delay={i * 0.08}>
