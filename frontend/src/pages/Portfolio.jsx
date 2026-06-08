@@ -1,458 +1,327 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { ArrowUpRight, Award, Crown, X, Menu,
-         Shield, Brain, Mail, Github, ExternalLink,
-         Check, GraduationCap, Code, Globe, Cpu, Activity } from 'lucide-react';
+import React, { useRef, useState, useEffect } from 'react';
+import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import {
+  ArrowUpRight, Github, Mail, GraduationCap, ExternalLink,
+  Shield, Brain, Mail as MailIcon, Cpu, Activity, Code,
+  CheckCircle, Clock,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   PORTFOLIO — VANGUARD Bold Design
-   PODIUM Sharp font · fullscreen video · staggered fade-up · bold type
-   Emil Kowalski easing [0.23,1,0.32,1] · Impeccable layout & hierarchy
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ─── Tokens ─────────────────────────────────────────────────────────────── */
+const E    = [0.16, 1, 0.3, 1];
+const GOLD = '#F59E0B';
+const BG   = '#050405';
 
-const E    = [0.23, 1, 0.32, 1];
-const EC   = [0.22, 1, 0.36, 1];
-const RED  = '#c0392b';
-const MONO = { fontFamily:'JetBrains Mono,monospace' };
-
-/* ──────────────────────────────────────────────────────────────────────────
-   SKILL BAR
-   ─────────────────────────────────────────────────────────────────────── */
-function SkillBar({ skill, pct, delay=0 }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once:true });
+/* ─── 3D tilt ───────────────────────────────────────────────────────────── */
+function TiltCard({ children, style = {} }) {
+  const ref  = useRef(null);
+  const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
+  const [live, setLive] = useState(false);
+  const onMove = e => {
+    if (!ref.current) return;
+    const r  = ref.current.getBoundingClientRect();
+    const rx = ((e.clientY - r.top)  / r.height - 0.5) * -10;
+    const ry = ((e.clientX - r.left) / r.width  - 0.5) *  10;
+    setTilt({ rx, ry });
+  };
   return (
-    <div ref={ref} style={{ display:'flex', flexDirection:'column', gap:5 }}>
-      <div style={{ display:'flex', justifyContent:'space-between', fontSize:12 }}>
-        <span style={{ color:'rgba(255,255,255,0.8)' }}>{skill}</span>
-        <span style={{ color:RED, ...MONO }}>{pct}%</span>
-      </div>
-      <div style={{ height:2, background:'rgba(255,255,255,0.08)', borderRadius:9999, overflow:'hidden' }}>
-        <motion.div
-          initial={{ width:0 }}
-          animate={inView ? { width:`${pct}%` } : {}}
-          transition={{ duration:1.1, delay, ease:E }}
-          style={{ height:'100%', background:`linear-gradient(90deg,${RED},rgba(192,57,43,0.5))`, borderRadius:9999 }}
-        />
-      </div>
-    </div>
+    <div ref={ref}
+      onMouseMove={onMove}
+      onMouseEnter={() => setLive(true)}
+      onMouseLeave={() => { setTilt({ rx: 0, ry: 0 }); setLive(false); }}
+      style={{
+        transform: `perspective(900px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)${live ? ' translateZ(5px)' : ''}`,
+        transition: live ? 'transform 0.1s linear' : 'transform 0.65s cubic-bezier(0.16,1,0.3,1)',
+        ...style,
+      }}
+    >{children}</div>
   );
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   CERT CARD
-   ─────────────────────────────────────────────────────────────────────── */
-function CertCard({ name, issuer, status, color, delay=0 }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once:true, margin:'-60px' });
+/* ─── Scroll reveal ─────────────────────────────────────────────────────── */
+function Reveal({ children, delay = 0, style = {} }) {
+  const ref    = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-70px' });
   return (
     <motion.div ref={ref}
-      initial={{ scale:0.94, opacity:0 }}
-      animate={inView ? { scale:1, opacity:1 } : {}}
-      transition={{ duration:0.6, delay, ease:EC }}
-      style={{ background:'rgba(255,255,255,0.03)', border:`1px solid ${color}22`, borderRadius:10, padding:18, borderLeft:`3px solid ${color}` }}
-    >
-      <div style={{ fontSize:12, fontWeight:700, color:'#fff', marginBottom:4, lineHeight:1.3 }}>{name}</div>
-      <div style={{ fontSize:10, color:'rgba(255,255,255,0.4)', marginBottom:8, ...MONO }}>{issuer}</div>
-      <div style={{ display:'inline-flex', padding:'3px 8px', borderRadius:9999, background:`${color}18`, fontSize:9, color, ...MONO, letterSpacing:'0.08em' }}>{status}</div>
-    </motion.div>
-  );
-}
-
-/* ──────────────────────────────────────────────────────────────────────────
-   PROJECT CARD
-   ─────────────────────────────────────────────────────────────────────── */
-function ProjectCard({ title, tags, desc, url, highlight=false, delay=0 }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once:true, margin:'-60px' });
-  return (
-    <motion.div ref={ref}
-      initial={{ scale:0.94, opacity:0, y:16 }}
-      animate={inView ? { scale:1, opacity:1, y:0 } : {}}
-      transition={{ duration:0.65, delay, ease:EC }}
-      style={{ background: highlight ? `rgba(192,57,43,0.08)` : 'rgba(255,255,255,0.02)', border:`1px solid ${highlight ? 'rgba(192,57,43,0.22)' : 'rgba(255,255,255,0.06)'}`, borderRadius:12, padding:22, position:'relative', overflow:'hidden' }}
-    >
-      {highlight && (
-        <div style={{ position:'absolute', top:12, right:12, fontSize:9, color:RED, ...MONO, letterSpacing:'0.1em', background:'rgba(192,57,43,0.12)', padding:'3px 8px', borderRadius:9999 }}>FLAGSHIP</div>
-      )}
-      <div style={{ fontSize:14, fontWeight:700, color:'#fff', marginBottom:8, paddingRight:highlight?64:0, lineHeight:1.25 }}>{title}</div>
-      <div style={{ display:'flex', flexWrap:'wrap', gap:5, marginBottom:12 }}>
-        {tags.map(t => (
-          <span key={t} style={{ fontSize:9, color:'rgba(192,57,43,0.8)', border:'1px solid rgba(192,57,43,0.2)', borderRadius:9999, padding:'2px 8px', ...MONO }}>{t}</span>
-        ))}
-      </div>
-      <div style={{ fontSize:12, color:'rgba(255,255,255,0.48)', lineHeight:1.55, marginBottom:url?12:0 }}>{desc}</div>
-      {url && (
-        <a href={url} target="_blank" rel="noopener noreferrer"
-          style={{ display:'inline-flex', alignItems:'center', gap:4, fontSize:11, color:RED, textDecoration:'none' }}>
-          View project <ExternalLink size={10}/>
-        </a>
-      )}
-    </motion.div>
-  );
-}
-
-/* ──────────────────────────────────────────────────────────────────────────
-   SECTION HEADING
-   ─────────────────────────────────────────────────────────────────────── */
-function SH({ label, title, light=false }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once:true, margin:'-60px' });
-  return (
-    <motion.div ref={ref}
-      initial={{ opacity:0, y:20 }}
-      animate={inView ? { opacity:1, y:0 } : {}}
-      transition={{ duration:0.7, ease:E }}
-      style={{ marginBottom:36 }}
-    >
-      <div style={{ fontSize:9, color:'rgba(192,57,43,0.85)', ...MONO, letterSpacing:'0.2em', textTransform:'uppercase', marginBottom:10 }}>{label}</div>
-      <h2 style={{ fontSize:'clamp(22px,3.5vw,40px)', fontWeight:800, color:'#fff', margin:0, letterSpacing:'-0.02em', lineHeight:1.05, fontFamily:'FSP DEMO - PODIUM Sharp 4.11, Almarai, sans-serif', textTransform:'uppercase' }}>{title}</h2>
-    </motion.div>
-  );
-}
-
-/* ──────────────────────────────────────────────────────────────────────────
-   REVEAL WRAPPER
-   ─────────────────────────────────────────────────────────────────────── */
-function Reveal({ children, delay=0, style={} }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once:true, margin:'-60px' });
-  return (
-    <motion.div ref={ref}
-      initial={{ opacity:0, y:28 }}
-      animate={inView ? { opacity:1, y:0 } : {}}
-      transition={{ duration:0.75, delay, ease:E }}
+      initial={{ opacity: 0, y: 26 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.8, delay, ease: E }}
       style={style}
     >{children}</motion.div>
   );
 }
 
+/* ─── Project card ──────────────────────────────────────────────────────── */
+function ProjectCard({ title, tags, desc, url, large = false, delay = 0 }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <Reveal delay={delay} style={{ height: '100%' }}>
+      <TiltCard style={{ height: '100%' }}>
+        <div
+          onMouseEnter={() => setHov(true)}
+          onMouseLeave={() => setHov(false)}
+          style={{
+            background: hov ? 'rgba(245,158,11,0.04)' : 'rgba(245,240,232,0.025)',
+            border: `1px solid ${hov ? 'rgba(245,158,11,0.18)' : 'rgba(245,240,232,0.07)'}`,
+            padding: large ? '36px 32px' : '28px 24px',
+            height: '100%',
+            display: 'flex', flexDirection: 'column',
+            transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms',
+          }}
+        >
+          {large && (
+            <div style={{ display: 'inline-flex', padding: '4px 10px', background: 'rgba(245,158,11,0.12)', marginBottom: 20, alignSelf: 'flex-start' }}>
+              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: GOLD, letterSpacing: '0.12em', fontWeight: 600 }}>FLAGSHIP PROJECT</span>
+            </div>
+          )}
+          <div style={{ fontFamily: "'Clash Display',sans-serif", fontSize: large ? 20 : 15, fontWeight: 600, color: '#F5F0E8', marginBottom: 12, letterSpacing: '-0.01em', lineHeight: 1.25 }}>
+            {title}
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+            {tags.map(t => (
+              <span key={t} style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: 'rgba(245,158,11,0.7)', border: '1px solid rgba(245,158,11,0.18)', padding: '3px 8px', letterSpacing: '0.06em' }}>
+                {t}
+              </span>
+            ))}
+          </div>
+          <div style={{ fontFamily: "'Cabinet Grotesk',sans-serif", fontSize: 13, color: 'rgba(245,240,232,0.46)', lineHeight: 1.68, flex: 1, marginBottom: url ? 18 : 0 }}>
+            {desc}
+          </div>
+          {url && (
+            <a href={url} target="_blank" rel="noopener noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: "'Cabinet Grotesk',sans-serif", fontSize: 12, color: GOLD, textDecoration: 'none', fontWeight: 600, transition: 'gap 140ms' }}
+              onMouseEnter={e => (e.currentTarget.style.gap = '8px')}
+              onMouseLeave={e => (e.currentTarget.style.gap = '5px')}
+            >
+              View on GitHub <ExternalLink size={11}/>
+            </a>
+          )}
+        </div>
+      </TiltCard>
+    </Reveal>
+  );
+}
+
+/* ─── Cert chip ─────────────────────────────────────────────────────────── */
+function CertChip({ name, issuer, status, done, delay }) {
+  const ref    = useRef(null);
+  const inView = useInView(ref, { once: true });
+  return (
+    <motion.div ref={ref}
+      initial={{ opacity: 0, scale: 0.96 }}
+      animate={inView ? { opacity: 1, scale: 1 } : {}}
+      transition={{ duration: 0.6, delay, ease: E }}
+      style={{
+        background: 'rgba(245,240,232,0.025)', border: '1px solid rgba(245,240,232,0.07)',
+        padding: '20px 22px',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 6 }}>
+        <div style={{ fontFamily: "'Cabinet Grotesk',sans-serif", fontSize: 13, fontWeight: 700, color: '#F5F0E8', lineHeight: 1.3 }}>{name}</div>
+        {done
+          ? <CheckCircle size={14} color={GOLD} style={{ flexShrink: 0, marginTop: 2 }}/>
+          : <Clock size={14} color="rgba(245,240,232,0.3)" style={{ flexShrink: 0, marginTop: 2 }}/>
+        }
+      </div>
+      <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'rgba(245,240,232,0.35)', letterSpacing: '0.06em' }}>{issuer}</div>
+      <div style={{ marginTop: 10 }}>
+        <span style={{
+          fontFamily: "'JetBrains Mono',monospace", fontSize: 9,
+          color: done ? GOLD : 'rgba(245,240,232,0.35)',
+          background: done ? 'rgba(245,158,11,0.1)' : 'transparent',
+          padding: '3px 8px', letterSpacing: '0.1em',
+        }}>{status}</span>
+      </div>
+    </motion.div>
+  );
+}
+
 /* ════════════════════════════════════════════════════════════════════════════
-   MAIN
+   PORTFOLIO
 ════════════════════════════════════════════════════════════════════════════ */
 export default function Portfolio() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [videoFailed, setVideoFailed] = useState(false);
-  const videoRef = useRef(null);
+  const [scrolled, setScrolled] = useState(false);
 
-  /* Close menu on escape */
   useEffect(() => {
-    const handler = (e) => { if (e.key === 'Escape') setMenuOpen(false); };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    const fn = () => setScrolled(window.scrollY > 48);
+    window.addEventListener('scroll', fn, { passive: true });
+    return () => window.removeEventListener('scroll', fn);
   }, []);
 
-  const NAV_LINKS = [
-    { label:'Home',      to:'/' },
-    { label:'Mission',   to:'/mission' },
-    { label:'Platform',  to:'/app/login' },
+  const SKILLS = [
+    { cat: 'Detection & Response', tags: ['Microsoft Sentinel', 'KQL', 'Incident Response', 'MITRE ATT&CK', 'SIEM', 'SOAR'] },
+    { cat: 'Threat Intelligence',  tags: ['IOC Enrichment', 'VirusTotal', 'OTX', 'AbuseIPDB', 'Shodan', 'Campaign Analysis'] },
+    { cat: 'Forensics',            tags: ['Email Forensics', 'DKIM/SPF/DMARC', 'Memory Analysis', 'Endpoint Forensics', 'PCAP'] },
+    { cat: 'Engineering',          tags: ['React 18', 'FastAPI', 'Python', 'PostgreSQL', 'Docker', 'AWS', 'REST APIs'] },
   ];
 
   return (
-    <div style={{ background:'#0a0202', overflowX:'hidden', color:'#fff', minHeight:'100vh' }}>
+    <div style={{ background: BG, color: '#F5F0E8', overflowX: 'hidden', minHeight: '100vh' }}>
       <style>{`
-        /* PODIUM Sharp font */
-        @import url('https://db.onlinewebfonts.com/c/8b75d9dcff6a48c35a46656192adf019?family=FSP+DEMO+-+PODIUM+Sharp+4.11');
-        @import url('https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+        .cd { font-family: 'Clash Display', sans-serif; }
+        .cg { font-family: 'Cabinet Grotesk', sans-serif; }
 
-        *,*::before,*::after{ box-sizing:border-box; }
-        body{ margin:0; background:#0a0202; }
-
-        .font-podium{ font-family:'FSP DEMO - PODIUM Sharp 4.11','Almarai',sans-serif; }
-        .font-inter{ font-family:'Inter','Almarai',sans-serif; }
-
-        /* ─── Fade-up animation classes ─── */
-        @keyframes fade-up{
-          from{ opacity:0; transform:translateY(30px); }
-          to{ opacity:1; transform:translateY(0); }
+        .gold-btn {
+          display: inline-flex; align-items: center; gap: 9px;
+          background: ${GOLD}; color: #000; font-weight: 700;
+          font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px;
+          padding: 13px 26px; border: none; cursor: pointer;
+          text-decoration: none; letter-spacing: 0.03em;
+          transition: background 140ms cubic-bezier(0.16,1,0.3,1), transform 90ms;
         }
-        @keyframes fade-in{
-          from{ opacity:0; }
-          to{ opacity:1; }
+        .gold-btn:hover  { background: #FBBF24; }
+        .gold-btn:active { transform: scale(0.97); }
+
+        .ghost-btn {
+          display: inline-flex; align-items: center; gap: 8px;
+          background: transparent; color: rgba(245,240,232,0.75);
+          font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px; font-weight: 500;
+          padding: 12px 24px; border: 1px solid rgba(245,240,232,0.18);
+          cursor: pointer; text-decoration: none; letter-spacing: 0.03em;
+          transition: border-color 140ms, color 140ms, transform 90ms;
         }
-        @keyframes scale-in{
-          from{ opacity:0; transform:scale(0.9); }
-          to{ opacity:1; transform:scale(1); }
+        .ghost-btn:hover  { border-color: rgba(245,240,232,0.42); color: #F5F0E8; }
+        .ghost-btn:active { transform: scale(0.97); }
+
+        .nav-link {
+          font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px; font-weight: 500;
+          color: rgba(245,240,232,0.6); text-decoration: none; letter-spacing: 0.03em;
+          transition: color 140ms;
         }
-        @keyframes scan{
-          0%{ top:-2px; }
-          100%{ top:100%; }
+        .nav-link:hover { color: #F5F0E8; }
+
+        .skill-tag {
+          display: inline-block;
+          fontFamily: 'Cabinet Grotesk', sans-serif; font-size: 12px; font-weight: 500;
+          color: rgba(245,240,232,0.6); border: 1px solid rgba(245,240,232,0.1);
+          padding: 6px 14px; cursor: default; line-height: 1;
+          transition: color 160ms, border-color 160ms, background 160ms;
+        }
+        .skill-tag:hover { color: ${GOLD}; border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.05); }
+
+        @keyframes ticker {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
         }
 
-        .fade-up-0{ opacity:0; animation:fade-up 0.8s ease-out 0s forwards; }
-        .fade-up-1{ opacity:0; animation:fade-up 0.8s ease-out 0.2s forwards; }
-        .fade-up-2{ opacity:0; animation:fade-up 0.8s ease-out 0.4s forwards; }
-        .fade-up-3{ opacity:0; animation:fade-up 0.8s ease-out 0.6s forwards; }
-        .fade-up-4{ opacity:0; animation:fade-up 0.8s ease-out 0.8s forwards; }
-        .fade-in-1{ opacity:0; animation:fade-in 0.6s ease-out 0.1s forwards; }
-
-        /* ─── CTA button ─── */
-        .cta-black{
-          display:inline-flex; align-items:center; gap:8px;
-          background:#000; color:#fff;
-          padding:12px 24px; border:none; cursor:pointer;
-          font-family:'Inter','Almarai',sans-serif; font-weight:600;
-          font-size:11px; letter-spacing:0.15em; text-transform:uppercase;
-          text-decoration:none;
-          transition:background 180ms cubic-bezier(0.23,1,0.32,1);
-        }
-        .cta-black:hover{ background:#1a1a1a; }
-        .cta-black:active{ transform:scale(0.97); }
-        .cta-black .arrow{ transition:transform 180ms cubic-bezier(0.23,1,0.32,1); }
-        .cta-black:hover .arrow{ transform:translate(2px,-2px); }
-
-        /* ─── Border button ─── */
-        .cta-border{
-          display:inline-flex; align-items:center; gap:6px;
-          background:transparent; color:rgba(255,255,255,0.85);
-          padding:11px 22px; border:1px solid rgba(255,255,255,0.28); cursor:pointer;
-          font-family:'Inter','Almarai',sans-serif; font-weight:500;
-          font-size:11px; letter-spacing:0.15em; text-transform:uppercase;
-          text-decoration:none;
-          transition:all 180ms cubic-bezier(0.23,1,0.32,1);
-        }
-        .cta-border:hover{ border-color:rgba(255,255,255,0.65); background:rgba(255,255,255,0.08); color:#fff; }
-        .cta-border:active{ transform:scale(0.97); }
-
-        /* ─── Nav link ─── */
-        .nl{
-          font-family:'Inter','Almarai',sans-serif; font-size:12px;
-          color:rgba(255,255,255,0.7); text-decoration:none;
-          letter-spacing:0.18em; text-transform:uppercase;
-          transition:color 180ms cubic-bezier(0.23,1,0.32,1);
-        }
-        .nl:hover{ color:#fff; }
-
-        /* ─── Scrollbar ─── */
-        ::-webkit-scrollbar{ width:3px; }
-        ::-webkit-scrollbar-track{ background:#0a0202; }
-        ::-webkit-scrollbar-thumb{ background:#c0392b; border-radius:9999px; }
-
-        @media(prefers-reduced-motion:reduce){
-          .fade-up-0,.fade-up-1,.fade-up-2,.fade-up-3,.fade-up-4,.fade-in-1{
-            animation:none; opacity:1;
-          }
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
       `}</style>
 
-      {/* ══════════════════════════════════════════════════════════════════
-          §1 HERO — fullscreen video + bold stacked heading
-          ════════════════════════════════════════════════════════════════ */}
-      <section style={{ position:'relative', height:'100vh', minHeight:600, overflow:'hidden', background:'#0a0202' }}>
-
-        {/* Video background */}
-        {!videoFailed ? (
-          <video
-            ref={videoRef}
-            autoPlay muted loop playsInline
-            onError={() => setVideoFailed(true)}
-            style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', zIndex:0 }}
-            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260606_154941_df1a96e1-a06f-450c-bd02-d863414cc1a0.mp4"
-          />
-        ) : (
-          /* CSS fallback — red-dark grid bg */
-          <div aria-hidden style={{ position:'absolute', inset:0, zIndex:0, background:'#0a0202' }}>
-            <div style={{ position:'absolute', inset:0, background:'radial-gradient(ellipse 80% 60% at 50% 60%,rgba(192,57,43,0.45) 0%,rgba(100,10,5,0.22) 45%,transparent 70%)' }}/>
-            <div style={{ position:'absolute', inset:0, backgroundImage:'linear-gradient(rgba(192,57,43,0.18) 1px,transparent 1px),linear-gradient(90deg,rgba(192,57,43,0.18) 1px,transparent 1px)', backgroundSize:'56px 56px' }}/>
-            <div style={{ position:'absolute', inset:0, background:'radial-gradient(ellipse 130% 130% at 50% 50%,transparent 36%,rgba(10,2,2,0.96) 100%)' }}/>
-            <div aria-hidden style={{ position:'absolute', left:0, right:0, height:2, top:0, background:'linear-gradient(90deg,transparent 5%,rgba(192,57,43,0.75) 35%,#fff 50%,rgba(192,57,43,0.75) 65%,transparent 95%)', animation:'scan 7s linear infinite' }}/>
-          </div>
-        )}
-
-        {/* Dark overlay gradient */}
-        <div aria-hidden style={{ position:'absolute', inset:0, zIndex:1, background:'linear-gradient(to bottom,rgba(10,2,2,0.45) 0%,rgba(10,2,2,0.15) 40%,rgba(10,2,2,0.72) 100%)' }}/>
-        {/* Left vignette to make text readable */}
-        <div aria-hidden style={{ position:'absolute', inset:0, zIndex:1, background:'linear-gradient(to right,rgba(10,2,2,0.78) 0%,rgba(10,2,2,0.4) 50%,transparent 100%)' }}/>
-
-        {/* ── NAVBAR ── */}
-        <nav style={{ position:'absolute', top:0, left:0, right:0, zIndex:20, padding:'20px 32px', display:'flex', justifyContent:'space-between', alignItems:'center' }} className="fade-in-1">
-          {/* Brand */}
-          <Link to="/" style={{ textDecoration:'none', color:'#fff', fontFamily:'FSP DEMO - PODIUM Sharp 4.11,Almarai,sans-serif', fontWeight:700, fontSize:'clamp(18px,2.2vw,26px)', letterSpacing:'0.16em', textTransform:'uppercase' }}>
-            PRASANNA
-          </Link>
-
-          {/* Desktop nav */}
-          <div style={{ display:'flex', gap:40, alignItems:'center' }}>
-            {NAV_LINKS.map(({ label, to }) => (
-              <Link key={label} to={to} className="nl" style={{ display:'none' }}
-                // show only on desktop via style injection below
-              >{label}</Link>
-            ))}
-            {/* Desktop-only group with inline media query equivalent */}
-            <div style={{ display:'flex', gap:40, alignItems:'center' }}>
-              <style>{`@media(max-width:767px){.desk-nav{display:none!important;}}`}</style>
-              <div className="desk-nav" style={{ display:'flex', gap:40, alignItems:'center' }}>
-                {NAV_LINKS.map(({ label, to }) => (
-                  <Link key={label} to={to} className="nl">{label}</Link>
-                ))}
-              </div>
-              <a href="mailto:prasanna80564@gmail.com" className="cta-border desk-nav" style={{ display:'inline-flex' }}>
-                GET IN TOUCH <ArrowUpRight size={13} style={{ flexShrink:0 }}/>
-              </a>
-            </div>
-            {/* Mobile hamburger */}
-            <style>{`@media(min-width:768px){.mob-menu-btn{display:none!important;}}`}</style>
-            <button
-              className="mob-menu-btn"
-              onClick={() => setMenuOpen(true)}
-              style={{ background:'none', border:'none', cursor:'pointer', padding:4, display:'flex', flexDirection:'column', gap:5 }}
-              aria-label="Open menu"
-            >
-              <div style={{ width:24, height:2, background:'#fff', borderRadius:2 }}/>
-              <div style={{ width:24, height:2, background:'#fff', borderRadius:2 }}/>
-              <div style={{ width:16, height:2, background:'#fff', borderRadius:2 }}/>
-            </button>
-          </div>
-        </nav>
-
-        {/* ── HERO CONTENT ── */}
-        <div style={{ position:'absolute', inset:0, zIndex:10, display:'flex', flexDirection:'column', justifyContent:'flex-end', padding:'0 32px 48px' }}>
-
-          {/* Tagline */}
-          <div className="fade-up-0" style={{ display:'flex', alignItems:'center', gap:8, marginBottom:20 }}>
-            <Crown size={14} color="rgba(255,255,255,0.65)" style={{ flexShrink:0 }}/>
-            <span style={{ fontFamily:'Inter,Almarai,sans-serif', fontSize:'clamp(9px,1.2vw,11px)', color:'rgba(255,255,255,0.65)', letterSpacing:'0.3em', textTransform:'uppercase' }}>
-              Cyber Security Analyst · Dublin, Ireland
-            </span>
-          </div>
-
-          {/* Main heading — VANGUARD style */}
-          <div className="fade-up-1">
-            <h1 style={{
-              fontFamily:'FSP DEMO - PODIUM Sharp 4.11,Almarai,sans-serif',
-              fontWeight:800, textTransform:'uppercase', lineHeight:0.88,
-              letterSpacing:'-0.02em', margin:'0 0 24px',
-              fontSize:'clamp(52px,10.5vw,130px)',
-              color:'#fff',
-            }}>
-              PRASANNA.<br/>
-              <span style={{ color:RED }}>KUMAR.</span><br/>
-              SURENDRAN.
-            </h1>
-          </div>
-
-          {/* Subtext */}
-          <div className="fade-up-2" style={{ marginBottom:28 }}>
-            <p style={{ fontFamily:'Inter,Almarai,sans-serif', fontSize:'clamp(12px,1.4vw,15px)', color:'rgba(255,255,255,0.7)', lineHeight:1.55, margin:0, maxWidth:480 }}>
-              We don't just detect threats —<br/>
-              <strong style={{ color:'#fff' }}>we trace them to their source.</strong>
-            </p>
-          </div>
-
-          {/* CTA row */}
-          <div className="fade-up-3" style={{ display:'flex', flexWrap:'wrap', alignItems:'center', gap:16, marginBottom:32 }}>
-            <a className="cta-black" href="#skills">
-              VIEW MY WORK
-              <ArrowUpRight size={14} className="arrow" style={{ flexShrink:0 }}/>
-            </a>
-            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-              <Award size={28} color="rgba(255,255,255,0.4)"/>
-              <div>
-                <div style={{ fontFamily:'Inter,Almarai,sans-serif', fontSize:9, color:'rgba(255,255,255,0.55)', letterSpacing:'0.16em', textTransform:'uppercase' }}>Microsoft Certified</div>
-                <div style={{ fontFamily:'Inter,Almarai,sans-serif', fontSize:9, color:'rgba(255,255,255,0.55)', letterSpacing:'0.16em', textTransform:'uppercase' }}>SC-200 Analyst</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats row */}
-          <div className="fade-up-4" style={{ display:'flex', flexWrap:'wrap', gap:'12px 40px', paddingTop:24, borderTop:'1px solid rgba(255,255,255,0.1)' }}>
-            {[
-              { val:'12+',  label:'Cases Investigated' },
-              { val:'847',  label:'IOCs Processed' },
-              { val:'SC-200', label:'Microsoft Cert' },
-            ].map(({ val, label }) => (
-              <div key={label}>
-                <div style={{ fontFamily:'FSP DEMO - PODIUM Sharp 4.11,Almarai,sans-serif', fontSize:'clamp(28px,3.5vw,44px)', fontWeight:800, color:'#fff', lineHeight:1, letterSpacing:'-0.02em' }}>{val}</div>
-                <div style={{ fontFamily:'Inter,Almarai,sans-serif', fontSize:'9px', color:'rgba(255,255,255,0.45)', letterSpacing:'0.18em', textTransform:'uppercase', marginTop:4 }}>{label}</div>
-              </div>
-            ))}
-          </div>
+      {/* ── NAV ─────────────────────────────────────────────────────────── */}
+      <nav style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 clamp(20px,4vw,48px)', height: 64,
+        background: scrolled ? 'rgba(5,4,5,0.9)' : 'rgba(5,4,5,0.0)',
+        backdropFilter: scrolled ? 'blur(18px)' : 'none',
+        WebkitBackdropFilter: scrolled ? 'blur(18px)' : 'none',
+        borderBottom: scrolled ? '1px solid rgba(245,240,232,0.06)' : 'none',
+        transition: 'background 300ms, backdrop-filter 300ms',
+      }}>
+        <Link to="/" className="cd" style={{ color: '#F5F0E8', textDecoration: 'none', fontSize: 17, fontWeight: 700, letterSpacing: '0.1em' }}>
+          AEGISTRACE
+        </Link>
+        <div style={{ display: 'flex', gap: 'clamp(20px,3vw,36px)', alignItems: 'center' }}>
+          <Link to="/mission"   className="nav-link">Mission</Link>
+          <Link to="/app/login" className="nav-link">Platform</Link>
+          <a href="mailto:prasanna80564@gmail.com" className="gold-btn" style={{ padding: '9px 18px', fontSize: 12 }}>
+            Contact <ArrowUpRight size={13}/>
+          </a>
         </div>
+      </nav>
 
-        {/* Subtle red scan line */}
-        <div aria-hidden style={{ position:'absolute', bottom:0, left:0, right:0, height:1, zIndex:20, background:`linear-gradient(90deg,transparent,${RED}88,transparent)` }}/>
+      {/* ── HERO ─────────────────────────────────────────────────────────── */}
+      <section style={{ padding: 'clamp(140px,16vh,200px) clamp(24px,5vw,72px) clamp(72px,8vw,96px)', borderBottom: '1px solid rgba(245,240,232,0.06)' }}>
+        <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 32 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.95, delay: 0.1, ease: E }}
+          >
+            {/* Gold accent line */}
+            <div style={{ width: 40, height: 2, background: GOLD, marginBottom: 32 }}/>
+            <h1 className="cd" style={{ fontSize: 'clamp(48px,7vw,88px)', fontWeight: 700, color: '#F5F0E8', margin: '0 0 14px', lineHeight: 0.94, letterSpacing: '-0.03em', textWrap: 'balance' }}>
+              Prasanna Kumar<br/>
+              <span style={{ color: GOLD }}>Surendran.</span>
+            </h1>
+            <div className="cg" style={{ fontSize: 'clamp(16px,2vw,20px)', color: 'rgba(245,240,232,0.5)', marginTop: 20, marginBottom: 10, fontWeight: 500, letterSpacing: '0.02em' }}>
+              Cybersecurity Engineer
+            </div>
+            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: 'rgba(245,240,232,0.3)', letterSpacing: '0.12em' }}>
+              Dublin, Ireland · prasanna80564@gmail.com
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.5, ease: E }}
+            style={{ display: 'flex', gap: 14, marginTop: 40, flexWrap: 'wrap' }}
+          >
+            <a href="mailto:prasanna80564@gmail.com" className="gold-btn">
+              Get in Touch <Mail size={14}/>
+            </a>
+            <a href="https://github.com/Prasanna-27eng" target="_blank" rel="noopener noreferrer" className="ghost-btn">
+              <Github size={14}/> GitHub
+            </a>
+          </motion.div>
+        </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════════════
-          MOBILE MENU OVERLAY
-          ════════════════════════════════════════════════════════════════ */}
-      <div style={{
-        position:'fixed', inset:0, zIndex:50, background:'rgba(10,2,2,0.97)', backdropFilter:'blur(8px)',
-        opacity: menuOpen ? 1 : 0,
-        visibility: menuOpen ? 'visible' : 'hidden',
-        transition:'opacity 400ms cubic-bezier(0.23,1,0.32,1), visibility 400ms',
-        display:'flex', flexDirection:'column',
-      }}>
-        {/* Header row */}
-        <div style={{ padding:'20px 28px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-          <span style={{ fontFamily:'FSP DEMO - PODIUM Sharp 4.11,Almarai,sans-serif', fontWeight:700, fontSize:20, letterSpacing:'0.16em', textTransform:'uppercase', color:'#fff' }}>PRASANNA</span>
-          <button onClick={() => setMenuOpen(false)} style={{ background:'none', border:'none', cursor:'pointer', color:'#fff', padding:4 }} aria-label="Close menu">
-            <X size={22}/>
-          </button>
-        </div>
-
-        {/* Nav links */}
-        <div style={{ flex:1, display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', gap:8, padding:24 }}>
-          {[...NAV_LINKS, { label:'Contact', to:null }].map(({ label, to }, i) => (
-            <div key={label}
-              style={{
-                opacity: menuOpen ? 1 : 0,
-                transform: menuOpen ? 'translateY(0)' : 'translateY(20px)',
-                transition:`opacity 400ms cubic-bezier(0.23,1,0.32,1) ${i*80+100}ms, transform 400ms cubic-bezier(0.23,1,0.32,1) ${i*80+100}ms`,
-              }}
-            >
-              {to ? (
-                <Link to={to} onClick={() => setMenuOpen(false)}
-                  style={{ fontFamily:'FSP DEMO - PODIUM Sharp 4.11,Almarai,sans-serif', fontSize:'clamp(32px,8vw,52px)', fontWeight:800, color:'#fff', textDecoration:'none', textTransform:'uppercase', letterSpacing:'-0.02em', display:'block', textAlign:'center', transition:'color 180ms' }}
-                >
-                  {label}
-                </Link>
-              ) : (
-                <a href="mailto:prasanna80564@gmail.com" onClick={() => setMenuOpen(false)}
-                  style={{ fontFamily:'FSP DEMO - PODIUM Sharp 4.11,Almarai,sans-serif', fontSize:'clamp(32px,8vw,52px)', fontWeight:800, color:RED, textDecoration:'none', textTransform:'uppercase', letterSpacing:'-0.02em', display:'block', textAlign:'center' }}
-                >
-                  {label}
-                </a>
-              )}
+      {/* ── ABOUT ────────────────────────────────────────────────────────── */}
+      <section style={{ padding: 'clamp(72px,10vw,112px) clamp(24px,5vw,72px)', background: '#060507' }}>
+        <div style={{ maxWidth: 1240, margin: '0 auto', display: 'grid', gridTemplateColumns: 'clamp(160px,20vw,240px) 1fr', gap: 'clamp(40px,6vw,80px)', alignItems: 'start' }}>
+          <Reveal>
+            <div className="cg" style={{ fontSize: 11, color: GOLD, letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 600, paddingTop: 6 }}>
+              About
             </div>
-          ))}
-
-          <div style={{
-            marginTop:24,
-            opacity: menuOpen ? 1 : 0,
-            transform: menuOpen ? 'translateY(0)' : 'translateY(20px)',
-            transition:`opacity 400ms cubic-bezier(0.23,1,0.32,1) 420ms, transform 400ms cubic-bezier(0.23,1,0.32,1) 420ms`,
-          }}>
-            <a href="mailto:prasanna80564@gmail.com" className="cta-border" onClick={() => setMenuOpen(false)}>
-              GET IN TOUCH <ArrowUpRight size={13}/>
-            </a>
-          </div>
+          </Reveal>
+          <Reveal delay={0.08}>
+            <p className="cg" style={{ fontSize: 'clamp(16px,1.8vw,20px)', color: 'rgba(245,240,232,0.72)', lineHeight: 1.72, margin: '0 0 24px', maxWidth: 680, fontWeight: 400 }}>
+              I build security platforms that think. AegisTrace is my full-stack proof of concept: a complete SOC control plane — identity threat detection, case management, email forensics, endpoint visibility — built from scratch while studying for my MSc in Dublin.
+            </p>
+            <p className="cg" style={{ fontSize: 15, color: 'rgba(245,240,232,0.42)', lineHeight: 1.7, margin: 0, maxWidth: 600 }}>
+              My background spans electronics engineering (PSG College of Technology, Coimbatore) and information systems (Dublin Business School). I combine hardware-level thinking with modern cloud-security operations.
+            </p>
+          </Reveal>
         </div>
-      </div>
+      </section>
 
-      {/* ══════════════════════════════════════════════════════════════════
-          §2 FOCUS
-          ════════════════════════════════════════════════════════════════ */}
-      <section style={{ background:'#0a0202', padding:'100px 32px', borderTop:`1px solid rgba(192,57,43,0.15)` }}>
-        <div style={{ maxWidth:1100, margin:'0 auto' }}>
-          <SH label="Area of Focus" title="What I do"/>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))', gap:12 }}>
-            {[
-              { Icon:Shield, c:'#EF4444', l:'Microsoft Sentinel · KQL', d:'SIEM rule authoring, threat hunting, SOC workflow automation and alert triage.' },
-              { Icon:Brain,  c:RED,       l:'Incident Response', d:'End-to-end case lifecycle: triage, investigation, containment, evidence preservation.' },
-              { Icon:Mail,   c:'#EAB308', l:'Email Forensics', d:'RFC header parsing, SPF/DKIM/DMARC analysis, AI phishing verdict with MITRE mapping.' },
-              { Icon:Cpu,    c:'#22C55E', l:'Endpoint Security', d:'EDR operations, Sysmon telemetry, process tree analysis, lateral movement detection.' },
-              { Icon:Activity,c:'#8FAFC0',l:'Threat Intelligence', d:'IOC enrichment, TTP attribution, MITRE ATT&CK Navigator, campaign correlation.' },
-              { Icon:Code,   c:RED,       l:'React · FastAPI', d:'Full-stack security tooling. AegisTrace: React 18, FastAPI, PostgreSQL, Docker.' },
-            ].map(({ Icon, c, l, d }, i) => (
-              <Reveal key={l} delay={i*0.06}>
-                <div style={{ background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.05)', borderRadius:12, padding:22, borderLeft:`3px solid ${c}22` }}>
-                  <Icon size={15} color={c} style={{ marginBottom:12 }}/>
-                  <div style={{ fontSize:13, fontWeight:700, color:'#fff', marginBottom:7 }}>{l}</div>
-                  <div style={{ fontSize:12, color:'rgba(255,255,255,0.46)', lineHeight:1.55 }}>{d}</div>
+      {/* ── SKILLS ───────────────────────────────────────────────────────── */}
+      <section style={{ padding: 'clamp(72px,10vw,112px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(245,240,232,0.05)' }}>
+        <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+          <Reveal style={{ marginBottom: 56 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'clamp(160px,20vw,240px) 1fr', gap: 'clamp(40px,6vw,80px)', alignItems: 'baseline' }}>
+              <span className="cg" style={{ fontSize: 11, color: GOLD, letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 600 }}>Skills</span>
+              <h2 className="cd" style={{ fontSize: 'clamp(26px,3.5vw,42px)', fontWeight: 700, color: '#F5F0E8', margin: 0, letterSpacing: '-0.02em', textWrap: 'balance' }}>
+                What I work with
+              </h2>
+            </div>
+          </Reveal>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+            {SKILLS.map(({ cat, tags }, si) => (
+              <Reveal key={cat} delay={si * 0.06}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'clamp(160px,20vw,240px) 1fr', gap: 'clamp(20px,4vw,80px)', alignItems: 'start' }}>
+                  <div className="cg" style={{ fontSize: 12, color: 'rgba(245,240,232,0.35)', fontWeight: 500, paddingTop: 8, letterSpacing: '0.03em' }}>
+                    {cat}
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {tags.map((t, ti) => (
+                      <motion.span
+                        key={t} className="skill-tag"
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.55, delay: si * 0.06 + ti * 0.04, ease: E }}
+                      >
+                        {t}
+                      </motion.span>
+                    ))}
+                  </div>
                 </div>
               </Reveal>
             ))}
@@ -460,149 +329,187 @@ export default function Portfolio() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════════════
-          §3 SKILLS
-          ════════════════════════════════════════════════════════════════ */}
-      <section id="skills" style={{ background:'#0d0303', padding:'100px 32px' }}>
-        <div style={{ maxWidth:1100, margin:'0 auto' }}>
-          <SH label="Technical Skills" title="Proficiency"/>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:48 }}>
-            <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
-              {[['Microsoft Sentinel / KQL',88],['Email Forensics',85],['Incident Response',84],['MITRE ATT&CK',82]].map(([s,p],i) => (
-                <SkillBar key={s} skill={s} pct={p} delay={i*0.08}/>
-              ))}
+      {/* ── PROJECTS ─────────────────────────────────────────────────────── */}
+      <section style={{ padding: 'clamp(72px,10vw,112px) clamp(24px,5vw,72px)', background: '#060507', borderTop: '1px solid rgba(245,240,232,0.05)' }}>
+        <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+          <Reveal style={{ marginBottom: 48 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'clamp(160px,20vw,240px) 1fr', gap: 'clamp(40px,6vw,80px)', alignItems: 'baseline' }}>
+              <span className="cg" style={{ fontSize: 11, color: GOLD, letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 600 }}>Projects</span>
+              <h2 className="cd" style={{ fontSize: 'clamp(26px,3.5vw,42px)', fontWeight: 700, color: '#F5F0E8', margin: 0, letterSpacing: '-0.02em' }}>
+                What I've built
+              </h2>
             </div>
-            <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
-              {[['Threat Intelligence',80],['React / FastAPI',80],['Python (Security)',78],['AWS / Cloud',72]].map(([s,p],i) => (
-                <SkillBar key={s} skill={s} pct={p} delay={i*0.08+0.32}/>
-              ))}
+          </Reveal>
+
+          {/* Asymmetric grid: 1 large top + 3 smaller below */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, marginBottom: 2 }}>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <ProjectCard
+                large
+                title="AegisTrace — AI-Powered SOC Platform"
+                tags={['React 18', 'FastAPI', 'PostgreSQL', 'Docker', 'Three.js', 'MITRE ATT&CK']}
+                desc="Full-stack security control plane: ITDR with 4 detection engines, 13-tab case management, 7-source IOC intelligence, email forensics with AI verdict, identity graph, trust timeline, DORA Article 19 compliance reports, and an endpoint agent for Windows, Linux, and macOS."
+                url="https://github.com/Prasanna-27eng/AegisTrace"
+                delay={0}
+              />
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════
-          §4 CERTIFICATIONS
-          ════════════════════════════════════════════════════════════════ */}
-      <section style={{ background:'#0a0202', padding:'100px 32px' }}>
-        <div style={{ maxWidth:1100, margin:'0 auto' }}>
-          <SH label="Certifications" title="Credentials"/>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))', gap:12 }}>
-            <CertCard name="SC-200 — Microsoft Security Operations Analyst" issuer="Microsoft · 2025"     status="✓ CERTIFIED"      color="#2dd4bf" delay={0}/>
-            <CertCard name="CompTIA Security+"                               issuer="CompTIA · 2024"      status="✓ CERTIFIED"      color="#EAB308" delay={0.08}/>
-            <CertCard name="TCM Practical Ethical Hacking"                   issuer="TCM Security"        status="✓ CERTIFIED"      color="#8FAFC0" delay={0.16}/>
-            <CertCard name="Blue Team Labs Level 1 (BTL1)"                   issuer="Security Blue Team"  status="55% IN PROGRESS"  color={RED}     delay={0.24}/>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════
-          §5 PROJECTS
-          ════════════════════════════════════════════════════════════════ */}
-      <section style={{ background:'#0d0303', padding:'100px 32px' }}>
-        <div style={{ maxWidth:1100, margin:'0 auto' }}>
-          <SH label="Projects" title="What I've built"/>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(290px,1fr))', gap:14 }}>
-            <ProjectCard highlight
-              title="AegisTrace — AI-powered SOC Platform"
-              tags={['React 18','FastAPI','PostgreSQL','Docker','Three.js','MITRE ATT&CK']}
-              desc="Full-stack security control plane: ITDR, 13-tab case management, 7-source IOC intel, email forensics, explainable AI, identity graph, DORA compliance, endpoint agent v5."
-              url="https://github.com/Prasanna-27eng/AegisTrace"
-              delay={0}
-            />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 2 }}>
             <ProjectCard
               title="WebSecGuard — Web Security Scanner"
-              tags={['Python','OWASP','Burp Suite','FastAPI']}
-              desc="Automated OWASP Top 10 scanner. Header analysis, CORS misconfiguration detection, injection testing, vulnerability reporting."
+              tags={['Python', 'OWASP', 'Burp Suite', 'FastAPI']}
+              desc="Automated OWASP Top 10 scanner. Header analysis, CORS misconfiguration detection, injection testing, and structured vulnerability reports."
               delay={0.08}
             />
             <ProjectCard
               title="Grand Line SOC Dashboard"
-              tags={['Kibana','Elastic SIEM','Python','KQL']}
-              desc="Real-time SOC metrics dashboard. Elastic SIEM aggregation, correlation rules, threat scoring, analyst workload management."
-              delay={0.16}
+              tags={['Kibana', 'Elastic SIEM', 'Python', 'KQL']}
+              desc="Real-time SOC metrics dashboard built on Elastic SIEM. Correlation rules, threat scoring, and analyst workload management."
+              delay={0.14}
             />
             <ProjectCard
               title="Automated Cloud Security Posture"
-              tags={['AWS','Python','boto3','IAM']}
-              desc="Cloud security posture checks for AWS. IAM policy analysis, S3 ACL audits, Security Group misconfigs, CIS Benchmark scoring."
-              delay={0.24}
+              tags={['AWS', 'Python', 'boto3', 'IAM']}
+              desc="Cloud security posture checks for AWS. IAM policy analysis, S3 ACL audits, Security Group misconfigs, and CIS Benchmark scoring."
+              delay={0.20}
             />
           </div>
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════════════
-          §6 EDUCATION
-          ════════════════════════════════════════════════════════════════ */}
-      <section style={{ background:'#0a0202', padding:'100px 32px' }}>
-        <div style={{ maxWidth:1100, margin:'0 auto' }}>
-          <SH label="Education" title="Academic background"/>
-          <div style={{ display:'flex', flexDirection:'column', gap:0 }}>
-            {[
-              { deg:'MSc Cyber Security',               school:'Dublin Business School, Dublin, Ireland',       dates:'Sep 2024 – Sep 2025 (Expected)' },
-              { deg:'B.E. Computer Science & Engineering', school:'PSG College of Technology, Coimbatore, India', dates:'2019 – 2023' },
-            ].map(({ deg, school, dates }, i) => (
-              <motion.div key={deg}
-                initial={{ opacity:0, x:-16 }}
-                whileInView={{ opacity:1, x:0 }}
-                viewport={{ once:true }}
-                transition={{ duration:0.65, delay:i*0.1, ease:E }}
-                style={{ display:'flex', gap:20, padding:'24px 0', borderTop:'1px solid rgba(255,255,255,0.06)', alignItems:'flex-start' }}
-              >
-                <GraduationCap size={16} color={RED} style={{ flexShrink:0, marginTop:2 }}/>
+      {/* ── EXPERIENCE ───────────────────────────────────────────────────── */}
+      <section style={{ padding: 'clamp(72px,10vw,112px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(245,240,232,0.05)' }}>
+        <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+          <Reveal style={{ marginBottom: 56 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'clamp(160px,20vw,240px) 1fr', gap: 'clamp(40px,6vw,80px)', alignItems: 'baseline' }}>
+              <span className="cg" style={{ fontSize: 11, color: GOLD, letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 600 }}>Experience</span>
+              <h2 className="cd" style={{ fontSize: 'clamp(26px,3.5vw,42px)', fontWeight: 700, color: '#F5F0E8', margin: 0, letterSpacing: '-0.02em' }}>
+                Where I've worked
+              </h2>
+            </div>
+          </Reveal>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'clamp(160px,20vw,240px) 1fr', gap: 'clamp(40px,6vw,80px)' }}>
+            <div/>
+            <div style={{ position: 'relative', paddingLeft: 28, borderLeft: '1px solid rgba(245,240,232,0.08)' }}>
+              {/* Gold dot */}
+              <div style={{ position: 'absolute', left: -5, top: 6, width: 10, height: 10, borderRadius: '50%', background: GOLD }}/>
+              <Reveal>
                 <div>
-                  <div style={{ fontSize:15, fontWeight:700, color:'#fff', marginBottom:4, fontFamily:'FSP DEMO - PODIUM Sharp 4.11,Almarai,sans-serif', textTransform:'uppercase' }}>{deg}</div>
-                  <div style={{ fontSize:12, color:'rgba(192,57,43,0.8)', marginBottom:3, ...MONO }}>{school}</div>
-                  <div style={{ fontSize:11, color:'rgba(255,255,255,0.35)', ...MONO }}>{dates}</div>
+                  <div className="cd" style={{ fontSize: 18, fontWeight: 600, color: '#F5F0E8', marginBottom: 4, letterSpacing: '-0.01em' }}>
+                    Cybersecurity Analyst
+                  </div>
+                  <div className="cg" style={{ fontSize: 13, color: GOLD, marginBottom: 4, fontWeight: 600 }}>
+                    Dublin, Ireland
+                  </div>
+                  <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'rgba(245,240,232,0.3)', letterSpacing: '0.08em', marginBottom: 16 }}>
+                    2024 — Present
+                  </div>
+                  <p className="cg" style={{ fontSize: 14, color: 'rgba(245,240,232,0.52)', lineHeight: 1.7, margin: 0 }}>
+                    Identity threat detection, incident response, and security tooling development. Built AegisTrace as an internal platform for SOC workflow automation.
+                  </p>
                 </div>
-              </motion.div>
-            ))}
+              </Reveal>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════════════
-          §7 CONTACT CTA
-          ════════════════════════════════════════════════════════════════ */}
-      <section style={{ background:'#0d0303', padding:'100px 32px' }}>
-        <div style={{ maxWidth:840, margin:'0 auto' }}>
-          <Reveal>
-            <div style={{ background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:0, padding:'72px 56px', textAlign:'center' }}>
-              <div style={{ fontSize:9, color:'rgba(192,57,43,0.82)', ...MONO, letterSpacing:'0.2em', textTransform:'uppercase', marginBottom:20 }}>Open to opportunities</div>
-              <h2 style={{ fontFamily:'FSP DEMO - PODIUM Sharp 4.11,Almarai,sans-serif', fontWeight:800, textTransform:'uppercase', fontSize:'clamp(28px,5vw,58px)', lineHeight:0.92, margin:'0 0 16px', letterSpacing:'-0.02em', color:'#fff' }}>
-                LET'S BUILD<br/>
-                <span style={{ color:RED }}>SOMETHING</span><br/>
-                SECURE.
+      {/* ── CERTIFICATIONS ───────────────────────────────────────────────── */}
+      <section style={{ padding: 'clamp(72px,10vw,112px) clamp(24px,5vw,72px)', background: '#060507', borderTop: '1px solid rgba(245,240,232,0.05)' }}>
+        <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+          <Reveal style={{ marginBottom: 48 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'clamp(160px,20vw,240px) 1fr', gap: 'clamp(40px,6vw,80px)', alignItems: 'baseline' }}>
+              <span className="cg" style={{ fontSize: 11, color: GOLD, letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 600 }}>Credentials</span>
+              <h2 className="cd" style={{ fontSize: 'clamp(26px,3.5vw,42px)', fontWeight: 700, color: '#F5F0E8', margin: 0, letterSpacing: '-0.02em' }}>
+                Certifications
               </h2>
-              <p style={{ fontFamily:'Inter,Almarai,sans-serif', fontSize:14, color:'rgba(255,255,255,0.48)', maxWidth:420, margin:'0 auto 40px', lineHeight:1.65, fontWeight:400 }}>
-                Cyber security analyst specialising in identity threat detection and incident response. Based in Dublin. Available for analyst and engineering roles.
-              </p>
-              <div style={{ display:'flex', justifyContent:'center', gap:12, flexWrap:'wrap' }}>
-                <a className="cta-black" href="mailto:prasanna80564@gmail.com">
-                  prasanna80564@gmail.com
-                  <ArrowUpRight size={14} className="arrow" style={{ flexShrink:0 }}/>
-                </a>
-                <a className="cta-border" href="https://github.com/Prasanna-27eng" target="_blank" rel="noopener noreferrer">
-                  <Github size={13}/> GitHub
-                </a>
-              </div>
+            </div>
+          </Reveal>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'clamp(160px,20vw,240px) 1fr', gap: 'clamp(40px,6vw,80px)' }}>
+            <div/>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 2 }}>
+              <CertChip name="SC-200 Microsoft Security Operations Analyst" issuer="Microsoft · 2025"    status="CERTIFIED"     done delay={0}/>
+              <CertChip name="CompTIA Security+"                             issuer="CompTIA · 2024"     status="CERTIFIED"     done delay={0.07}/>
+              <CertChip name="TCM Practical Ethical Hacking"                 issuer="TCM Security"       status="CERTIFIED"     done delay={0.14}/>
+              <CertChip name="Blue Team Labs Level 1 (BTL1)"                 issuer="Security Blue Team" status="IN PROGRESS"   done={false} delay={0.21}/>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── EDUCATION ────────────────────────────────────────────────────── */}
+      <section style={{ padding: 'clamp(72px,10vw,112px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(245,240,232,0.05)' }}>
+        <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+          <Reveal style={{ marginBottom: 48 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'clamp(160px,20vw,240px) 1fr', gap: 'clamp(40px,6vw,80px)', alignItems: 'baseline' }}>
+              <span className="cg" style={{ fontSize: 11, color: GOLD, letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 600 }}>Education</span>
+              <h2 className="cd" style={{ fontSize: 'clamp(26px,3.5vw,42px)', fontWeight: 700, color: '#F5F0E8', margin: 0, letterSpacing: '-0.02em' }}>
+                Academic background
+              </h2>
+            </div>
+          </Reveal>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'clamp(160px,20vw,240px) 1fr', gap: 'clamp(40px,6vw,80px)' }}>
+            <div/>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+              {[
+                { deg: 'MSc Information Systems & Computing', school: 'Dublin Business School', loc: 'Dublin, Ireland', dates: 'Sep 2024 – Sep 2025 (Expected)' },
+                { deg: 'B.E. Electronics & Communication Engineering', school: 'PSG College of Technology', loc: 'Coimbatore, India', dates: '2019 – 2023' },
+              ].map(({ deg, school, loc, dates }, i) => (
+                <motion.div key={deg}
+                  initial={{ opacity: 0, x: -12 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.7, delay: i * 0.1, ease: E }}
+                  style={{ padding: '28px 0', borderBottom: '1px solid rgba(245,240,232,0.05)', display: 'grid', gridTemplateColumns: '1fr auto', gap: 16, alignItems: 'start' }}
+                >
+                  <div>
+                    <div className="cd" style={{ fontSize: 16, fontWeight: 600, color: '#F5F0E8', marginBottom: 5, letterSpacing: '-0.01em' }}>{deg}</div>
+                    <div className="cg" style={{ fontSize: 13, color: GOLD, marginBottom: 3, fontWeight: 600 }}>{school}</div>
+                    <div className="cg" style={{ fontSize: 12, color: 'rgba(245,240,232,0.35)' }}>{loc}</div>
+                  </div>
+                  <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'rgba(245,240,232,0.28)', letterSpacing: '0.06em', textAlign: 'right', paddingTop: 4, whiteSpace: 'nowrap' }}>{dates}</div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA ──────────────────────────────────────────────────────────── */}
+      <section style={{ padding: 'clamp(96px,12vw,160px) clamp(24px,5vw,72px)', background: '#060507', borderTop: '1px solid rgba(245,240,232,0.05)', position: 'relative', overflow: 'hidden' }}>
+        <div aria-hidden style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 500, height: 300, background: 'radial-gradient(ellipse, rgba(245,158,11,0.07) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+        <div style={{ maxWidth: 720, margin: '0 auto', textAlign: 'center', position: 'relative' }}>
+          <Reveal>
+            <h2 className="cd" style={{ fontSize: 'clamp(30px,4.5vw,56px)', fontWeight: 700, color: '#F5F0E8', letterSpacing: '-0.03em', lineHeight: 0.95, marginBottom: 22, textWrap: 'balance' }}>
+              Let's build something secure.
+            </h2>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <p className="cg" style={{ fontSize: 15, color: 'rgba(245,240,232,0.45)', lineHeight: 1.7, marginBottom: 40, maxWidth: 400, margin: '0 auto 40px' }}>
+              Open to security analyst and engineering roles in Dublin or remote. Available immediately.
+            </p>
+          </Reveal>
+          <Reveal delay={0.18}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 14, flexWrap: 'wrap' }}>
+              <a href="mailto:prasanna80564@gmail.com" className="gold-btn" style={{ fontSize: 14, padding: '15px 34px' }}>
+                prasanna80564@gmail.com <Mail size={15}/>
+              </a>
+              <a href="https://github.com/Prasanna-27eng" target="_blank" rel="noopener noreferrer" className="ghost-btn" style={{ fontSize: 14, padding: '14px 26px' }}>
+                <Github size={14}/> GitHub
+              </a>
             </div>
           </Reveal>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer style={{ background:'#0a0202', borderTop:'1px solid rgba(255,255,255,0.05)', padding:'32px' }}>
-        <div style={{ maxWidth:1100, margin:'0 auto', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:12 }}>
-          <p style={{ color:'rgba(255,255,255,0.2)', fontSize:10, margin:0, ...MONO, letterSpacing:'0.1em' }}>
-            PRASANNA KUMAR SURENDRAN · DUBLIN · 2026
-          </p>
-          <div style={{ display:'flex', gap:24 }}>
-            {[['AegisTrace','/'],['Mission','/mission'],['Platform','/app/login']].map(([l,h]) => (
-              <Link key={l} to={h} style={{ color:'rgba(255,255,255,0.3)', textDecoration:'none', fontSize:11, fontFamily:'Inter,Almarai,sans-serif', letterSpacing:'0.1em' }}>{l}</Link>
-            ))}
-          </div>
+      {/* ── FOOTER ───────────────────────────────────────────────────────── */}
+      <footer style={{ borderTop: '1px solid rgba(245,240,232,0.05)', padding: '32px clamp(24px,5vw,72px)' }}>
+        <div style={{ maxWidth: 1240, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+          <span className="cd" style={{ color: 'rgba(245,240,232,0.2)', fontSize: 13, letterSpacing: '0.08em' }}>PRASANNA KUMAR SURENDRAN</span>
+          <span className="cg" style={{ color: 'rgba(245,240,232,0.16)', fontSize: 11 }}>Dublin · 2026</span>
         </div>
       </footer>
     </div>

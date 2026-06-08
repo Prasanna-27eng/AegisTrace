@@ -6,3 +6,5 @@ __pycache__/
 *.db
 /var/data/
 .DS_Store
+.claude/
+frontend/public/incoming/
