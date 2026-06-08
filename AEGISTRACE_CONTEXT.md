@@ -52,6 +52,8 @@ AegisTrace is a **free, open-source Trust Operating System for the AI-agent era*
 **GitHub:** https://github.com/Prasanna-27eng/AegisTrace  
 **Stack:** React 18 · FastAPI · SQLite/SQLModel · Groq API · NVIDIA NIM · Docker · Render free tier (VPS migration guide written for DigitalOcean/Hetzner/UpCloud)
 
+**Companion project:** `mcp-aegis` — MCP security gateway (`~/Documents/Claude/Projects/aegistrace-mcp-gateway/`)
+
 ---
 
 ## THE VISION (precise)
@@ -639,11 +641,64 @@ react, react-dom, react-router-dom, axios, zustand, lucide-react, react-scripts
 ### Priority 7 — v5.0+ Planned
 - [ ] SCIM endpoint (`/api/scim/v2`) — enterprise push-based identity sync
 - [ ] Least Agency enforcement — per-agent scope definition, auto-reject out-of-scope actions
-- [ ] MCP Security Gateway — Python httpx proxy layer intercepting MCP JSON-RPC (NOT Go; see architecture notes)
+- [x] **MCP Security Gateway** — shipped as standalone `mcp-aegis` package (see below)
 - [ ] Agent Supervision Console — per-AI-agent kill switches + task scope enforcement
 - [ ] Attacker Path Reconstruction — visual kill-chain across human + machine actors
 - [ ] Endpoint Agent Layer 3 (eBPF) — Falco companion process on Linux
 - [ ] Endpoint Agent Layer 4 (Memory Forensics) — Volatility 3 integration
+
+### mcp-aegis — Companion Project (v0.1.0, June 2026)
+
+**Standalone PyPI package:** `pip install mcp-aegis`  
+**Repo:** `~/Documents/Claude/Projects/aegistrace-mcp-gateway/`  
+**Description:** MCP security gateway that sits between any AI agent and any MCP server. Blocks dangerous tool calls by default, logs everything to SQLite, ships with a 7-rule default TOML policy.
+
+**Architecture:**
+```
+AI Agent → POST http://localhost:8765/ → mcp-aegis gateway
+                                          │
+                                     PolicyEngine (TOML rules)
+                                          │
+                                   BLOCK / ALLOW / LOG_ONLY
+                                          │
+                                     AuditLog (SQLite)
+                                     Webhook (optional → AegisTrace ingest)
+```
+
+**Files shipped (v0.1.0):**
+- `src/mcp_aegis/types.py` — shared dataclasses: MCPRequest, PolicyDecision, AuditEvent, Decision enum
+- `src/mcp_aegis/proxy.py` — MCPProxy: intercept JSON-RPC, policy-check, forward, write AuditEvent
+- `src/mcp_aegis/server.py` — FastAPI app: POST /, GET /sse (streaming passthrough), GET /health
+- `src/mcp_aegis/policy.py` — PolicyEngine: TOML loader, evaluate(), test(), reload(), from_default()
+- `src/mcp_aegis/policy_default.toml` — 7 default rules (TOML, not YAML — avoids Norway problem)
+- `src/mcp_aegis/audit.py` — SQLite WAL-mode log: sessions + events tables with session_id, optional webhook
+- `src/mcp_aegis/cli.py` — typer CLI: serve, logs, stats, policy test, policy show; rich formatting + plain fallback
+- `pyproject.toml` — hatchling build, mcp-aegis 0.1.0, Python ≥ 3.10
+- `README.md` — marketing README: Problem → Demo → Install → Config → What it blocks
+
+**Default policy decisions:**
+| Rule | Decision | Catches |
+|------|----------|---------|
+| block_shell_execution | BLOCK | bash, shell, exec, run_command, *_exec, *_bash |
+| block_credential_reads | BLOCK | ~/.ssh/*, ~/.aws/*, .env, credentials, .netrc, .gnupg/*, gcloud/* |
+| log_home_directory_crawl | LOG_ONLY | *_read, *_list under home paths |
+| log_network_requests | LOG_ONLY | http_request, curl, fetch, *_request, *_fetch |
+| log_git_credential_exposure | LOG_ONLY | .git/config, .gitconfig |
+| log_sampling_calls | LOG_ONLY | sampling/createMessage |
+| log_database_writes | LOG_ONLY | *_write, *_delete, *_drop, execute_sql, query |
+
+**CLI usage:**
+```bash
+mcp-aegis serve --upstream http://localhost:3000 --dry-run
+mcp-aegis logs --tail
+mcp-aegis stats
+mcp-aegis policy test bash         # exit 1 = BLOCK
+mcp-aegis policy show
+```
+
+**AegisTrace integration:** Set `MCP_AEGIS_WEBHOOK_URL` to `https://aegistrace/api/ingest/mcp-gateway` — every BLOCK/LOG_ONLY event POSTed in real time with session_id, tool name, decision, payload preview.
+
+**v0.2 roadmap:** stdio transport, REQUIRE_APPROVAL decision, AegisTrace native integration (decisions in AI Action Approval Queue).
 
 ### Priority 8 — NVIDIA NIM Phases (v7.0–v9.0 built)
 
