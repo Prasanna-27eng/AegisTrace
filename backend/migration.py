@@ -140,4 +140,12 @@ def run_migrations(engine):
                     conn.commit()
                 print(f"[migration] Added {col} to endpoint table")
 
+    # ── 10. CaseEmbedding table (NVIDIA Phase 2 — created by create_all) ────────
+    # SQLModel's create_all handles this automatically; nothing to ALTER here.
+    # Log it so the startup sequence is visible.
+    if "caseembedding" in inspector.get_table_names():
+        pass  # table exists — created by create_all
+    else:
+        print("[migration] CaseEmbedding table will be created by create_all")
+
     print("[migration] All migrations complete.")

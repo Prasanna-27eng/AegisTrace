@@ -9,6 +9,17 @@ from ai_router import call_ai, call_ai_json
 from routers.auth import get_current_user, _audit
 from models import User
 
+# NVIDIA integrations (graceful — all disabled if NVIDIA_API_KEY not set)
+try:
+    from agents.triage_agent import run_triage_agent
+    from agents.coordinator import run_coordinator
+    from embeddings import store_case_embedding, find_similar_cases
+    from guardrails import assert_safe
+    _NVIDIA_ENABLED = True
+except ImportError:
+    _NVIDIA_ENABLED = False
+    def assert_safe(msg): return None
+
 router = APIRouter(prefix="/api/cases", tags=["cases"])
 
 
@@ -210,10 +221,11 @@ def delete_case(
     return {"ok": True}
 
 
-# ── GENERATE AI ───────────────────────────────────────────────────────────────
+# ── GENERATE AI (NVIDIA Triage Agent + Groq fallback) ─────────────────────────
 @router.post("/{case_id}/generate-ai")
 async def generate_ai(
     case_id: int,
+    mode: str = "triage",   # "triage" | "coordinator" (full multi-agent pipeline)
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
@@ -221,10 +233,17 @@ async def generate_ai(
     if not case or case.org_id != user.org_id:
         raise HTTPException(404, "Case not found")
 
-    iocs  = json.loads(case.iocs or "[]")
-    mitre = json.loads(case.mitre_techniques or "[]")
-
-    prompt = f"""Analyse this security incident:
+    # ── NVIDIA multi-agent coordinator (full pipeline) ────────────────────────
+    if _NVIDIA_ENABLED and mode == "coordinator":
+        result = await run_coordinator(case, session)
+    elif _NVIDIA_ENABLED:
+        # ── NVIDIA function-calling triage agent ──────────────────────────────
+        result = await run_triage_agent(case, session)
+    else:
+        # ── Groq single-call fallback (original behaviour) ────────────────────
+        iocs  = json.loads(case.iocs or "[]")
+        mitre = json.loads(case.mitre_techniques or "[]")
+        prompt = f"""Analyse this security incident:
 Case: {case.case_number} — {case.title}
 Severity: {case.severity} | Type: {case.incident_type}
 Affected: {case.affected_systems}
@@ -244,24 +263,44 @@ Respond ONLY with valid JSON:
   "recommended_actions": ["action 1","action 2","action 3"]
 }}"""
 
-    result = call_ai_json("analysis", prompt, temperature=0.25, max_tokens=1500)
-    if result.get("parse_error"):
-        result = {"executive_summary": result.get("raw",""), "technical_summary": "",
-                  "severity_score": 50, "severity_reasoning": "",
-                  "mitre_techniques": [], "recommended_actions": []}
+        result = call_ai_json("analysis", prompt, temperature=0.25, max_tokens=1500)
+        if result.get("parse_error"):
+            result = {"executive_summary": result.get("raw", ""), "technical_summary": "",
+                      "severity_score": 50, "severity_reasoning": "",
+                      "mitre_techniques": [], "recommended_actions": []}
 
-    case.ai_executive_summary = result.get("executive_summary", "")
-    case.ai_technical_summary = result.get("technical_summary", "")
-    case.ai_severity_score    = result.get("severity_score", 50)
-    case.ai_severity_reasoning= result.get("severity_reasoning", "")
+    # ── Persist core analysis fields ─────────────────────────────────────────
+    case.ai_executive_summary  = result.get("executive_summary", "")
+    case.ai_technical_summary  = result.get("technical_summary", "")
+    case.ai_severity_score     = result.get("severity_score", 50)
+    case.ai_severity_reasoning = result.get("severity_reasoning", "")
     if result.get("mitre_techniques"):
         case.mitre_techniques = json.dumps(result["mitre_techniques"])
+
+    # Store specialist breakdowns and DORA draft in findings if present
+    if result.get("specialist_results") or result.get("dora_report_draft"):
+        import json as _j
+        extra = {}
+        if result.get("specialist_results"):
+            extra["specialist_results"] = result["specialist_results"]
+        if result.get("dora_report_draft"):
+            extra["dora_report_draft"]  = result["dora_report_draft"]
+        case.findings = (case.findings or "") + "\n\n[NVIDIA Agent Results]\n" + _j.dumps(extra, indent=2)[:2000]
+
     case.updated_at = datetime.utcnow()
     session.add(case)
     _audit(session, "ai_generated", "case", str(case.id), user.id, user.email)
     session.commit()
     session.refresh(case)
-    return case
+
+    # Phase 2: generate / refresh embedding after analysis
+    if _NVIDIA_ENABLED:
+        try:
+            store_case_embedding(case, session)
+        except Exception:
+            pass
+
+    return {**case.dict(), "nvidia_result": result}
 
 
 # ── AI CHAT ───────────────────────────────────────────────────────────────────
@@ -295,13 +334,32 @@ async def case_chat(
     if not message:
         raise HTTPException(400, "Message required")
 
+    # Phase 3: Llama Guard safety check (runs alongside existing PromptShield)
+    safety_error = assert_safe(message)
+    if safety_error:
+        raise HTTPException(400, safety_error)
+
     history = data.get("history", [])
+
+    # Phase 2: inject similar past cases into chat context
+    similar_context = ""
+    if _NVIDIA_ENABLED:
+        try:
+            similar = find_similar_cases(message, session, exclude_case_id=case.id, top_k=2, min_score=0.60)
+            if similar:
+                similar_context = "\n\nRelated past cases:\n" + "\n".join(
+                    f"- {s['case_number']}: {s['title']} (similarity: {s['score']})"
+                    for s in similar
+                )
+        except Exception:
+            pass
+
     context = f"""Case {case.case_number}: {case.title}
 Severity: {case.severity} | Type: {case.incident_type}
 Description: {case.description[:600]}
-Findings: {case.findings[:600]}
+Findings: {case.findings[:500]}
 IOCs: {case.iocs[:300]}
-MITRE: {case.mitre_techniques[:200]}"""
+MITRE: {case.mitre_techniques[:200]}{similar_context}"""
     # commands_run excluded from chat context — contains sensitive investigation steps
     prompt = f"Context:\n{context}\n\nAnalyst: {message}"
     reply = call_ai("chat", prompt, temperature=0.35, max_tokens=700,

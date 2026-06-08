@@ -59,6 +59,12 @@ services:
       - key: GREYNOISE_API_KEY
         sync: false
 
+      # ── NVIDIA NIM (Phases 1-5: agentic triage, embeddings, guardrails) ──
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: NVIDIA_GUARDRAILS
+        value: "true"
+
     disk:
       name: aegistrace-data
       mountPath: /var/data

@@ -735,3 +735,14 @@ class ITDRAlert(SQLModel, table=True):
     case_id: Optional[int] = Field(default=None, foreign_key="case.id")
     detected_at: datetime = Field(default_factory=datetime.utcnow)
     resolved_at: Optional[datetime] = Field(default=None)
+
+
+# ── NVIDIA Phase 2: Case Embeddings ──────────────────────────────────────────
+class CaseEmbedding(SQLModel, table=True):
+    """Stores NV-EmbedQA-E5-v5 embeddings for semantic case similarity search."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    case_id: int = Field(foreign_key="case.id", index=True, unique=True)
+    embedding: str = Field(default="[]", sa_column=Column(Text))   # JSON float array (1024-dim)
+    summary_text: str = Field(default="", sa_column=Column(Text))  # text that was embedded
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
