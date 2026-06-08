@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { ArrowUpRight, Award, Crown, X, Menu,
          Shield, Brain, Mail, Github, ExternalLink,
-         Check, GraduationCap, Code, Globe, Cpu, Activity } from 'lucide-react';
+         Check, GraduationCap, Code, Globe, Cpu, Activity,
+         Star, Clock, Calendar, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -181,6 +182,29 @@ export default function Portfolio() {
           0%{ top:-2px; }
           100%{ top:100%; }
         }
+        @keyframes blurFadeUp{
+          from{ opacity:0; filter:blur(20px); transform:translateY(40px); }
+          to{ opacity:1; filter:blur(0); transform:translateY(0); }
+        }
+        .blur-fade-up{ opacity:0; animation:blurFadeUp 1s ease-out forwards; }
+
+        /* ─── Liquid glass (cinematic pill buttons) ─── */
+        .liquid-glass{
+          background:rgba(255,255,255,0.01);
+          background-blend-mode:luminosity;
+          -webkit-backdrop-filter:blur(4px);
+          backdrop-filter:blur(4px);
+          border:none;
+          box-shadow:inset 0 1px 1px rgba(255,255,255,0.1);
+          position:relative; overflow:hidden;
+        }
+        .liquid-glass::before{
+          content:''; position:absolute; inset:0; border-radius:inherit; padding:1.4px;
+          background:linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%, rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%, rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
+          -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite:xor; mask-composite:exclude;
+          pointer-events:none;
+        }
 
         .fade-up-0{ opacity:0; animation:fade-up 0.8s ease-out 0s forwards; }
         .fade-up-1{ opacity:0; animation:fade-up 0.8s ease-out 0.2s forwards; }
@@ -262,10 +286,15 @@ export default function Portfolio() {
           </div>
         )}
 
-        {/* Dark overlay gradient */}
-        <div aria-hidden style={{ position:'absolute', inset:0, zIndex:1, background:'linear-gradient(to bottom,rgba(10,2,2,0.45) 0%,rgba(10,2,2,0.15) 40%,rgba(10,2,2,0.72) 100%)' }}/>
         {/* Left vignette to make text readable */}
-        <div aria-hidden style={{ position:'absolute', inset:0, zIndex:1, background:'linear-gradient(to right,rgba(10,2,2,0.78) 0%,rgba(10,2,2,0.4) 50%,transparent 100%)' }}/>
+        <div aria-hidden style={{ position:'absolute', inset:0, zIndex:1, background:'linear-gradient(to right,rgba(10,2,2,0.7) 0%,rgba(10,2,2,0.32) 50%,transparent 100%)' }}/>
+        {/* Bottom blur-mask overlay — cinematic streaming-hero look (blur only, no dark gradient) */}
+        <div aria-hidden style={{
+          position:'absolute', inset:0, zIndex:2, pointerEvents:'none',
+          WebkitBackdropFilter:'blur(28px)', backdropFilter:'blur(28px)',
+          WebkitMaskImage:'linear-gradient(to top, black 0%, transparent 45%)',
+          maskImage:'linear-gradient(to top, black 0%, transparent 45%)',
+        }}/>
 
         {/* ── NAVBAR ── */}
         <nav style={{ position:'absolute', top:0, left:0, right:0, zIndex:20, padding:'20px 32px', display:'flex', justifyContent:'space-between', alignItems:'center' }} className="fade-in-1">
@@ -311,54 +340,84 @@ export default function Portfolio() {
         {/* ── HERO CONTENT ── */}
         <div style={{ position:'absolute', inset:0, zIndex:10, display:'flex', flexDirection:'column', justifyContent:'flex-end', padding:'0 32px 48px' }}>
 
-          {/* Tagline */}
-          <div className="fade-up-0" style={{ display:'flex', alignItems:'center', gap:8, marginBottom:20 }}>
-            <Crown size={14} color="rgba(255,255,255,0.65)" style={{ flexShrink:0 }}/>
-            <span style={{ fontFamily:'Inter,Almarai,sans-serif', fontSize:'clamp(9px,1.2vw,11px)', color:'rgba(255,255,255,0.65)', letterSpacing:'0.3em', textTransform:'uppercase' }}>
-              Cyber Security Analyst · Dublin, Ireland
+          {/* Metadata row — cinematic streaming-hero style */}
+          <div className="blur-fade-up" style={{ animationDelay:'150ms', display:'flex', flexWrap:'wrap', alignItems:'center', gap:'10px 22px', marginBottom:20, fontFamily:'Inter,Almarai,sans-serif', fontSize:'clamp(10px,1.3vw,13px)', color:'rgba(255,255,255,0.75)' }}>
+            <span style={{ display:'flex', alignItems:'center', gap:6 }}>
+              <Star size={14} color="#fff" fill="#fff" style={{ flexShrink:0 }}/> <strong style={{ fontWeight:600, color:'#fff' }}>SC-200</strong> Certified Analyst
+            </span>
+            <span style={{ width:1, height:14, background:'rgba(255,255,255,0.25)' }}/>
+            <span style={{ display:'flex', alignItems:'center', gap:6 }}>
+              <Clock size={14} style={{ flexShrink:0 }}/> 12+ Cases Investigated
+            </span>
+            <span style={{ width:1, height:14, background:'rgba(255,255,255,0.25)' }}/>
+            <span style={{ display:'flex', alignItems:'center', gap:6 }}>
+              <Calendar size={14} style={{ flexShrink:0 }}/> Dublin, Ireland
             </span>
           </div>
 
-          {/* Main heading — VANGUARD style */}
-          <div className="fade-up-1">
-            <h1 style={{
-              fontFamily:'FSP DEMO - PODIUM Sharp 4.11,Almarai,sans-serif',
-              fontWeight:800, textTransform:'uppercase', lineHeight:0.88,
-              letterSpacing:'-0.02em', margin:'0 0 24px',
-              fontSize:'clamp(52px,10.5vw,130px)',
-              color:'#fff',
-            }}>
+          {/* Main heading — VANGUARD style, with subtle 3D tilt */}
+          <div className="blur-fade-up" style={{ animationDelay:'280ms', perspective:1000 }}>
+            <motion.h1
+              onMouseMove={(e) => {
+                const r = e.currentTarget.getBoundingClientRect();
+                const px = (e.clientX - r.left) / r.width - 0.5;
+                const py = (e.clientY - r.top) / r.height - 0.5;
+                e.currentTarget.style.setProperty('--rx', `${(-py * 6).toFixed(2)}deg`);
+                e.currentTarget.style.setProperty('--ry', `${(px * 8).toFixed(2)}deg`);
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.setProperty('--rx', '0deg');
+                e.currentTarget.style.setProperty('--ry', '0deg');
+              }}
+              style={{
+                fontFamily:'FSP DEMO - PODIUM Sharp 4.11,Almarai,sans-serif',
+                fontWeight:800, textTransform:'uppercase', lineHeight:0.88,
+                letterSpacing:'-0.02em', margin:'0 0 24px',
+                fontSize:'clamp(52px,10.5vw,130px)',
+                color:'#fff', transformStyle:'preserve-3d', cursor:'default',
+                '--rx':'0deg', '--ry':'0deg',
+                transform:'rotateX(var(--rx)) rotateY(var(--ry))',
+                transition:'transform 280ms cubic-bezier(0.23,1,0.32,1)',
+              }}
+            >
               PRASANNA.<br/>
               <span style={{ color:RED }}>KUMAR.</span><br/>
               SURENDRAN.
-            </h1>
+            </motion.h1>
           </div>
 
           {/* Subtext */}
-          <div className="fade-up-2" style={{ marginBottom:28 }}>
+          <div className="blur-fade-up" style={{ animationDelay:'400ms', marginBottom:28 }}>
             <p style={{ fontFamily:'Inter,Almarai,sans-serif', fontSize:'clamp(12px,1.4vw,15px)', color:'rgba(255,255,255,0.7)', lineHeight:1.55, margin:0, maxWidth:480 }}>
               We don't just detect threats —<br/>
               <strong style={{ color:'#fff' }}>we trace them to their source.</strong>
             </p>
           </div>
 
-          {/* CTA row */}
-          <div className="fade-up-3" style={{ display:'flex', flexWrap:'wrap', alignItems:'center', gap:16, marginBottom:32 }}>
-            <a className="cta-black" href="#skills">
-              VIEW MY WORK
-              <ArrowUpRight size={14} className="arrow" style={{ flexShrink:0 }}/>
+          {/* CTA row — liquid-glass pills, cinematic style */}
+          <div className="blur-fade-up" style={{ animationDelay:'520ms', display:'flex', flexWrap:'wrap', alignItems:'center', gap:14, marginBottom:32 }}>
+            <a href="#skills" style={{
+              display:'inline-flex', alignItems:'center', gap:8,
+              background:'#fff', color:'#000', borderRadius:9999, fontWeight:600,
+              padding:'13px 28px', fontFamily:'Inter,Almarai,sans-serif', fontSize:13,
+              textDecoration:'none', transition:'background 180ms cubic-bezier(0.23,1,0.32,1)',
+            }}
+              onMouseEnter={e=>e.currentTarget.style.background='#e2e2e2'}
+              onMouseLeave={e=>e.currentTarget.style.background='#fff'}
+            >
+              <Play size={16} fill="#000"/> View My Work
             </a>
-            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-              <Award size={28} color="rgba(255,255,255,0.4)"/>
-              <div>
-                <div style={{ fontFamily:'Inter,Almarai,sans-serif', fontSize:9, color:'rgba(255,255,255,0.55)', letterSpacing:'0.16em', textTransform:'uppercase' }}>Microsoft Certified</div>
-                <div style={{ fontFamily:'Inter,Almarai,sans-serif', fontSize:9, color:'rgba(255,255,255,0.55)', letterSpacing:'0.16em', textTransform:'uppercase' }}>SC-200 Analyst</div>
-              </div>
-            </div>
+            <a href="mailto:prasanna80564@gmail.com" className="liquid-glass" style={{
+              display:'inline-flex', alignItems:'center', gap:8, borderRadius:9999, fontWeight:500,
+              padding:'13px 28px', fontFamily:'Inter,Almarai,sans-serif', fontSize:13,
+              color:'#fff', textDecoration:'none',
+            }}>
+              Get In Touch <ArrowUpRight size={14}/>
+            </a>
           </div>
 
           {/* Stats row */}
-          <div className="fade-up-4" style={{ display:'flex', flexWrap:'wrap', gap:'12px 40px', paddingTop:24, borderTop:'1px solid rgba(255,255,255,0.1)' }}>
+          <div className="blur-fade-up" style={{ animationDelay:'650ms', display:'flex', flexWrap:'wrap', gap:'12px 40px', paddingTop:24, borderTop:'1px solid rgba(255,255,255,0.1)' }}>
             {[
               { val:'12+',  label:'Cases Investigated' },
               { val:'847',  label:'IOCs Processed' },
