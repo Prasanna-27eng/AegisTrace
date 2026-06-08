@@ -1,801 +1,676 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-  Github, Linkedin, Mail, Phone, ArrowRight, Award, Code, Briefcase,
-  Shield, Brain, Terminal, GitMerge, Activity, ChevronRight,
-  MapPin, GraduationCap, Download, ExternalLink, CheckCircle, Clock,
-  Menu, XCircle, Zap, User, BookOpen
-} from 'lucide-react';
-import Logo from '../components/Logo';
-import api from '../api/client';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import { ArrowRight, Shield, Brain, Terminal, GitMerge, Activity,
+         Award, Code, MapPin, GraduationCap, Mail, Github,
+         ExternalLink, ChevronRight, Cpu, Globe, Lock,
+         Layers, TrendingUp, Zap, Eye, Server, ArrowUpRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-/* ─── Mini particle bg ─────────────────────────────────────────────────── */
-/* ─── Hex Grid Pulse ──────────────────────────────────────────────────────────
-   A honeycomb of hexagons. Ripple waves radiate from random source points
-   and light up every hex they pass through. Three colour channels (blue,
-   purple, teal) are pre-assigned per hex, creating a mosaic that pulses
-   with overlapping rings of light. Completely different from the landing
-   aurora or the login signal monitor.
-────────────────────────────────────────────────────────────────────────────── */
-function HeroBg() {
-  const ref = useRef(null);
-  useEffect(() => {
-    const cv = ref.current; if (!cv) return;
-    const ctx = cv.getContext('2d');
-    let W, H, raf, grid = [];
+/* ═══════════════════════════════════════════════════════════════════════════
+   AEGISTRACE PORTFOLIO — Cyberpunk Command Center
+   Three.js procedural city · Mission-control HUD · framer-motion
+   Emil Kowalski easing [0.23, 1, 0.32, 1] · Impeccable layout
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-    const R  = 20;                          // hex circumradius
-    const RW = R * 2;
-    const RH = R * Math.sqrt(3);
-    // Three colour tints
-    const COLS = [[74,142,219],[124,58,237],[6,182,212]];
+const E    = [0.23, 1, 0.32, 1];
+const EC   = [0.22, 1, 0.36, 1];
+const TEAL = '#2dd4bf';
+const DIM  = 'rgba(45,212,191,0.65)';
+const BG   = '#020a10';
+const MONO = { fontFamily:'JetBrains Mono,monospace' };
 
-    function buildGrid() {
-      grid = [];
-      const cols = Math.ceil(W / (RW * 0.75)) + 2;
-      const rows = Math.ceil(H / RH) + 2;
-      for (let c = -1; c <= cols; c++) {
-        for (let r = -1; r <= rows; r++) {
-          grid.push({
-            cx: c * RW * 0.75,
-            cy: r * RH + (c % 2 === 0 ? 0 : RH / 2),
-            bright: 0,
-            ci: Math.floor(Math.random() * 3),   // colour index
-          });
-        }
-      }
-    }
-
-    function resize() {
-      W = cv.offsetWidth; H = cv.offsetHeight;
-      cv.width = W; cv.height = H;
-      buildGrid();
-    }
-    resize();
-    window.addEventListener('resize', resize);
-
-    // Active ripple waves
-    const waves = [];
-    let wCD = 500 + Math.random() * 400;   // cooldown to next wave
-    let last = 0;
-
-    function hexPath(x, y, r) {
-      ctx.beginPath();
-      for (let i = 0; i < 6; i++) {
-        const a = (Math.PI / 3) * i - Math.PI / 6;
-        const px = x + (r - 1) * Math.cos(a);
-        const py = y + (r - 1) * Math.sin(a);
-        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-      }
-      ctx.closePath();
-    }
-
-    function frame(ts) {
-      const dt = Math.min(ts - last, 40);
-      last = ts;
-
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(0, 0, W, H);
-
-      // Spawn new wave
-      wCD -= dt;
-      if (wCD <= 0) {
-        waves.push({
-          x: Math.random() * W,
-          y: Math.random() * H * 0.8,   // bias toward upper half
-          r: 0,
-          spd: 0.065 + Math.random() * 0.055,
-          maxR: 160 + Math.random() * 220,
-        });
-        wCD = 550 + Math.random() * 950;
-      }
-
-      // Advance waves, remove finished
-      for (let i = waves.length - 1; i >= 0; i--) {
-        waves[i].r += waves[i].spd * dt;
-        if (waves[i].r > waves[i].maxR) waves.splice(i, 1);
-      }
-
-      // Update + draw each hex
-      grid.forEach(h => {
-        // Find peak brightness from all active waves
-        let peak = 0;
-        waves.forEach(w => {
-          const d = Math.sqrt((h.cx - w.x) ** 2 + (h.cy - w.y) ** 2);
-          const diff = Math.abs(d - w.r);
-          const band = 28;
-          if (diff < band) peak = Math.max(peak, 1 - diff / band);
-        });
-
-        // Smooth toward peak
-        h.bright += (peak - h.bright) * 0.09;
-
-        if (h.bright < 0.015) return;
-
-        const [cr, cg, cb] = COLS[h.ci];
-        hexPath(h.cx, h.cy, R);
-        ctx.fillStyle   = `rgba(${cr},${cg},${cb},${h.bright * 0.13})`;
-        ctx.fill();
-        ctx.strokeStyle = `rgba(${cr},${cg},${cb},${0.05 + h.bright * 0.38})`;
-        ctx.lineWidth   = 0.7;
-        ctx.stroke();
-      });
-
-      // Bottom fade
-      const fade = ctx.createLinearGradient(0, H * 0.35, 0, H);
-      fade.addColorStop(0, 'transparent');
-      fade.addColorStop(1, 'rgba(0,0,0,0.96)');
-      ctx.fillStyle = fade;
-      ctx.fillRect(0, 0, W, H);
-
-      raf = requestAnimationFrame(frame);
-    }
-
-    raf = requestAnimationFrame(frame);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); };
-  }, []);
-  return <canvas ref={ref} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />;
-}
-
-/* ─── Animated terminal window ─────────────────────────────────────────── */
-function TerminalWindow() {
-  const mono = {fontFamily:'JetBrains Mono,monospace'};
-  const [lines, setLines] = useState([]);
-  const SEQUENCE = [
-    {t:200,  text:'$ aegistrace --mode analyst --target "prasanna"', color:'rgba(240,240,248,0.9)'},
-    {t:900,  text:'[+] Profile loaded: Prasanna Kumar Surendran', color:'#5A8A9F'},
-    {t:1600, text:'[+] Location: Dublin, Ireland', color:'rgba(240,240,248,0.5)'},
-    {t:2300, text:'[+] Role: SOC Analyst · Blue Team L1', color:'rgba(240,240,248,0.5)'},
-    {t:3000, text:'[*] Scanning certifications...', color:'#EAB308'},
-    {t:3700, text:'    ✓ SC-200  Microsoft Security Ops Associate', color:'#22C55E'},
-    {t:4200, text:'    ✓ Sec+   CompTIA Security+', color:'#22C55E'},
-    {t:4700, text:'    ✓ TCM    Practical Ethical Hacking', color:'#22C55E'},
-    {t:5400, text:'[*] Analysing projects...', color:'#EAB308'},
-    {t:6100, text:'    → AegisTrace v5.0  LIVE    [Trust OS · EDR]', color:'#5A8A9F'},
-    {t:6800, text:'    → WebSecGuard       SHIPPED [XSS/CSRF ext.]', color:'#8FAFC0'},
-    {t:7500, text:'[+] Threat intel stack: MITRE ATT&CK · KQL · SPL', color:'rgba(240,240,248,0.5)'},
-    {t:8200, text:'[✓] Analysis complete. Open to hire.', color:'#22C55E'},
-    {t:9000, text:'$ _', color:'rgba(240,240,248,0.5)'},
-  ];
-  useEffect(()=>{
-    const timers = SEQUENCE.map(({t,text,color})=>setTimeout(()=>setLines(l=>[...l,{text,color}]),t));
-    return ()=>timers.forEach(clearTimeout);
-  },[]);
-  return (
-    <div style={{background:'rgba(0,0,0,0.6)',border:'1px solid rgba(240,240,248,0.1)',borderRadius:12,overflow:'hidden',backdropFilter:'blur(10px)'}}>
-      {/* Terminal titlebar */}
-      <div style={{display:'flex',alignItems:'center',gap:8,padding:'10px 16px',background:'rgba(255,255,255,0.04)',borderBottom:'1px solid rgba(255,255,255,0.07)'}}>
-        <div style={{width:10,height:10,borderRadius:'50%',background:'#EF4444'}}/>
-        <div style={{width:10,height:10,borderRadius:'50%',background:'#EAB308'}}/>
-        <div style={{width:10,height:10,borderRadius:'50%',background:'#22C55E'}}/>
-        <span style={{marginLeft:8,fontSize:11,color:'rgba(240,240,248,0.35)',...mono}}>aegistrace — analyst@soc:~</span>
-      </div>
-      <div style={{padding:'16px',minHeight:280,maxHeight:340,overflowY:'auto'}}>
-        {lines.map((l,i)=>(
-          <div key={i} style={{fontSize:12,color:l.color,...mono,lineHeight:1.8,whiteSpace:'pre'}}>{l.text}</div>
-        ))}
-        {lines.length < SEQUENCE.length && (
-          <span style={{fontSize:12,color:'rgba(90,138,159,0.7)',...mono,animation:'blink 1s step-end infinite'}}>▋</span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ─── Skill bar ────────────────────────────────────────────────────────── */
-function SkillBar({ label, pct, color }) {
-  const mono = {fontFamily:'JetBrains Mono,monospace'};
-  return (
-    <div style={{marginBottom:10}}>
-      <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
-        <span style={{fontSize:11,...mono,color:'rgba(240,240,248,0.65)'}}>{label}</span>
-        <span style={{fontSize:10,...mono,color}}>{pct}%</span>
-      </div>
-      <div style={{height:3,background:'rgba(255,255,255,0.08)',borderRadius:2,overflow:'hidden'}}>
-        <div style={{height:'100%',width:`${pct}%`,background:`linear-gradient(90deg,${color}88,${color})`,borderRadius:2,transition:'width 1s ease'}}/>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Data ──────────────────────────────────────────────────────────────── */
-const SKILLS = [
-  { cat:'SIEM & Detection Engineering', color:'#4E7A8E', tags:['Microsoft Sentinel','Splunk SIEM','KQL','SPL','Log Correlation','Detection Rules','Alert Tuning'] },
-  { cat:'Endpoint & Identity Security', color:'#7AABB5', tags:['MS Defender for Endpoint','Active Directory','Identity Protection','EDR Response','Group Policy','AWS Security'] },
-  { cat:'Offensive Security & PenTest', color:'#F5B84B', tags:['Burp Suite','Nmap','Nessus','Metasploit','OWASP Top 10','Wireshark','Gobuster'] },
-  { cat:'Forensics & Threat Intel',     color:'#4BE38A', tags:['Email Forensics','PCAP Analysis','OSINT','MITRE ATT&CK','VirusTotal','Phishing Investigation','IOC Hunting'] },
-  { cat:'Cloud & DevSecOps',            color:'#4E7A8E', tags:['AWS EC2 / S3 / IAM','Docker','Terraform','Ansible','GitHub Actions','Python','Bash Scripting'] },
-  { cat:'Frameworks & Compliance',      color:'#7AABB5', tags:['GDPR','ISO 27001','NIST CSF','SOC 2','DORA','Cyber Kill Chain','Diamond Model'] },
-];
-
-const SKILL_BARS = [
-  {label:'Microsoft Sentinel / KQL',   pct:88, color:'#4E7A8E'},
-  {label:'Incident Response',          pct:84, color:'#EF4444'},
-  {label:'MITRE ATT&CK Mapping',       pct:82, color:'#8FAFC0'},
-  {label:'Threat Intelligence',        pct:80, color:'#4BE38A'},
-  {label:'Email Forensics',            pct:85, color:'#F5B84B'},
-  {label:'Python / Automation',        pct:78, color:'#4E7A8E'},
-  {label:'React / FastAPI (Tooling)',   pct:80, color:'#7AABB5'},
-  {label:'Cloud Security (AWS)',        pct:72, color:'#F5B84B'},
-];
-
-const CERTS = [
-  { name:'Microsoft SC-200',             sub:'Security Operations Associate',   date:'Apr 2026', status:'completed', color:'#0078D4' },
-  { name:'CompTIA Security+',            sub:'SY0-701',                         date:'Sep 2024', status:'completed', color:'#EF4444' },
-  { name:'TCM Practical Ethical Hacking',sub:'TCM Security',                    date:'Oct 2024', status:'completed', color:'#4BE38A' },
-  { name:'TCM Practical Help Desk',      sub:'TCM Security',                    date:'Oct 2024', status:'completed', color:'#4BE38A' },
-  { name:'AIG Shield Up',                sub:'Forage Job Simulation',           date:'Mar 2025', status:'completed', color:'#F5B84B' },
-  { name:'BTL1',                         sub:'Security Blue Team Level 1',      date:'55% — In Progress', status:'ongoing', color:'#4E7A8E' },
-  { name:'eJPT',                         sub:'eLearnSecurity Junior PenTester', date:'20% — In Progress', status:'ongoing', color:'#7AABB5' },
-  { name:'SC-300',                       sub:'Microsoft Identity & Access',     date:'15% — In Progress', status:'ongoing', color:'#0078D4' },
-];
-
-const PROJECTS = [
-  { title:'AegisTrace — Trust Operating System · AI-Agent Era', period:'Jun 2025 — Present', desc:'Production-grade SOC control plane with full EDR. v5.0 ships Endpoint Agent with Honey Token Trap, DNS/DGA detection, YARA-lite engine, auto-block, USB + registry monitoring and guardian process alongside ITDR, Identity Graph, Trust Timeline, and Provenance Ledger.', tags:['React','FastAPI','Groq AI','VirusTotal','SQLite','Docker','Render','ITDR','EDR'], badge:'Live — v5.0', badgeColor:'#4BE38A', link:null, highlight:true,
-    features:['Endpoint Agent v5.0 — 🍯 Honey Token Trap, DNS/DGA, YARA-lite, auto-block engine, guardian process','ITDR — credential stuffing, impossible travel, new device, privilege escalation (6 detectors)','Pluggable identity risk engine · Identity Graph · Trust Timeline · Provenance Ledger','Explainable AI — full reasoning chain on every verdict · 7-source IOC enrichment','18 hardware forensic tools · Email forensics (SPF/DKIM/DMARC) · DORA Article 19'] },
-  { title:'WebSecGuard — Browser Vulnerability Scanner', period:'Jun–Sep 2025 · MSc Dissertation', desc:'Chrome extension (Manifest V3) for real-time XSS and CSRF detection. Detects 25+ injection points on OWASP Juice Shop during testing.', tags:['JavaScript','Chrome Extension API','Manifest V3','OWASP','Burp Suite'], badge:'Security Research', badgeColor:'#EF4444', link:'https://github.com/prasanna80564/web-scanner-', highlight:false },
-  { title:'Grand Line SOC Dashboard', period:'May 2026', desc:'Full-featured SOC dashboard with MITRE ATT&CK mapping, VirusTotal IOC enrichment, AI-generated case summaries, role-based access control, and one-click PDF report export.', tags:['React 18','Firebase','MITRE ATT&CK','VirusTotal API','Groq AI','RBAC'], badge:'Blue Team', badgeColor:'#7AABB5', link:'https://github.com/Prasanna-27eng/grant-line-soc-', highlight:false },
-  { title:'Automated Cloud Deployment & CI/CD', period:'Jan–Mar 2025', desc:'End-to-end automated deployment pipeline to AWS EC2. Infrastructure-as-code with Terraform, configuration management via Ansible, CI/CD through GitHub Actions. Reduced deployment time by 70%.', tags:['Terraform','Ansible','Docker','AWS EC2','GitHub Actions','IaC'], badge:'Cloud/DevOps', badgeColor:'#4E7A8E', link:'https://github.com/prasanna80564/networking', highlight:false },
-];
-
-const FOCUS = [
-  { Icon:Shield,   label:'SOC Operations',       desc:'Alert triage, incident response, case management, threat investigation in Sentinel and Splunk.' },
-  { Icon:Brain,    label:'AI-Augmented Analysis', desc:'Multi-model AI routing for IOC extraction, email classification, case analysis, and YARA generation.' },
-  { Icon:GitMerge, label:'Identity Security',     desc:'Tracking compromised identities, service accounts, API keys, and agents as first-class security entities.' },
-  { Icon:Terminal, label:'Security Tooling',      desc:'Building open-source analyst tools that solve real SOC pain points, deployed on free infrastructure.' },
-  { Icon:Activity, label:'Threat Hunting',        desc:'Cross-case IOC correlation, campaign detection, MITRE heatmaps, and proactive threat pattern discovery.' },
-];
-
-const MONO = { fontFamily:'JetBrains Mono, monospace' };
-const SERIF = { fontFamily:'Instrument Serif, Georgia, serif' };
-
-/* ─── Neural Field background animation ─────────────────────────────────── */
-function NeuralField() {
-  const cvRef = useRef(null);
-  const mRef  = useRef({ x: -9999, y: -9999 });
+/* ──────────────────────────────────────────────────────────────────────────
+   THREE.JS 3D CITY BACKGROUND
+   Procedural buildings, particle system, rotating camera
+   ─────────────────────────────────────────────────────────────────────── */
+function CityCanvas() {
+  const mountRef = useRef(null);
+  const animRef  = useRef(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    const cv = cvRef.current;
-    if (!cv) return;
-    const ctx = cv.getContext('2d');
-    let W, H, raf;
+    if (failed) return;
+    let THREE;
+    try { THREE = require('three'); } catch { setFailed(true); return; }
 
-    const resize = () => {
-      W = cv.offsetWidth; H = cv.offsetHeight;
-      cv.width = W; cv.height = H;
-    };
-    resize();
-    window.addEventListener('resize', resize);
-    const onMouse = e => { mRef.current = { x: e.clientX, y: e.clientY }; };
-    window.addEventListener('mousemove', onMouse);
+    const container = mountRef.current;
+    if (!container) return;
 
-    const N = 90;
-    const pts = Array.from({ length: N }, () => ({
-      x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1200),
-      y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
-      vx: (Math.random() - 0.5) * 0.25,
-      vy: (Math.random() - 0.5) * 0.25,
-      r:  0.8 + Math.random() * 1.4,
-      baseA: 0.12 + Math.random() * 0.28,
-    }));
+    let renderer, scene, camera, frame;
 
-    function frame() {
-      ctx.fillStyle = 'rgba(0,0,0,0.07)';
-      ctx.fillRect(0, 0, W, H);
+    try {
+      /* ── Renderer ── */
+      renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setClearColor(0x020a10, 1);
+      container.appendChild(renderer.domElement);
 
-      const mx = mRef.current.x, my = mRef.current.y;
+      /* ── Scene ── */
+      scene  = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x020a10, 0.022);
 
-      pts.forEach(p => {
-        const dx = p.x - mx, dy = p.y - my;
-        const d  = Math.sqrt(dx * dx + dy * dy) || 1;
+      /* ── Camera ── */
+      camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 400);
+      camera.position.set(0, 22, 52);
+      camera.lookAt(0, 4, 0);
 
-        if (d < 110) {
-          // Repulsion
-          const f = ((110 - d) / 110) * 0.55;
-          p.vx += (dx / d) * f;
-          p.vy += (dy / d) * f;
-        } else if (d < 260) {
-          // Soft attraction
-          const f = ((d - 110) / 150) * 0.028;
-          p.vx -= (dx / d) * f;
-          p.vy -= (dy / d) * f;
-        }
+      /* ── Ambient + directional lights ── */
+      scene.add(new THREE.AmbientLight(0x0a1520, 1.4));
+      const dirLight = new THREE.DirectionalLight(0x2dd4bf, 1.8);
+      dirLight.position.set(8, 18, 12);
+      scene.add(dirLight);
+      const redLight = new THREE.PointLight(0xff2200, 3.2, 60);
+      redLight.position.set(-18, 8, 0);
+      scene.add(redLight);
+      const blueLight = new THREE.PointLight(0x003366, 2.2, 50);
+      blueLight.position.set(18, 6, -10);
+      scene.add(blueLight);
 
-        // Centre gravity
-        p.vx += (W / 2 - p.x) * 0.00006;
-        p.vy += (H / 2 - p.y) * 0.00006;
+      /* ── Ground grid ── */
+      const grid = new THREE.GridHelper(120, 40, 0x0d3030, 0x061515);
+      grid.position.y = -0.05;
+      scene.add(grid);
 
-        p.vx *= 0.93; p.vy *= 0.93;
-        p.x += p.vx; p.y += p.vy;
+      /* ── Procedural city ── */
+      const buildingMat = new THREE.MeshLambertMaterial({ color:0x0a1a1a });
+      const glowMat     = new THREE.MeshBasicMaterial({ color:0x2dd4bf, wireframe:true });
+      const redMat      = new THREE.MeshBasicMaterial({ color:0xff3300, wireframe:true });
 
-        if (p.x < 30) p.vx += 0.4;
-        if (p.x > W - 30) p.vx -= 0.4;
-        if (p.y < 30) p.vy += 0.4;
-        if (p.y > H - 30) p.vy -= 0.4;
+      const GRID = 9;
+      const SPACING = 8;
+      const buildingGroup = new THREE.Group();
+      for (let x = -GRID; x <= GRID; x += 2) {
+        for (let z = -GRID; z <= GRID; z += 2) {
+          const w  = 1.2 + Math.random() * 2;
+          const d  = 1.2 + Math.random() * 2;
+          const h  = 2   + Math.random() * 18;
+          const bx = x * SPACING * 0.5 + (Math.random() - 0.5) * 2;
+          const bz = z * SPACING * 0.5 + (Math.random() - 0.5) * 2;
 
-        const md   = Math.sqrt((p.x - mx) ** 2 + (p.y - my) ** 2);
-        const glow = Math.max(0, 1 - md / 180);
-        const alpha = Math.min(0.9, p.baseA + glow * 0.55);
-        const rr = p.r + glow * 2;
+          const geo  = new THREE.BoxGeometry(w, h, d);
+          const mesh = new THREE.Mesh(geo, buildingMat.clone());
+          mesh.position.set(bx, h/2, bz);
+          buildingGroup.add(mesh);
 
-        ctx.beginPath(); ctx.arc(p.x, p.y, rr, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,255,255,${alpha})`; ctx.fill();
-      });
-
-      // Connections
-      for (let i = 0; i < N; i++) {
-        for (let j = i + 1; j < N; j++) {
-          const dx = pts[i].x - pts[j].x;
-          const dy = pts[i].y - pts[j].y;
-          const d  = Math.sqrt(dx * dx + dy * dy);
-          if (d < 85) {
-            ctx.beginPath();
-            ctx.moveTo(pts[i].x, pts[i].y);
-            ctx.lineTo(pts[j].x, pts[j].y);
-            ctx.strokeStyle = `rgba(255,255,255,${(1 - d / 85) * 0.10})`;
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-          }
+          /* glowing top edges */
+          const edges    = new THREE.EdgesGeometry(geo);
+          const mat      = Math.random() > 0.7 ? redMat : glowMat;
+          const wireframe = new THREE.LineSegments(edges, mat);
+          wireframe.position.copy(mesh.position);
+          wireframe.material = wireframe.material.clone();
+          wireframe.material.opacity = 0.06 + Math.random() * 0.14;
+          wireframe.material.transparent = true;
+          buildingGroup.add(wireframe);
         }
       }
+      scene.add(buildingGroup);
 
-      raf = requestAnimationFrame(frame);
+      /* ── Particle data nodes ── */
+      const PARTICLES = 420;
+      const pPositions = new Float32Array(PARTICLES * 3);
+      for (let i = 0; i < PARTICLES; i++) {
+        pPositions[i*3]   = (Math.random() - 0.5) * 90;
+        pPositions[i*3+1] = Math.random() * 30;
+        pPositions[i*3+2] = (Math.random() - 0.5) * 90;
+      }
+      const pGeo = new THREE.BufferGeometry();
+      pGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+      const pMat = new THREE.PointsMaterial({ color:0x2dd4bf, size:0.28, transparent:true, opacity:0.7 });
+      scene.add(new THREE.Points(pGeo, pMat));
+
+      /* ── Floating data lines (vertical) ── */
+      for (let i = 0; i < 18; i++) {
+        const x = (Math.random() - 0.5) * 70;
+        const z = (Math.random() - 0.5) * 70;
+        const h = 2 + Math.random() * 12;
+        const lineGeo = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(x, 0, z),
+          new THREE.Vector3(x, h, z),
+        ]);
+        const lineMat = new THREE.LineBasicMaterial({ color: Math.random() > 0.5 ? 0x2dd4bf : 0xff3300, transparent:true, opacity:0.35 });
+        scene.add(new THREE.Line(lineGeo, lineMat));
+      }
+
+      /* ── Animate ── */
+      let t = 0;
+      const animate = () => {
+        frame = requestAnimationFrame(animate);
+        t += 0.005;
+        camera.position.x = Math.sin(t * 0.3) * 22;
+        camera.position.z = 52 + Math.cos(t * 0.2) * 10;
+        camera.position.y = 22 + Math.sin(t * 0.18) * 4;
+        camera.lookAt(0, 4, 0);
+        buildingGroup.rotation.y = t * 0.02;
+        renderer.render(scene, camera);
+      };
+      animate();
+
+      /* ── Resize ── */
+      const onResize = () => {
+        if (!container) return;
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+      };
+      window.addEventListener('resize', onResize);
+
+      animRef.current = { frame, cleanup: () => {
+        window.removeEventListener('resize', onResize);
+        cancelAnimationFrame(frame);
+        renderer.dispose();
+        if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
+      }};
+    } catch {
+      setFailed(true);
     }
-
-    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
-    frame();
 
     return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener('resize', resize);
-      window.removeEventListener('mousemove', onMouse);
+      if (animRef.current?.cleanup) animRef.current.cleanup();
     };
-  }, []);
+  }, [failed]);
 
-  return (
-    <canvas ref={cvRef} style={{
-      position: 'fixed', inset: 0, width: '100%', height: '100%',
-      pointerEvents: 'none', zIndex: 0,
-    }} />
-  );
+  if (failed) {
+    return (
+      <div aria-hidden style={{ position:'absolute', inset:0, background:BG }}>
+        <div style={{ position:'absolute', inset:0, backgroundImage:'linear-gradient(rgba(45,212,191,0.12) 1px,transparent 1px),linear-gradient(90deg,rgba(45,212,191,0.12) 1px,transparent 1px)', backgroundSize:'60px 60px' }}/>
+        <div style={{ position:'absolute', inset:0, background:'radial-gradient(ellipse 70% 50% at 50% 60%,rgba(45,212,191,0.2) 0%,transparent 65%)' }}/>
+        <div style={{ position:'absolute', inset:0, background:'radial-gradient(ellipse 130% 130% at 50% 50%,transparent 35%,rgba(2,10,16,0.95) 100%)' }}/>
+        <div style={{ position:'absolute', left:0, right:0, height:2, top:0, background:'linear-gradient(90deg,transparent,rgba(45,212,191,0.9) 50%,transparent)', animation:'scan 6s linear infinite' }}/>
+        <style>{`@keyframes scan{0%{top:-2px}100%{top:100%}}`}</style>
+      </div>
+    );
+  }
+
+  return <div ref={mountRef} aria-hidden style={{ position:'absolute', inset:0 }}/>;
 }
 
-/* ─── Alphanumeric Ghost Morph ─────────────────────────────────────────── */
-const GHOST_CHARS = '0123456789ABCDEF_$#@!%^&*<>?[]{}|~';
-
-function GhostText({ text, style = {}, as: Tag = 'span' }) {
-  const [display, setDisplay] = useState(text);
-  const [morphing, setMorphing] = useState(false);
-  const frameRef = useRef(null);
-
-  const scramble = () => {
-    if (morphing) return;
-    setMorphing(true);
-    const original = text;
-    const totalMs  = 320;
-    const fps      = 28;
-    const steps    = Math.round((totalMs / 1000) * fps);
-    let step = 0;
-
-    const tick = () => {
-      step++;
-      const progress = step / steps;
-      // Each character: resolve left-to-right as progress increases
-      const scrambled = original.split('').map((ch, i) => {
-        const charProgress = progress - (i / original.length) * 0.55;
-        if (ch === ' ') return ' ';
-        if (charProgress >= 1) return ch;
-        return GHOST_CHARS[Math.floor(Math.random() * GHOST_CHARS.length)];
-      }).join('');
-      setDisplay(scrambled);
-
-      if (step < steps) {
-        frameRef.current = setTimeout(tick, 1000 / fps);
-      } else {
-        setDisplay(original);
-        setMorphing(false);
-      }
-    };
-    frameRef.current = setTimeout(tick, 0);
+/* ──────────────────────────────────────────────────────────────────────────
+   HUD COMPONENTS — mission-control sci-fi overlays
+   ─────────────────────────────────────────────────────────────────────── */
+function HudCorner({ pos }) {
+  const corners = {
+    'tl': { top:16, left:16, borderTop:`2px solid ${TEAL}`, borderLeft:`2px solid ${TEAL}` },
+    'tr': { top:16, right:16, borderTop:`2px solid ${TEAL}`, borderRight:`2px solid ${TEAL}` },
+    'bl': { bottom:16, left:16, borderBottom:`2px solid ${TEAL}`, borderLeft:`2px solid ${TEAL}` },
+    'br': { bottom:16, right:16, borderBottom:`2px solid ${TEAL}`, borderRight:`2px solid ${TEAL}` },
   };
-
-  useEffect(() => () => clearTimeout(frameRef.current), []);
-
-  return (
-    <Tag
-      style={{ cursor: 'default', display: 'inline', ...style }}
-      onMouseEnter={scramble}
-    >
-      {display}
-    </Tag>
-  );
+  return <div aria-hidden style={{ position:'absolute', width:22, height:22, ...corners[pos], zIndex:10 }}/>;
 }
 
-/* ─── Section heading ──────────────────────────────────────────────────── */
-function SectionHead({ label, title, accent }) {
+function HudStatus() {
+  const [tick, setTick] = useState(0);
+  useEffect(() => { const id = setInterval(() => setTick(t => t+1), 1200); return () => clearInterval(id); }, []);
   return (
-    <div style={{marginBottom:32}}>
-      <div style={{fontSize:10,color:'#4E7A8E',...MONO,letterSpacing:'0.2em',textTransform:'uppercase',marginBottom:10}}>◇ {label}</div>
-      <h2 style={{...SERIF,fontSize:'clamp(1.7rem,2.8vw,2.4rem)',fontWeight:400,letterSpacing:'-0.015em',lineHeight:1.1}}>
-        <GhostText text={title} />{' '}
-        <span style={{color:'#4E7A8E',fontStyle:'italic'}}>
-          <GhostText text={accent} />
-        </span>
-      </h2>
+    <div aria-hidden style={{ position:'absolute', bottom:24, left:24, zIndex:10, display:'flex', flexDirection:'column', gap:4 }}>
+      {[
+        { k:'SYS', v:'OPERATIONAL', c:TEAL },
+        { k:'TGT', v:`33.0486°N 35.0456°E`, c:DIM },
+        { k:'SEQ', v:String(tick).padStart(4,'0'), c:DIM },
+      ].map(({ k,v,c }) => (
+        <div key={k} style={{ display:'flex', gap:8, fontSize:9, ...MONO }}>
+          <span style={{ color:'rgba(45,212,191,0.45)', letterSpacing:'0.1em' }}>{k}</span>
+          <span style={{ color:c, letterSpacing:'0.07em' }}>{v}</span>
+        </div>
+      ))}
     </div>
   );
 }
 
-export default function Portfolio() {
-  const navigate = useNavigate();
-  const [stats, setStats] = useState({ total_cases:0, total_iocs:0, vt_lookups:0, closed_cases:0 });
-  const [publicCases, setPublicCases] = useState([]);
-  const [mobileNav, setMobileNav] = useState(false);
-  const [activeSection, setActiveSection] = useState('hero');
-
-  useEffect(() => {
-    api.get('/api/portfolio/stats').then(r=>setStats(r.data)).catch(()=>{});
-    api.get('/api/public/cases').then(r=>setPublicCases(r.data)).catch(()=>{});
-  }, []);
-
-  const SECTIONS = [
-    {id:'hero',    label:'Overview'},
-    {id:'focus',   label:'Focus'},
-    {id:'skills',  label:'Skills'},
-    {id:'certs',   label:'Certifications'},
-    {id:'projects',label:'Projects'},
-    {id:'edu',     label:'Education'},
-    {id:'contact', label:'Contact'},
-  ];
-
-  const scrollTo = id => { document.getElementById(id)?.scrollIntoView({behavior:'smooth'}); setMobileNav(false); };
-
+function HudRadar() {
   return (
-    <div style={{minHeight:'100vh',background:'#000000',color:'#EBEBEB',fontFamily:'Inter,system-ui,sans-serif',position:'relative'}}>
-      <NeuralField />
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600;700&display=swap');
-        @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-        ::selection{background:rgba(78,122,142,0.3);color:#fff}
-        .skill-tag{background:rgba(78,122,142,0.06);border:1px solid rgba(78,122,142,0.15);color:#6BABEC;font-size:0.71rem;padding:4px 10px;border-radius:4px;font-family:'JetBrains Mono',monospace}
-        .proj-card{background:rgba(12,18,32,0.6);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:22px;transition:border-color 0.2s,transform 0.2s;display:flex;flex-direction:column}
-        .proj-card:hover{border-color:rgba(78,122,142,0.2);transform:translateY(-2px)}
-        .case-card{background:rgba(12,18,32,0.6);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:18px 20px;border-left:2px solid #4E7A8E;transition:border-color 0.2s}
-        .case-card:hover{border-color:rgba(78,122,142,0.4)}
-        .focus-card{padding:20px;background:rgba(12,18,32,0.5);border:1px solid rgba(255,255,255,0.07);border-radius:10px;transition:border-color 0.2s,transform 0.2s}
-        .focus-card:hover{border-color:rgba(78,122,142,0.2);transform:translateY(-2px)}
-        .sidebar-link{display:block;padding:8px 16px;font-size:0.72rem;color:#787878;text-decoration:none;border-radius:6px;transition:all 0.15s;font-family:'JetBrains Mono',monospace;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;background:none;border:none;text-align:left;width:100%}
-        .sidebar-link:hover,.sidebar-link.active{color:#4E7A8E;background:rgba(78,122,142,0.07)}
-        .mobile-nav-drawer{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.97);z-index:200;display:flex;flex-direction:column;padding:24px;backdrop-filter:blur(20px)}
-        @media(max-width:900px){
-          .port-sidebar{display:none!important}
-          .port-main{margin-left:0!important;max-width:100%!important}
-          .port-section{padding:48px 20px!important}
-          .port-grid-2{grid-template-columns:1fr!important}
-          .port-grid-3{grid-template-columns:1fr!important}
-          .port-stat-grid{grid-template-columns:1fr 1fr!important}
-          .hero-cols{grid-template-columns:1fr!important}
-        }
-      `}</style>
-
-      {/* ── FIXED TOP NAV ── */}
-      <nav style={{position:'fixed',top:0,left:0,right:0,zIndex:100,background:'rgba(0,0,0,0.92)',backdropFilter:'blur(14px)',borderBottom:'1px solid rgba(255,255,255,0.06)',padding:'12px 24px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-        <Logo size={22} showText/>
-        <div style={{display:'flex',gap:20,alignItems:'center'}}>
-          {/* Desktop links */}
-          <div style={{display:'flex',gap:16}} className="port-desktop-links">
-            <a href="/" className="port-nav-link" style={{color:'#787878',textDecoration:'none',fontSize:'0.78rem',...MONO,letterSpacing:'0.06em',textTransform:'uppercase'}}>Home</a>
-            <a href="/mission" className="port-nav-link" style={{color:'#787878',textDecoration:'none',fontSize:'0.78rem',...MONO,letterSpacing:'0.06em',textTransform:'uppercase'}}>Mission</a>
-            <a href="/public" className="port-nav-link" style={{color:'#787878',textDecoration:'none',fontSize:'0.78rem',...MONO,letterSpacing:'0.06em',textTransform:'uppercase'}}>Cases</a>
-          </div>
-          <div style={{display:'flex',gap:8}}>
-            <a href="https://github.com/Prasanna-27eng" target="_blank" rel="noreferrer"
-              style={{display:'flex',alignItems:'center',gap:5,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:6,padding:'7px 14px',fontSize:'0.78rem',color:'#A8A8A8',textDecoration:'none'}}>
-              <Github size={13}/> GitHub
-            </a>
-            <a href="mailto:Prasanna80564@gmail.com"
-              style={{display:'flex',alignItems:'center',gap:5,background:'#4E7A8E',border:'none',borderRadius:6,padding:'7px 14px',fontSize:'0.78rem',color:'white',textDecoration:'none',fontWeight:600}}>
-              <Mail size={13}/> Contact
-            </a>
-          </div>
-          <button onClick={()=>setMobileNav(true)} style={{display:'none',background:'none',border:'1px solid rgba(240,240,248,0.15)',borderRadius:6,padding:'7px 9px',cursor:'pointer',color:'#EBEBEB'}} className="port-mobile-btn">
-            <Menu size={16}/>
-          </button>
+    <div aria-hidden style={{ position:'absolute', top:72, right:24, width:72, height:72, zIndex:10 }}>
+      <div style={{ width:'100%', height:'100%', border:`1px solid rgba(45,212,191,0.3)`, borderRadius:'50%', position:'relative' }}>
+        <div style={{ position:'absolute', top:'50%', left:'50%', width:'66%', height:'66%', transform:'translate(-50%,-50%)', border:`1px solid rgba(45,212,191,0.18)`, borderRadius:'50%' }}/>
+        <div style={{ position:'absolute', top:'50%', left:0, right:0, height:1, background:'rgba(45,212,191,0.15)', marginTop:-0.5 }}/>
+        <div style={{ position:'absolute', left:'50%', top:0, bottom:0, width:1, background:'rgba(45,212,191,0.15)', marginLeft:-0.5 }}/>
+        {/* Rotating sweep */}
+        <div style={{ position:'absolute', inset:0, borderRadius:'50%', overflow:'hidden' }}>
+          <div style={{
+            position:'absolute', top:'50%', left:'50%', width:'50%', height:2, transformOrigin:'0% 50%',
+            background:`linear-gradient(90deg,rgba(45,212,191,0.6),transparent)`,
+            animation:'radar-sweep 3s linear infinite',
+          }}/>
         </div>
-      </nav>
+        {/* Blips */}
+        {[[55,30],[20,60],[70,68]].map(([x,y],i) => (
+          <div key={i} style={{ position:'absolute', left:`${x}%`, top:`${y}%`, width:3, height:3, borderRadius:'50%', background:TEAL, boxShadow:`0 0 4px ${TEAL}`, transform:'translate(-50%,-50%)' }}/>
+        ))}
+      </div>
+      <style>{`@keyframes radar-sweep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
+}
 
-      {/* Mobile drawer */}
-      {mobileNav && (
-        <div className="mobile-nav-drawer">
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:28}}>
-            <Logo size={22} showText/>
-            <button onClick={()=>setMobileNav(false)} style={{background:'none',border:'none',cursor:'pointer',color:'rgba(240,240,248,0.6)'}}><XCircle size={22}/></button>
+/* ──────────────────────────────────────────────────────────────────────────
+   TERMINAL WINDOW
+   ─────────────────────────────────────────────────────────────────────── */
+function TerminalWindow({ lines }) {
+  const [shown, setShown] = useState(0);
+  useEffect(() => {
+    if (shown >= lines.length) return;
+    const id = setTimeout(() => setShown(s => s+1), 80);
+    return () => clearTimeout(id);
+  }, [shown, lines.length]);
+  return (
+    <div style={{ background:'rgba(0,0,0,0.7)', border:'1px solid rgba(45,212,191,0.2)', borderRadius:10, overflow:'hidden', backdropFilter:'blur(12px)' }}>
+      <div style={{ padding:'8px 14px', borderBottom:'1px solid rgba(45,212,191,0.1)', display:'flex', gap:6, alignItems:'center' }}>
+        {['#EF4444','#EAB308','#22C55E'].map(c => <div key={c} style={{ width:8, height:8, borderRadius:'50%', background:c }}/>)}
+        <span style={{ fontSize:10, color:'rgba(45,212,191,0.45)', ...MONO, marginLeft:6, letterSpacing:'0.08em' }}>aegistrace :: analyst terminal</span>
+      </div>
+      <div style={{ padding:'14px 16px', display:'flex', flexDirection:'column', gap:3 }}>
+        {lines.slice(0, shown).map((l, i) => (
+          <div key={i} style={{ fontSize:11, ...MONO, color: l.startsWith('>') ? TEAL : l.startsWith('#') ? 'rgba(45,212,191,0.45)' : 'rgba(225,224,204,0.7)', lineHeight:1.5 }}>
+            {l}
           </div>
-          {SECTIONS.map(s=>(
-            <button key={s.id} onClick={()=>scrollTo(s.id)}
-              style={{display:'block',padding:'14px 0',fontSize:15,color:'rgba(240,240,248,0.75)',textDecoration:'none',borderBottom:'1px solid rgba(255,255,255,0.05)',background:'none',border:'none',cursor:'pointer',textAlign:'left',...MONO,letterSpacing:'0.08em',textTransform:'uppercase',width:'100%'}}>
-              {s.label}
-            </button>
-          ))}
+        ))}
+        {shown < lines.length && <div style={{ fontSize:11, ...MONO, color:TEAL }}>▊</div>}
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   SKILL BAR
+   ─────────────────────────────────────────────────────────────────────── */
+function SkillBar({ skill, pct, delay=0 }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once:true });
+  return (
+    <div ref={ref} style={{ display:'flex', flexDirection:'column', gap:4 }}>
+      <div style={{ display:'flex', justifyContent:'space-between', fontSize:11 }}>
+        <span style={{ color:'rgba(225,224,204,0.8)' }}>{skill}</span>
+        <span style={{ ...MONO, color:TEAL }}>{pct}%</span>
+      </div>
+      <div style={{ height:3, background:'rgba(45,212,191,0.08)', borderRadius:9999, overflow:'hidden' }}>
+        <motion.div
+          initial={{ width:0 }}
+          animate={inView ? { width:`${pct}%` } : {}}
+          transition={{ duration:1.1, delay, ease:E }}
+          style={{ height:'100%', background:`linear-gradient(90deg,${TEAL},rgba(45,212,191,0.6))`, borderRadius:9999 }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   CERT CARD
+   ─────────────────────────────────────────────────────────────────────── */
+function CertCard({ name, issuer, status, color, delay=0 }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once:true, margin:'-60px' });
+  return (
+    <motion.div ref={ref}
+      initial={{ scale:0.95, opacity:0 }}
+      animate={inView ? { scale:1, opacity:1 } : {}}
+      transition={{ duration:0.6, delay, ease:EC }}
+      style={{ background:'rgba(4,14,22,0.85)', border:`1px solid ${color}22`, borderRadius:12, padding:18, borderLeft:`3px solid ${color}` }}
+    >
+      <div style={{ fontSize:11, fontWeight:700, color:'#E1E0CC', marginBottom:4, lineHeight:1.3 }}>{name}</div>
+      <div style={{ fontSize:10, color:'rgba(225,224,204,0.45)', marginBottom:8, ...MONO }}>{issuer}</div>
+      <div style={{ display:'inline-flex', padding:'3px 8px', borderRadius:9999, background:`${color}18`, fontSize:9, color, ...MONO, letterSpacing:'0.08em' }}>
+        {status}
+      </div>
+    </motion.div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   PROJECT CARD
+   ─────────────────────────────────────────────────────────────────────── */
+function ProjectCard({ title, tags, desc, url, highlight=false, delay=0 }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once:true, margin:'-60px' });
+  return (
+    <motion.div ref={ref}
+      initial={{ scale:0.95, opacity:0, y:16 }}
+      animate={inView ? { scale:1, opacity:1, y:0 } : {}}
+      transition={{ duration:0.65, delay, ease:EC }}
+      style={{ background: highlight ? 'rgba(45,212,191,0.06)' : 'rgba(4,14,22,0.85)', border:`1px solid ${highlight ? 'rgba(45,212,191,0.22)' : 'rgba(255,255,255,0.06)'}`, borderRadius:14, padding:22, position:'relative', overflow:'hidden' }}
+    >
+      {highlight && (
+        <div style={{ position:'absolute', top:12, right:12, fontSize:9, color:TEAL, ...MONO, letterSpacing:'0.1em', background:'rgba(45,212,191,0.1)', padding:'3px 8px', borderRadius:9999 }}>
+          FLAGSHIP
         </div>
       )}
+      <div style={{ fontSize:14, fontWeight:700, color:'#E1E0CC', marginBottom:8, paddingRight:highlight?64:0, lineHeight:1.25 }}>{title}</div>
+      <div style={{ display:'flex', flexWrap:'wrap', gap:5, marginBottom:12 }}>
+        {tags.map(t => (
+          <span key={t} style={{ fontSize:9, color:'rgba(45,212,191,0.7)', border:'1px solid rgba(45,212,191,0.2)', borderRadius:9999, padding:'2px 8px', ...MONO }}>{t}</span>
+        ))}
+      </div>
+      <div style={{ fontSize:12, color:'rgba(225,224,204,0.5)', lineHeight:1.55, marginBottom:url?12:0 }}>{desc}</div>
+      {url && (
+        <a href={url} target="_blank" rel="noopener noreferrer"
+          style={{ display:'inline-flex', alignItems:'center', gap:4, fontSize:11, color:TEAL, textDecoration:'none' }}>
+          View project <ExternalLink size={10}/>
+        </a>
+      )}
+    </motion.div>
+  );
+}
 
-      {/* ── TWO-COLUMN LAYOUT ── */}
-      <div style={{display:'flex',paddingTop:57,position:'relative',zIndex:1}}>
+/* ──────────────────────────────────────────────────────────────────────────
+   SECTION HEADING
+   ─────────────────────────────────────────────────────────────────────── */
+function SH({ label, title }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once:true, margin:'-60px' });
+  return (
+    <motion.div ref={ref}
+      initial={{ opacity:0, y:20 }}
+      animate={inView ? { opacity:1, y:0 } : {}}
+      transition={{ duration:0.7, ease:E }}
+      style={{ marginBottom:36 }}
+    >
+      <div style={{ fontSize:9, color:'rgba(45,212,191,0.7)', ...MONO, letterSpacing:'0.18em', textTransform:'uppercase', marginBottom:10 }}>{label}</div>
+      <h2 style={{ fontSize:'clamp(22px,3.5vw,40px)', fontWeight:700, color:'#E1E0CC', margin:0, letterSpacing:'-0.02em', lineHeight:1.1 }}>{title}</h2>
+    </motion.div>
+  );
+}
 
-        {/* LEFT SIDEBAR — sticky */}
-        <aside className="port-sidebar" style={{width:220,flexShrink:0,position:'sticky',top:57,height:'calc(100vh - 57px)',overflow:'auto',background:'rgba(0,0,0,0.6)',borderRight:'1px solid rgba(255,255,255,0.06)',display:'flex',flexDirection:'column',padding:'28px 12px'}}>
-          {/* Mini profile */}
-          <div style={{textAlign:'center',marginBottom:24,padding:'0 8px'}}>
-            <div style={{width:64,height:64,borderRadius:'50%',background:'rgba(78,122,142,0.1)',border:'2px solid rgba(78,122,142,0.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'1.2rem',fontWeight:700,color:'#4E7A8E',margin:'0 auto 10px',...MONO}}>PK</div>
-            <div style={{fontSize:'0.8rem',fontWeight:600,color:'#EBEBEB'}}>Prasanna Kumar</div>
-            <div style={{fontSize:'0.68rem',color:'#787878',...MONO,marginTop:3}}>SOC Analyst · Trust OS Builder</div>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:5,marginTop:6}}>
-              <div style={{width:5,height:5,borderRadius:'50%',background:'#4BE38A',boxShadow:'0 0 5px #4BE38A'}}/>
-              <span style={{fontSize:'0.62rem',color:'#4BE38A',...MONO}}>Open to roles</span>
+/* ═════════════════════════════════════════════════════════════════════════
+   MAIN PORTFOLIO
+═════════════════════════════════════════════════════════════════════════ */
+export default function Portfolio() {
+  const TERM_LINES = [
+    '# aegistrace :: analyst terminal v2.0',
+    '> whoami',
+    'prasanna_kumar_surendran',
+    '> status',
+    'LOCATION   :: Dublin, Ireland',
+    'ROLE       :: Cyber Security Analyst',
+    'FOCUS      :: Identity Threat Detection · Incident Response',
+    'CERT       :: SC-200 Microsoft Security Operations Analyst',
+    '> project --active',
+    'AegisTrace v4.2 :: LIVE  [aegistraceproject.onrender.com]',
+    '> scan --identity-threats --live',
+    'Scanning... 847 IOCs processed · 12 cases · 3 critical',
+    '> _',
+  ];
+
+  return (
+    <div style={{ background:BG, overflowX:'hidden', color:'#E1E0CC', minHeight:'100vh' }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Instrument+Serif:ital@1&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+        *,*::before,*::after{box-sizing:border-box;font-family:'Almarai',-apple-system,sans-serif;}
+        .serif{font-family:'Instrument Serif',serif;font-style:italic;}
+        .label{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(45,212,191,0.72);}
+
+        .cta{display:inline-flex;align-items:center;gap:10px;background:#2dd4bf;border-radius:9999px;padding:10px 14px 10px 22px;border:none;cursor:pointer;font-weight:700;font-size:13px;color:#000;transition:gap 180ms cubic-bezier(0.23,1,0.32,1);}
+        .cta .circle{background:#000;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform 180ms cubic-bezier(0.23,1,0.32,1);}
+        .cta:hover{gap:15px;} .cta:hover .circle{transform:scale(1.1);}
+
+        .ghost{display:inline-flex;align-items:center;gap:8px;background:transparent;border-radius:9999px;padding:10px 22px;border:1px solid rgba(45,212,191,0.22);color:rgba(45,212,191,0.7);font-size:13px;cursor:pointer;text-decoration:none;transition:all 180ms cubic-bezier(0.23,1,0.32,1);}
+        .ghost:hover{color:#2dd4bf;border-color:rgba(45,212,191,0.45);}
+
+        .nl{font-size:12px;color:rgba(225,224,204,0.62);text-decoration:none;transition:color 180ms cubic-bezier(0.23,1,0.32,1);}
+        .nl:hover{color:#E1E0CC;}
+
+        @media(prefers-reduced-motion:reduce){*[style*="animation"]{animation:none!important;}}
+      `}</style>
+
+      {/* ── HERO ─────────────────────────────────────────────────────────── */}
+      <section style={{ height:'100vh', padding:16, position:'relative' }}>
+        <div style={{ position:'relative', width:'100%', height:'100%', borderRadius:28, overflow:'hidden' }}>
+
+          <CityCanvas />
+
+          {/* Gradient overlay */}
+          <div aria-hidden style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom,rgba(2,10,16,0.1) 0%,transparent 30%,rgba(2,10,16,0.75) 100%)', zIndex:2 }}/>
+
+          {/* HUD corners */}
+          {['tl','tr','bl','br'].map(p => <HudCorner key={p} pos={p}/>)}
+          <HudStatus/>
+          <HudRadar/>
+
+          {/* Navbar */}
+          <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', zIndex:20 }}>
+            <nav style={{ background:'rgba(2,10,16,0.92)', backdropFilter:'blur(16px)', borderRadius:'0 0 22px 22px', padding:'12px 32px', display:'flex', gap:36, alignItems:'center' }}>
+              <Link to="/"          className="nl">← Back</Link>
+              <Link to="/mission"   className="nl">Mission</Link>
+              <Link to="/app/login" className="nl" style={{ color:'#2dd4bf' }}>Platform →</Link>
+            </nav>
+          </div>
+
+          {/* Hero content */}
+          <div style={{ position:'absolute', bottom:0, left:0, right:0, zIndex:20, padding:'0 32px 32px' }}>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:32, alignItems:'flex-end' }}>
+              <div>
+                <motion.div
+                  initial={{ opacity:0, y:20 }}
+                  animate={{ opacity:1, y:0 }}
+                  transition={{ duration:0.65, delay:0.2, ease:E }}
+                  style={{ fontSize:9, color:'rgba(45,212,191,0.72)', ...MONO, letterSpacing:'0.18em', textTransform:'uppercase', marginBottom:12 }}
+                >
+                  Cyber Security Analyst · Dublin, Ireland
+                </motion.div>
+                <h1 style={{ margin:0, fontSize:'clamp(48px,7vw,100px)', fontWeight:800, lineHeight:0.88, letterSpacing:'-0.04em', color:'#E1E0CC' }}>
+                  <motion.span
+                    initial={{ y:60, opacity:0 }}
+                    animate={{ y:0, opacity:1 }}
+                    transition={{ duration:0.78, delay:0.3, ease:E }}
+                    style={{ display:'block' }}
+                  >
+                    Prasanna
+                  </motion.span>
+                  <motion.span
+                    initial={{ y:60, opacity:0 }}
+                    animate={{ y:0, opacity:1 }}
+                    transition={{ duration:0.78, delay:0.42, ease:E }}
+                    style={{ display:'block', color:TEAL }}
+                  >
+                    Kumar
+                  </motion.span>
+                </h1>
+              </div>
+              <div style={{ display:'flex', flexDirection:'column', gap:16, paddingBottom:8 }}>
+                <TerminalWindow lines={TERM_LINES}/>
+                <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
+                  <motion.a
+                    className="cta"
+                    href="mailto:prasanna80564@gmail.com"
+                    initial={{ y:16, opacity:0 }}
+                    animate={{ y:0, opacity:1 }}
+                    transition={{ duration:0.65, delay:1.2, ease:E }}
+                    whileTap={{ scale:0.97 }}
+                  >
+                    CONTACT ME
+                    <span className="circle"><ArrowUpRight size={13}/></span>
+                  </motion.a>
+                  <motion.a
+                    className="ghost"
+                    href="https://github.com/Prasanna-27eng"
+                    target="_blank" rel="noopener noreferrer"
+                    initial={{ y:16, opacity:0 }}
+                    animate={{ y:0, opacity:1 }}
+                    transition={{ duration:0.65, delay:1.4, ease:E }}
+                  >
+                    <Github size={13}/> GitHub
+                  </motion.a>
+                </div>
+              </div>
             </div>
           </div>
-          <div style={{width:'100%',height:1,background:'rgba(255,255,255,0.06)',marginBottom:16}}/>
-          {/* Nav */}
-          <div style={{display:'flex',flexDirection:'column',gap:2}}>
-            {SECTIONS.map(s=>(
-              <button key={s.id} className="sidebar-link" onClick={()=>scrollTo(s.id)}>{s.label}</button>
+        </div>
+      </section>
+
+      {/* ── FOCUS ────────────────────────────────────────────────────────── */}
+      <section style={{ background:'rgba(4,10,18,0.98)', padding:'100px 24px', borderTop:'1px solid rgba(45,212,191,0.1)' }}>
+        <div style={{ maxWidth:1100, margin:'0 auto' }}>
+          <SH label="Area of Focus" title="Identity-centric security operations"/>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))', gap:12 }}>
+            {[
+              { Icon:Shield,      l:'Microsoft Sentinel',  d:'KQL threat hunting, SIEM rule authoring, SOC workflow automation and alert triage.', c:TEAL },
+              { Icon:Mail,        l:'Email Forensics',     d:'RFC header parsing, SPF/DKIM/DMARC analysis, phishing verdict with MITRE mapping.', c:'#EAB308' },
+              { Icon:Activity,    l:'Incident Response',   d:'End-to-end case lifecycle: triage, investigation, containment, evidence preservation.', c:'#EF4444' },
+              { Icon:Cpu,         l:'Endpoint Security',   d:'EDR operations, Sysmon telemetry, process tree analysis, lateral movement detection.', c:TEAL },
+              { Icon:Brain,       l:'Threat Intelligence', d:'IOC enrichment, TTP attribution, MITRE ATT&CK Navigator, campaign correlation.', c:'#8FAFC0' },
+              { Icon:Code,        l:'React · FastAPI',     d:'Full-stack security tooling. AegisTrace built with React 18, FastAPI, PostgreSQL, Docker.', c:'#22C55E' },
+            ].map(({ Icon, l, d, c }, i) => (
+              <motion.div key={l}
+                initial={{ scale:0.94, opacity:0 }}
+                whileInView={{ scale:1, opacity:1 }}
+                viewport={{ once:true, margin:'-60px' }}
+                transition={{ duration:0.6, delay:i*0.06, ease:EC }}
+                style={{ background:'rgba(4,14,22,0.8)', border:`1px solid rgba(255,255,255,0.05)`, borderRadius:14, padding:22, borderLeft:`3px solid ${c}25` }}
+              >
+                <Icon size={16} color={c} style={{ marginBottom:12 }}/>
+                <div style={{ fontSize:13, fontWeight:700, color:'#E1E0CC', marginBottom:7 }}>{l}</div>
+                <div style={{ fontSize:12, color:'rgba(225,224,204,0.48)', lineHeight:1.55 }}>{d}</div>
+              </motion.div>
             ))}
           </div>
-          <div style={{marginTop:'auto',paddingTop:20,display:'flex',flexDirection:'column',gap:6}}>
-            <a href="tel:+353899582880" style={{display:'flex',alignItems:'center',gap:5,fontSize:'0.65rem',color:'#787878',textDecoration:'none',...MONO}}>
-              <Phone size={10}/> +353 089 958 2880
-            </a>
-            <a href="mailto:Prasanna80564@gmail.com" style={{display:'flex',alignItems:'center',gap:5,fontSize:'0.65rem',color:'#787878',textDecoration:'none',...MONO}}>
-              <Mail size={10}/> Prasanna80564@gmail.com
-            </a>
+        </div>
+      </section>
+
+      {/* ── SKILLS ───────────────────────────────────────────────────────── */}
+      <section style={{ background:BG, padding:'100px 24px' }}>
+        <div style={{ maxWidth:1100, margin:'0 auto' }}>
+          <SH label="Technical Skills" title="Proficiency overview"/>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:48 }}>
+            <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+              {[
+                ['Microsoft Sentinel / KQL', 88],
+                ['Email Forensics',           85],
+                ['Incident Response',         84],
+                ['MITRE ATT&CK',              82],
+              ].map(([s,p], i) => <SkillBar key={s} skill={s} pct={p} delay={i*0.08}/>)}
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+              {[
+                ['Threat Intelligence',  80],
+                ['React / FastAPI',      80],
+                ['Python (Security)',    78],
+                ['AWS / Cloud',         72],
+              ].map(([s,p], i) => <SkillBar key={s} skill={s} pct={p} delay={i*0.08+0.32}/>)}
+            </div>
           </div>
-        </aside>
+        </div>
+      </section>
 
-        {/* RIGHT MAIN CONTENT */}
-        <main className="port-main" style={{flex:1,maxWidth:'calc(100% - 220px)'}}>
+      {/* ── CERTIFICATIONS ───────────────────────────────────────────────── */}
+      <section style={{ background:'rgba(4,10,18,0.98)', padding:'100px 24px', borderTop:'1px solid rgba(45,212,191,0.08)' }}>
+        <div style={{ maxWidth:1100, margin:'0 auto' }}>
+          <SH label="Certifications" title="Credentials & active studies"/>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))', gap:12 }}>
+            <CertCard name="SC-200 — Microsoft Security Operations Analyst" issuer="Microsoft · 2025" status="✓ CERTIFIED" color={TEAL}   delay={0}/>
+            <CertCard name="CompTIA Security+"                               issuer="CompTIA · 2024"    status="✓ CERTIFIED" color="#EAB308" delay={0.08}/>
+            <CertCard name="TCM Practical Ethical Hacking"                   issuer="TCM Security"      status="✓ CERTIFIED" color="#8FAFC0" delay={0.16}/>
+            <CertCard name="Blue Team Labs Level 1 (BTL1)"                   issuer="Security Blue Team" status="55% IN PROGRESS" color="#EF4444" delay={0.24}/>
+          </div>
+        </div>
+      </section>
 
-          {/* ── HERO ── */}
-          <section id="hero" style={{position:'relative',minHeight:560,display:'flex',alignItems:'center',overflow:'hidden'}}>
-            <HeroBg/>
-            <div style={{position:'relative',zIndex:10,padding:'80px 48px',width:'100%',display:'grid',gridTemplateColumns:'1fr 1fr',gap:40,alignItems:'center'}} className="hero-cols">
-              <div>
-                <div style={{display:'inline-flex',alignItems:'center',gap:7,padding:'5px 12px',background:'rgba(78,122,142,0.1)',border:'1px solid rgba(78,122,142,0.22)',borderRadius:20,marginBottom:22}}>
-                  <div style={{width:6,height:6,borderRadius:'50%',background:'#4Be38A',boxShadow:'0 0 6px #4Be38A'}}/>
-                  <span style={{fontSize:'0.68rem',color:'#6BABEC',...MONO,letterSpacing:'0.1em'}}>Open to SOC / Blue Team Roles</span>
+      {/* ── PROJECTS ─────────────────────────────────────────────────────── */}
+      <section style={{ background:BG, padding:'100px 24px' }}>
+        <div style={{ maxWidth:1100, margin:'0 auto' }}>
+          <SH label="Projects" title="Security tooling I've built"/>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))', gap:14 }}>
+            <ProjectCard
+              highlight
+              title="AegisTrace — AI-powered SOC Platform"
+              tags={['React 18','FastAPI','PostgreSQL','Docker','Three.js','MITRE ATT&CK']}
+              desc="Full-stack security control plane: ITDR with 4 live detectors, 13-tab case management, 7-source IOC intel, email forensics, explainable AI (Groq), identity graph, DORA compliance, endpoint agent v5. Zero licensing cost."
+              url="https://github.com/Prasanna-27eng/AegisTrace"
+              delay={0}
+            />
+            <ProjectCard
+              title="WebSecGuard — Web Security Scanner"
+              tags={['Python','OWASP','Burp Suite','FastAPI']}
+              desc="Automated web application security scanner covering OWASP Top 10. Header analysis, CORS misconfiguration detection, injection testing, vulnerability reporting."
+              delay={0.08}
+            />
+            <ProjectCard
+              title="Grand Line SOC Dashboard"
+              tags={['Kibana','Elastic SIEM','Python','KQL']}
+              desc="Real-time SOC metrics dashboard. Aggregates alerts from Elastic SIEM, correlation rules, threat scoring, analyst workload management."
+              delay={0.16}
+            />
+            <ProjectCard
+              title="Automated Cloud Security Posture"
+              tags={['AWS','Python','boto3','IAM']}
+              desc="Automated cloud security posture checks for AWS environments. IAM policy analysis, S3 bucket ACL audits, Security Group misconfigurations, CIS Benchmark scoring."
+              delay={0.24}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ── EDUCATION ────────────────────────────────────────────────────── */}
+      <section style={{ background:'rgba(4,10,18,0.98)', padding:'100px 24px', borderTop:'1px solid rgba(45,212,191,0.08)' }}>
+        <div style={{ maxWidth:1100, margin:'0 auto' }}>
+          <SH label="Education" title="Academic background"/>
+          <div style={{ display:'flex', flexDirection:'column', gap:0 }}>
+            {[
+              { deg:'MSc Cyber Security',                   school:'Dublin Business School, Dublin, Ireland',   dates:'Sep 2024 – Sep 2025 (Expected)' },
+              { deg:'B.E. Computer Science & Engineering',  school:'PSG College of Technology, Coimbatore, India', dates:'2019 – 2023' },
+            ].map(({ deg, school, dates }, i) => (
+              <motion.div key={deg}
+                initial={{ opacity:0, x:-16 }}
+                whileInView={{ opacity:1, x:0 }}
+                viewport={{ once:true }}
+                transition={{ duration:0.65, delay:i*0.1, ease:E }}
+                style={{ display:'flex', gap:20, padding:'24px 0', borderTop:'1px solid rgba(45,212,191,0.08)', alignItems:'flex-start' }}
+              >
+                <GraduationCap size={16} color={TEAL} style={{ flexShrink:0, marginTop:2 }}/>
+                <div>
+                  <div style={{ fontSize:15, fontWeight:700, color:'#E1E0CC', marginBottom:4 }}>{deg}</div>
+                  <div style={{ fontSize:12, color:'rgba(45,212,191,0.65)', marginBottom:3, ...MONO }}>{school}</div>
+                  <div style={{ fontSize:11, color:'rgba(225,224,204,0.38)', ...MONO }}>{dates}</div>
                 </div>
-                <h1 style={{...SERIF,fontSize:'clamp(2.4rem,5vw,4rem)',fontWeight:400,lineHeight:1.0,letterSpacing:'-0.015em',marginBottom:16}}>
-                  <div style={{color:'#EBEBEB'}}>Prasanna Kumar</div>
-                  <div style={{color:'#4E7A8E',fontStyle:'italic'}}>Surendran.</div>
-                </h1>
-                <div style={{fontSize:'0.9rem',color:'#7AABB5',...MONO,marginBottom:14,display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
-                  <span>SOC Analyst · Blue Team L1</span>
-                  <span style={{color:'rgba(255,255,255,0.15)'}}>·</span>
-                  <span style={{display:'flex',alignItems:'center',gap:4,color:'#787878'}}><MapPin size={12}/> Dublin, Ireland</span>
-                </div>
-                <p style={{fontSize:'0.88rem',color:'#909090',lineHeight:1.85,maxWidth:520,marginBottom:22}}>
-                  MSc Information Systems & Computing (Dublin Business School, 2025). Hands-on experience across SIEM platforms, Active Directory security, email forensics, vulnerability assessment, and cloud infrastructure automation. Builder of AegisTrace — a trust operating system for the AI era.
-                </p>
-                <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:24}}>
-                  {['SC-200 ✓','Security+ ✓','TCM PEH ✓','BTL1 — 55%','MITRE ATT&CK','KQL · SPL'].map(tag=>(
-                    <span key={tag} style={{background:'rgba(78,122,142,0.08)',border:'1px solid rgba(78,122,142,0.18)',color:'#6BABEC',fontSize:'0.72rem',padding:'4px 10px',borderRadius:4,...MONO}}>{tag}</span>
-                  ))}
-                </div>
-                <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
-                  <a href="mailto:Prasanna80564@gmail.com" style={{display:'inline-flex',alignItems:'center',gap:7,background:'#4E7A8E',color:'white',borderRadius:7,padding:'11px 22px',fontSize:'0.85rem',fontWeight:600,textDecoration:'none'}}>
-                    <Mail size={15}/> Get in Touch
-                  </a>
-                  <a href="https://www.linkedin.com/in/prasannakumarsurendran" target="_blank" rel="noreferrer" style={{display:'inline-flex',alignItems:'center',gap:7,background:'rgba(255,255,255,0.05)',color:'#A8A8A8',border:'1px solid rgba(255,255,255,0.1)',borderRadius:7,padding:'11px 20px',fontSize:'0.85rem',textDecoration:'none'}}>
-                    <Linkedin size={15}/> LinkedIn
-                  </a>
-                  <button onClick={()=>navigate('/app/login')} style={{display:'inline-flex',alignItems:'center',gap:7,background:'rgba(122,171,181,0.08)',color:'#B9A4FF',border:'1px solid rgba(122,171,181,0.2)',borderRadius:7,padding:'11px 20px',fontSize:'0.85rem',cursor:'pointer'}}>
-                    <Activity size={15}/> Launch AegisTrace
-                  </button>
-                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CONTACT ──────────────────────────────────────────────────────── */}
+      <section style={{ background:BG, padding:'100px 24px' }}>
+        <div style={{ maxWidth:800, margin:'0 auto' }}>
+          <motion.div
+            initial={{ opacity:0, y:28 }}
+            whileInView={{ opacity:1, y:0 }}
+            viewport={{ once:true }}
+            transition={{ duration:0.75, ease:E }}
+          >
+            <div style={{ background:'rgba(4,14,22,0.9)', border:`1px solid rgba(45,212,191,0.15)`, borderRadius:28, padding:'72px 60px', textAlign:'center' }}>
+              <div style={{ fontSize:9, color:'rgba(45,212,191,0.72)', ...MONO, letterSpacing:'0.18em', textTransform:'uppercase', marginBottom:20 }}>
+                Open to opportunities
               </div>
-              {/* Terminal animation */}
-              <div>
-                <TerminalWindow/>
-              </div>
-            </div>
-            <div style={{position:'absolute',bottom:0,left:0,right:0,height:'20%',background:'linear-gradient(to top,#000000,transparent)'}}/>
-          </section>
-
-          {/* ── LIVE STATS ── */}
-          <section style={{padding:'0 48px 52px'}} className="port-section">
-            <div style={{fontSize:'0.65rem',color:'#404040',...MONO,letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:12,textAlign:'center'}}>Live Platform Activity — AegisTrace</div>
-            <div className="port-stat-grid" style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
-              {[
-                {val:stats.total_cases,  label:'Cases Created',  color:'#4E7A8E'},
-                {val:stats.closed_cases, label:'Cases Closed',   color:'#4Be38A'},
-                {val:stats.total_iocs,   label:'IOCs Tracked',   color:'#7AABB5'},
-                {val:stats.vt_lookups,   label:'VT Lookups Run', color:'#F5B84B'},
-              ].map(s=>(
-                <div key={s.label} style={{textAlign:'center',padding:'18px 14px',background:'rgba(12,18,32,0.6)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:10,borderTop:`2px solid ${s.color}`}}>
-                  <div style={{fontSize:'1.8rem',fontWeight:700,color:s.color,...MONO,lineHeight:1}}>{(s.val||0).toLocaleString()}</div>
-                  <div style={{fontSize:'0.7rem',color:'#787878',marginTop:6,...MONO}}>{s.label}</div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* ── FOCUS AREAS ── */}
-          <section id="focus" className="port-section" style={{padding:'52px 48px',background:'#0A0A0A',borderTop:'1px solid rgba(255,255,255,0.05)'}}>
-            <SectionHead label="Focus Areas" title="Where I operate." accent="What I build."/>
-            <div className="port-grid-3" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:14}}>
-              {FOCUS.map(({Icon,label,desc})=>(
-                <div key={label} className="focus-card">
-                  <Icon size={18} style={{color:'#4E7A8E',marginBottom:10}}/>
-                  <div style={{fontWeight:600,fontSize:'0.86rem',marginBottom:7}}>{label}</div>
-                  <div style={{fontSize:'0.74rem',color:'#787878',lineHeight:1.65}}>{desc}</div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* ── SKILLS ── */}
-          <section id="skills" className="port-section" style={{padding:'52px 48px'}}>
-            <SectionHead label="Technical Skills" title="Full stack of" accent="analyst tooling."/>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:24}} className="port-grid-2">
-              {/* Skill tags */}
-              <div>
-                <div style={{fontSize:'0.72rem',color:'#4E7A8E',...MONO,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:14}}>Skill Areas</div>
-                <div style={{display:'flex',flexDirection:'column',gap:14}}>
-                  {SKILLS.map(({cat,color,tags})=>(
-                    <div key={cat} style={{background:'rgba(12,18,32,0.5)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:10,padding:'16px 18px'}}>
-                      <div style={{fontSize:'0.67rem',color,...MONO,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10,display:'flex',alignItems:'center',gap:6}}>
-                        <div style={{width:6,height:6,borderRadius:'50%',background:color}}/>{cat}
-                      </div>
-                      <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
-                        {tags.map(t=><span key={t} className="skill-tag">{t}</span>)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {/* Skill bars */}
-              <div>
-                <div style={{fontSize:'0.72rem',color:'#4E7A8E',...MONO,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:14}}>Proficiency</div>
-                <div style={{background:'rgba(12,18,32,0.5)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:10,padding:'20px'}}>
-                  {SKILL_BARS.map(s=><SkillBar key={s.label} {...s}/>)}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* ── CERTS ── */}
-          <section id="certs" className="port-section" style={{padding:'52px 48px',background:'#0A0A0A',borderTop:'1px solid rgba(255,255,255,0.05)'}}>
-            <SectionHead label="Certifications" title="Proven." accent="In progress. Growing."/>
-            <div className="port-grid-2" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:10}}>
-              {CERTS.map(c=>(
-                <div key={c.name} style={{background:'rgba(12,18,32,0.6)',border:`1px solid ${c.status==='completed'?`${c.color}30`:'rgba(255,255,255,0.07)'}`,borderRadius:10,padding:'14px 16px',display:'flex',alignItems:'center',gap:12,transition:'border-color 0.2s',borderLeft:`2px solid ${c.status==='completed'?c.color:'rgba(255,255,255,0.1)'}`,opacity:c.status==='ongoing'?0.75:1}}>
-                  <div style={{flexShrink:0}}>
-                    {c.status==='completed'?<CheckCircle size={18} style={{color:c.color}}/>:<Clock size={18} style={{color:'#787878'}}/>}
-                  </div>
-                  <div>
-                    <div style={{fontWeight:600,fontSize:'0.86rem',color:c.status==='completed'?'#EBEBEB':'#909090'}}>{c.name}</div>
-                    <div style={{fontSize:'0.72rem',color:'#787878',marginTop:2,...MONO}}>{c.sub}</div>
-                    <div style={{fontSize:'0.68rem',color:c.status==='completed'?'#4Be38A':'#F5B84B',marginTop:4,...MONO}}>{c.date}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* ── PROJECTS ── */}
-          <section id="projects" className="port-section" style={{padding:'52px 48px'}}>
-            <SectionHead label="Projects" title="Things I've" accent="built and shipped."/>
-            <div style={{display:'flex',flexDirection:'column',gap:16}}>
-              {PROJECTS.map(p=>(
-                <div key={p.title} className="proj-card" style={{borderColor:p.highlight?'rgba(78,122,142,0.2)':'rgba(255,255,255,0.07)'}}>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr auto',gap:12,marginBottom:12,alignItems:'flex-start'}}>
-                    <div>
-                      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8,flexWrap:'wrap'}}>
-                        <span style={{background:`${p.badgeColor}15`,border:`1px solid ${p.badgeColor}35`,color:p.badgeColor,fontSize:'0.65rem',fontWeight:600,padding:'3px 9px',borderRadius:4,...MONO}}>{p.badge}</span>
-                        <span style={{fontSize:'0.68rem',color:'#787878',...MONO}}>{p.period}</span>
-                      </div>
-                      <div style={{fontWeight:700,fontSize:'0.95rem'}}><GhostText text={p.title} /></div>
-                    </div>
-                    {p.link&&<a href={p.link} target="_blank" rel="noreferrer" style={{color:'#787878',textDecoration:'none'}} onMouseEnter={e=>e.currentTarget.style.color='#EBEBEB'} onMouseLeave={e=>e.currentTarget.style.color='#787878'}><Github size={15}/></a>}
-                    {!p.link&&p.highlight&&<span style={{fontSize:'0.65rem',color:'#4E7A8E',...MONO}}>aegistrace.io</span>}
-                  </div>
-                  <div style={{display:'grid',gridTemplateColumns:p.features?'1fr 1fr':'1fr',gap:16,alignItems:'start'}}>
-                    <div>
-                      <div style={{fontSize:'0.8rem',color:'#787878',lineHeight:1.7,marginBottom:12}}>{p.desc}</div>
-                      <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
-                        {p.tags.map(t=>(
-                          <span key={t} style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.07)',color:'#787878',fontSize:'0.67rem',padding:'2px 7px',borderRadius:3,...MONO}}>{t}</span>
-                        ))}
-                      </div>
-                    </div>
-                    {p.features&&(
-                      <div style={{background:'rgba(78,122,142,0.04)',border:'1px solid rgba(78,122,142,0.1)',borderRadius:8,padding:'14px 16px'}}>
-                        {p.features.map(f=>(
-                          <div key={f} style={{display:'flex',alignItems:'center',gap:6,fontSize:'0.72rem',color:'#6BABEC',padding:'3px 0'}}>
-                            <ChevronRight size={10} style={{color:'#4E7A8E',flexShrink:0}}/>{f}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* ── PUBLIC CASES ── */}
-          {publicCases.length>0&&(
-            <section className="port-section" style={{padding:'52px 48px',background:'#0A0A0A',borderTop:'1px solid rgba(255,255,255,0.05)'}}>
-              <SectionHead label="Published Investigations" title="Real cases." accent="Real analysis."/>
-              <div className="port-grid-2" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))',gap:14}}>
-                {publicCases.map(c=>(
-                  <div key={c.id} className="case-card">
-                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                      <span style={{fontSize:'0.68rem',color:'#787878',...MONO}}>{c.case_number}</span>
-                    </div>
-                    <div style={{fontWeight:600,fontSize:'0.9rem',marginBottom:8}}><GhostText text={c.title} /></div>
-                    {c.ai_executive_summary&&<div style={{fontSize:'0.77rem',color:'#787878',lineHeight:1.7,marginBottom:14}}>{c.ai_executive_summary.slice(0,160)}…</div>}
-                    <button onClick={()=>navigate(`/public/${c.share_token}`)} style={{display:'inline-flex',alignItems:'center',gap:5,background:'none',border:'1px solid rgba(78,122,142,0.2)',color:'#4E7A8E',borderRadius:5,padding:'6px 12px',fontSize:'0.74rem',cursor:'pointer',...MONO}}>
-                      Read Full Case <ArrowRight size={11}/>
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <div style={{marginTop:20,textAlign:'center'}}>
-                <button onClick={()=>navigate('/public')} style={{display:'inline-flex',alignItems:'center',gap:7,background:'rgba(78,122,142,0.06)',border:'1px solid rgba(78,122,142,0.15)',color:'#6BABEC',borderRadius:7,padding:'10px 22px',fontSize:'0.8rem',cursor:'pointer'}}>
-                  View All Published Cases <ArrowRight size={13}/>
-                </button>
-              </div>
-            </section>
-          )}
-
-          {/* ── EDUCATION ── */}
-          <section id="edu" className="port-section" style={{padding:'52px 48px'}}>
-            <SectionHead label="Education" title="Academic" accent="foundation."/>
-            <div className="port-grid-2" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:14}}>
-              {[
-                {degree:'MSc Information Systems & Computing',school:'Dublin Business School (DBS)',year:'2024–2025',note:'Dissertation: WebSecGuard Chrome Extension — real-time XSS/CSRF detection',color:'#4E7A8E'},
-                {degree:'B.E. Electronics and Communication Engineering',school:'PSG College of Technology, Coimbatore',year:'2019–2023',note:'Strong foundation in electronics, embedded systems, signal processing, and hardware-software integration',color:'#7AABB5'},
-              ].map(e=>(
-                <div key={e.degree} style={{background:'rgba(12,18,32,0.5)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:10,padding:'22px',borderLeft:`2px solid ${e.color}`}}>
-                  <div style={{fontWeight:600,fontSize:'0.9rem',marginBottom:5}}>{e.degree}</div>
-                  <div style={{fontSize:'0.78rem',color:e.color,...MONO,marginBottom:4}}>{e.school}</div>
-                  <div style={{fontSize:'0.7rem',color:'#787878',...MONO,marginBottom:10}}>{e.year}</div>
-                  <div style={{fontSize:'0.76rem',color:'#787878',lineHeight:1.6}}>{e.note}</div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* ── CONTACT ── */}
-          <section id="contact" className="port-section" style={{padding:'52px 48px',background:'#0A0A0A',borderTop:'1px solid rgba(255,255,255,0.05)'}}>
-            <div style={{maxWidth:680,margin:'0 auto',textAlign:'center'}}>
-              <SectionHead label="Let's Connect" title="Actively seeking" accent="the right role."/>
-              <p style={{fontSize:'0.88rem',color:'#909090',lineHeight:1.8,marginBottom:32}}>
-                Seeking SOC Analyst, Blue Team, or Cybersecurity roles in Dublin and internationally. Available immediately. All enquiries responded to within 24 hours.
+              <h2 style={{ fontSize:'clamp(26px,4.5vw,48px)', fontWeight:700, lineHeight:0.95, margin:'0 0 16px', letterSpacing:'-0.03em', color:'#E1E0CC' }}>
+                Let's build something<br/><span style={{ color:TEAL }}>secure together.</span>
+              </h2>
+              <p style={{ fontSize:14, color:'rgba(225,224,204,0.5)', maxWidth:460, margin:'0 auto 40px', lineHeight:1.62, fontWeight:300 }}>
+                Cyber security analyst specialising in identity threat detection, incident response, and security tooling. Based in Dublin. Available for analyst and engineering roles.
               </p>
-              <div style={{display:'flex',flexDirection:'column',gap:10,maxWidth:360,margin:'0 auto'}}>
-                <a href="mailto:Prasanna80564@gmail.com" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:'#4E7A8E',color:'white',borderRadius:8,padding:'13px',fontSize:'0.85rem',fontWeight:600,textDecoration:'none'}}><Mail size={15}/> Prasanna80564@gmail.com</a>
-                <a href="tel:+353899582880" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:'rgba(255,255,255,0.05)',color:'#A8A8A8',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'12px',fontSize:'0.85rem',textDecoration:'none'}}><Phone size={15}/> +353 089 958 2880</a>
-                <a href="https://www.linkedin.com/in/prasannakumarsurendran" target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:'rgba(255,255,255,0.05)',color:'#A8A8A8',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'12px',fontSize:'0.85rem',textDecoration:'none'}}><Linkedin size={15}/> LinkedIn Profile</a>
-                <a href="https://github.com/Prasanna-27eng" target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:'rgba(255,255,255,0.05)',color:'#A8A8A8',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'12px',fontSize:'0.85rem',textDecoration:'none'}}><Github size={15}/> GitHub Profile</a>
+              <div style={{ display:'flex', justifyContent:'center', gap:12, flexWrap:'wrap' }}>
+                <motion.a className="cta" href="mailto:prasanna80564@gmail.com" whileTap={{ scale:0.97 }}>
+                  prasanna80564@gmail.com
+                  <span className="circle"><Mail size={13}/></span>
+                </motion.a>
+                <a className="ghost" href="https://github.com/Prasanna-27eng" target="_blank" rel="noopener noreferrer">
+                  <Github size={13}/> GitHub
+                </a>
               </div>
             </div>
-          </section>
+          </motion.div>
+        </div>
+      </section>
 
-          {/* ── FOOTER ── */}
-          <footer style={{borderTop:'1px solid rgba(255,255,255,0.06)',padding:'22px 48px',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:12}}>
-            <Logo size={18} showText/>
-            <div style={{fontSize:'0.7rem',color:'#404040',...MONO}}>Prasanna Kumar Surendran · Dublin, Ireland · 2025–2026</div>
-            <div style={{display:'flex',gap:16}}>
-              <a href="/" style={{fontSize:'0.7rem',color:'#404040',textDecoration:'none',...MONO}} onMouseEnter={e=>e.currentTarget.style.color='#787878'} onMouseLeave={e=>e.currentTarget.style.color='#404040'}>Home</a>
-              <a href="/mission" style={{fontSize:'0.7rem',color:'#404040',textDecoration:'none',...MONO}} onMouseEnter={e=>e.currentTarget.style.color='#787878'} onMouseLeave={e=>e.currentTarget.style.color='#404040'}>Mission</a>
-              <a href="/app/login" style={{fontSize:'0.7rem',color:'#404040',textDecoration:'none',...MONO}} onMouseEnter={e=>e.currentTarget.style.color='#787878'} onMouseLeave={e=>e.currentTarget.style.color='#404040'}>App</a>
-            </div>
-          </footer>
-
-        </main>
-      </div>
+      {/* Footer */}
+      <footer style={{ background:'rgba(4,10,18,0.98)', borderTop:'1px solid rgba(45,212,191,0.08)', padding:'32px 24px' }}>
+        <div style={{ maxWidth:1100, margin:'0 auto', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:12 }}>
+          <p style={{ color:'rgba(45,212,191,0.3)', fontSize:10, margin:0, ...MONO }}>PRASANNA KUMAR SURENDRAN · DUBLIN · 2026</p>
+          <div style={{ display:'flex', gap:24 }}>
+            <Link to="/"          className="nl" style={{ fontSize:11 }}>AegisTrace</Link>
+            <Link to="/mission"   className="nl" style={{ fontSize:11 }}>Mission</Link>
+            <Link to="/app/login" className="nl" style={{ fontSize:11, color:'rgba(45,212,191,0.6)' }}>Platform →</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
