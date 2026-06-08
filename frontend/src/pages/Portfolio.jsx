@@ -419,7 +419,7 @@ export default function Portfolio() {
             The autonomous threat intelligence platform built for the next generation of security operations.
           </p>
           <div style={{ display:'flex', gap:16, justifyContent:'center', flexWrap:'wrap' }}>
-            <Link to="/login" className="at-enter-btn">
+            <Link to="/app/login" className="at-enter-btn">
               Enter Platform <ArrowRight size={14} />
             </Link>
             <button className="at-enter-btn" style={{ borderColor:'rgba(255,255,255,0.15)', color:'rgba(225,224,204,0.6)' }} onClick={() => window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })}>
@@ -499,7 +499,7 @@ export default function Portfolio() {
           <p style={{ fontSize:16, color:'rgba(225,224,204,0.5)', lineHeight:1.5, margin:'0 auto 48px', fontWeight:300 }}>
             Request access to the AegisTrace platform and deploy your first autonomous agent in under 10 minutes.
           </p>
-          <Link to="/login" className="at-enter-btn" style={{ fontSize:14, padding:'16px 40px' }}>
+          <Link to="/app/login" className="at-enter-btn" style={{ fontSize:14, padding:'16px 40px' }}>
             Request Access <ArrowRight size={16} />
           </Link>
         </RevealSection>

@@ -275,7 +275,7 @@ export default function Mission() {
             transition={{ duration:0.5, delay:0.55, ease:EASE_OUT }}
             style={{ display:'flex', gap:16, flexWrap:'wrap' }}
           >
-            <Link to="/login" className="at-mission-btn">Access Platform <ArrowRight size={14} /></Link>
+            <Link to="/app/login" className="at-mission-btn">Access Platform <ArrowRight size={14} /></Link>
             <a href="#agents" className="at-mission-btn" style={{ borderColor:'rgba(255,255,255,0.1)', color:'rgba(225,224,204,0.4)' }}>View Active Agents</a>
           </motion.div>
         </div>
@@ -403,7 +403,7 @@ export default function Mission() {
             <p style={{ fontSize:16, color:'rgba(225,224,204,0.45)', lineHeight:1.5, margin:'0 auto 48px', fontWeight:300 }}>
               Deploy your first autonomous agent in under 10 minutes. No configuration. No false starts.
             </p>
-            <Link to="/login" className="at-mission-btn" style={{ fontSize:14, padding:'14px 44px' }}>
+            <Link to="/app/login" className="at-mission-btn" style={{ fontSize:14, padding:'14px 44px' }}>
               Start the Mission <ArrowRight size={16} />
             </Link>
           </motion.div>
