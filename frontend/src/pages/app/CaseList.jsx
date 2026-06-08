@@ -263,7 +263,21 @@ export default function CaseList() {
 
       {/* List */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 60, color: '#787878', fontSize: '0.82rem' }}>Loading cases…</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {[0,1,2,3,4,5,6,7].map(i => (
+            <div key={i} style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12, background: '#1E1E1E', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8 }}>
+              <div style={{ flex: 1 }}>
+                <div className="skeleton" style={{ height: 13, width: `${45 + (i % 3) * 15}%`, marginBottom: 6 }} />
+                <div className="skeleton" style={{ height: 9, width: `${25 + (i % 4) * 8}%` }} />
+              </div>
+              <div className="skeleton" style={{ height: 22, width: 54 }} />
+              <div className="skeleton" style={{ height: 22, width: 80 }} />
+              <div style={{ display: 'flex', gap: 4 }}>
+                {[0,1,2,3].map(j => <div key={j} className="skeleton" style={{ height: 26, width: 28, borderRadius: 6 }} />)}
+              </div>
+            </div>
+          ))}
+        </div>
       ) : cases.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 20px' }}>
           <FolderOpen size={36} style={{ color: 'rgba(90,138,159,0.2)', margin: '0 auto 14px', display: 'block' }} />

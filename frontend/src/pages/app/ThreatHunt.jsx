@@ -103,9 +103,25 @@ export default function ThreatHunt() {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 60, color: '#787878' }}>
-          <Loader2 size={20} className="spinner" style={{ margin: '0 auto 8px' }} />
-          <div>Loading threat data…</div>
+        <div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 10, marginBottom: 20 }}>
+            {[0,1,2,3,4].map(i => (
+              <div key={i} className="at-card" style={{ padding: '14px 16px' }}>
+                <div className="skeleton" style={{ height: 24, width: 48, marginBottom: 8 }} />
+                <div className="skeleton" style={{ height: 9, width: 80 }} />
+              </div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {[0,1,2,3,4,5,6,7].map(i => (
+              <div key={i} className="at-card" style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div className="skeleton" style={{ height: 9, width: 46 }} />
+                <div className="skeleton" style={{ flex: 1, height: 10 }} />
+                <div className="skeleton" style={{ height: 20, width: 60 }} />
+                <div className="skeleton" style={{ height: 20, width: 80 }} />
+              </div>
+            ))}
+          </div>
         </div>
       ) : (
         <>

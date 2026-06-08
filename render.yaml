@@ -13,7 +13,9 @@ services:
       - key: VIRUSTOTAL_API_KEY
         sync: false
       - key: ADMIN_PIN
-        value: aegis2025
+        sync: false
+      - key: INGEST_API_KEY
+        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: PUBLIC_URL

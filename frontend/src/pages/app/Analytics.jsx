@@ -145,9 +145,31 @@ export default function Analytics() {
       </div>
 
       {loading && !overview ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300, gap: 12 }}>
-          <Loader2 size={20} className="spinner" style={{ color: '#4E7A8E' }} />
-          <span style={{ color: '#787878', ...MONO, fontSize: '0.82rem' }}>Loading analytics…</span>
+        <div>
+          {/* KPI skeleton */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 20 }}>
+            {[0,1,2,3,4,5].map(i => (
+              <div key={i} style={{ background: 'rgba(8,8,8,0.7)', border: '1px solid rgba(148,163,184,0.08)', borderRadius: 12, padding: '18px 20px' }}>
+                <div className="skeleton" style={{ height: 9, width: 90, marginBottom: 14 }} />
+                <div className="skeleton" style={{ height: 30, width: 56, marginBottom: 8 }} />
+                <div className="skeleton" style={{ height: 8, width: 110 }} />
+              </div>
+            ))}
+          </div>
+          {/* Chart skeleton */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 16 }}>
+            {[160, 180, 160].map((h, i) => (
+              <div key={i} style={{ background: 'rgba(8,8,8,0.7)', border: '1px solid rgba(148,163,184,0.08)', borderRadius: 12, padding: 20 }}>
+                <div className="skeleton" style={{ height: 9, width: 100, marginBottom: 16 }} />
+                {[0,1,2,3,4].map(j => (
+                  <div key={j} style={{ marginBottom: 10 }}>
+                    <div className="skeleton" style={{ height: 8, width: `${50 + j * 12}%`, marginBottom: 5 }} />
+                    <div className="skeleton" style={{ height: 4, width: '100%' }} />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       ) : (
         <>
@@ -237,19 +259,28 @@ export default function Analytics() {
                 <div>
                   <div style={{ display: 'flex', gap: 16, marginBottom: 14 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.7rem', color: '#787878' }}>
-                      <div style={{ width: 10, height: 3, background: '#4E7A8E', borderRadius: 2 }} /> Created
+                      <div style={{ width: 8, height: 8, background: '#4E7A8E', borderRadius: 2 }} /> Created
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.7rem', color: '#787878' }}>
-                      <div style={{ width: 10, height: 3, background: '#22C55E', borderRadius: 2 }} /> Closed
+                      <div style={{ width: 8, height: 8, background: '#22C55E', borderRadius: 2 }} /> Closed
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 80 }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 90 }}>
                     {trend.map((t, i) => (
-                      <div key={t.date} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
-                        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 2, height: 70, justifyContent: 'flex-end' }}>
-                          <div title={`Created: ${t.created}`} style={{ width: '100%', height: `${(t.created / trendMax) * 100}%`, background: '#4E7A8E', borderRadius: '3px 3px 0 0', minHeight: t.created > 0 ? 3 : 0, opacity: 0.8 }} />
+                      <div key={t.date} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                        <div style={{ width: '100%', height: 78, display: 'flex', alignItems: 'flex-end', gap: 1, justifyContent: 'center' }}>
+                          <div
+                            title={`Created: ${t.created}`}
+                            style={{ flex: 1, height: `${(t.created / trendMax) * 100}%`, background: '#4E7A8E', borderRadius: '2px 2px 0 0', minHeight: t.created > 0 ? 3 : 0, opacity: 0.85, transition: 'height 0.4s ease' }}
+                          />
+                          <div
+                            title={`Closed: ${t.closed}`}
+                            style={{ flex: 1, height: `${(t.closed / trendMax) * 100}%`, background: '#22C55E', borderRadius: '2px 2px 0 0', minHeight: t.closed > 0 ? 3 : 0, opacity: 0.75, transition: 'height 0.4s ease' }}
+                          />
                         </div>
-                        {i % 3 === 0 && <div style={{ fontSize: '0.55rem', color: '#404040', ...MONO, textAlign: 'center' }}>{t.date.slice(5)}</div>}
+                        {i % 3 === 0 && (
+                          <div style={{ fontSize: '0.52rem', color: '#404040', ...MONO, textAlign: 'center', whiteSpace: 'nowrap' }}>{t.date.slice(5)}</div>
+                        )}
                       </div>
                     ))}
                   </div>

@@ -491,7 +491,17 @@ function AuditTab() {
         </select>
       </div>
       {loading ? (
-        <div style={{ textAlign:'center', padding:40, color:'#787878' }}>Loading…</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {[0,1,2,3,4,5].map(i => (
+            <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '8px 12px', background: '#111111', borderRadius: 6 }}>
+              <div style={{ flex: 1 }}>
+                <div className="skeleton" style={{ height: 11, width: `${40 + (i % 3) * 15}%`, marginBottom: 5 }} />
+                <div className="skeleton" style={{ height: 9, width: '25%' }} />
+              </div>
+              <div className="skeleton" style={{ height: 9, width: 120 }} />
+            </div>
+          ))}
+        </div>
       ) : logs.length === 0 ? (
         <div style={{ textAlign:'center', padding:40, color:'#787878', fontSize:'0.82rem' }}>No activity in this period.</div>
       ) : (

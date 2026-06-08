@@ -22,7 +22,14 @@ export default function EDRPage() {
   }, [caseId]);
 
   if (loading) return (
-    <div style={{ padding: 40, color: '#787878', textAlign: 'center' }}>Loading…</div>
+    <div style={{ minHeight: '100vh', background: '#050505', padding: '20px 24px' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div className="skeleton" style={{ height: 10, width: 200, marginBottom: 20 }} />
+        {[0,1,2].map(i => (
+          <div key={i} className="skeleton" style={{ height: 80, marginBottom: 12, borderRadius: 8 }} />
+        ))}
+      </div>
+    </div>
   );
 
   return (
