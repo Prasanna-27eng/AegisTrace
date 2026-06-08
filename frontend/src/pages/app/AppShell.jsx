@@ -1,10 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Navigate, Outlet, useNavigate, NavLink } from 'react-router-dom';
 import { Search, Menu, LayoutDashboard, FolderOpen, Crosshair, Monitor, Settings, ChevronDown, LogOut, Home, ArrowLeft, X, Keyboard } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import CommandPalette from '../../components/CommandPalette';
 import useStore from '../../store/useStore';
 import api from '../../api/client';
+import useSSE from '../../hooks/useSSE';
+
+const ALERT_LABELS = {
+  honey_token_access: 'Honey Token Accessed', suspicious_process: 'Suspicious Process',
+  fim_change: 'File Integrity Change', failed_login: 'Failed Login (burst)', yara_match: 'YARA Match',
+  dga_domain: 'DGA Domain Detected', suspicious_port: 'Suspicious Port', privilege_escalation: 'Privilege Escalation',
+  user_management: 'User Account Changed', suspicious_lineage: 'Suspicious Process Chain',
+};
 
 const MOBILE_NAV = [
   { to: '/app/dashboard', Icon: LayoutDashboard, label: 'Home'      },
@@ -110,6 +118,13 @@ export default function AppShell() {
   const gTimeoutRef = useRef(null);
 
   if (!token) return <Navigate to="/app/login" replace />;
+
+  // Global incident stream — toast fires the moment any critical/high alert hits any endpoint
+  useSSE('/api/ingest/stream/global-alerts', useCallback((alert) => {
+    const label = ALERT_LABELS[alert.alert_type] || alert.alert_type?.replace(/_/g, ' ') || 'Alert';
+    const type  = alert.severity === 'critical' ? 'error' : alert.severity === 'high' ? 'warning' : 'success';
+    addToast(`${alert.hostname}: ${label}`, type);
+  }, [addToast]));
 
   useEffect(() => {
     api.get('/api/cases?limit=10').then(r => setRecentCases(r.data)).catch(() => {});

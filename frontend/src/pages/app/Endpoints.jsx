@@ -3,11 +3,12 @@ import {
   Monitor, RefreshCw, Loader2, AlertTriangle, CheckCircle, Shield,
   FileText, ChevronRight, Copy, X, Download, Terminal, Activity,
   Wifi, Lock, Unlock, Zap, Eye, Clock, User, Server, Database,
-  Search, ChevronUp, ChevronDown, ChevronsUpDown
+  Search, ChevronUp, ChevronDown, ChevronsUpDown, Radio
 } from 'lucide-react';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 import { useNavigate } from 'react-router-dom';
+import useSSE from '../../hooks/useSSE';
 
 const OS_ICON   = { windows:'🪟', linux:'🐧', mac:'🍎', unknown:'💻' };
 const MONO      = { fontFamily:'JetBrains Mono,monospace' };
@@ -114,15 +115,15 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
   const autoScrollRef = useRef(true);
   useEffect(() => { autoScrollRef.current = autoScroll; }, [autoScroll]);
 
-  const loadDetail = useCallback((silent = false) => {
-    if (!silent) setDetail(null);
+  const loadDetail = useCallback(() => {
+    setDetail(null);
     api.get(`/api/ingest/endpoints/${ep.id}/detail`)
       .then(r => setDetail(r.data))
       .catch(() => {});
   }, [ep.id]);
 
-  const loadLogs = useCallback((filter = logFilter, silent = false) => {
-    if (!silent) setLogsLoading(true);
+  const loadLogs = useCallback((filter = logFilter) => {
+    setLogsLoading(true);
     const params = filter !== 'all' ? `?category=${filter}&limit=300` : '?limit=300';
     api.get(`/api/ingest/raw-logs/${ep.id}${params}`)
       .then(r => {
@@ -133,19 +134,48 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
       .catch(() => setLogsLoading(false));
   }, [ep.id, logFilter]);
 
+  // Initial data load
   useEffect(() => { loadDetail(); loadLogs(); }, [ep.id]);
 
-  // Real-time: refresh detail every 10s, logs every 3s
-  useEffect(() => {
-    const d = setInterval(() => loadDetail(true), 10000);
-    return () => clearInterval(d);
-  }, [loadDetail]);
-
-  useEffect(() => {
-    if (tab !== 'logs') return;
-    const l = setInterval(() => loadLogs(logFilter, true), 3000);
-    return () => clearInterval(l);
-  }, [tab, logFilter, loadLogs]);
+  // SSE: real-time updates (replaces all polling intervals)
+  const sseUrl = `/api/ingest/stream/${ep.id}`;
+  const { connected: sseConnected } = useSSE(sseUrl, useCallback((msg) => {
+    if (msg.type === 'logs') {
+      setRawLogs(prev => {
+        const merged = [...prev, ...msg.events];
+        return merged.slice(-400); // keep last 400 events
+      });
+      if (autoScrollRef.current && logsRef.current) {
+        setTimeout(() => { if (logsRef.current) logsRef.current.scrollTop = logsRef.current.scrollHeight; }, 50);
+      }
+    } else if (msg.type === 'alerts') {
+      setDetail(prev => {
+        if (!prev) return prev;
+        const newOpen = msg.alerts.filter(a => a.status === 'open');
+        return {
+          ...prev,
+          recent_alerts: [...msg.alerts, ...prev.recent_alerts].slice(0, 25),
+          open_critical: prev.open_critical + newOpen.filter(a => a.severity === 'critical').length,
+          open_high:     prev.open_high     + newOpen.filter(a => a.severity === 'high').length,
+        };
+      });
+      for (const a of msg.alerts) {
+        const label = ALERT_LABELS[a.alert_type] || a.alert_type?.replace(/_/g, ' ');
+        const type  = a.severity === 'critical' ? 'error' : a.severity === 'high' ? 'warning' : 'success';
+        addToast(`${ep.hostname}: ${label}`, type);
+      }
+    } else if (msg.type === 'status') {
+      setDetail(prev => prev ? {
+        ...prev,
+        is_active:        msg.is_active,
+        local_risk_score: msg.local_risk_score,
+        processes:        msg.processes,
+        connections:      msg.connections,
+        system_info:      msg.system_info,
+        agent_version:    msg.agent_version,
+      } : prev);
+    }
+  }, [ep.hostname, ep.id, addToast]));
 
   const dispatch = async (command, payload = {}, label = command) => {
     setCmdLoading(command);
@@ -159,6 +189,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
   };
 
   const isOnline = detail?.is_active ?? ((Date.now() - new Date(ep.last_seen).getTime()) / 1000 < 120);
+  const riskScore = detail?.local_risk_score ?? ep.local_risk_score ?? 0;
   const sys = detail?.system_info || {};
 
   const toggleSort = (setState, col) => setState(s => ({
@@ -213,9 +244,16 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
               <span style={{ fontSize:'0.65rem', color: isOnline ? '#22C55E' : '#555', ...MONO, textTransform:'uppercase' }}>
                 {isOnline ? 'Online' : 'Offline'}
               </span>
+              {sseConnected ? (
+                <span style={{ display:'flex', alignItems:'center', gap:4, fontSize:'0.58rem', color:'#22C55E', background:'rgba(34,197,94,0.08)', border:'1px solid rgba(34,197,94,0.2)', borderRadius:4, padding:'1px 7px', ...MONO }}>
+                  <Radio size={8}/> LIVE
+                </span>
+              ) : (
+                <span style={{ fontSize:'0.58rem', color:'#555', ...MONO }}>connecting…</span>
+              )}
             </div>
             <div style={{ fontSize:'0.7rem', color:'#555', ...MONO, marginTop:2 }}>
-              {ep.ip_address} · {ep.os_type} · Agent v{ep.agent_version}
+              {ep.ip_address} · {ep.os_type} · Agent v{detail?.agent_version || ep.agent_version}
             </div>
           </div>
           <div style={{ display:'flex', gap:8 }}>
@@ -259,7 +297,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
             <div style={{ display:'flex', gap:14, alignItems:'stretch', flexWrap:'wrap' }}>
               <div style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, padding:'16px 20px', display:'flex', flexDirection:'column', alignItems:'center', gap:6, minWidth:120 }}>
                 <div style={{ fontSize:'0.6rem', color:'#555', textTransform:'uppercase', letterSpacing:'0.1em', ...MONO }}>Risk Score</div>
-                <RiskGauge score={detail?.local_risk_score ?? ep.local_risk_score ?? 0} />
+                <RiskGauge score={riskScore} />
               </div>
               <div style={{ flex:1, display:'flex', gap:10, flexWrap:'wrap' }}>
                 <StatCard icon={Activity}       label="Processes"       value={detail?.processes?.length ?? '…'} color="#5A8A9F" sub="running"/>
@@ -804,16 +842,22 @@ export default function Endpoints() {
   const [ingestKey, setIngestKey] = useState('');
   const [showGuide, setShowGuide] = useState(false);
 
-  const loadEndpoints = () => {
-    setLoading(true);
+  const loadEndpoints = useCallback(() => {
     api.get('/api/ingest/endpoints').then(r => { setEndpoints(r.data); setLoading(false); }).catch(() => setLoading(false));
-  };
-  useEffect(() => {
-    loadEndpoints();
-    // Auto-refresh endpoint list every 30s so online/offline status stays current
-    const interval = setInterval(loadEndpoints, 30000);
-    return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    loadEndpoints();
+    // Refresh list every 15s to keep online/offline status current
+    const interval = setInterval(loadEndpoints, 15000);
+    return () => clearInterval(interval);
+  }, [loadEndpoints]);
+
+  // Also refresh when a global alert fires (new endpoint may have appeared)
+  useSSE('/api/ingest/stream/global-alerts', useCallback(() => {
+    loadEndpoints();
+  }, [loadEndpoints]));
 
   const fetchKey = () => {
     api.get('/api/ingest/key')

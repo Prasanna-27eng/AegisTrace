@@ -5,9 +5,10 @@ Receives log batches from remote endpoint agents.
 Auth: X-AegisTrace-Key header (set INGEST_API_KEY env var).
 If not set, defaults to sha256 of ADMIN_PIN so no extra config needed.
 """
-import os, json, hashlib, hmac
+import os, json, hashlib, hmac, asyncio, time as _time_mod
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Header, Request
+from fastapi.responses import StreamingResponse
 from sqlmodel import Session, select, func
 from typing import Optional
 from models import Endpoint, LogBatch, Case, TimelineEvent, AuditLog, IOCCorrelation, ShadowAIEvent, AgentCommand, ITDRAlert, RawLogEvent
@@ -1304,3 +1305,165 @@ def review_shadow_ai(
     session.add(ev)
     session.commit()
     return {"ok": True}
+
+
+# ── Real-time SSE streams ─────────────────────────────────────────────────────
+
+from database import engine as _db_engine
+
+
+@router.get("/stream/global-alerts")
+async def global_alert_stream(
+    request: Request,
+    _user: User = Depends(get_current_user),
+):
+    """
+    SSE: streams new critical/high ITDR alerts from ALL endpoints.
+    AppShell subscribes to this so analysts see incident toasts immediately.
+    """
+    with Session(_db_engine) as s:
+        last_id_val = s.exec(select(func.max(ITDRAlert.id))).first() or 0
+    last_id = [last_id_val]
+
+    async def generator():
+        yield "retry: 3000\n\n"
+        while True:
+            if await request.is_disconnected():
+                break
+            try:
+                with Session(_db_engine) as s:
+                    new_alerts = s.exec(
+                        select(ITDRAlert)
+                        .where(ITDRAlert.id > last_id[0])
+                        .where(ITDRAlert.severity.in_(["critical", "high", "medium"]))
+                        .order_by(ITDRAlert.id.asc())
+                        .limit(10)
+                    ).all()
+                    for a in new_alerts:
+                        last_id[0] = a.id
+                        payload = json.dumps({
+                            "id":          a.id,
+                            "alert_type":  a.alert_type,
+                            "severity":    a.severity,
+                            "hostname":    a.identity_label,
+                            "description": a.description,
+                            "detected_at": a.detected_at.isoformat() if a.detected_at else None,
+                        })
+                        yield f"data: {payload}\n\n"
+            except Exception:
+                pass
+            await asyncio.sleep(3)
+
+    return StreamingResponse(
+        generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no", "Connection": "keep-alive"},
+    )
+
+
+@router.get("/stream/{ep_id}")
+async def endpoint_stream(
+    ep_id: int,
+    request: Request,
+    _user: User = Depends(get_current_user),
+):
+    """
+    SSE: real-time stream for a specific endpoint.
+      type: logs    → new RawLogEvents (appended live)
+      type: alerts  → new ITDRAlerts for this host
+      type: status  → processes, connections, system_info, risk_score (every 5s)
+    """
+    with Session(_db_engine) as s:
+        ep = s.get(Endpoint, ep_id)
+        if not ep:
+            raise HTTPException(404, "Endpoint not found")
+        hostname      = ep.hostname
+        last_log_id   = [s.exec(select(func.max(RawLogEvent.id)).where(RawLogEvent.endpoint_id == ep_id)).first() or 0]
+        last_alert_id = [s.exec(select(func.max(ITDRAlert.id)).where(ITDRAlert.identity_label == hostname)).first() or 0]
+
+    last_status_ts = [0.0]
+
+    async def generator():
+        yield "retry: 2000\n\n"
+        while True:
+            if await request.is_disconnected():
+                break
+            try:
+                with Session(_db_engine) as s:
+                    # ── New raw log events ──────────────────────────────────
+                    new_logs = s.exec(
+                        select(RawLogEvent)
+                        .where(RawLogEvent.endpoint_id == ep_id)
+                        .where(RawLogEvent.id > last_log_id[0])
+                        .order_by(RawLogEvent.id.asc())
+                        .limit(50)
+                    ).all()
+                    if new_logs:
+                        last_log_id[0] = new_logs[-1].id
+                        events = [
+                            {
+                                "id":         l.id,
+                                "ts":         l.ts.isoformat() if l.ts else None,
+                                "event_type": l.event_type,
+                                "category":   l.category,
+                                "severity":   l.severity,
+                                "source":     l.source,
+                                "username":   l.username,
+                                "source_ip":  l.source_ip,
+                                "raw":        l.raw,
+                            }
+                            for l in new_logs
+                        ]
+                        yield f"data: {json.dumps({'type':'logs','events':events})}\n\n"
+
+                    # ── New ITDR alerts ─────────────────────────────────────
+                    new_alerts = s.exec(
+                        select(ITDRAlert)
+                        .where(ITDRAlert.identity_label == hostname)
+                        .where(ITDRAlert.id > last_alert_id[0])
+                        .order_by(ITDRAlert.id.asc())
+                        .limit(20)
+                    ).all()
+                    if new_alerts:
+                        last_alert_id[0] = new_alerts[-1].id
+                        alerts = [
+                            {
+                                "id":          a.id,
+                                "alert_type":  a.alert_type,
+                                "severity":    a.severity,
+                                "description": a.description,
+                                "status":      a.status,
+                                "detected_at": a.detected_at.isoformat() if a.detected_at else None,
+                                "evidence":    a.evidence,
+                            }
+                            for a in new_alerts
+                        ]
+                        yield f"data: {json.dumps({'type':'alerts','alerts':alerts})}\n\n"
+
+                    # ── Endpoint status snapshot (every 5s) ─────────────────
+                    now = _time_mod.time()
+                    if now - last_status_ts[0] >= 5:
+                        last_status_ts[0] = now
+                        ep_fresh = s.get(Endpoint, ep_id)
+                        if ep_fresh:
+                            procs = json.loads(ep_fresh.last_processes    or "[]")
+                            conns = json.loads(ep_fresh.last_connections  or "[]")
+                            sys_i = json.loads(ep_fresh.last_system_info  or "{}")
+                            for p in procs:
+                                pname = (p.get("name") or "").lower()
+                                p["suspicious"] = any(sus in pname for sus in _SUSPICIOUS_PROCESSES)
+                            for c in conns:
+                                rport = c.get("remote_port", 0)
+                                try: c["suspicious"] = int(rport) in _SUSPICIOUS_PORTS
+                                except: c["suspicious"] = False
+                            age = (datetime.utcnow() - ep_fresh.last_seen).total_seconds() if ep_fresh.last_seen else 9999
+                            yield f"data: {json.dumps({'type':'status','is_active':age<120,'local_risk_score':ep_fresh.local_risk_score or 0,'last_seen':ep_fresh.last_seen.isoformat() if ep_fresh.last_seen else None,'processes':procs,'connections':conns,'system_info':sys_i,'agent_version':ep_fresh.agent_version})}\n\n"
+            except Exception:
+                pass
+            await asyncio.sleep(2)
+
+    return StreamingResponse(
+        generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no", "Connection": "keep-alive"},
+    )
