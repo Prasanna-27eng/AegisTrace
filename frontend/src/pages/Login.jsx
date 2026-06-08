@@ -22,8 +22,9 @@ export default function Login() {
   const [showPw,   setShowPw]   = useState(false);
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState('');
-  const [mfa,      setMfa]      = useState(false);
-  const [mfaCode,  setMfaCode]  = useState('');
+  const [mfa,          setMfa]          = useState(false);
+  const [mfaCode,      setMfaCode]      = useState('');
+  const [pendingToken, setPendingToken] = useState('');
 
   /* Parallax on mouse move */
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -57,9 +58,12 @@ export default function Login() {
     if (!email || !password) { setError('Enter your email and password.'); return; }
     setLoading(true); setError('');
     try {
-      const res = await api.post('/auth/login', { username: email, password });
-      if (res.data.requires_mfa) { setMfa(true); setLoading(false); return; }
-      setAuth(res.data.access_token, res.data.user);
+      const res = await api.post('/api/auth/login', { email, password });
+      if (res.data.mfa_required) {
+        setPendingToken(res.data.pending_token);
+        setMfa(true); setLoading(false); return;
+      }
+      setAuth(res.data.token, res.data.user);
       navigate('/app/dashboard');
     } catch (err) {
       setError(err?.response?.data?.detail || 'Invalid credentials.');
@@ -72,8 +76,8 @@ export default function Login() {
     if (!mfaCode) { setError('Enter your 6-digit code.'); return; }
     setLoading(true); setError('');
     try {
-      const res = await api.post('/auth/mfa-verify', { username: email, password, mfa_code: mfaCode });
-      setAuth(res.data.access_token, res.data.user);
+      const res = await api.post('/api/auth/login/mfa', { pending_token: pendingToken, code: mfaCode });
+      setAuth(res.data.token, res.data.user);
       navigate('/app/dashboard');
     } catch (err) {
       setError(err?.response?.data?.detail || 'Invalid code.');

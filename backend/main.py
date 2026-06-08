@@ -391,6 +391,17 @@ if STATIC_DIR.exists():
 
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
+        # Serve actual static files (images, fonts, etc.) before SPA fallback
+        if full_path:
+            requested = STATIC_DIR / full_path
+            try:
+                resolved = requested.resolve()
+                static_root = STATIC_DIR.resolve()
+                if resolved.is_file() and str(resolved).startswith(str(static_root)):
+                    return FileResponse(str(resolved))
+            except Exception:
+                pass
+        # Fall back to SPA index for React routes
         index = STATIC_DIR / "index.html"
         if index.exists():
             return FileResponse(str(index))
