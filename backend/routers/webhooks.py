@@ -31,21 +31,29 @@ _SSRF_BLOCK = re.compile(
     re.IGNORECASE,
 )
 
+_ALLOWED_PORTS = {80, 443, 8080, 8443}   # only standard web ports
+
 def _validate_webhook_url(url: str) -> None:
-    """Block SSRF attempts — internal IPs, localhost, cloud metadata endpoints."""
+    """Block SSRF — internal IPs, localhost, cloud metadata endpoints, non-web ports."""
     if not url.startswith(("http://", "https://")):
         raise HTTPException(400, "Webhook URL must start with http:// or https://")
     try:
         parsed = urlparse(url)
         host = parsed.hostname or ""
+        port = parsed.port
     except Exception:
         raise HTTPException(400, "Invalid webhook URL")
+    if not host:
+        raise HTTPException(400, "Invalid webhook URL — no hostname")
     if _SSRF_BLOCK.match(host):
         raise HTTPException(400, "Webhook URL cannot point to internal/private addresses")
     # Block AWS/GCP/Azure metadata endpoints by hostname
     if host in ("169.254.169.254", "metadata.google.internal",
                 "169.254.170.2", "fd00:ec2::254"):
         raise HTTPException(400, "Webhook URL cannot point to cloud metadata endpoints")
+    # Block non-standard ports — commonly used for SSRF via internal services
+    if port is not None and port not in _ALLOWED_PORTS:
+        raise HTTPException(400, f"Webhook port {port} not allowed. Use 80, 443, 8080, or 8443")
 
 
 # ── CRUD ──────────────────────────────────────────────────────────────────────

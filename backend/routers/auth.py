@@ -54,7 +54,7 @@ def _clear_failures(ip: str) -> None:
 
 SECRET    = os.getenv("JWT_SECRET", "aegistrace-secret-change-me-2025")
 ALGORITHM = "HS256"
-TTL       = 60 * 60 * 24 * 7   # 7 days
+TTL       = 60 * 60 * 48        # 48 hours (was 7 days — excessive session window)
 
 
 def _get_real_ip(request: Request) -> str:
@@ -256,11 +256,17 @@ def login(data: dict, request: Request, session: Session = Depends(get_session))
     user = session.exec(select(User).where(User.email == email)).first()
     if not user or not user.is_active:
         _record_failure(ip)
+        _audit(session, "login_failed", "user", email, None, email,
+               f"Unknown account or inactive — from {ip}")
+        session.commit()
         raise HTTPException(401, "Invalid credentials")
 
     stored = user.hashed_password
     if not stored or not verify_password(password, stored):
         _record_failure(ip)
+        _audit(session, "login_failed", "user", str(user.id), user.id, user.email,
+               f"Wrong password — from {ip}")
+        session.commit()
         raise HTTPException(401, "Invalid credentials")
 
     # Transparent upgrade: if legacy SHA-256, upgrade to bcrypt on successful login
@@ -291,7 +297,7 @@ def login(data: dict, request: Request, session: Session = Depends(get_session))
             **({"ua_hash": ua} if ua else {}),
         })
         _audit(session, "login_admin_no_mfa", "user", str(user.id), user.id, user.email,
-               "Admin logged in without 2FA — setup required")
+               f"Admin logged in without 2FA — setup required — from {ip}")
         session.commit()
         return {
             "token": token,
@@ -305,7 +311,8 @@ def login(data: dict, request: Request, session: Session = Depends(get_session))
         "role": user.role, "name": user.name,
         **({"ua_hash": ua} if ua else {}),
     })
-    _audit(session, "login", "user", str(user.id), user.id, user.email)
+    _audit(session, "login", "user", str(user.id), user.id, user.email,
+           f"from {ip}")
     session.commit()
     return {"token": token, "user": {
         "id": user.id, "email": user.email,

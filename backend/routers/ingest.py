@@ -28,21 +28,19 @@ router = APIRouter(prefix="/api/ingest", tags=["ingest"])
 
 # ── API Key ───────────────────────────────────────────────────────────────────
 def _get_ingest_key() -> str:
+    """
+    Return the ingest API key. Must be set explicitly via INGEST_API_KEY env var.
+    main.py startup auto-generates one if absent and logs it to console.
+    Removed the ADMIN_PIN sha256 derivation — a predictable key is no key at all.
+    """
     key = os.getenv("INGEST_API_KEY")
-    if key:
-        return key
-    # Derive from ADMIN_PIN if not explicitly set.
-    # SECURITY: if ADMIN_PIN is the default 'aegis2025', this key is publicly
-    # predictable. Always set INGEST_API_KEY explicitly in production.
-    pin = os.getenv("ADMIN_PIN", "aegis2025")
-    if pin in ("aegis2025", ""):
-        import warnings
-        warnings.warn(
-            "[SECURITY] INGEST_API_KEY not set and ADMIN_PIN is default. "
-            "Set INGEST_API_KEY env var to a random secret immediately!",
-            stacklevel=2,
+    if not key:
+        raise HTTPException(
+            503,
+            "Ingest service not configured — INGEST_API_KEY env var is not set. "
+            "Check startup logs for the auto-generated key or set it explicitly.",
         )
-    return hashlib.sha256(f"ingest-{pin}-{len(pin)}".encode()).hexdigest()
+    return key
 
 
 def _verify_key(x_aegistrace_key: Optional[str] = Header(None)):

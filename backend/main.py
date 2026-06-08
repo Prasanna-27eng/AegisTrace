@@ -114,10 +114,12 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-            "style-src 'self' 'unsafe-inline'; "
+            "script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.fontshare.com; "
+            "font-src 'self' https://fonts.gstatic.com https://api.fontshare.com; "
             "img-src 'self' data: https:; "
-            "connect-src 'self' https://api.groq.com https://www.virustotal.com; "
+            "connect-src 'self' https://api.groq.com https://www.virustotal.com "
+            "https://fonts.googleapis.com https://api.fontshare.com; "
             "frame-ancestors 'none';"
         )
         if request.url.path.startswith("/api/"):
@@ -492,10 +494,19 @@ async def startup():
 
     print("[AegisTrace v5.4] Server ready.")
     print(f"[AegisTrace] Allowed origins: {ALLOWED_ORIGINS}")
-    # ── Security warnings for weak defaults ──────────────────────────────────
+    # ── Security posture check at startup ────────────────────────────────────
+    _sec_issues = []
     if os.getenv("JWT_SECRET", "") in ("", "aegistrace-secret-change-me-2025"):
-        print("[SECURITY WARNING] JWT_SECRET is using the default value. Set a strong random secret in environment variables!")
+        _sec_issues.append("JWT_SECRET is the default — JWT tokens can be forged. Set a 64-char random string.")
     if os.getenv("ADMIN_PIN", "") in ("", "aegis2025"):
-        print("[SECURITY WARNING] ADMIN_PIN is using the default value 'aegis2025'. Change it in environment variables!")
+        _sec_issues.append("ADMIN_PIN is the default 'aegis2025' — admin account is trivially guessable.")
     if not os.getenv("FERNET_KEY"):
-        print("[SECURITY WARNING] FERNET_KEY not set. Connector tokens encrypted with derived key. Set FERNET_KEY for stronger protection.")
+        _sec_issues.append("FERNET_KEY not set — connector API tokens are encrypted with a derived key. Set an explicit 32-byte base64 Fernet key.")
+    if _sec_issues:
+        border = "=" * 70
+        print(f"\n{'!'*3} SECURITY WARNINGS {'!'*3}")
+        print(border)
+        for i, issue in enumerate(_sec_issues, 1):
+            print(f"  [{i}] {issue}")
+        print(border)
+        print("  Fix these before exposing this service to the internet.\n")
