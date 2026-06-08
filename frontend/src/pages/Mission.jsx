@@ -189,7 +189,7 @@ export default function Mission() {
           aria-hidden
           style={{
             position: 'absolute', inset: '-20%',
-            backgroundImage: `url('/assets/pages/mission%20page%20.jpg')`,
+            backgroundImage: `url('/assets/pages/mission-bg.jpg')`,
             backgroundSize: 'cover', backgroundPosition: 'center',
             y: heroY,
             animation: 'kenburns-m 20s ease-out forwards',

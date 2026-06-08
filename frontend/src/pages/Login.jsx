@@ -15,8 +15,7 @@ const GOLD = '#F59E0B';
 ════════════════════════════════════════════════════════════════════════════ */
 export default function Login() {
   const navigate  = useNavigate();
-  const setUser   = useStore(s => s.setUser);
-  const setToken  = useStore(s => s.setToken);
+  const setAuth   = useStore(s => s.setAuth);
 
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
@@ -60,8 +59,7 @@ export default function Login() {
     try {
       const res = await api.post('/auth/login', { username: email, password });
       if (res.data.requires_mfa) { setMfa(true); setLoading(false); return; }
-      setToken(res.data.access_token);
-      setUser(res.data.user);
+      setAuth(res.data.access_token, res.data.user);
       navigate('/app/dashboard');
     } catch (err) {
       setError(err?.response?.data?.detail || 'Invalid credentials.');
@@ -75,8 +73,7 @@ export default function Login() {
     setLoading(true); setError('');
     try {
       const res = await api.post('/auth/mfa-verify', { username: email, password, mfa_code: mfaCode });
-      setToken(res.data.access_token);
-      setUser(res.data.user);
+      setAuth(res.data.access_token, res.data.user);
       navigate('/app/dashboard');
     } catch (err) {
       setError(err?.response?.data?.detail || 'Invalid code.');
@@ -150,7 +147,7 @@ export default function Login() {
         style={{
           position: 'absolute',
           inset: '-30px',
-          backgroundImage: `url('/assets/pages/login%20page.jpg')`,
+          backgroundImage: `url('/assets/pages/login-bg.jpg')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           transform: `translate(${offset.x * -0.5}px, ${offset.y * -0.5}px) scale(1.08)`,

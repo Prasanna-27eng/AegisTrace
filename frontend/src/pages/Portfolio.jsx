@@ -1,8 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
 import {
-  ArrowUpRight, Github, Mail, GraduationCap, ExternalLink,
-  Shield, Brain, Mail as MailIcon, Cpu, Activity, Code,
+  ArrowUpRight, Github, Mail, ExternalLink,
   CheckCircle, Clock,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -234,8 +233,12 @@ export default function Portfolio() {
       </nav>
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section style={{ padding: 'clamp(140px,16vh,200px) clamp(24px,5vw,72px) clamp(72px,8vw,96px)', borderBottom: '1px solid rgba(245,240,232,0.06)' }}>
-        <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+      <section style={{ position: 'relative', padding: 'clamp(140px,16vh,200px) clamp(24px,5vw,72px) clamp(72px,8vw,96px)', borderBottom: '1px solid rgba(245,240,232,0.06)', overflow: 'hidden' }}>
+        {/* Background image with heavy dark overlay */}
+        <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: "url('/assets/pages/portfolio-bg.jpg')", backgroundSize: 'cover', backgroundPosition: 'center 40%', filter: 'brightness(0.28) saturate(0.7)', zIndex: 0 }}/>
+        <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(5,4,5,0.5) 0%, rgba(5,4,5,0.2) 40%, rgba(5,4,5,0.95) 100%)', zIndex: 1 }}/>
+        <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 60% 50% at 5% 90%, rgba(245,158,11,0.1) 0%, transparent 65%)', zIndex: 1 }}/>
+        <div style={{ maxWidth: 1240, margin: '0 auto', position: 'relative', zIndex: 2 }}>
           <motion.div
             initial={{ opacity: 0, y: 32 }}
             animate={{ opacity: 1, y: 0 }}
