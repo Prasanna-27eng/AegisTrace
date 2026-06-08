@@ -150,9 +150,55 @@ export default function Dashboard() {
   ].slice(0, 6);
 
   if (loading) return (
-    <div style={{ padding: 40, color: '#787878', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-      <Activity size={20} style={{ animation: 'spin 1s linear infinite' }} />
-      <div style={{ fontSize: '0.82rem' }}>Loading dashboard…</div>
+    <div style={{ padding: '28px 32px', maxWidth: 1440, background: '#000000', minHeight: '100vh' }}>
+      {/* Header skeleton */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 32, paddingBottom: 24, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div>
+          <div className="skeleton" style={{ height: 10, width: 180, marginBottom: 12 }} />
+          <div className="skeleton" style={{ height: 30, width: 140, marginBottom: 8 }} />
+          <div className="skeleton" style={{ height: 9, width: 220 }} />
+        </div>
+        <div className="skeleton" style={{ height: 36, width: 110, borderRadius: 0 }} />
+      </div>
+      {/* KPI grid skeleton */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, marginBottom: 32, background: 'rgba(255,255,255,0.06)' }}>
+        {[0, 1, 2, 3].map(i => (
+          <div key={i} style={{ background: '#080808', padding: '28px 24px' }}>
+            <div className="skeleton" style={{ height: 44, width: 56, marginBottom: 12 }} />
+            <div className="skeleton" style={{ height: 9, width: 90, marginBottom: 6 }} />
+            <div className="skeleton" style={{ height: 8, width: 130 }} />
+          </div>
+        ))}
+      </div>
+      {/* Main grid skeleton */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 20 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: 'rgba(255,255,255,0.04)' }}>
+          {[0, 1, 2, 3, 4, 5].map(i => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', background: '#080808' }}>
+              <div style={{ flex: 1 }}>
+                <div className="skeleton" style={{ height: 12, width: '62%', marginBottom: 6 }} />
+                <div className="skeleton" style={{ height: 9, width: '38%' }} />
+              </div>
+              <div className="skeleton" style={{ height: 20, width: 54 }} />
+              <div className="skeleton" style={{ height: 20, width: 72 }} />
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {[120, 100, 96].map((h, i) => (
+            <div key={i} style={{ background: '#080808', border: '1px solid rgba(255,255,255,0.06)', padding: 20 }}>
+              <div className="skeleton" style={{ height: 9, width: 110, marginBottom: 16 }} />
+              {[0, 1, 2, 3].map(j => (
+                <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                  <div className="skeleton" style={{ height: 8, width: 46 }} />
+                  <div className="skeleton" style={{ flex: 1, height: 3 }} />
+                  <div className="skeleton" style={{ height: 12, width: 16 }} />
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 

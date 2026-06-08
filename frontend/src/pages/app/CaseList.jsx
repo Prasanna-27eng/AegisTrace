@@ -30,6 +30,35 @@ function timeAgo(dateStr) {
   return `${Math.round(diff / 86400)}d ago`;
 }
 
+function ConfirmModal({ caseNumber, onConfirm, onCancel }) {
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onCancel(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onCancel]);
+
+  return (
+    <div
+      onClick={onCancel}
+      style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{ background: '#111', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: '24px 28px', maxWidth: 400, width: '90%', boxShadow: '0 24px 64px rgba(0,0,0,0.8)' }}
+      >
+        <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: 8, color: '#EBEBEB' }}>Delete case?</h3>
+        <p style={{ fontSize: '0.8rem', color: '#787878', marginBottom: 24, lineHeight: 1.55 }}>
+          <span style={{ fontFamily: 'JetBrains Mono', color: '#A8A8A8' }}>{caseNumber}</span> will be permanently deleted. This cannot be undone.
+        </p>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <button className="btn-ghost" onClick={onCancel} style={{ fontSize: '0.8rem' }}>Cancel</button>
+          <button className="btn-danger" onClick={onConfirm} style={{ fontSize: '0.8rem' }}>Delete</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const QUICK_FILTERS = [
   { label: 'All',              status: '',                severity: '' },
   { label: 'Open',             status: 'open',            severity: '' },
@@ -44,28 +73,36 @@ export default function CaseList() {
   const [searchParams] = useSearchParams();
   const { addToast, user } = useStore();
 
-  const [cases, setCases]         = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [q, setQ]                 = useState(searchParams.get('q') || '');
-  const [severity, setSeverity]   = useState(searchParams.get('severity') || '');
-  const [status, setStatus]       = useState(searchParams.get('status') || '');
-  const [sort, setSort]           = useState('newest');
+  const [cases, setCases]           = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [q, setQ]                   = useState(searchParams.get('q') || '');
+  const [debouncedQ, setDebouncedQ] = useState(searchParams.get('q') || '');
+  const [severity, setSeverity]     = useState(searchParams.get('severity') || '');
+  const [status, setStatus]         = useState(searchParams.get('status') || '');
+  const [sort, setSort]             = useState('newest');
   const [activeChip, setActiveChip] = useState(0);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [confirmModal, setConfirmModal]   = useState(null);
+
+  // Debounce q → debouncedQ
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQ(q), 320);
+    return () => clearTimeout(t);
+  }, [q]);
 
   const fetchCases = useCallback(() => {
     setLoading(true);
     const p = new URLSearchParams();
-    if (q)        p.set('q', q);
-    if (severity) p.set('severity', severity);
-    if (status)   p.set('status', status);
+    if (debouncedQ) p.set('q', debouncedQ);
+    if (severity)   p.set('severity', severity);
+    if (status)     p.set('status', status);
     p.set('sort', sort);
     api.get(`/api/cases?${p}`)
       .then(r => { setCases(r.data); setLoading(false); })
       .catch(() => setLoading(false));
-  }, [q, severity, status, sort]);
+  }, [debouncedQ, severity, status, sort]);
 
-  useEffect(() => { fetchCases(); }, [severity, status, sort]);
+  useEffect(() => { fetchCases(); }, [fetchCases]);
 
   const applyChip = (idx, f) => {
     setActiveChip(idx);
@@ -73,7 +110,7 @@ export default function CaseList() {
     setStatus(f.status);
   };
 
-  const handleSearch = (e) => { if (e.key === 'Enter') fetchCases(); };
+  const handleSearch = () => {}; // live search handles it — kept for onKeyDown compatibility
 
   const handleNewCase = async () => {
     try {
@@ -97,9 +134,14 @@ export default function CaseList() {
     } catch { addToast('Failed to create case from template', 'error'); }
   };
 
-  const handleDelete = async (e, caseId, caseNumber) => {
+  const handleDelete = (e, caseId, caseNumber) => {
     e.stopPropagation();
-    if (!window.confirm(`Delete case ${caseNumber}? This cannot be undone.`)) return;
+    setConfirmModal({ caseId, caseNumber });
+  };
+
+  const confirmDelete = async () => {
+    const { caseId } = confirmModal;
+    setConfirmModal(null);
     try {
       await api.delete(`/api/cases/${caseId}`);
       setCases(prev => prev.filter(c => c.id !== caseId));
@@ -161,6 +203,15 @@ export default function CaseList() {
         </div>
       </div>
 
+      {/* Delete confirm modal */}
+      {confirmModal && (
+        <ConfirmModal
+          caseNumber={confirmModal.caseNumber}
+          onConfirm={confirmDelete}
+          onCancel={() => setConfirmModal(null)}
+        />
+      )}
+
       {/* Investigation Templates modal */}
       {showTemplates && (
         <InvestigationTemplates
@@ -192,8 +243,13 @@ export default function CaseList() {
         <div style={{ position: 'relative', flex: '1 1 200px' }}>
           <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#787878' }} />
           <input className="at-input" placeholder="Search title, case number, analyst, findings…" value={q}
-            onChange={e => setQ(e.target.value)} onKeyDown={handleSearch}
-            style={{ paddingLeft: 30, fontSize: '0.8rem' }} />
+            onChange={e => setQ(e.target.value)}
+            style={{ paddingLeft: 30, paddingRight: q ? 28 : 12, fontSize: '0.8rem' }} />
+          {q && (
+            <button onClick={() => setQ('')} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#686868', cursor: 'pointer', padding: 2, display: 'flex' }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          )}
         </div>
         <select className="at-select" value={severity} onChange={e => { setSeverity(e.target.value); setActiveChip(-1); }} style={{ flex: '0 1 130px' }}>
           <option value="">All Severities</option>

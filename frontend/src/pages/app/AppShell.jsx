@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Navigate, Outlet, useNavigate, NavLink } from 'react-router-dom';
-import { Search, Menu, LayoutDashboard, FolderOpen, Crosshair, Monitor, Settings, ChevronDown, LogOut, Home, ArrowLeft } from 'lucide-react';
+import { Search, Menu, LayoutDashboard, FolderOpen, Crosshair, Monitor, Settings, ChevronDown, LogOut, Home, ArrowLeft, X, Keyboard } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import CommandPalette from '../../components/CommandPalette';
 import useStore from '../../store/useStore';
@@ -14,15 +14,100 @@ const MOBILE_NAV = [
   { to: '/app/admin',     Icon: Settings,        label: 'Admin'     },
 ];
 
+const SHORTCUTS = [
+  { keys: ['⌘K'],      label: 'Open command palette',    section: 'Global'     },
+  { keys: ['?'],       label: 'Show keyboard shortcuts',  section: 'Global'     },
+  { keys: ['Esc'],     label: 'Close panel / dialog',     section: 'Global'     },
+  { keys: ['G', 'D'],  label: 'Go to Dashboard',          section: 'Navigation' },
+  { keys: ['G', 'C'],  label: 'Go to Cases',              section: 'Navigation' },
+  { keys: ['G', 'H'],  label: 'Go to Threat Hunt',        section: 'Navigation' },
+  { keys: ['G', 'A'],  label: 'Go to Analytics',          section: 'Navigation' },
+  { keys: ['N'],       label: 'New Case',                  section: 'Cases'      },
+];
+
+function KBD({ children }) {
+  return (
+    <kbd style={{ fontSize: '0.65rem', color: '#EBEBEB', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 4, padding: '2px 7px', fontFamily: 'JetBrains Mono' }}>
+      {children}
+    </kbd>
+  );
+}
+
+function ShortcutsPanel({ onClose }) {
+  const sections = [...new Set(SHORTCUTS.map(s => s.section))];
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{ background: '#0E0E0E', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '24px 28px', maxWidth: 460, width: '90%', boxShadow: '0 24px 64px rgba(0,0,0,0.8)', animation: 'at-dd-in 0.15s ease' }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Keyboard size={15} style={{ color: '#5A8A9F' }} />
+            <h2 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#EBEBEB', margin: 0 }}>Keyboard Shortcuts</h2>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#686868', cursor: 'pointer', padding: 4, borderRadius: 6, display: 'flex', transition: 'color 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#EBEBEB'}
+            onMouseLeave={e => e.currentTarget.style.color = '#686868'}>
+            <X size={15} />
+          </button>
+        </div>
+
+        {sections.map(section => (
+          <div key={section} style={{ marginBottom: 18 }}>
+            <div style={{ fontSize: '0.58rem', color: '#505050', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'JetBrains Mono', marginBottom: 8 }}>
+              {section}
+            </div>
+            {SHORTCUTS.filter(s => s.section === section).map(s => (
+              <div key={s.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                <span style={{ fontSize: '0.8rem', color: '#A8A8A8' }}>{s.label}</span>
+                <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                  {s.keys.map((k, i) => (
+                    <React.Fragment key={k}>
+                      {i > 0 && <span style={{ fontSize: '0.6rem', color: '#505050', fontFamily: 'JetBrains Mono' }}>then</span>}
+                      <KBD>{k}</KBD>
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+
+        <div style={{ marginTop: 4, fontSize: '0.68rem', color: '#505050', fontFamily: 'JetBrains Mono', textAlign: 'center' }}>
+          Shortcuts are disabled when typing in an input field.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const isTyping = () => {
+  const tag = document.activeElement?.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable;
+};
+
 export default function AppShell() {
-  const { token, user, searchQuery, setSearchQuery, logout } = useStore();
+  const { token, user, searchQuery, setSearchQuery, logout, addToast } = useStore();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [recentCases, setRecentCases] = useState([]);
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
+  const gKeyRef = useRef(false);
+  const gTimeoutRef = useRef(null);
 
   if (!token) return <Navigate to="/app/login" replace />;
 
@@ -42,16 +127,56 @@ export default function AppShell() {
     return () => document.removeEventListener('mousedown', handler);
   }, [dropdownOpen]);
 
+  // Global keyboard shortcuts
   useEffect(() => {
     const onKey = (e) => {
+      // Always handle Cmd/Ctrl+K
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         setPaletteOpen(o => !o);
+        return;
+      }
+
+      if (isTyping()) return;
+
+      // ? → show shortcuts panel
+      if (e.key === '?') {
+        e.preventDefault();
+        setShortcutsOpen(o => !o);
+        return;
+      }
+
+      // N → new case
+      if (e.key === 'n' || e.key === 'N') {
+        e.preventDefault();
+        api.post('/api/cases', { title: 'New Investigation', severity: 'medium', analyst_name: user?.name || 'Analyst' })
+          .then(r => navigate(`/app/cases/${r.data.id}`))
+          .catch(() => addToast('Failed to create case', 'error'));
+        return;
+      }
+
+      // G sequence — go-to shortcuts (G then D/C/H/A)
+      if (e.key === 'g' || e.key === 'G') {
+        gKeyRef.current = true;
+        clearTimeout(gTimeoutRef.current);
+        gTimeoutRef.current = setTimeout(() => { gKeyRef.current = false; }, 1200);
+        return;
+      }
+
+      if (gKeyRef.current) {
+        gKeyRef.current = false;
+        clearTimeout(gTimeoutRef.current);
+        const key = e.key.toLowerCase();
+        if (key === 'd') { navigate('/app/dashboard'); }
+        if (key === 'c') { navigate('/app/cases'); }
+        if (key === 'h') { navigate('/app/hunt'); }
+        if (key === 'a') { navigate('/app/analytics'); }
       }
     };
+
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
+    return () => { window.removeEventListener('keydown', onKey); clearTimeout(gTimeoutRef.current); };
+  }, [navigate, user, addToast]);
 
   const handleSearch = (e) => {
     if (e.key === 'Enter' && searchQuery.trim()) {
@@ -65,7 +190,14 @@ export default function AppShell() {
   return (
     <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)', overflow: 'hidden' }}>
 
-      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} recentCases={recentCases} />
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        recentCases={recentCases}
+        onOpenShortcuts={() => setShortcutsOpen(true)}
+      />
+
+      {shortcutsOpen && <ShortcutsPanel onClose={() => setShortcutsOpen(false)} />}
 
       <div style={{ display: 'flex' }} className="hidden-mobile">
         <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
@@ -117,6 +249,17 @@ export default function AppShell() {
             </button>
           </div>
 
+          {/* Shortcuts hint button */}
+          <button
+            onClick={() => setShortcutsOpen(true)}
+            title="Keyboard shortcuts (?)"
+            style={{ background: 'none', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, padding: '5px 8px', cursor: 'pointer', color: '#686868', display: 'flex', alignItems: 'center', transition: 'all 0.15s', flexShrink: 0 }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#EBEBEB'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = '#686868'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
+          >
+            <Keyboard size={14} />
+          </button>
+
           {/* User dropdown */}
           <div ref={dropdownRef} style={{ marginLeft: 'auto', position: 'relative' }}>
             <button
@@ -140,6 +283,7 @@ export default function AppShell() {
                 {[
                   { Icon: Home,     label: 'Back to Home',  action: () => { navigate('/');          setDropdownOpen(false); }, color: 'rgba(240,240,248,0.7)' },
                   { Icon: Settings, label: 'Settings',       action: () => { navigate('/app/admin'); setDropdownOpen(false); }, color: 'rgba(240,240,248,0.7)' },
+                  { Icon: Keyboard, label: 'Keyboard Shortcuts', action: () => { setShortcutsOpen(true); setDropdownOpen(false); }, color: 'rgba(240,240,248,0.7)' },
                 ].map(({ Icon, label, action, color }) => (
                   <button key={label} onClick={action} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', background: 'none', border: 'none', borderRadius: 7, padding: '9px 12px', fontSize: '0.8rem', color, cursor: 'pointer', transition: 'background 0.12s', textAlign: 'left', fontFamily: 'inherit' }}
                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}

@@ -545,3 +545,25 @@ input[type="checkbox"] {
 @supports (padding: max(0px)) {
   body { padding-bottom: env(safe-area-inset-bottom); }
 }
+
+/* ── Skeleton loading ──────────────────────────────────────────────────────── */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 0.85; }
+}
+.skeleton {
+  background: rgba(255,255,255,0.07);
+  border-radius: var(--radius-sm);
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
+}
+
+/* ── Reduced motion ────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .skeleton { opacity: 0.5 !important; }
+}
