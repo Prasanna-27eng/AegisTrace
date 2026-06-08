@@ -21,6 +21,7 @@ from sqlmodel import Session
 from database import get_session
 from routers.auth import get_current_user
 from models import User
+from core.cache import cache, TTL_FEEDS
 import httpx
 
 router = APIRouter(prefix="/api/enrich", tags=["enrichment"])
@@ -237,6 +238,83 @@ async def query_nvd_cve(keyword: str) -> dict:
         return {"source": "NVD CVE", "error": str(e), "found": False}
 
 
+async def query_cisa_kev(cve_id: str) -> dict:
+    """
+    CISA Known Exploited Vulnerabilities — no key needed.
+    Checks if a CVE is actively exploited in the wild per CISA's authoritative list.
+    Results cached for 15 minutes to avoid hammering the static JSON feed.
+    """
+    CISA_URL = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
+    cve_id = cve_id.upper().strip()
+    try:
+        kev_list = cache.get("cisa_kev_feed")
+        if kev_list is None:
+            async with httpx.AsyncClient(timeout=12) as client:
+                r = await client.get(CISA_URL)
+                if r.status_code == 200:
+                    kev_list = r.json().get("vulnerabilities", [])
+                    cache.set("cisa_kev_feed", kev_list, TTL_FEEDS)
+                else:
+                    return {"source": "CISA KEV", "found": False}
+
+        match = next((v for v in kev_list if v.get("cveID", "").upper() == cve_id), None)
+        if match:
+            return {
+                "source":               "CISA KEV",
+                "found":                True,
+                "cve_id":               match.get("cveID"),
+                "vendor":               match.get("vendorProject"),
+                "product":              match.get("product"),
+                "vulnerability_name":   match.get("vulnerabilityName"),
+                "date_added":           match.get("dateAdded"),
+                "due_date":             match.get("dueDate"),
+                "required_action":      match.get("requiredAction"),
+                "known_ransomware_use": match.get("knownRansomwareCampaignUse", "Unknown"),
+                "verdict":              "malicious",
+                "note":                 "Actively exploited in the wild per CISA",
+            }
+        return {"source": "CISA KEV", "found": False, "note": f"{cve_id} not in CISA KEV list"}
+    except Exception as e:
+        return {"source": "CISA KEV", "error": str(e), "found": False}
+
+
+async def query_feodo_tracker(ip: str) -> dict:
+    """
+    Feodo Tracker (abuse.ch) — C2 botnet IP blocklist. No key needed.
+    Checks if an IP is a known botnet command-and-control server.
+    Results cached for 15 minutes.
+    """
+    FEODO_URL = "https://feodotracker.abuse.ch/downloads/ipblocklist.json"
+    try:
+        blocklist = cache.get("feodo_blocklist")
+        if blocklist is None:
+            async with httpx.AsyncClient(timeout=12) as client:
+                r = await client.get(FEODO_URL)
+                if r.status_code == 200:
+                    blocklist = r.json()
+                    cache.set("feodo_blocklist", blocklist, TTL_FEEDS)
+                else:
+                    return {"source": "Feodo Tracker", "found": False}
+
+        match = next((entry for entry in blocklist if entry.get("ip_address") == ip), None)
+        if match:
+            return {
+                "source":     "Feodo Tracker",
+                "found":      True,
+                "ip":         match.get("ip_address"),
+                "port":       match.get("port"),
+                "malware":    match.get("malware"),
+                "first_seen": match.get("first_seen"),
+                "last_seen":  match.get("last_online"),
+                "country":    match.get("country"),
+                "verdict":    "malicious",
+                "note":       f"Known C2 for {match.get('malware', 'unknown malware')}",
+            }
+        return {"source": "Feodo Tracker", "found": False}
+    except Exception as e:
+        return {"source": "Feodo Tracker", "error": str(e), "found": False}
+
+
 # ── Main enrichment endpoint ──────────────────────────────────────────────────
 @router.get("/{ioc}")
 @limiter.limit("20/minute")
@@ -262,6 +340,7 @@ async def enrich(
             query_ipinfo(ioc),
             query_threatfox(ioc),
             query_urlhaus(ioc, "host"),
+            query_feodo_tracker(ioc),          # C2 botnet check
         ]
 
     elif ioc_type == "hash":
@@ -314,3 +393,27 @@ async def cve_lookup(
 ):
     """Look up CVEs by keyword/product name using NVD (no key needed)."""
     return await query_nvd_cve(keyword)
+
+
+@router.get("/kev/{cve_id}")
+async def kev_lookup(
+    cve_id: str,
+    _user: User = Depends(get_current_user),
+):
+    """
+    Check if a CVE is in the CISA Known Exploited Vulnerabilities catalogue.
+    No API key required. Results cached 15 minutes.
+    """
+    return await query_cisa_kev(cve_id)
+
+
+@router.get("/c2/{ip}")
+async def c2_lookup(
+    ip: str,
+    _user: User = Depends(get_current_user),
+):
+    """
+    Check if an IP is a known botnet C2 server per Feodo Tracker.
+    No API key required. Results cached 15 minutes.
+    """
+    return await query_feodo_tracker(ip)

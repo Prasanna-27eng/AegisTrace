@@ -138,7 +138,7 @@ Use your tools to enrich the IOCs, check endpoint data, find similar past cases,
         for tc in msg.tool_calls:
             fn_name = tc.function.name
             tools_called.append(fn_name)
-            result  = await execute_tool(fn_name, tc.function.arguments, session)
+            result  = await execute_tool(fn_name, tc.function.arguments, session, org_id=getattr(case, "org_id", None))
             messages.append({
                 "role":         "tool",
                 "tool_call_id": tc.id,

@@ -345,7 +345,7 @@ async def case_chat(
     similar_context = ""
     if _NVIDIA_ENABLED:
         try:
-            similar = find_similar_cases(message, session, exclude_case_id=case.id, top_k=2, min_score=0.60)
+            similar = find_similar_cases(message, session, org_id=user.org_id, exclude_case_id=case.id, top_k=2, min_score=0.60)
             if similar:
                 similar_context = "\n\nRelated past cases:\n" + "\n".join(
                     f"- {s['case_number']}: {s['title']} (similarity: {s['score']})"

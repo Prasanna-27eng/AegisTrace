@@ -59,11 +59,17 @@ services:
       - key: GREYNOISE_API_KEY
         sync: false
 
-      # ── NVIDIA NIM (Phases 1-5: agentic triage, embeddings, guardrails) ──
+      # ── NVIDIA NIM (Phases 1-9: agentic triage, embeddings, guardrails, vision, rules) ──
       - key: NVIDIA_API_KEY
         sync: false
       - key: NVIDIA_GUARDRAILS
         value: "true"
+
+      # ── Qdrant Cloud vector store (v8.1) ─────────────────────────────────
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
 
     disk:
       name: aegistrace-data

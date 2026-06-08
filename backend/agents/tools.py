@@ -117,7 +117,7 @@ TOOL_DEFINITIONS = [
 
 # ── Tool executor ─────────────────────────────────────────────────────────────
 
-async def execute_tool(name: str, args: str | dict, session=None) -> dict:
+async def execute_tool(name: str, args: str | dict, session=None, org_id: int = None) -> dict:
     """
     Execute a named tool and return its result as a dict.
     All errors are caught and returned as {"error": "..."} so the agent loop continues.
@@ -142,6 +142,7 @@ async def execute_tool(name: str, args: str | dict, session=None) -> dict:
                 args.get("query", ""),
                 args.get("exclude_case_id"),
                 session,
+                org_id,
             )
         else:
             return {"error": f"Unknown tool: {name}"}
@@ -260,7 +261,7 @@ def _get_ioc_correlations(ioc: str, session) -> dict:
         return {"error": str(exc)}
 
 
-def _search_similar_cases(query: str, exclude_case_id, session) -> dict:
+def _search_similar_cases(query: str, exclude_case_id, session, org_id=None) -> dict:
     if not session or not query:
         return {"similar_cases": []}
     try:
@@ -268,6 +269,7 @@ def _search_similar_cases(query: str, exclude_case_id, session) -> dict:
         results = find_similar_cases(
             query_text=query,
             session=session,
+            org_id=org_id,
             exclude_case_id=exclude_case_id,
             top_k=3,
         )

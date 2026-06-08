@@ -38,7 +38,7 @@ def get_similar_cases(
         return {"similar_cases": [], "note": "NVIDIA_API_KEY not configured"}
 
     query = f"{case.title} {case.incident_type} {(case.description or '')[:400]}"
-    results = find_similar_cases(query, session, exclude_case_id=case_id, top_k=top_k)
+    results = find_similar_cases(query, session, org_id=user.org_id, exclude_case_id=case_id, top_k=top_k)
     return {"similar_cases": results, "count": len(results)}
 
 
@@ -80,7 +80,7 @@ def semantic_search(
         return {"results": [], "note": "NVIDIA_API_KEY not configured"}
 
     top_k   = min(int(data.get("top_k", 5)), 10)
-    results = find_similar_cases(query, session, top_k=top_k, min_score=0.50)
+    results = find_similar_cases(query, session, org_id=user.org_id, top_k=top_k, min_score=0.50)
     return {"results": results, "count": len(results), "query": query}
 
 

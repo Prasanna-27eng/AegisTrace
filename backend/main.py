@@ -428,6 +428,13 @@ async def startup():
     start_scheduler()        # launch background report-delivery scheduler
     register_default_detectors()  # v4.0 identity risk engine
 
+    # ── Qdrant vector store ───────────────────────────────────────────────────
+    try:
+        import qdrant_store
+        qdrant_store.init_collection()
+    except Exception as _e:
+        print(f"[qdrant] Startup skipped: {_e}")
+
     # ── Hardware platform startup ─────────────────────────────────────────────
     try:
         from sqlmodel import Session

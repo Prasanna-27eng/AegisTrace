@@ -1,5 +1,5 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v8.0 | **Last updated:** June 2026
+**Version:** v8.1 | **Last updated:** June 2026
 **Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files.
 
 ---
@@ -99,7 +99,8 @@ Dockerfile          Multi-stage: frontend build → FastAPI server
 render.yaml         Render free-tier deploy config (autoDeploy: true)
 
 backend/nvidia_client.py     NVIDIA NIM singleton client (OpenAI-compatible, graceful fallback)
-backend/embeddings.py        NV-EmbedQA-E5-v5 embedding service + cosine similarity search
+backend/qdrant_store.py      Qdrant Cloud vector store — init_collection, upsert_case, search_similar; graceful fallback when QDRANT_URL unset (v8.1)
+backend/embeddings.py        Embedding service — Qdrant primary / SQLite fallback; NV-EmbedQA-E5-v5 + NV-RerankQA reranker
 backend/guardrails.py        Llama Guard 3 safety classifier (Phase 3)
 backend/ingest_normalizer.py Alert format normalizer — Wazuh/osquery/Falco/Sysmon → case schema (Phase 5)
 backend/agents/
@@ -126,7 +127,7 @@ backend/agents/
 | hunt | /api/hunt | Threat hunt: cross-case IOC correlation |
 | audit | /api/audit | Audit log (all actions) |
 | ingest | /api/ingest | Agent telemetry ingestion + command channel |
-| enrichment | /api/enrichment | Multi-source IOC enrichment (rate limited: 20/min) |
+| enrichment | /api/enrichment | Multi-source IOC enrichment — Shodan, GreyNoise, IPInfo, URLhaus, ThreatFox, MalwareBazaar, NVD, CISA KEV, Feodo Tracker C2 (rate limited: 20/min) |
 | edr | /api/edr | EDR integrations (CS/SentinelOne/CB) |
 | pcap | /api/pcap | PCAP file analysis |
 | feeds | /api/feeds | Live threat feeds (CISA/URLhaus/etc.) |
