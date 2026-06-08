@@ -1,5 +1,5 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v8.1 | **Last updated:** June 2026
+**Version:** v9.0 | **Last updated:** June 2026
 **Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files.
 
 ---
@@ -105,9 +105,9 @@ backend/guardrails.py        Llama Guard 3 safety classifier (Phase 3)
 backend/ingest_normalizer.py Alert format normalizer — Wazuh/osquery/Falco/Sysmon → case schema (Phase 5)
 backend/agents/
   __init__.py
-  tools.py          5 tool definitions + executors for function-calling agents
+  tools.py          7 tool definitions + executors — added get_live_processes + analyze_process_anomalies (v9.0)
   triage_agent.py   Hermes-3 70B (NVIDIA NIM) agentic triage loop (max 6 iterations, Groq fallback)
-  specialist.py     EmailAgent, EndpointAgent, IOCAgent, IdentityAgent, ReportAgent
+  specialist.py     EmailAgent, EndpointAgent (v9.0 agentic loop), IOCAgent, IdentityAgent, ReportAgent
   coordinator.py    asyncio.gather parallel coordinator + synthesis (Phase 4)
 ```
 
@@ -645,7 +645,7 @@ react, react-dom, react-router-dom, axios, zustand, lucide-react, react-scripts
 - [ ] Endpoint Agent Layer 3 (eBPF) — Falco companion process on Linux
 - [ ] Endpoint Agent Layer 4 (Memory Forensics) — Volatility 3 integration
 
-### Priority 8 — NVIDIA NIM Phases (v7.0 built, v8.0 planned)
+### Priority 8 — NVIDIA NIM Phases (v7.0–v9.0 built)
 
 **v7.0 Already Built (all free on build.nvidia.com):**
 - [x] Phase 1: Nemotron-70B function-calling triage agent (triage_agent.py)
@@ -654,11 +654,22 @@ react, react-dom, react-router-dom, axios, zustand, lucide-react, react-scripts
 - [x] Phase 4: Multi-agent coordinator — Email/Endpoint/IOC/Identity/Report agents in parallel (agents/)
 - [x] Phase 5: Llama-70B alert normalization for any source format (ingest_normalizer.py)
 
-**v8.0 Planned (all free on build.nvidia.com):**
-- [ ] Phase 6: Swap Nemotron → Hermes-3 (`nousresearch/hermes-3-llama-3.1-70b`) in triage_agent.py — better tool calling reliability, one-line model constant change
-- [ ] Phase 7: Add NV-RerankQA-Mistral-4B reranker after cosine similarity in embeddings.py — "relevant" not just "similar"
-- [ ] Phase 8: Llama 3.2 Vision 11B — `POST /api/cases/{id}/analyze-screenshot`; new CaseDetail tab for image upload + AI verdict; analyzes malware screenshots, phishing pages, terminal output images
-- [ ] Phase 9: Codestral 22B — replace `code` task in ai_router.py; `POST /api/cases/{id}/generate-rules` returns YARA + Sigma + KQL + Splunk SPL rules from case IOCs
+**v8.0 Built (June 2026):**
+- [x] Phase 6: Hermes-3 70B swapped in as triage model — better multi-step tool calling
+- [x] Phase 7: NV-RerankQA-Mistral-4B reranker in embeddings.py + case similar-case search
+- [x] Phase 8: Llama 3.2 Vision 11B — screenshot analysis tab in CaseDetail + /api/vision router
+- [x] Phase 9: Codestral 22B — YARA/Sigma/KQL/SPL rule generation + /api/rules router
+
+**v9.0 Built (June 2026) — Endpoint Agent + NVIDIA Deep Integration:**
+- [x] **EndpointAgent agentic loop**: Upgraded from single-shot prompt to Hermes-3 iterative tool-calling loop (max 5 iterations, Groq fallback) in agents/specialist.py
+- [x] **Live EDR → Agent tool** (`get_live_processes`): New tool in agents/tools.py calls CrowdStrike RTR / SentinelOne / Carbon Black Live Response in real-time to fetch process lists during agent loop. Auto-tries all configured platforms.
+- [x] **NVIDIA embedding process anomaly scoring** (`analyze_process_anomalies`): New tool in agents/tools.py scores process cmdlines against a malicious-pattern centroid using NV-EmbedQA-E5-v5 embeddings + rule-based keyword matching. Returns anomaly scores 0-100 per process.
+- [x] **NV-RerankQA log batch selection**: EndpointAgent now uses `nvidia_rerank` to select the most relevant log batches for its context (was just `batches[:5]` — now semantically ranked by case description).
+- [x] **Llama 3.2 Vision for screenshot evidence**: EndpointAgent checks for screenshot/image log batches and analyzes them with `nvidia_vision` before starting its investigation loop.
+- [x] **Codestral auto-Sigma rule generation**: After EndpointAgent loop, if endpoint_risk is critical/high, Codestral 22B auto-generates a Sigma YAML detection rule from the suspicious process findings.
+- [x] **Llama Guard 3 on EDR high-risk actions**: `isolate_endpoint`, `kill_process`, `run_command` in routers/edr.py now screen parameters through `_guard_edr_action()` (Llama Guard category S14) before executing. Blocks injection attempts in hostname/pid/command parameters.
+
+**Still planned:**
 - [ ] Phase 10: NVIDIA Morpheus — GPU-accelerated DGA detection, log anomaly scoring, network flow analysis; replaces Python implementations in endpoint agent; requires Kafka + GPU (post-Render-free-tier)
 
 **NVIDIA Skills Research (suggestions only, not started):**

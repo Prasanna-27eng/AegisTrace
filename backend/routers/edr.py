@@ -13,6 +13,8 @@ Supported actions:
   • run_command     — execute a forensic command via RTR / Remote Shell
 
 All actions are written to EDRAction for full audit trail.
+High-risk actions (isolate, kill_process, run_command) are screened by
+Llama Guard 3 (v9.0) for injection abuse before execution.
 
 Environment variables required (see .env.example):
   CrowdStrike:   CROWDSTRIKE_CLIENT_ID, CROWDSTRIKE_CLIENT_SECRET, CROWDSTRIKE_BASE_URL
@@ -33,6 +35,26 @@ import httpx
 router = APIRouter(prefix="/api/edr", tags=["edr"])
 
 TIMEOUT = 15   # seconds for EDR API calls
+
+
+# ── Llama Guard safety screen for high-risk EDR actions (v9.0) ────────────────
+
+def _guard_edr_action(action: str, target: str, extra: str = "") -> Optional[str]:
+    """
+    Screen EDR action parameters through Llama Guard 3 for injection abuse (S14).
+    Primarily catches prompt injection or shell injection attempts embedded in
+    hostname / PID / command parameters before they reach the EDR API.
+    Returns an error label string if blocked, None if safe or NVIDIA unavailable.
+    """
+    try:
+        from guardrails import safety_check
+        payload = f"EDR {action} on target: {target}. Parameters: {extra}".strip()[:500]
+        result  = safety_check(payload)
+        if not result.get("safe", True):
+            return result.get("label", "Policy violation")
+    except Exception:
+        pass
+    return None
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -698,10 +720,15 @@ def isolate_endpoint(
     session: Session = Depends(get_session),
 ):
     """Isolate (network-contain) an endpoint from the network."""
-    client = _get_client(platform)
-    case_id = data.get("case_id")
+    client   = _get_client(platform)
+    case_id  = data.get("case_id")
     hostname = data.get("hostname", endpoint_id)
-    note = data.get("note", "")
+    note     = data.get("note", "")
+
+    # Llama Guard screen — catch injection attempts in hostname/note
+    blocked = _guard_edr_action("network isolate", hostname, note[:200])
+    if blocked:
+        raise HTTPException(403, f"Action blocked by safety policy: {blocked}")
 
     action = _log_action(session, EDRAction(
         case_id=case_id, platform=platform, action="isolate",
@@ -790,9 +817,14 @@ def kill_process(
     if not pid:
         raise HTTPException(400, "pid is required")
 
-    client = _get_client(platform)
+    client   = _get_client(platform)
     hostname = data.get("hostname", endpoint_id)
     case_id  = data.get("case_id")
+
+    # Llama Guard screen — catch injected PIDs or hostile hostnames
+    blocked = _guard_edr_action("kill process", hostname, f"pid={pid}")
+    if blocked:
+        raise HTTPException(403, f"Action blocked by safety policy: {blocked}")
 
     action = _log_action(session, EDRAction(
         case_id=case_id, platform=platform, action="kill_process",
@@ -825,7 +857,13 @@ def run_command(
     if not command:
         raise HTTPException(400, "command is required")
 
-    client = _get_client(platform)
+    # Llama Guard screen — most important here since command is free-form text
+    # Catches prompt injection, shell injection attempts, and code interpreter abuse (S14)
+    blocked = _guard_edr_action("run command", endpoint_id, command)
+    if blocked:
+        raise HTTPException(403, f"Command blocked by safety policy: {blocked}")
+
+    client   = _get_client(platform)
     hostname = data.get("hostname", endpoint_id)
     case_id  = data.get("case_id")
 
