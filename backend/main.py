@@ -391,8 +391,8 @@ if STATIC_DIR.exists():
     if assets_dir.exists():
         app.mount("/static", StaticFiles(directory=str(assets_dir)), name="assets")
 
-    @app.get("/{full_path:path}")
-    async def serve_spa(full_path: str):
+    @app.api_route("/{full_path:path}", methods=["GET", "HEAD"])
+    async def serve_spa(full_path: str, request: Request):
         # Serve actual static files (images, fonts, etc.) before SPA fallback
         if full_path:
             requested = STATIC_DIR / full_path
