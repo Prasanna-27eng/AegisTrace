@@ -1,5 +1,5 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v5.6 | **Last updated:** June 2026
+**Version:** v6.0 | **Last updated:** June 2026
 **Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files.
 
 ---
@@ -373,6 +373,60 @@ Shareable via token, PDF downloadable, AI summary callout at top
 - [x] Shadow AI Detection dashboard UI — `/app/shadow-ai` — stats, filter tabs (All/Unreviewed/Reviewed), event rows with expand detail, Mark Reviewed + Create Case actions, AI service labels, explainer panel
 - [x] ITDR analytics page — completed in v5.1 above
 - [ ] DPDPA Compliance Report — India market accelerator
+
+### v6.0 Completed (June 2026 session)
+
+**Endpoint Agent v6.0** (agent/aegistrace_agent.py — ~3650 lines)
+- [x] **VulnerabilityScanner** — active security scanner runs every 5 minutes independently of the 30s telemetry cycle
+  - SSH config audit: PermitRootLogin, PasswordAuthentication, PermitEmptyPasswords, X11Forwarding, MaxAuthTries
+  - Open port survey: 25+ dangerous services flagged (FTP/Telnet/SMB/RDP/Redis/MongoDB/Elasticsearch/Meterpreter default ports etc.) on all-interface listeners
+  - Firewall status: ufw/iptables (Linux), pfctl (macOS), netsh (Windows) — alerts if no firewall active
+  - User account audit: UID-0 non-root accounts, empty-password accounts (Linux/macOS + Windows)
+  - SUID/SGID binary scan: finds executables with elevated bits outside known-safe whitelist
+  - World-writable files in /etc, /usr/bin, /bin, /sbin
+  - Cron job inspection: curl/wget/base64/reverse-shell patterns in all cron locations
+  - Linux security config: /tmp noexec, core dump policy, /etc/passwd world-write
+  - Kernel version: alerts on pre-4.0 (CRITICAL), pre-4.15 (MEDIUM)
+  - Package CVE cross-reference: dpkg (Debian/Ubuntu) + rpm (RHEL/CentOS) against 8 known-vulnerable signatures (OpenSSL, OpenSSH, bash/ShellShock, Python 2.x, curl, Apache 2.2)
+  - Windows: Defender status, UAC enabled, accounts without password requirement
+- [x] Each finding: `id`, `type`, `severity` (CRITICAL/HIGH/MEDIUM/LOW/INFO), `title`, `description`, `remediation`, `category`, `detected_at`
+- [x] `vuln_findings` included in every telemetry payload (empty list if no scan due)
+- [x] New command: `vuln_scan_now` — triggers immediate full scan + ships results
+
+**Backend (June 2026)**
+- [x] `Endpoint` model: `vuln_findings` (JSON Text) + `last_vuln_scan` (DateTime) columns added
+- [x] Migration 9: auto-adds both columns to existing endpoint table on startup
+- [x] Ingest handler: stores `vuln_findings` + sets `last_vuln_scan` timestamp when payload includes findings
+- [x] `GET /api/ingest/vulns/{ep_id}` — returns findings + severity counts + last_scan timestamp
+- [x] `POST /api/ingest/vulns/{ep_id}/scan` — queues `vuln_scan_now` agent command
+
+**Frontend — Endpoints.jsx (June 2026)**
+- [x] New **Vulns** tab in endpoint detail panel (shown between Overview and Live Logs)
+- [x] Tab label shows count of critical+high findings: `Vulns (3)`
+- [x] Severity summary bar (CRITICAL / HIGH / MEDIUM / LOW counts)
+- [x] Per-finding cards: color-coded severity border, category icon, title, description, remediation block
+- [x] Refresh button + Scan Now button (queues on-demand scan with feedback toast)
+- [x] Empty states: "No findings" when clean, "Scan pending" when no scan has run yet
+
+**Real-time SSE (June 2026 session — earlier)**
+- [x] `useSSE.js` — fetch-based SSE hook (Authorization header support, exponential backoff 1.5s→12s)
+- [x] `/api/ingest/stream/{ep_id}` — streams logs, alerts, status snapshots every 2s
+- [x] `/api/ingest/stream/global-alerts` — streams critical/high/medium ITDR alerts across all endpoints
+- [x] Endpoints.jsx — LIVE indicator (pulsing Radio icon when SSE connected)
+- [x] AppShell.jsx — notification bell with unread count, dropdown panel (max 20 alerts)
+
+**UX improvements (June 2026 session — earlier)**
+- [x] All `window.confirm()` replaced with keyboard-accessible ConfirmModal component
+- [x] Skeleton loading on CaseDetail (header + tab bar + 2-col grid)
+- [x] Toast: type-aware persistence (error/warning hold until dismissed, success/info 5s), dedup, cap at 5
+- [x] Dashboard: "Updated Xs ago" refresh counter
+- [x] Document titles per page (Cases | AegisTrace, Dashboard | AegisTrace, etc.)
+- [x] Sortable table columns for processes and network connections
+
+**Deployment fixes (June 2026 session)**
+- [x] HEAD method support on SPA catch-all route (fixed 405 from Render load balancer)
+- [x] Mission.jsx apostrophe syntax fix (wasn't in single-quoted string broke React build)
+- [x] render.yaml: ADMIN_PIN + INGEST_API_KEY set to sync:false (secrets not committed)
 
 ### v5.0 / Future Planned
 - [ ] SCIM endpoint (/api/scim/v2) — enterprise push-based identity sync
