@@ -19,10 +19,31 @@ from core.events import event_bus, Events
 
 # ── In-memory command queue (per agent_id) ────────────────────────────────────
 _SUSPICIOUS_PROCESSES = {
-    "mimikatz", "lazagne", "procdump", "meterpreter",
-    "netcat", "ncat", "powersploit", "empire", "cobalt"
+    # credential dumping
+    "mimikatz", "lazagne", "pwdump", "fgdump", "wce",
+    # post-exploitation / C2
+    "meterpreter", "powersploit", "empire", "cobalt", "covenant",
+    "metasploit", "havoc", "sliver", "brute-ratel",
+    # recon / lateral movement
+    "procdump", "sharphound", "bloodhound", "rubeus",
+    "kerbrute", "crackmapexec", "impacket",
+    # network tunnelling / reverse shells
+    "netcat", "ncat", "nmap", "masscan",
+    "chisel", "ligolo", "plink",
+    # ransomware / destructive
+    "wannacry", "notpetya", "lockbit", "blackcat",
 }
-_SUSPICIOUS_PORTS = {4444, 1337, 31337, 8888, 9999}
+_SUSPICIOUS_PORTS = {
+    # Common C2
+    4444, 1337, 31337, 8888, 9999,
+    # Metasploit / Cobalt Strike defaults
+    443, 80,   # only flagged when paired with a suspicious process
+    4445, 4450, 5555, 6666, 7777,
+    # RATs & backdoors
+    1080, 1234, 5900, 6200, 8443, 9001, 12345, 54321,
+    # Known malware
+    2222, 3333, 6667, 6697, 6660,
+}
 
 router = APIRouter(prefix="/api/ingest", tags=["ingest"])
 
@@ -340,7 +361,7 @@ def list_endpoints(
             "last_seen": ep.last_seen,
             "total_batches": ep.total_batches,
             "threat_score_avg": round(ep.threat_score_avg, 1),
-            "is_active": (datetime.utcnow() - ep.last_seen).total_seconds() < 90,
+            "is_active": (datetime.utcnow() - ep.last_seen).total_seconds() < 120,
             "tags": json.loads(ep.tags or "[]"),
             "created_at": ep.created_at,
             "last_verdict": recent_batch.ai_verdict if recent_batch else None,

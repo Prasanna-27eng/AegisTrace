@@ -2,7 +2,8 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   Monitor, RefreshCw, Loader2, AlertTriangle, CheckCircle, Shield,
   FileText, ChevronRight, Copy, X, Download, Terminal, Activity,
-  Wifi, Lock, Unlock, Zap, Eye, Clock, User, Server, Database
+  Wifi, Lock, Unlock, Zap, Eye, Clock, User, Server, Database,
+  Search, ChevronUp, ChevronDown, ChevronsUpDown
 } from 'lucide-react';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
@@ -56,6 +57,42 @@ function StatCard({ icon: Icon, label, value, color = '#5A8A9F', sub }) {
   );
 }
 
+function ConfirmModal({ title, body, confirmLabel = 'Confirm', danger = true, onConfirm, onCancel }) {
+  useEffect(() => {
+    const fn = (e) => { if (e.key === 'Escape') onCancel(); };
+    document.addEventListener('keydown', fn);
+    return () => document.removeEventListener('keydown', fn);
+  }, [onCancel]);
+  return (
+    <div style={{ position:'fixed', inset:0, zIndex:2000, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.72)', backdropFilter:'blur(4px)' }}
+      onClick={e => { if (e.target === e.currentTarget) onCancel(); }}>
+      <div style={{ background:'#0D0D0D', border:`1px solid ${danger ? 'rgba(239,68,68,0.25)' : 'rgba(90,138,159,0.25)'}`, borderRadius:12, padding:'24px 26px', width:'100%', maxWidth:420, boxShadow:'0 24px 64px rgba(0,0,0,0.65)' }}>
+        <div style={{ fontWeight:700, fontSize:'0.95rem', marginBottom:10, color: danger ? '#EF4444' : '#EBEBEB' }}>{title}</div>
+        <div style={{ fontSize:'0.78rem', color:'#787878', lineHeight:1.65, marginBottom:22, whiteSpace:'pre-line' }}>{body}</div>
+        <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
+          <button onClick={onCancel} style={{ background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'#787878', borderRadius:7, padding:'8px 18px', cursor:'pointer', fontSize:'0.78rem' }}>
+            Cancel
+          </button>
+          <button onClick={() => { onConfirm(); onCancel(); }} autoFocus
+            style={{ background: danger ? 'rgba(239,68,68,0.13)' : 'rgba(90,138,159,0.13)', border:`1px solid ${danger ? 'rgba(239,68,68,0.35)' : 'rgba(90,138,159,0.35)'}`, color: danger ? '#EF4444' : '#5A8A9F', borderRadius:7, padding:'8px 18px', cursor:'pointer', fontSize:'0.78rem', fontWeight:600 }}>
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SortTh({ col, label, sort, onSort, style }) {
+  const active = sort.col === col;
+  const Icon = active ? (sort.dir === 'asc' ? ChevronUp : ChevronDown) : ChevronsUpDown;
+  return (
+    <th onClick={() => onSort(col)} style={{ textAlign:'left', padding:'8px 10px', color: active ? '#5A8A9F' : '#555', fontWeight:600, fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.07em', borderBottom:'1px solid rgba(255,255,255,0.07)', cursor:'pointer', userSelect:'none', whiteSpace:'nowrap', ...style }}>
+      <span style={{ display:'flex', alignItems:'center', gap:3 }}>{label} <Icon size={9}/></span>
+    </th>
+  );
+}
+
 /* ─────────────────────────────────────────────────────────────────────────────
    ENDPOINT DETAIL — full enterprise view
 ───────────────────────────────────────────────────────────────────────────── */
@@ -65,10 +102,17 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
   const [detail, setDetail]     = useState(null);
   const [rawLogs, setRawLogs]   = useState([]);
   const [logFilter, setLogFilter] = useState('all');
+  const [logSearch, setLogSearch] = useState('');
+  const [autoScroll, setAutoScroll] = useState(true);
   const [logsLoading, setLogsLoading] = useState(false);
   const [cmdLoading, setCmdLoading]   = useState('');
   const [expandedAlert, setExpandedAlert] = useState(null);
-  const logsRef = useRef(null);
+  const [confirmModal, setConfirmModal]   = useState(null);
+  const [sortProc, setSortProc] = useState({ col: 'cpu_percent', dir: 'desc' });
+  const [sortConn, setSortConn] = useState({ col: 'remote_port', dir: 'desc' });
+  const logsRef     = useRef(null);
+  const autoScrollRef = useRef(true);
+  useEffect(() => { autoScrollRef.current = autoScroll; }, [autoScroll]);
 
   const loadDetail = useCallback((silent = false) => {
     if (!silent) setDetail(null);
@@ -84,7 +128,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
       .then(r => {
         setRawLogs(r.data || []);
         setLogsLoading(false);
-        setTimeout(() => { if (logsRef.current) logsRef.current.scrollTop = logsRef.current.scrollHeight; }, 50);
+        setTimeout(() => { if (autoScrollRef.current && logsRef.current) logsRef.current.scrollTop = logsRef.current.scrollHeight; }, 50);
       })
       .catch(() => setLogsLoading(false));
   }, [ep.id, logFilter]);
@@ -116,6 +160,25 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
 
   const isOnline = detail?.is_active ?? ((Date.now() - new Date(ep.last_seen).getTime()) / 1000 < 120);
   const sys = detail?.system_info || {};
+
+  const toggleSort = (setState, col) => setState(s => ({
+    col, dir: s.col === col ? (s.dir === 'asc' ? 'desc' : 'asc') : 'desc'
+  }));
+  const sortBy = (arr, col, dir) => [...arr].sort((a, b) => {
+    let av = a[col] ?? '', bv = b[col] ?? '';
+    if (typeof av === 'string') return dir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+    return dir === 'asc' ? av - bv : bv - av;
+  });
+  const sortedProcs = sortBy(detail?.processes || [], sortProc.col, sortProc.dir);
+  const sortedConns = sortBy(detail?.connections || [], sortConn.col, sortConn.dir);
+  const filteredLogs = logSearch.trim()
+    ? rawLogs.filter(l =>
+        (l.raw || '').toLowerCase().includes(logSearch.toLowerCase()) ||
+        (l.source || '').toLowerCase().includes(logSearch.toLowerCase()) ||
+        (l.username || '').toLowerCase().includes(logSearch.toLowerCase())
+      )
+    : rawLogs;
+
   const TABS = [
     { id:'overview',  label:'Overview' },
     { id:'logs',      label:'Live Logs' },
@@ -127,6 +190,17 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
 
   return (
     <div style={{ display:'flex', flexDirection:'column', height:'100%', background:'#0A0A0A', border:'1px solid rgba(255,255,255,0.08)', borderRadius:10, overflow:'hidden' }}>
+
+      {confirmModal && (
+        <ConfirmModal
+          title={confirmModal.title}
+          body={confirmModal.body}
+          confirmLabel={confirmModal.confirmLabel || 'Confirm'}
+          danger={confirmModal.danger !== false}
+          onConfirm={confirmModal.onConfirm}
+          onCancel={() => setConfirmModal(null)}
+        />
+      )}
 
       {/* ── Header ── */}
       <div style={{ padding:'16px 20px', borderBottom:'1px solid rgba(255,255,255,0.07)', background:'rgba(0,0,0,0.4)', flexShrink:0 }}>
@@ -264,14 +338,23 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
               </div>
             )}
 
-            {!detail && <div style={{ textAlign:'center', padding:40 }}><Loader2 size={20} className="spinner" style={{ color:'#787878' }}/></div>}
+            {!detail && (
+              <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+                <div style={{ display:'flex', gap:10 }}>
+                  <div className="skeleton" style={{ width:120, height:112, borderRadius:8 }}/>
+                  {[0,1,2,3,4].map(i => <div key={i} className="skeleton" style={{ flex:1, height:80, borderRadius:8 }}/>)}
+                </div>
+                <div className="skeleton" style={{ height:96, borderRadius:8 }}/>
+                <div className="skeleton" style={{ height:130, borderRadius:8 }}/>
+              </div>
+            )}
           </div>
         )}
 
         {/* ══ LIVE LOGS ══ */}
         {tab === 'logs' && (
           <div>
-            <div style={{ display:'flex', gap:4, marginBottom:10, flexWrap:'wrap', alignItems:'center' }}>
+            <div style={{ display:'flex', gap:4, marginBottom:8, flexWrap:'wrap', alignItems:'center' }}>
               {LOG_CATS.map(c => (
                 <button key={c} onClick={() => { setLogFilter(c); loadLogs(c); }}
                   style={{ padding:'3px 10px', borderRadius:5, border:'1px solid', fontSize:'0.65rem', cursor:'pointer', ...MONO, textTransform:'uppercase',
@@ -281,20 +364,37 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                   {CAT_ICON[c] || ''} {c}
                 </button>
               ))}
-              <span style={{ marginLeft:'auto', fontSize:'0.6rem', color:'#555', ...MONO }}>
-                {rawLogs.length} events · auto-refresh 3s
+              <button onClick={() => setAutoScroll(s => !s)}
+                style={{ marginLeft:'auto', padding:'3px 10px', borderRadius:5, border:'1px solid', fontSize:'0.63rem', cursor:'pointer', ...MONO,
+                  background: autoScroll ? 'rgba(34,197,94,0.08)' : 'transparent',
+                  color: autoScroll ? '#22C55E' : '#555',
+                  borderColor: autoScroll ? 'rgba(34,197,94,0.25)' : 'rgba(255,255,255,0.07)' }}>
+                {autoScroll ? '⬇ Auto-scroll on' : '⬇ Auto-scroll off'}
+              </button>
+              <span style={{ fontSize:'0.6rem', color:'#555', ...MONO }}>
+                {filteredLogs.length}{logSearch ? `/${rawLogs.length}` : ''} events
                 <span style={{ display:'inline-block', width:6, height:6, borderRadius:'50%', background:'#22C55E', marginLeft:6, animation:'pulse 2s infinite', verticalAlign:'middle' }}/>
               </span>
             </div>
+            <div style={{ position:'relative', marginBottom:8 }}>
+              <Search size={12} style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', color:'#555', pointerEvents:'none' }}/>
+              <input value={logSearch} onChange={e => setLogSearch(e.target.value)} placeholder="Search logs…"
+                style={{ width:'100%', background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:6, padding:'6px 30px 6px 30px', color:'#EBEBEB', fontSize:'0.72rem', ...MONO, outline:'none', boxSizing:'border-box' }}/>
+              {logSearch && (
+                <button onClick={() => setLogSearch('')} style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'#555', padding:2, display:'flex', alignItems:'center' }}>
+                  <X size={12}/>
+                </button>
+              )}
+            </div>
             {logsLoading ? (
               <div style={{ textAlign:'center', padding:30 }}><Loader2 size={16} className="spinner" style={{ color:'#787878' }}/></div>
-            ) : rawLogs.length === 0 ? (
+            ) : filteredLogs.length === 0 ? (
               <div style={{ padding:30, textAlign:'center', color:'#555', fontSize:'0.8rem', ...MONO }}>
-                Waiting for logs — agent ships every 3s via real-time stream.
+                {rawLogs.length === 0 ? 'Waiting for logs — agent ships every 3s via real-time stream.' : 'No logs match your search.'}
               </div>
             ) : (
-              <div ref={logsRef} style={{ background:'#030303', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, maxHeight:560, overflowY:'auto', ...MONO, fontSize:'0.7rem' }}>
-                {rawLogs.map((log, i) => {
+              <div ref={logsRef} style={{ background:'#030303', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, maxHeight:520, overflowY:'auto', ...MONO, fontSize:'0.7rem' }}>
+                {filteredLogs.map((log, i) => {
                   const sc = SEV_CLR[log.severity] || '#555';
                   const ts = log.ts ? new Date(log.ts).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}) : '';
                   const isBad = log.event_type === 'failed_login';
@@ -331,13 +431,16 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
               <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'0.72rem', ...MONO }}>
                 <thead>
                   <tr style={{ background:'rgba(255,255,255,0.03)' }}>
-                    {['PID','Process','User','CPU %','Mem %','Action'].map(h => (
-                      <th key={h} style={{ textAlign:'left', padding:'8px 10px', color:'#555', fontWeight:600, fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.07em', borderBottom:'1px solid rgba(255,255,255,0.07)' }}>{h}</th>
-                    ))}
+                    <SortTh col="pid"            label="PID"     sort={sortProc} onSort={c => toggleSort(setSortProc, c)}/>
+                    <SortTh col="name"           label="Process" sort={sortProc} onSort={c => toggleSort(setSortProc, c)}/>
+                    <SortTh col="username"       label="User"    sort={sortProc} onSort={c => toggleSort(setSortProc, c)}/>
+                    <SortTh col="cpu_percent"    label="CPU %"   sort={sortProc} onSort={c => toggleSort(setSortProc, c)}/>
+                    <SortTh col="memory_percent" label="Mem %"   sort={sortProc} onSort={c => toggleSort(setSortProc, c)}/>
+                    <th style={{ padding:'8px 10px', color:'#555', fontWeight:600, fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.07em', borderBottom:'1px solid rgba(255,255,255,0.07)' }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {(detail?.processes || []).map((p,i) => (
+                  {sortedProcs.map((p,i) => (
                     <tr key={i} style={{ borderBottom:'1px solid rgba(255,255,255,0.03)', background: p.suspicious ? 'rgba(239,68,68,0.04)' : 'transparent' }}>
                       <td style={{ padding:'6px 10px', color:'#555' }}>{p.pid}</td>
                       <td style={{ padding:'6px 10px', color: p.suspicious ? '#EF4444' : '#EBEBEB', fontWeight: p.suspicious ? 700 : 400 }}>
@@ -347,7 +450,8 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                       <td style={{ padding:'6px 10px', color: (p.cpu_percent||0) > 80 ? '#EF4444' : '#787878' }}>{p.cpu_percent?.toFixed(1) ?? '—'}</td>
                       <td style={{ padding:'6px 10px', color: (p.memory_percent||0) > 50 ? '#EAB308' : '#787878' }}>{p.memory_percent?.toFixed(1) ?? '—'}</td>
                       <td style={{ padding:'6px 10px' }}>
-                        <button onClick={() => { if(window.confirm(`Kill process ${p.name} (PID ${p.pid})?`)) dispatch('kill_process', {pid:p.pid}, `Kill ${p.name}`); }}
+                        <button
+                          onClick={() => setConfirmModal({ title: `Kill ${p.name}?`, body: `PID ${p.pid} will be terminated immediately. This cannot be undone.`, confirmLabel: 'Kill Process', onConfirm: () => dispatch('kill_process', {pid:p.pid}, `Kill ${p.name}`) })}
                           disabled={!!cmdLoading}
                           style={{ fontSize:'0.6rem', background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.2)', color:'#EF4444', borderRadius:4, padding:'2px 7px', cursor:'pointer', ...MONO }}>
                           Kill
@@ -357,7 +461,11 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                   ))}
                 </tbody>
               </table>
-              {!detail && <div style={{ textAlign:'center', padding:30 }}><Loader2 size={16} className="spinner" style={{ color:'#787878' }}/></div>}
+              {!detail && (
+                <div style={{ padding:12 }}>
+                  {[0,1,2,3,4,5,6,7].map(i => <div key={i} className="skeleton" style={{ height:32, marginBottom:4, borderRadius:4 }}/>)}
+                </div>
+              )}
               {detail && detail.processes.length === 0 && <div style={{ padding:20, textAlign:'center', color:'#555', fontSize:'0.8rem' }}>No process data yet — click Collect Now</div>}
             </div>
           </div>
@@ -373,13 +481,16 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
               <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'0.72rem', ...MONO }}>
                 <thead>
                   <tr style={{ background:'rgba(255,255,255,0.03)' }}>
-                    {['Process','Local','Remote IP','Port','Status','Action'].map(h => (
-                      <th key={h} style={{ textAlign:'left', padding:'8px 10px', color:'#555', fontWeight:600, fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.07em', borderBottom:'1px solid rgba(255,255,255,0.07)' }}>{h}</th>
-                    ))}
+                    <SortTh col="process_name" label="Process"   sort={sortConn} onSort={c => toggleSort(setSortConn, c)}/>
+                    <th style={{ textAlign:'left', padding:'8px 10px', color:'#555', fontWeight:600, fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.07em', borderBottom:'1px solid rgba(255,255,255,0.07)' }}>Local</th>
+                    <SortTh col="remote_ip"    label="Remote IP" sort={sortConn} onSort={c => toggleSort(setSortConn, c)}/>
+                    <SortTh col="remote_port"  label="Port"      sort={sortConn} onSort={c => toggleSort(setSortConn, c)}/>
+                    <SortTh col="status"       label="Status"    sort={sortConn} onSort={c => toggleSort(setSortConn, c)}/>
+                    <th style={{ textAlign:'left', padding:'8px 10px', color:'#555', fontWeight:600, fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.07em', borderBottom:'1px solid rgba(255,255,255,0.07)' }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {(detail?.connections || []).map((c,i) => (
+                  {sortedConns.map((c,i) => (
                     <tr key={i} style={{ borderBottom:'1px solid rgba(255,255,255,0.03)', background: c.suspicious ? 'rgba(239,68,68,0.04)' : 'transparent' }}>
                       <td style={{ padding:'6px 10px', color: c.suspicious ? '#EF4444' : '#EBEBEB' }}>{c.process_name || '—'}</td>
                       <td style={{ padding:'6px 10px', color:'#555' }}>{c.local_ip}:{c.local_port}</td>
@@ -390,7 +501,8 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                       <td style={{ padding:'6px 10px', color:'#555' }}>{c.status || '—'}</td>
                       <td style={{ padding:'6px 10px' }}>
                         {c.remote_ip && (
-                          <button onClick={() => { if(window.confirm(`Block IP ${c.remote_ip}?`)) dispatch('block_ip', {ip:c.remote_ip}, `Block ${c.remote_ip}`); }}
+                          <button
+                            onClick={() => setConfirmModal({ title: `Block ${c.remote_ip}?`, body: `All traffic to/from ${c.remote_ip} will be blocked via iptables. This affects all processes on the endpoint.`, confirmLabel: 'Block IP', onConfirm: () => dispatch('block_ip', {ip:c.remote_ip}, `Block ${c.remote_ip}`) })}
                             style={{ fontSize:'0.6rem', background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.2)', color:'#EF4444', borderRadius:4, padding:'2px 7px', cursor:'pointer', ...MONO }}>
                             Block
                           </button>
@@ -400,7 +512,11 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                   ))}
                 </tbody>
               </table>
-              {!detail && <div style={{ textAlign:'center', padding:30 }}><Loader2 size={16} className="spinner" style={{ color:'#787878' }}/></div>}
+              {!detail && (
+                <div style={{ padding:12 }}>
+                  {[0,1,2,3,4].map(i => <div key={i} className="skeleton" style={{ height:32, marginBottom:4, borderRadius:4 }}/>)}
+                </div>
+              )}
               {detail && detail.connections.length === 0 && <div style={{ padding:20, textAlign:'center', color:'#555', fontSize:'0.8rem' }}>No active connections</div>}
             </div>
           </div>
@@ -493,11 +609,13 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
             <div style={{ background:'rgba(239,68,68,0.04)', border:'1px solid rgba(239,68,68,0.15)', borderRadius:8, padding:'16px' }}>
               <div style={{ fontSize:'0.65rem', color:'#EF4444', textTransform:'uppercase', letterSpacing:'0.1em', ...MONO, marginBottom:14 }}>◇ Containment — Use with Caution</div>
               <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
-                <button onClick={() => { if(window.confirm(`ISOLATE ${ep.hostname}?\n\nThis blocks ALL outbound traffic except AegisTrace. The machine will lose internet access until you unisolate it.`)) dispatch('isolate_device', {}, 'Network Isolation'); }}
+                <button
+                  onClick={() => setConfirmModal({ title: `Isolate ${ep.hostname}?`, body: `This blocks ALL outbound traffic except AegisTrace.\n\nThe machine will lose internet access until you unisolate it. The agent remains reachable for further commands.`, confirmLabel: 'Isolate Device', onConfirm: () => dispatch('isolate_device', {}, 'Network Isolation') })}
                   style={{ background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', color:'#EF4444', borderRadius:7, padding:'10px 18px', cursor:'pointer', fontWeight:600, fontSize:'0.8rem', display:'flex', alignItems:'center', gap:8, ...MONO }}>
                   <Lock size={14}/> Isolate Device
                 </button>
-                <button onClick={() => { if(window.confirm(`Unisolate ${ep.hostname}? This restores full network access.`)) dispatch('unisolate_device', {}, 'Remove Isolation'); }}
+                <button
+                  onClick={() => setConfirmModal({ title: `Unisolate ${ep.hostname}?`, body: `This restores full network access to the endpoint.\n\nAll iptables rules applied during isolation will be removed.`, confirmLabel: 'Unisolate', danger: false, onConfirm: () => dispatch('unisolate_device', {}, 'Remove Isolation') })}
                   style={{ background:'rgba(34,197,94,0.08)', border:'1px solid rgba(34,197,94,0.2)', color:'#22C55E', borderRadius:7, padding:'10px 18px', cursor:'pointer', fontWeight:600, fontSize:'0.8rem', display:'flex', alignItems:'center', gap:8, ...MONO }}>
                   <Unlock size={14}/> Unisolate Device
                 </button>
@@ -510,11 +628,13 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
             <div style={{ background:'rgba(239,68,68,0.03)', border:'1px solid rgba(239,68,68,0.1)', borderRadius:8, padding:'16px' }}>
               <div style={{ fontSize:'0.65rem', color:'#EF4444', textTransform:'uppercase', letterSpacing:'0.1em', ...MONO, marginBottom:14 }}>◇ Agent Lifecycle</div>
               <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
-                <button onClick={() => { if(window.confirm(`Stop the AegisTrace agent on ${ep.hostname}?\n\nMonitoring will pause until the agent is restarted manually.`)) dispatch('stop_agent', {reason:'Stopped from dashboard'}, 'Stop Agent'); }}
+                <button
+                  onClick={() => setConfirmModal({ title: `Stop agent on ${ep.hostname}?`, body: `Monitoring will pause until the agent is restarted manually on the machine.\n\nData already collected is preserved.`, confirmLabel: 'Stop Agent', onConfirm: () => dispatch('stop_agent', {reason:'Stopped from dashboard'}, 'Stop Agent') })}
                   style={{ background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.25)', color:'#EF4444', borderRadius:7, padding:'10px 18px', cursor:'pointer', fontWeight:600, fontSize:'0.8rem', display:'flex', alignItems:'center', gap:8, ...MONO }}>
                   ⏹ Stop Agent
                 </button>
-                <button onClick={() => { if(window.confirm(`UNINSTALL the AegisTrace agent from ${ep.hostname}?\n\nThis will:\n• Stop monitoring\n• Remove honey token files\n• Clear the log cursor\n\nYou will need to redeploy to resume monitoring.`)) dispatch('uninstall_agent', {reason:'Uninstalled from dashboard'}, 'Uninstall Agent'); }}
+                <button
+                  onClick={() => setConfirmModal({ title: `Uninstall agent from ${ep.hostname}?`, body: `This will:\n• Stop monitoring immediately\n• Remove honey token files\n• Clear the log cursor\n\nYou will need to redeploy to resume monitoring.`, confirmLabel: 'Uninstall Agent', onConfirm: () => dispatch('uninstall_agent', {reason:'Uninstalled from dashboard'}, 'Uninstall Agent') })}
                   style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.1)', color:'#787878', borderRadius:7, padding:'10px 18px', cursor:'pointer', fontSize:'0.8rem', display:'flex', alignItems:'center', gap:8, ...MONO }}>
                   🗑 Uninstall Agent
                 </button>
@@ -527,16 +647,12 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
             <div style={{ background:'rgba(239,68,68,0.02)', border:'1px solid rgba(239,68,68,0.08)', borderRadius:8, padding:'16px' }}>
               <div style={{ fontSize:'0.65rem', color:'#EF4444', textTransform:'uppercase', letterSpacing:'0.1em', ...MONO, marginBottom:14 }}>◇ Delete Endpoint</div>
               <button
-                onClick={() => {
-                  if (window.confirm(
-                    `DELETE ENDPOINT: ${ep.hostname}\n\n` +
-                    `This will:\n` +
-                    `• Send uninstall command to the agent (self-destructs)\n` +
-                    `• Delete ALL endpoint data (logs, alerts, processes)\n` +
-                    `• Remove the endpoint permanently from the dashboard\n\n` +
-                    `This cannot be undone. Continue?`
-                  )) onDelete(ep.id);
-                }}
+                onClick={() => setConfirmModal({
+                  title: `Delete ${ep.hostname}?`,
+                  body: `This will:\n• Send uninstall command (agent self-destructs)\n• Delete ALL endpoint data — logs, alerts, processes\n• Remove the endpoint permanently from the dashboard\n\nThis cannot be undone.`,
+                  confirmLabel: 'Delete Endpoint',
+                  onConfirm: () => onDelete(ep.id),
+                })}
                 style={{ background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', color:'#EF4444', borderRadius:7, padding:'10px 18px', cursor:'pointer', fontWeight:600, fontSize:'0.8rem', display:'flex', alignItems:'center', gap:8, ...MONO }}>
                 🗑 Delete Endpoint & Destroy Agent
               </button>
@@ -571,7 +687,7 @@ function CodeBlock({ code, label }) {
 function SetupGuideModal({ onClose, ingestKey, onFetchKey }) {
   const [os, setOs] = useState('linux');
   const [copied, setCopied] = useState(false);
-  const AEGISTRACE_URL = 'https://aegistrace-7qvn.onrender.com';
+  const AEGISTRACE_URL = window.location.origin;
   const token = ingestKey || null;
 
   // The single install command — fetches everything from backend, no manual steps
@@ -743,7 +859,9 @@ export default function Endpoints() {
       </div>
 
       {loading ? (
-        <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', color:'#555' }}><Loader2 size={20} className="spinner"/></div>
+        <div style={{ flex:1, display:'flex', flexDirection:'column', gap:10 }}>
+          {[0,1,2,3,4].map(i => <div key={i} className="skeleton" style={{ height:80, borderRadius:9 }}/>)}
+        </div>
       ) : endpoints.length === 0 ? (
         <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:14, color:'#555' }}>
           <Monitor size={40} style={{ opacity:0.2 }}/>
