@@ -1,414 +1,485 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { motion, useInView, AnimatePresence } from 'framer-motion';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Shield, Eye, Zap, Radio, Activity, Target, Lock, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useRef, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  ArrowLeft, Mail, Github, Shield, Brain, Users, Code,
+  GitMerge, Layers, Fingerprint, Database, ChevronRight,
+  AlertTriangle, TrendingUp, Clock, CheckCircle, Target,
+  BookOpen, Zap, Globe, Lock, Bot, Activity, Menu, XCircle,
+  ArrowRight
+} from 'lucide-react';
+import Logo from '../components/Logo';
+import ThreatStream from '../components/ThreatStream';
 
-gsap.registerPlugin(ScrollTrigger);
+const MONO = { fontFamily: 'JetBrains Mono, monospace' };
+const SERIF = { fontFamily: 'Instrument Serif, Georgia, serif' };
+const CONTACT_EMAIL = 'prasanna80564@gmail.com';
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   AEGISTRACE — Mission Page
-   ───────────────────────────────────────────────────────────────────────────
-   Cyberpunk command-center aesthetic
-   GSAP ScrollTrigger for cinematic text reveals
-   AI agent status indicators + mission control dashboard
-   Emil / Impeccable: intentional motion, OKLCH tints, no ease-in
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-const EASE_OUT = [0.23, 1, 0.32, 1];
-
-/* ─── Animated noise background ─────────────────────────────────────────── */
-function NoiseBg({ opacity = 0.06 }) {
-  return (
-    <div
-      style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
-        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-        backgroundSize: '200px',
-        opacity,
-      }}
-    />
-  );
-}
-
-/* ─── Scan line overlay ──────────────────────────────────────────────────── */
-function ScanLines() {
-  return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'none',
-      backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.035) 2px, rgba(0,0,0,0.035) 4px)',
-    }} />
-  );
-}
-
-/* ─── Glitch text ────────────────────────────────────────────────────────── */
-function GlitchText({ text, style }) {
-  const [glitching, setGlitch] = useState(false);
-  useEffect(() => {
-    const id = setInterval(() => {
-      setGlitch(true);
-      setTimeout(() => setGlitch(false), 120);
-    }, 4000 + Math.random() * 3000);
-    return () => clearInterval(id);
-  }, []);
-
-  return (
-    <span style={{ position: 'relative', display: 'inline-block', ...style }}>
-      {text}
-      {glitching && (
-        <>
-          <span style={{ position:'absolute', top:0, left:0, color:'#ff2222', clipPath:'inset(30% 0 50% 0)', transform:'translateX(-2px)', opacity:0.8, pointerEvents:'none', ...style }}>{text}</span>
-          <span style={{ position:'absolute', top:0, left:0, color:'#00ffe5', clipPath:'inset(60% 0 10% 0)', transform:'translateX(2px)', opacity:0.8, pointerEvents:'none', ...style }}>{text}</span>
-        </>
-      )}
-    </span>
-  );
-}
-
-/* ─── Agent status card ──────────────────────────────────────────────────── */
-function AgentCard({ name, status, task, uptime, index }) {
-  const colors = { ACTIVE: '#00ff88', INVESTIGATING: '#ff8c00', IDLE: '#555' };
-  const ref    = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-60px' });
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ x: -20, opacity: 0 }}
-      animate={inView ? { x: 0, opacity: 1 } : {}}
-      transition={{ duration: 0.4, delay: index * 0.07, ease: EASE_OUT }}
-      style={{
-        background: 'rgba(8,8,8,0.9)',
-        border: `1px solid ${status === 'INVESTIGATING' ? 'rgba(255,140,0,0.3)' : 'rgba(255,255,255,0.06)'}`,
-        padding: '14px 18px',
-        display: 'flex', alignItems: 'center', gap: 14,
-        fontFamily: 'JetBrains Mono, monospace',
-        backdropFilter: 'blur(8px)',
-      }}
-    >
-      <div style={{
-        width: 8, height: 8, borderRadius: '50%',
-        background: colors[status] || '#555',
-        flexShrink: 0,
-        boxShadow: status === 'ACTIVE' ? `0 0 8px ${colors[status]}` : 'none',
-        animation: status === 'ACTIVE' ? 'pulse-green 2s ease infinite' : 'none',
-      }} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 11, color: '#E1E0CC', fontWeight: 600, marginBottom: 2 }}>{name}</div>
-        <div style={{ fontSize: 10, color: '#555', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{task}</div>
-      </div>
-      <div style={{ textAlign: 'right', flexShrink: 0 }}>
-        <div style={{ fontSize: 10, color: colors[status] || '#555', letterSpacing: '0.08em' }}>{status}</div>
-        <div style={{ fontSize: 9, color: '#333', marginTop: 2 }}>UP {uptime}</div>
-      </div>
-    </motion.div>
-  );
-}
-
-/* ─── Timeline entry ─────────────────────────────────────────────────────── */
-function TimelineItem({ time, event, severity, index }) {
-  const ref    = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-60px' });
-  const sevColor = { CRITICAL: '#ff2222', HIGH: '#ff8c00', MEDIUM: '#ffd700', INFO: '#00ffe5' };
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, x: -24 }}
-      animate={inView ? { opacity: 1, x: 0 } : {}}
-      transition={{ duration: 0.35, delay: index * 0.06, ease: EASE_OUT }}
-      style={{ display: 'flex', gap: 16, alignItems: 'flex-start', paddingBottom: 20 }}
-    >
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, paddingTop: 3 }}>
-        <div style={{ width: 8, height: 8, borderRadius: '50%', background: sevColor[severity], boxShadow: `0 0 6px ${sevColor[severity]}` }} />
-        <div style={{ width: 1, height: 'calc(100% - 8px)', background: 'rgba(255,255,255,0.06)', marginTop: 6, flexGrow: 1 }} />
-      </div>
-      <div style={{ flex: 1 }}>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 4 }}>
-          <span style={{ fontSize: 10, color: '#444', fontFamily: 'JetBrains Mono, monospace' }}>{time}</span>
-          <span style={{ fontSize: 9, color: sevColor[severity], letterSpacing: '0.1em', fontFamily: 'JetBrains Mono, monospace' }}>{severity}</span>
-        </div>
-        <p style={{ fontSize: 13, color: '#999', lineHeight: 1.4, margin: 0, fontWeight: 300 }}>{event}</p>
-      </div>
-    </motion.div>
-  );
-}
-
-/* ─── GSAP scroll-triggered headline ────────────────────────────────────── */
-function ScrollHeadline({ id, text, color = '#E1E0CC' }) {
+/* ── Laser Scan Reveal hook ──────────────────────────────────────────────── */
+function useScanReveal(delay = 0) {
   const ref = useRef(null);
   useEffect(() => {
-    const chars = ref.current.querySelectorAll('.at-char');
-    gsap.from(chars, {
-      y: 60, opacity: 0, stagger: 0.025, duration: 0.7,
-      ease: 'power3.out',
-      scrollTrigger: { trigger: ref.current, start: 'top 80%', once: true },
-    });
-  }, []);
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          el.style.animationDelay = `${delay}s`;
+          el.classList.add('void-scan-reveal');
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.08 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [delay]);
+  return ref;
+}
 
+/* ── Hero particles ───────────────────────────────────────────────────── */
+function HeroParticles() {
+  const ref = useRef(null);
+  const mRef = useRef({ x:0.5, y:0.5 });
+  useEffect(() => {
+    const cv = ref.current; if (!cv) return;
+    const ctx = cv.getContext('2d');
+    let aid;
+    const pts = Array.from({ length:60 }, ()=>({ x:Math.random(), y:Math.random(), vx:(Math.random()-0.5)*0.0002, vy:(Math.random()-0.5)*0.0002, r:Math.random()*1.6+0.5, a:Math.random()*0.45+0.35 }));
+    function resize() { const dpr=Math.min(window.devicePixelRatio||1,2); cv.width=cv.offsetWidth*dpr; cv.height=cv.offsetHeight*dpr; ctx.scale(dpr,dpr); }
+    resize(); window.addEventListener('resize',resize);
+    const onM=e=>{ mRef.current={x:e.clientX/window.innerWidth,y:e.clientY/window.innerHeight}; };
+    window.addEventListener('mousemove',onM);
+    let mx=0.5,my=0.5;
+    function frame() {
+      const W=cv.offsetWidth,H=cv.offsetHeight;
+      mx+=(mRef.current.x-mx)*0.03; my+=(mRef.current.y-my)*0.03;
+      const ox=(mx-0.5)*20,oy=(my-0.5)*14;
+      ctx.clearRect(0,0,W,H); ctx.fillStyle='#000000'; ctx.fillRect(0,0,W,H);
+      pts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; if(p.x<0)p.x=1; if(p.x>1)p.x=0; if(p.y<0)p.y=1; if(p.y>1)p.y=0; });
+      const T=Math.min(W,H)*0.18;
+      for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++) {
+        const a=pts[i],b=pts[j];
+        const ax=a.x*W+ox,ay=a.y*H+oy,bx=b.x*W+ox,by=b.y*H+oy;
+        const d=Math.sqrt((ax-bx)**2+(ay-by)**2);
+        if(d<T){ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.strokeStyle=`rgba(78,122,142,${(1-d/T)*0.32})`;ctx.lineWidth=0.7;ctx.stroke();}
+      }
+      pts.forEach(p=>{ const px=p.x*W+ox,py=p.y*H+oy; ctx.beginPath();ctx.arc(px,py,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(78,122,142,${p.a})`;ctx.fill(); });
+      const vig=ctx.createRadialGradient(W/2,H/2,H*0.1,W/2,H/2,H*0.85);
+      vig.addColorStop(0,'transparent'); vig.addColorStop(1,'rgba(0,0,0,0.8)');
+      ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
+      aid=requestAnimationFrame(frame);
+    }
+    aid=requestAnimationFrame(frame);
+    return()=>{ cancelAnimationFrame(aid); window.removeEventListener('resize',resize); window.removeEventListener('mousemove',onM); };
+  },[]);
+  return <canvas ref={ref} style={{position:'absolute',inset:0,width:'100%',height:'100%'}}/>;
+}
+
+/* ── Big stat ─────────────────────────────────────────────────────────── */
+function BigStat({ number, label, sub, color='#4E7A8E' }) {
   return (
-    <div ref={ref} aria-label={text} style={{ overflow: 'hidden' }}>
-      {text.split('').map((char, i) => (
-        <span
-          key={i}
-          className="at-char"
-          style={{
-            display: 'inline-block',
-            color,
-            whiteSpace: char === ' ' ? 'pre' : 'normal',
-          }}
-        >
-          {char === ' ' ? ' ' : char}
-        </span>
-      ))}
+    <div style={{borderLeft:`3px solid ${color}`,paddingLeft:20}}>
+      <div style={{...SERIF,fontSize:'clamp(2.4rem,4vw,3rem)',fontWeight:400,color,fontStyle:'italic',lineHeight:1}}>{number}</div>
+      <div style={{fontSize:'0.85rem',color:'rgba(245,247,250,0.85)',marginTop:8,fontWeight:500}}>{label}</div>
+      {sub&&<div style={{fontSize:'0.7rem',color:'#787878',marginTop:4,...MONO}}>{sub}</div>}
     </div>
   );
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   MAIN
-══════════════════════════════════════════════════════════════════════════ */
+/* ── Contrib card ─────────────────────────────────────────────────────── */
+function ContribCard({ Icon, title, desc, action, href, color='#4E7A8E' }) {
+  return (
+    <div style={{padding:'22px',background:'rgba(12,18,32,0.6)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:12,display:'flex',flexDirection:'column',gap:12,transition:'border-color 0.2s'}}
+      onMouseEnter={e=>e.currentTarget.style.borderColor=`${color}35`}
+      onMouseLeave={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.07)'}>
+      <div style={{width:40,height:40,borderRadius:10,background:`${color}18`,border:`1px solid ${color}30`,display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <Icon size={18} style={{color}}/>
+      </div>
+      <div>
+        <div style={{fontWeight:600,fontSize:'0.9rem',marginBottom:6}}>{title}</div>
+        <div style={{fontSize:'0.78rem',color:'#787878',lineHeight:1.65}}>{desc}</div>
+      </div>
+      {action&&(
+        <a href={href||`mailto:${CONTACT_EMAIL}`} style={{display:'inline-flex',alignItems:'center',gap:5,fontSize:'0.76rem',color,textDecoration:'none',marginTop:'auto',...MONO}}
+          target={href?.startsWith('http')?'_blank':undefined} rel="noreferrer">
+          {action} <ChevronRight size={12}/>
+        </a>
+      )}
+    </div>
+  );
+}
+
+/* ── Pillar card ──────────────────────────────────────────────────────── */
+function Pillar({ Icon, label, desc }) {
+  return (
+    <div style={{padding:'20px',background:'rgba(78,122,142,0.03)',border:'1px solid rgba(78,122,142,0.1)',borderRadius:10,transition:'all 0.2s'}}
+      onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(78,122,142,0.25)';e.currentTarget.style.transform='translateY(-2px)';}}
+      onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(78,122,142,0.1)';e.currentTarget.style.transform='translateY(0)';}}>
+      <Icon size={18} style={{color:'#4E7A8E',marginBottom:10}}/>
+      <div style={{fontWeight:600,fontSize:'0.88rem',marginBottom:6}}>{label}</div>
+      <div style={{fontSize:'0.75rem',color:'#787878',lineHeight:1.6}}>{desc}</div>
+    </div>
+  );
+}
+
 export default function Mission() {
-  const mono = { fontFamily: 'JetBrains Mono, monospace' };
+  const navigate = useNavigate();
+  const [mobileNav, setMobileNav] = useState(false);
 
-  const AGENTS = [
-    { name: 'SIGMA-7', status: 'INVESTIGATING', task: 'Lateral movement detected — AD forest srv-prod-01', uptime: '2h 14m' },
-    { name: 'GHOST-3', status: 'ACTIVE', task: 'Correlating 847 events from SIEM ingestion queue', uptime: '18h 42m' },
-    { name: 'RAVEN-1', status: 'ACTIVE', task: 'Monitoring 12 identity anomalies — zero false positives', uptime: '4d 06h' },
-    { name: 'ARGUS-9', status: 'IDLE', task: 'Standby — last scan completed 4 min ago', uptime: '11d 20h' },
-    { name: 'BLADE-2', status: 'ACTIVE', task: 'Hunting Cobalt Strike beacon callbacks — 3 hits', uptime: '6h 33m' },
-    { name: 'APEX-5', status: 'INVESTIGATING', task: 'Cloud IAM exfiltration pattern — AWS us-east-1', uptime: '41m' },
+  const NAV_ITEMS = [
+    {id:'problem',  label:'The Problem'},
+    {id:'vision',   label:'Our Vision'},
+    {id:'contribute',label:'Contribute'},
+    {id:'roadmap',  label:'Roadmap'},
+    {id:'about',    label:'About'},
   ];
 
-  const TIMELINE = [
-    { time: '14:32:07', event: 'SIGMA-7 detected lateral movement on srv-prod-01 via pass-the-hash', severity: 'CRITICAL' },
-    { time: '14:29:44', event: 'Anomalous login from IP 185.220.x.x — Tor exit node — blocked by policy', severity: 'HIGH' },
-    { time: '14:18:02', event: 'DNS tunneling signatures matched on workstation WS-047 — quarantined', severity: 'HIGH' },
-    { time: '13:55:11', event: 'GHOST-3 completed correlation sweep — 847 events processed, 3 escalated', severity: 'INFO' },
-    { time: '13:40:28', event: 'Cloud storage exfiltration attempt blocked — 4.2 GB prevented', severity: 'CRITICAL' },
-    { time: '13:12:55', event: 'Certificate transparency alert — suspicious subdomain registered', severity: 'MEDIUM' },
-  ];
+  const scrollTo = id => { document.getElementById(id)?.scrollIntoView({behavior:'smooth'}); setMobileNav(false); };
+
+  /* ── Global scan-reveal observer — watches all .mission-section > div ── */
+  useEffect(() => {
+    const targets = document.querySelectorAll('.mission-section > div');
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          el.style.animationDelay = `${i * 0.06}s`;
+          el.classList.add('void-scan-reveal');
+          obs.unobserve(el);
+        }
+      });
+    }, { threshold: 0.06 });
+    targets.forEach(t => obs.observe(t));
+    return () => obs.disconnect();
+  }, []);
 
   return (
-    <div style={{ background: '#000', overflowX: 'hidden' }}>
+    <div style={{background:'#000000',color:'#EBEBEB',minHeight:'100vh',overflowX:'hidden'}}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap');
-        body,*{font-family:'Almarai',-apple-system,sans-serif;}
-
-        @keyframes pulse-green { 0%,100%{box-shadow:0 0 4px #00ff88} 50%{box-shadow:0 0 14px #00ff88} }
-        @keyframes scan-v { 0%{transform:translateX(-100%)} 100%{transform:translateX(100vw)} }
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.15} }
-        @keyframes rotate-slow { to{transform:rotate(360deg)} }
-
-        .at-blink { animation: blink 1.2s step-end infinite; }
-        .at-rotate { animation: rotate-slow 8s linear infinite; }
-
-        .at-mission-btn {
-          display:inline-flex;align-items:center;gap:10px;
-          border:1px solid rgba(255,34,34,0.4);color:#ff2222;
-          background:transparent;padding:12px 28px;
-          font-size:12px;font-weight:700;letter-spacing:0.18em;
-          text-transform:uppercase;text-decoration:none;
-          transition:all 200ms cubic-bezier(0.23,1,0.32,1);
-          cursor:pointer;font-family:inherit;
+        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600;700&display=swap');
+        ::selection{background:rgba(78,122,142,0.3);color:#fff}
+        @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.2)}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+        .mission-label{font-size:10px;color:#4E7A8E;letter-spacing:0.25em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+        .mission-label::before{content:'';display:block;width:22px;height:1px;background:#4E7A8E}
+        .mission-body{font-size:0.9rem;color:#909090;line-height:1.85;max-width:680px;margin-bottom:16px}
+        .mission-section{padding:90px 48px;border-top:1px solid rgba(255,255,255,0.05)}
+        .mobile-nav-drawer{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.97);z-index:200;display:flex;flex-direction:column;padding:24px;backdrop-filter:blur(20px)}
+        .nav-tab{color:rgba(245,247,250,0.45);text-decoration:none;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;transition:color 0.2s;cursor:pointer;background:none;border:none;padding:4px 0}
+        .nav-tab:hover{color:#4E7A8E}
+        @media(max-width:860px){
+          .mission-section{padding:52px 20px!important}
+          .lp-2col{grid-template-columns:1fr!important;gap:32px!important}
+          .lp-3col{grid-template-columns:1fr!important}
+          .lp-4col{grid-template-columns:1fr 1fr!important}
+          .desktop-nav-tabs{display:none!important}
         }
-        .at-mission-btn:active{transform:scale(0.97);}
-        @media(hover:hover)and(pointer:fine){
-          .at-mission-btn:hover{background:rgba(255,34,34,0.1);border-color:#ff2222;}
-        }
-
-        /* Vertical scan line */
-        .at-vscan {
-          position:fixed;top:0;width:1px;height:100vh;
-          background:linear-gradient(to bottom,transparent,rgba(255,34,34,0.4),transparent);
-          animation:scan-v 6s linear infinite;
-          pointer-events:none;z-index:2;
-        }
+        @media(min-width:861px){.mobile-menu-btn{display:none!important}}
       `}</style>
 
-      <ScanLines />
-      <div className="at-vscan" />
+      {/* ── STICKY NAV ── */}
+      <nav style={{position:'sticky',top:0,zIndex:50,background:'rgba(0,0,0,0.92)',backdropFilter:'blur(14px)',borderBottom:'1px solid rgba(255,255,255,0.06)',padding:'14px 48px',display:'flex',alignItems:'center',gap:20}}>
+        <Logo size={22} showText/>
+        <button onClick={()=>navigate('/')} style={{display:'flex',alignItems:'center',gap:5,background:'none',border:'none',color:'#787878',cursor:'pointer',fontSize:'0.72rem',...MONO,marginLeft:4}}>
+          <ArrowLeft size={12}/> Back
+        </button>
 
-      {/* ─── HERO ──────────────────────────────────────────────────────── */}
-      <section style={{ position:'relative', minHeight:'100vh', display:'flex', alignItems:'center', padding:'0 24px', overflow:'hidden' }}>
-        <NoiseBg opacity={0.08} />
-
-        {/* Rotating ring decoration */}
-        <div style={{ position:'absolute', right:'-10%', top:'50%', transform:'translateY(-50%)', opacity:0.06, pointerEvents:'none' }}>
-          <div className="at-rotate" style={{ width:600, height:600, border:'1px solid #ff2222', borderRadius:'50%' }} />
+        {/* Desktop nav tabs */}
+        <div className="desktop-nav-tabs" style={{display:'flex',gap:20,marginLeft:16}}>
+          {NAV_ITEMS.map(({id,label})=>(
+            <button key={id} onClick={()=>scrollTo(id)} className="nav-tab">{label}</button>
+          ))}
         </div>
-        <div style={{ position:'absolute', right:'-5%', top:'50%', transform:'translateY(-50%)', opacity:0.04, pointerEvents:'none' }}>
-          <div className="at-rotate" style={{ width:400, height:400, border:'1px solid #00ffe5', borderRadius:'50%', animationDirection:'reverse' }} />
+
+        <div style={{marginLeft:'auto',display:'flex',gap:12,alignItems:'center'}}>
+          <a href={`mailto:${CONTACT_EMAIL}`} style={{fontSize:'0.75rem',color:'#787878',textDecoration:'none',...MONO,display:'flex',alignItems:'center',gap:5}}
+            onMouseEnter={e=>e.currentTarget.style.color='#FFFFFF'} onMouseLeave={e=>e.currentTarget.style.color='#888888'}>
+            <Mail size={12}/> Contact
+          </a>
+          <a href="https://github.com/Prasanna-27eng" target="_blank" rel="noreferrer" style={{fontSize:'0.75rem',color:'#787878',textDecoration:'none',...MONO,display:'flex',alignItems:'center',gap:5}}
+            onMouseEnter={e=>e.currentTarget.style.color='#FFFFFF'} onMouseLeave={e=>e.currentTarget.style.color='#888888'}>
+            <Github size={12}/> GitHub
+          </a>
+          <button className="mobile-menu-btn" onClick={()=>setMobileNav(true)} style={{background:'none',border:'1px solid rgba(240,240,248,0.15)',borderRadius:6,padding:'7px 9px',cursor:'pointer',color:'#EBEBEB',display:'flex',alignItems:'center'}}>
+            <Menu size={16}/>
+          </button>
         </div>
+      </nav>
 
-        <div style={{ position:'relative', zIndex:3, maxWidth:900 }}>
-          <motion.div
-            initial={{ opacity:0 }}
-            animate={{ opacity:1 }}
-            transition={{ duration:0.5, ease:EASE_OUT }}
-            style={{ fontSize:11, color:'#ff2222', letterSpacing:'0.3em', ...mono, marginBottom:28, display:'flex', gap:16 }}
-          >
-            <span>AEGISTRACE MISSION BRIEF</span>
-            <span className="at-blink">█</span>
-            <span style={{ color:'#333' }}>CLEARANCE: ALPHA-TIER</span>
-          </motion.div>
+      {/* Mobile drawer */}
+      {mobileNav&&(
+        <div className="mobile-nav-drawer">
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:28}}>
+            <Logo size={22} showText/>
+            <button onClick={()=>setMobileNav(false)} style={{background:'none',border:'none',cursor:'pointer',color:'rgba(240,240,248,0.6)'}}><XCircle size={22}/></button>
+          </div>
+          {NAV_ITEMS.map(({id,label})=>(
+            <button key={id} onClick={()=>scrollTo(id)}
+              style={{display:'block',padding:'14px 0',fontSize:15,color:'rgba(240,240,248,0.75)',background:'none',border:'none',cursor:'pointer',textAlign:'left',borderBottom:'1px solid rgba(255,255,255,0.05)',width:'100%',...MONO,letterSpacing:'0.08em',textTransform:'uppercase'}}>
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
 
-          <h1 style={{ fontSize:'clamp(52px,9vw,120px)', fontWeight:800, lineHeight:0.88, letterSpacing:'-0.04em', margin:'0 0 40px' }}>
-            <ScrollHeadline text="We don't" />
-            <ScrollHeadline text="wait for" color="#ff2222" />
-            <ScrollHeadline text="breaches." />
+      {/* ── HERO ── */}
+      <section style={{position:'relative',height:'75vh',minHeight:540,overflow:'hidden',display:'flex',alignItems:'center'}}>
+        <ThreatStream opacity={0.40} />
+        <div style={{position:'relative',zIndex:10,maxWidth:1100,margin:'0 auto',padding:'0 48px',width:'100%'}}>
+          <div style={{display:'inline-flex',alignItems:'center',gap:8,padding:'6px 14px',background:'rgba(78,122,142,0.1)',border:'1px solid rgba(78,122,142,0.25)',borderRadius:20,marginBottom:28}}>
+            <div style={{width:7,height:7,borderRadius:'50%',background:'#4E7A8E',animation:'pulse 2s ease-in-out infinite'}}/>
+            <span style={{fontSize:'0.68rem',color:'#6BABEC',...MONO,letterSpacing:'0.15em',textTransform:'uppercase'}}>Trust Operating System for the AI Era</span>
+          </div>
+
+          <h1 style={{...SERIF,fontSize:'clamp(2.8rem,7vw,5.5rem)',fontWeight:400,lineHeight:0.96,letterSpacing:'-0.015em',marginBottom:24}}>
+            <div style={{color:'#EBEBEB'}}>The Trust Layer</div>
+            <div style={{color:'#4E7A8E',fontStyle:'italic'}}>for the AI-Agent Era.</div>
           </h1>
 
-          <motion.p
-            initial={{ opacity:0, y:20 }}
-            animate={{ opacity:1, y:0 }}
-            transition={{ duration:0.6, delay:0.4, ease:EASE_OUT }}
-            style={{ fontSize:18, color:'rgba(225,224,204,0.55)', lineHeight:1.55, maxWidth:560, margin:'0 0 48px', fontWeight:300 }}
-          >
-            AegisTrace was built on a single conviction: that every breach leaves a trail. Our mission is to find it — before damage is done.
-          </motion.p>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:48,alignItems:'flex-end',maxWidth:900}} className="lp-2col">
+            <p style={{fontSize:'0.95rem',color:'#909090',lineHeight:1.85,...MONO,fontWeight:300,margin:0}}>
+              Attackers no longer break in. They become trusted. AegisTrace is the operating layer that tracks every identity, audits every AI decision, and ensures every automated action has a human approval behind it.
+            </p>
+            <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+              <a href={`mailto:${CONTACT_EMAIL}?subject=I want to join the AegisTrace mission`}
+                style={{display:'inline-flex',alignItems:'center',gap:8,background:'#4E7A8E',color:'white',border:'none',borderRadius:8,padding:'12px 24px',fontSize:'0.85rem',fontWeight:600,cursor:'pointer',textDecoration:'none'}}>
+                <Mail size={15}/> Join the Mission
+              </a>
+              <button onClick={()=>scrollTo('vision')}
+                style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(255,255,255,0.05)',color:'#A8A8A8',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'12px 24px',fontSize:'0.85rem',cursor:'pointer'}}>
+                <BookOpen size={15}/> Read the Vision
+              </button>
+            </div>
+          </div>
+        </div>
+        <div style={{position:'absolute',bottom:0,left:0,right:0,height:'28%',background:'linear-gradient(to top,#000000 0%,transparent 100%)'}}/>
+      </section>
 
-          <motion.div
-            initial={{ opacity:0, y:16 }}
-            animate={{ opacity:1, y:0 }}
-            transition={{ duration:0.5, delay:0.55, ease:EASE_OUT }}
-            style={{ display:'flex', gap:16, flexWrap:'wrap' }}
-          >
-            <Link to="/app/login" className="at-mission-btn">Access Platform <ArrowRight size={14} /></Link>
-            <a href="#agents" className="at-mission-btn" style={{ borderColor:'rgba(255,255,255,0.1)', color:'rgba(225,224,204,0.4)' }}>View Active Agents</a>
-          </motion.div>
+      {/* ── THE PROBLEM ── */}
+      <section id="problem" className="mission-section" style={{padding:'90px 48px',background:'#000000'}}>
+        <div style={{maxWidth:1100,margin:'0 auto'}}>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:56,alignItems:'start'}} className="lp-2col">
+            <div>
+              <div className="mission-label">The Problem</div>
+              <h2 style={{...SERIF,fontSize:'clamp(2rem,4vw,3.2rem)',fontWeight:400,letterSpacing:'-0.02em',lineHeight:1.1,marginBottom:20}}>
+                The world is changing.<br/><span style={{color:'#4E7A8E',fontStyle:'italic'}}>Security isn't keeping up.</span>
+              </h2>
+              <p className="mission-body">
+                The SOC model built in the 2000s was designed for a world of firewalls and malware. That world still exists. But the dominant attack vector is now compromised trust — stolen credentials, hijacked tokens, abused service accounts, and AI agents operating outside their intended scope. The question is no longer <em style={{color:'#EBEBEB'}}>"what machine was attacked?"</em> — it's <em style={{color:'#EBEBEB'}}>"which identity was trusted that shouldn't have been?"</em>
+              </p>
+              {/* Problem tiles */}
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:24}}>
+                {[
+                  {icon:Fingerprint, label:'User identities',     desc:'Stolen credentials = instant access to everything'},
+                  {icon:Bot,         label:'AI agents',           desc:'70% of organisations using AI lack security controls'},
+                  {icon:Lock,        label:'Service accounts',    desc:'Rogue tokens operating at machine speed, undetected'},
+                  {icon:Activity,    label:'Machine-speed attacks',desc:'Executed in milliseconds — humans cannot respond alone'},
+                ].map(({icon:Icon,label,desc})=>(
+                  <div key={label} style={{padding:'14px 16px',background:'rgba(255,255,255,0.02)',border:'1px solid rgba(255,255,255,0.06)',borderRadius:10,borderTop:'2px solid rgba(78,122,142,0.35)'}}>
+                    <Icon size={14} style={{color:'#4E7A8E',marginBottom:6}}/>
+                    <div style={{fontWeight:600,fontSize:'0.82rem',marginBottom:4}}>{label}</div>
+                    <div style={{fontSize:'0.72rem',color:'#787878',lineHeight:1.55}}>{desc}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div style={{display:'flex',flexDirection:'column',gap:28,paddingTop:8}}>
+              <BigStat number="83%" label="of breaches involve stolen credentials or identity abuse" sub="Verizon DBIR 2025" color="#4E7A8E"/>
+              <div style={{width:'100%',height:1,background:'rgba(255,255,255,0.06)'}}/>
+              <BigStat number="70%" label="of organisations using AI lack proper security controls" sub="Gartner 2025" color="#7AABB5"/>
+              <div style={{width:'100%',height:1,background:'rgba(255,255,255,0.06)'}}/>
+              <BigStat number="30 min" label="average human triage time vs 30 seconds for AI-augmented" sub="SOC Analyst Survey 2025" color="#F5B84B"/>
+              <div style={{width:'100%',height:1,background:'rgba(255,255,255,0.06)'}}/>
+              <BigStat number="10×" label="productivity gap between human-only and AI-augmented SOC" sub="Industry benchmark" color="#4Be38A"/>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ─── MANIFESTO ─────────────────────────────────────────────────── */}
-      <section style={{ position:'relative', padding:'140px 24px', background:'#000' }}>
-        <NoiseBg opacity={0.06} />
-        <div style={{ maxWidth:1100, margin:'0 auto', position:'relative', zIndex:2 }}>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:80, alignItems:'start' }}>
+      {/* ── OUR VISION ── */}
+      <section id="vision" className="mission-section" style={{padding:'90px 48px',background:'#0A0A0A'}}>
+        <div style={{maxWidth:1100,margin:'0 auto'}}>
+          <div className="mission-label" style={{color:'#7AABB5'}}>
+            <span style={{display:'block',width:22,height:1,background:'#7AABB5'}}/>Our Vision
+          </div>
+          <h2 style={{...SERIF,fontSize:'clamp(2rem,4vw,3.4rem)',fontWeight:400,letterSpacing:'-0.02em',lineHeight:1.1,marginBottom:48}}>
+            From case manager to<br/><span style={{color:'#7AABB5',fontStyle:'italic'}}>trust control plane.</span>
+          </h2>
+
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:56,marginBottom:52}} className="lp-2col">
             <div>
-              <div style={{ fontSize:11, color:'#ff2222', letterSpacing:'0.25em', ...mono, marginBottom:24 }}>// THE MISSION</div>
-              <h2 style={{ fontSize:'clamp(32px,5vw,64px)', fontWeight:700, color:'#E1E0CC', letterSpacing:'-0.04em', lineHeight:0.92, margin:0 }}>
-                <ScrollHeadline text="The threat" />
-                <ScrollHeadline text="landscape" color="#ff2222" />
-                <ScrollHeadline text="never sleeps." />
-              </h2>
+              <p className="mission-body">
+                AegisTrace started as an open-source SOC tool. The vision is bigger: a trust operating system.
+              </p>
+              <p className="mission-body">
+                We're building the <strong style={{color:'#4E7A8E'}}>trust layer for the AI-agent era</strong> — where every identity (human, service, agent, token) is a tracked security entity, every AI verdict is explainable with evidence, and every automated action requires human approval before it executes.
+              </p>
+              {/* Pull quote */}
+              <blockquote style={{margin:'24px 0 0',padding:'16px 20px',background:'rgba(78,122,142,0.04)',borderLeft:'3px solid rgba(78,122,142,0.5)',borderRadius:'0 8px 8px 0'}}>
+                <em style={{color:'rgba(245,247,250,0.85)',fontSize:'0.92rem',lineHeight:1.7}}>"Which identity caused this? Can I trust the AI's verdict? Was every automated action approved?"</em>
+                <div style={{fontSize:'0.68rem',color:'#787878',marginTop:8,...MONO}}>The question the next decade of security will be built around</div>
+              </blockquote>
             </div>
-            <div style={{ paddingTop:16 }}>
+
+            <div>
               {[
-                { stat:'4.7s', label:'Our mean time to detect vs 207 days industry average' },
-                { stat:'247', label:'Autonomous AI agents running 24/7 across every customer' },
-                { stat:'99.97%', label:'Detection accuracy — verified against MITRE ATT&CK' },
-                { stat:'0', label:'False-positive containment actions in the last 90 days' },
-              ].map((s, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity:0, x:20 }}
-                  whileInView={{ opacity:1, x:0 }}
-                  viewport={{ once:true }}
-                  transition={{ duration:0.4, delay:i*0.08, ease:EASE_OUT }}
-                  style={{ borderBottom:'1px solid rgba(255,255,255,0.06)', padding:'20px 0', display:'flex', gap:24, alignItems:'center' }}
-                >
-                  <div style={{ fontSize:28, fontWeight:800, color:'#E1E0CC', ...mono, flexShrink:0, minWidth:80 }}>{s.stat}</div>
-                  <div style={{ fontSize:13, color:'#666', lineHeight:1.4, fontWeight:300 }}>{s.label}</div>
-                </motion.div>
+                {from:'IOC dashboard',         to:'Identity investigation platform', c:'#4E7A8E'},
+                {from:'Case manager',           to:'Trust orchestration platform',    c:'#7AABB5'},
+                {from:'Alert viewer',           to:'Agent supervision console',       c:'#4Be38A'},
+                {from:'Manual triage',          to:'Autonomous + human-approved',     c:'#F5B84B'},
+                {from:'Black-box AI verdicts',  to:'Explainable provenance chains',   c:'#4E7A8E'},
+                {from:'Static reports',         to:'Future-narrative intelligence',   c:'#7AABB5'},
+              ].map(({from,to,c})=>(
+                <div key={from} style={{display:'flex',alignItems:'center',gap:0,padding:'10px 0',borderBottom:'1px solid rgba(255,255,255,0.05)'}}>
+                  <div style={{flex:1,fontSize:'0.78rem',color:'rgba(245,247,250,0.25)',textDecoration:'line-through',...MONO}}>{from}</div>
+                  <div style={{width:24,height:1,background:`linear-gradient(90deg,${c}40,${c})`,margin:'0 12px',flexShrink:0}}/>
+                  <div style={{flex:1,fontSize:'0.78rem',color:'rgba(245,247,250,0.9)',...MONO,fontWeight:500}}>{to}</div>
+                </div>
               ))}
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* ─── AGENTS LIVE FEED ──────────────────────────────────────────── */}
-      <section id="agents" style={{ position:'relative', padding:'120px 24px', background:'#000' }}>
-        <NoiseBg opacity={0.07} />
-        <div style={{ maxWidth:1100, margin:'0 auto', position:'relative', zIndex:2 }}>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:48, alignItems:'start' }}>
-
-            {/* Left: Agent feed */}
-            <div>
-              <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:32 }}>
-                <div style={{ fontSize:11, color:'#ff2222', letterSpacing:'0.25em', ...mono }}>// ACTIVE AGENTS</div>
-                <div style={{ fontSize:11, color:'#00ff88', ...mono }}>● LIVE</div>
-              </div>
-              <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
-                {AGENTS.map((agent, i) => (
-                  <AgentCard key={agent.name} {...agent} index={i} />
-                ))}
-              </div>
-            </div>
-
-            {/* Right: Incident timeline */}
-            <div>
-              <div style={{ fontSize:11, color:'#ff2222', letterSpacing:'0.25em', ...mono, marginBottom:32 }}>// INCIDENT TIMELINE</div>
-              <div>
-                {TIMELINE.map((item, i) => (
-                  <TimelineItem key={i} {...item} index={i} />
-                ))}
-              </div>
-            </div>
+          {/* Pillars */}
+          <div className="lp-3col" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:14}}>
+            <Pillar Icon={Fingerprint}  label="Identity First"   desc="Every actor — human, service, agent, token — is modelled as a first-class entity with a risk score and a trust history."/>
+            <Pillar Icon={Database}     label="Provenance"       desc="Every AI output, tool result, and case action carries full provenance: who, what model, what evidence, what confidence."/>
+            <Pillar Icon={GitMerge}     label="Trust"            desc="Trust is tracked, inherited, challenged, and revocable. A trust timeline sits beside every incident."/>
+            <Pillar Icon={Brain}        label="Explainability"   desc="No black boxes. Every AI verdict shows its reasoning chain, evidence used, and what could be wrong."/>
+            <Pillar Icon={Shield}       label="Human Control"    desc="AI suggests. Humans confirm. Every automation has an approval layer and a complete audit trail."/>
+            <Pillar Icon={TrendingUp}   label="Future-Ready"     desc="Designed to remain relevant 10–15 years from now — when quantum threats and AI-native adversaries are the norm."/>
           </div>
         </div>
       </section>
 
-      {/* ─── VALUES ────────────────────────────────────────────────────── */}
-      <section style={{ position:'relative', padding:'120px 24px', background:'#000' }}>
-        <NoiseBg opacity={0.06} />
-        <div style={{ maxWidth:1100, margin:'0 auto', position:'relative', zIndex:2, textAlign:'center' }}>
-          <div style={{ fontSize:11, color:'#ff2222', letterSpacing:'0.25em', ...mono, marginBottom:24 }}>// HOW WE OPERATE</div>
-          <h2 style={{ fontSize:'clamp(32px,5vw,64px)', fontWeight:700, color:'#E1E0CC', letterSpacing:'-0.04em', lineHeight:0.92, margin:'0 0 72px' }}>
-            Principles that<br />
-            <span style={{ color:'#ff2222' }}>don't bend</span> under fire.
+      {/* ── HOW TO CONTRIBUTE ── */}
+      <section id="contribute" className="mission-section" style={{padding:'90px 48px',background:'#000000'}}>
+        <div style={{maxWidth:1100,margin:'0 auto'}}>
+          <div className="mission-label">Contribute</div>
+          <h2 style={{...SERIF,fontSize:'clamp(2rem,4vw,3.4rem)',fontWeight:400,letterSpacing:'-0.02em',lineHeight:1.1,marginBottom:16}}>
+            Six ways to<br/><span style={{color:'#4E7A8E',fontStyle:'italic'}}>join the mission.</span>
+          </h2>
+          <p className="mission-body">
+            AegisTrace is built by one analyst in Dublin — but the vision is bigger than one person. Whether you're an analyst, developer, designer, researcher, writer, or enterprise buyer, there's a place for you here.
+          </p>
+
+          <div className="lp-3col" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:16,marginTop:32}}>
+            <ContribCard Icon={Code}     color="#4E7A8E" title="Build Features"        action="Email to discuss →"
+              desc="Help build the v4.1+ features: Shadow AI Detection, AI Agent Security, SOAR Playbooks, Attacker Path Reconstruction, AI Memory across cases."/>
+            <ContribCard Icon={Shield}   color="#7AABB5" title="Security Research"     action="Share your research →"
+              desc="Contribute AI threat models, identity attack patterns, MITRE mappings, or research on emerging threats in the AI-agent era."/>
+            <ContribCard Icon={Brain}    color="#4Be38A" title="AI / ML Engineering"   action="Email to collaborate →"
+              desc="Help improve the multi-model AI router, explainability layer, proactive triage engine, and AI memory across cases."/>
+            <ContribCard Icon={Users}    color="#F5B84B" title="SOC Analyst Input"     action="Share your pain points →"
+              desc="You use tools like this every day. Tell us what's broken, what's missing, and what would make your investigations 10× faster."/>
+            <ContribCard Icon={BookOpen} color="#4E7A8E" title="Documentation"         action="Help write docs →"
+              desc="Write guides, walkthroughs, deployment docs, or use-case narratives that help analysts get value out of AegisTrace faster."/>
+            <ContribCard Icon={Globe}    color="#7AABB5" title="Enterprise Partnership" action="Let's talk →"
+              desc="Using AegisTrace in a real SOC environment? We want to hear from you. Your feedback shapes the enterprise roadmap."/>
+          </div>
+
+          {/* CTA */}
+          <div style={{marginTop:52,padding:'36px 44px',background:'rgba(78,122,142,0.04)',border:'1px solid rgba(78,122,142,0.18)',borderRadius:14,display:'grid',gridTemplateColumns:'1fr auto',gap:24,alignItems:'center',flexWrap:'wrap'}} className="lp-2col">
+            <div>
+              <div style={{fontWeight:700,fontSize:'1.05rem',marginBottom:8}}>Ready to contribute?</div>
+              <div style={{fontSize:'0.85rem',color:'#909090',maxWidth:480,lineHeight:1.7}}>
+                Send an email with a short intro — who you are, what you do, and how you'd like to be involved. Every message is read personally.
+              </div>
+              <div style={{marginTop:8,fontSize:'0.78rem',color:'#4E7A8E',...MONO}}>{CONTACT_EMAIL}</div>
+            </div>
+            <a href={`mailto:${CONTACT_EMAIL}?subject=I want to contribute to AegisTrace`}
+              style={{display:'inline-flex',alignItems:'center',gap:8,background:'#4E7A8E',color:'white',borderRadius:8,padding:'13px 28px',fontSize:'0.88rem',fontWeight:600,textDecoration:'none',flexShrink:0}}>
+              <Mail size={16}/> Send Introduction
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ── ROADMAP ── */}
+      <section id="roadmap" className="mission-section" style={{padding:'90px 48px',background:'#0A0A0A'}}>
+        <div style={{maxWidth:1100,margin:'0 auto'}}>
+          <div className="mission-label" style={{color:'#7AABB5'}}>
+            <span style={{display:'block',width:22,height:1,background:'#7AABB5'}}/>Roadmap
+          </div>
+          <h2 style={{...SERIF,fontSize:'clamp(2rem,4vw,3.4rem)',fontWeight:400,letterSpacing:'-0.02em',lineHeight:1.1,marginBottom:48}}>
+            What we're building.<br/><span style={{color:'#7AABB5',fontStyle:'italic'}}>In the open.</span>
           </h2>
 
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))', gap:2, textAlign:'left' }}>
+          <div className="lp-3col" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:20}}>
             {[
-              { icon: <Target size={18} />, title:'Precision over speed', body:'Every alert is verified before it reaches an analyst. We eliminate noise, not nuance.' },
-              { icon: <Lock size={18} />, title:'Zero trust, always', body:'We assume breach. Every identity, every token, every API call is treated as hostile until proven otherwise.' },
-              { icon: <Radio size={18} />, title:'Continuous monitoring', body:'Threats don\'t work banker\'s hours. Neither do our agents. 24/7/365, zero downtime.' },
-              { icon: <Shield size={18} />, title:'Transparent operations', body:'Every agent decision is logged, explainable, and auditable. No black boxes in your security stack.' },
-            ].map((val, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity:0, y:24 }}
-                whileInView={{ opacity:1, y:0 }}
-                viewport={{ once:true }}
-                transition={{ duration:0.45, delay:i*0.1, ease:EASE_OUT }}
-                style={{ background:'rgba(8,8,8,0.9)', border:'1px solid rgba(255,255,255,0.05)', padding:32, backdropFilter:'blur(8px)' }}
-              >
-                <div style={{ color:'#ff2222', marginBottom:16 }}>{val.icon}</div>
-                <h3 style={{ fontSize:17, fontWeight:700, color:'#E1E0CC', margin:'0 0 10px' }}>{val.title}</h3>
-                <p style={{ fontSize:13, color:'#555', lineHeight:1.5, margin:0, fontWeight:300 }}>{val.body}</p>
-              </motion.div>
+              {phase:'Live — v2.0 → v4.2',status:'live',color:'#4Be38A',items:['ITDR — credential stuffing, impossible travel, new device, privilege escalation','Identity Graph + Pluggable Risk Engine + Policy Engine','Trust Timeline + Provenance Ledger (AI action audit)','Terminal Lab — private analyst workspace','Explainable AI — reasoning chain, evidence, confidence on every verdict','Case management (13 tabs) + comments + investigation templates','Analytics dashboard — severity, SLA, MITRE heatmap, throughput','7-source IOC enrichment + 18 hardware forensic tools','Email forensics (SPF/DKIM/DMARC) + PCAP + DORA compliance','Endpoint agent v2 + webhook alerting + audit logs']},
+              {phase:'In Progress — v4.2',status:'building',color:'#F5B84B',items:['Shadow AI Detection — detect data sent to unauthorised AI services','AI Agent Security — bounded autonomy + human approval workflows','SOAR Playbooks — automated response sequences per incident type','Control Plane view — live trust, policy, and agent health dashboard','Report narrative mode — attacker story for board-level audiences']},
+              {phase:'Planned — v5.0',status:'planned',color:'#7AABB5',items:['Agent Supervision Console — kill switches + task scope','Attacker Path Reconstruction — visual kill-chain across actors','AI Memory across cases — pattern recognition from history','Crypto + Quantum Readiness — certificate inventory, PQ flags','Machine Identity incidents — rogue API keys, service accounts','Future-narrative reporting — board-level attacker stories']},
+            ].map(({phase,status,color,items})=>(
+              <div key={phase} style={{background:'rgba(12,18,32,0.5)',border:`1px solid ${color}20`,borderRadius:12,padding:24,position:'relative',overflow:'hidden'}}>
+                <div style={{position:'absolute',top:0,left:0,right:0,height:3,background:`linear-gradient(90deg,${color}70,transparent)`}}/>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:18}}>
+                  <div style={{width:8,height:8,borderRadius:'50%',background:color,boxShadow:status==='live'?`0 0 8px ${color}`:'none'}}/>
+                  <div style={{fontWeight:700,fontSize:'0.85rem'}}>{phase}</div>
+                  <div style={{marginLeft:'auto',fontSize:'0.62rem',...MONO,padding:'2px 8px',borderRadius:3,background:`${color}18`,color,border:`1px solid ${color}30`,textTransform:'uppercase',letterSpacing:'0.06em'}}>
+                    {status==='live'?'Live':status==='building'?'Building':'Planned'}
+                  </div>
+                </div>
+                {items.map(item=>(
+                  <div key={item} style={{display:'flex',alignItems:'flex-start',gap:7,padding:'5px 0',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
+                    <div style={{width:5,height:5,borderRadius:'50%',background:status==='live'?color:'rgba(255,255,255,0.15)',flexShrink:0,marginTop:5}}/>
+                    <div style={{fontSize:'0.75rem',color:status==='live'?'rgba(245,247,250,0.8)':'rgba(245,247,250,0.5)',lineHeight:1.4,...MONO}}>{item}</div>
+                  </div>
+                ))}
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ─── CTA ───────────────────────────────────────────────────────── */}
-      <section style={{ position:'relative', padding:'120px 24px 160px', textAlign:'center', background:'#000' }}>
-        <NoiseBg opacity={0.07} />
-        <div style={{ position:'relative', zIndex:2, maxWidth:600, margin:'0 auto' }}>
-          <motion.div
-            initial={{ opacity:0, y:32 }}
-            whileInView={{ opacity:1, y:0 }}
-            viewport={{ once:true }}
-            transition={{ duration:0.6, ease:EASE_OUT }}
-          >
-            <div style={{ fontSize:11, color:'#ff2222', letterSpacing:'0.25em', ...mono, marginBottom:24 }}>// JOIN THE MISSION</div>
-            <h2 style={{ fontSize:'clamp(36px,7vw,88px)', fontWeight:800, color:'#E1E0CC', letterSpacing:'-0.05em', lineHeight:0.88, margin:'0 0 32px' }}>
-              <GlitchText text="Ready to" style={{ color:'#E1E0CC', fontSize:'inherit', fontFamily:'inherit', fontWeight:'inherit' }} />
-              <br />
-              <span style={{ color:'#ff2222' }}>hunt?</span>
+      {/* ── ABOUT ── */}
+      <section id="about" className="mission-section" style={{padding:'80px 48px',background:'#000000'}}>
+        <div style={{maxWidth:1100,margin:'0 auto',display:'grid',gridTemplateColumns:'1fr 1fr',gap:56,alignItems:'center'}} className="lp-2col">
+          <div>
+            <div className="mission-label">Who's Building This</div>
+            <h2 style={{...SERIF,fontSize:'clamp(1.8rem,3.5vw,3rem)',fontWeight:400,letterSpacing:'-0.02em',lineHeight:1.15,marginBottom:20}}>
+              One analyst.<br/><span style={{color:'#4E7A8E',fontStyle:'italic'}}>One ambitious mission.</span>
             </h2>
-            <p style={{ fontSize:16, color:'rgba(225,224,204,0.45)', lineHeight:1.5, margin:'0 auto 48px', fontWeight:300 }}>
-              Deploy your first autonomous agent in under 10 minutes. No configuration. No false starts.
+            <p style={{fontSize:'0.9rem',color:'#909090',lineHeight:1.85,marginBottom:18}}>
+              Prasanna Kumar Surendran — Blue Team analyst and security tooling developer, Dublin, Ireland. AegisTrace started as a personal investigation platform and grew into a full SOC control plane benchmarked against commercial products.
             </p>
-            <Link to="/app/login" className="at-mission-btn" style={{ fontSize:14, padding:'14px 44px' }}>
-              Start the Mission <ArrowRight size={16} />
-            </Link>
-          </motion.div>
+            <p style={{fontSize:'0.9rem',color:'#909090',lineHeight:1.85,marginBottom:28}}>
+              The platform is self-funded, free to use, and open in philosophy. The goal is to prove that a solo analyst can build SOC tooling that rivals commercial products — and that the next generation of security platforms must be built around identity, trust, and explainability from the ground up.
+            </p>
+            <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+              <a href={`mailto:${CONTACT_EMAIL}`} style={{display:'inline-flex',alignItems:'center',gap:7,background:'#4E7A8E',color:'white',borderRadius:8,padding:'11px 22px',fontSize:'0.82rem',fontWeight:600,textDecoration:'none'}}><Mail size={14}/> Get in Touch</a>
+              <a href="https://github.com/Prasanna-27eng" target="_blank" rel="noreferrer" style={{display:'inline-flex',alignItems:'center',gap:7,background:'rgba(255,255,255,0.05)',color:'#A8A8A8',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'11px 22px',fontSize:'0.82rem',textDecoration:'none'}}><Github size={14}/> GitHub</a>
+              <a href="https://www.linkedin.com/in/prasannakumarsurendran" target="_blank" rel="noreferrer" style={{display:'inline-flex',alignItems:'center',gap:7,background:'rgba(255,255,255,0.05)',color:'#A8A8A8',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'11px 22px',fontSize:'0.82rem',textDecoration:'none'}}><Users size={14}/> LinkedIn</a>
+            </div>
+          </div>
+
+          {/* Quick facts panel */}
+          <div style={{background:'rgba(12,18,32,0.6)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:14,padding:'28px'}}>
+            <div style={{fontSize:10,color:'#4E7A8E',letterSpacing:'0.18em',textTransform:'uppercase',...MONO,marginBottom:20}}>◇ Platform Stats</div>
+            {[
+              {label:'Lines of code',          val:'~18,000+',    color:'#4E7A8E'},
+              {label:'Features shipped',       val:'12 major',   color:'#7AABB5'},
+              {label:'AI models integrated',   val:'4 via Groq', color:'#4Be38A'},
+              {label:'Threat intel sources',   val:'7 APIs',     color:'#F5B84B'},
+              {label:'Hardware tools',         val:'18 parsers', color:'#4E7A8E'},
+              {label:'Infrastructure cost',    val:'$0 / month', color:'#22C55E'},
+            ].map(({label,val,color})=>(
+              <div key={label} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1px solid rgba(255,255,255,0.05)'}}>
+                <span style={{fontSize:'0.8rem',color:'rgba(245,247,250,0.55)',...MONO}}>{label}</span>
+                <span style={{fontSize:'0.82rem',fontWeight:600,color,...MONO}}>{val}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
+
+      {/* ── FOOTER ── */}
+      <footer style={{padding:'28px 48px',borderTop:'1px solid rgba(255,255,255,0.05)',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:14}}>
+        <Logo size={18} showText/>
+        <div style={{fontSize:'0.72rem',color:'#404040',...MONO}}>Prasanna Kumar Surendran · Dublin, Ireland · 2025–2026</div>
+        <button onClick={()=>navigate('/')} style={{fontSize:'0.75rem',color:'#787878',background:'none',border:'none',cursor:'pointer',...MONO}}>← Back to AegisTrace</button>
+      </footer>
     </div>
   );
 }
