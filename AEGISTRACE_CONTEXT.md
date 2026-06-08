@@ -1,5 +1,5 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v6.0 | **Last updated:** June 2026
+**Version:** v7.0 | **Last updated:** June 2026
 **Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files.
 
 ---
@@ -50,7 +50,7 @@ AegisTrace is a **free, open-source Trust Operating System for the AI-agent era*
 **Built by:** Prasanna Kumar Surendran, Blue Team analyst, Dublin, Ireland  
 **Live at:** https://aegistrace-7qvn.onrender.com  
 **GitHub:** https://github.com/Prasanna-27eng/AegisTrace  
-**Stack:** React 18 · FastAPI · SQLite/SQLModel · Groq API · Docker · Render free tier (VPS migration guide written for DigitalOcean/Hetzner/UpCloud)
+**Stack:** React 18 · FastAPI · SQLite/SQLModel · Groq API · NVIDIA NIM · Docker · Render free tier (VPS migration guide written for DigitalOcean/Hetzner/UpCloud)
 
 ---
 
@@ -93,10 +93,21 @@ backend/            FastAPI (Python)
       okta.py             Okta API token
       csv_import.py       CSV upload + column mapping
 
-agent/              aegistrace_agent.py (v5.0 — 2432 lines, production-grade EDR)
+agent/              aegistrace_agent.py (v6.0 — ~3650 lines, production-grade EDR + VulnerabilityScanner)
                     install.sh — one-command installer (v5.0)
 Dockerfile          Multi-stage: frontend build → FastAPI server
 render.yaml         Render free-tier deploy config (autoDeploy: true)
+
+backend/nvidia_client.py     NVIDIA NIM singleton client (OpenAI-compatible, graceful fallback)
+backend/embeddings.py        NV-EmbedQA-E5-v5 embedding service + cosine similarity search
+backend/guardrails.py        Llama Guard 3 safety classifier (Phase 3)
+backend/ingest_normalizer.py Alert format normalizer — Wazuh/osquery/Falco/Sysmon → case schema (Phase 5)
+backend/agents/
+  __init__.py
+  tools.py          5 tool definitions + executors for function-calling agents
+  triage_agent.py   Nemotron-70B agentic triage loop (max 6 iterations, Groq fallback)
+  specialist.py     EmailAgent, EndpointAgent, IOCAgent, IdentityAgent, ReportAgent
+  coordinator.py    asyncio.gather parallel coordinator + synthesis (Phase 4)
 ```
 
 ### Backend Routers (all registered in main.py)
@@ -134,6 +145,7 @@ render.yaml         Render free-tier deploy config (autoDeploy: true)
 | health | /api/health | Platform health check — no auth (v4.3) |
 | defense | /api/defense | AI Defense Engine — fingerprinting, honeypots, Groq triage, HITL review (v5.3) |
 | demo | /api/demo | Demo data seeder — seeds Identity, ITDR, Shadow AI, Defense, Agent Security (v5.5) |
+| semantic | /api/semantic + /api/ingest/normalize | NVIDIA Phase 2+5: similar-case search, case embedding, alert normalization (v7.0) |
 
 ---
 
@@ -146,6 +158,8 @@ render.yaml         Render free-tier deploy config (autoDeploy: true)
 **v4.3 additions:** `IdentityConnector`, `ApprovedAIService`, `ShadowAIEvent`, `TokenBlocklist`, `AgentCommand`, `ITDRAlert`
 
 **v5.3 additions:** `DefenseEvent` — attacker_ip, attack_type, threat_source, endpoint_hit, request_count, user_agent, request_pattern (JSON), ai_threat_type, ai_confidence, ai_reasoning, ai_recommended_action, ai_model_used, status (detecting|pending_review|auto_handled|approved|dismissed), response_action, reviewed_by, review_notes, severity, detected_at, reviewed_at
+
+**v7.0 additions:** `CaseEmbedding` — case_id (FK), embedding (JSON Text, 1024-dim NV-EmbedQA vector), summary_text (Text), created_at, updated_at
 
 **v5.5 field updates:** `TerminalSession` — added `created_by_id` (FK user.id) for session ownership enforcement
 
@@ -239,12 +253,17 @@ Four real-time detectors:
 - Provenance Ledger: every AI output with actor, model, confidence, evidence, approval status
 - Full reversible audit — nothing executes without a ledger entry
 
-### 5. Explainable AI (Groq — all free)
-Multi-model routing:
+### 5. Explainable AI (Groq + NVIDIA NIM — all free)
+**Groq multi-model routing** (ai_router.py):
 - `llama-3.3-70b-versatile` → case analysis, executive reports, chat
-- `mixtral-8x7b-32768` → email forensics (32K context for full headers)
-- `gemma2-9b-it` → IOC extraction (3× faster for JSON structured output)
-- `llama-3.1-8b-instant` → quick Q&A, binary classification
+- `llama-3.1-70b-versatile` → email forensics, phishing classification
+- `llama-3.1-8b-instant` → fast IOC extraction, JSON parsing, demo
+
+**NVIDIA NIM routing** (nvidia_client.py — v7.0, graceful fallback to Groq if key absent):
+- `nvidia/llama-3.1-nemotron-70b-instruct` → triage agent coordinator, final synthesis
+- `nvidia/nv-embedqa-e5-v5` → 1024-dim case embeddings for semantic similarity
+- `meta/llama-guard-3-8b` → safety classifier on all chat inputs
+- `meta/llama-3.1-70b-instruct` → alert normalization (Phase 5)
 
 Every verdict shows: evidence used · reasoning steps · what could be wrong · confidence score
 
@@ -374,6 +393,38 @@ Shareable via token, PDF downloadable, AI summary callout at top
 - [x] ITDR analytics page — completed in v5.1 above
 - [ ] DPDPA Compliance Report — India market accelerator
 
+### v7.0 Completed (June 2026 session — NVIDIA NIM Integration)
+
+**NVIDIA 5-Phase Agentic Integration**
+
+New files created:
+- [x] `backend/nvidia_client.py` — NVIDIA NIM OpenAI-compatible singleton client; model constants (NEMOTRON_70B, EMBED_MODEL, GUARD_MODEL, LLAMA_70B); graceful None return if NVIDIA_API_KEY absent
+- [x] `backend/embeddings.py` — NV-EmbedQA-E5-v5 1024-dim embedding service; pure-Python cosine similarity; `store_case_embedding()` + `find_similar_cases()` with min_score threshold
+- [x] `backend/guardrails.py` — Llama Guard 3 safety classifier; 14 harm categories; `safety_check()` + `assert_safe()` helpers; disabled gracefully if NVIDIA unavailable
+- [x] `backend/ingest_normalizer.py` — Llama-70B alert normalizer; converts any source format (Wazuh/osquery/Falco/Sysmon/CEF/custom) into AegisTrace case schema; `normalize_alert()` + `normalize_batch()`
+- [x] `backend/agents/__init__.py`
+- [x] `backend/agents/tools.py` — 5 OpenAI function-calling tool definitions: `enrich_ioc`, `get_case_timeline`, `get_endpoint_data`, `get_ioc_correlations`, `search_similar_cases`; shared `execute_tool()` dispatcher
+- [x] `backend/agents/triage_agent.py` — Nemotron-70B function-calling agent loop (max 6 iterations); autonomous IOC enrichment + endpoint lookup + similar-case search; Groq fallback
+- [x] `backend/agents/specialist.py` — EmailAgent, EndpointAgent, IOCAgent, IdentityAgent, ReportAgent; each returns structured dict; NVIDIA or Groq fallback
+- [x] `backend/agents/coordinator.py` — `asyncio.gather` parallel specialist execution; Nemotron synthesis; DORA Article 19 draft auto-generated; elapsed_ms tracking
+- [x] `backend/routers/semantic.py` — `/api/semantic/cases/{id}/similar`, `/api/semantic/cases/{id}/embed`, `/api/semantic/search`, `/api/ingest/normalize`, `/api/ingest/normalize/batch`
+
+Modified files:
+- [x] `backend/models.py` — Added `CaseEmbedding` model (case_id FK, embedding Text, summary_text Text, created_at, updated_at)
+- [x] `backend/migration.py` — Migration 10: CaseEmbedding table note (handled by create_all)
+- [x] `backend/routers/cases.py` — `generate_ai()` routes through triage agent (default) or coordinator (mode=coordinator); Llama Guard check in `case_chat()`; similar-case context injection in chat; embedding stored after each analysis
+- [x] `backend/main.py` — `semantic_router` imported and registered
+- [x] `backend/requirements.txt` — Added `openai>=1.30.0` (for NVIDIA NIM OpenAI-compatible client)
+- [x] `render.yaml` — Added `NVIDIA_API_KEY` (sync: false) + `NVIDIA_GUARDRAILS=true`
+
+Key design decisions:
+- All 5 phases degrade gracefully to Groq if NVIDIA_API_KEY is absent — zero regression risk
+- CaseEmbedding stored as JSON text array in SQLite — no vector DB required
+- Agents use asyncio: specialist agents run in parallel, coordinator runs sequentially after
+- ProvenanceLedger human-in-loop unchanged — NVIDIA agents still require approval for actions
+
+**NVIDIA API key:** Set in `.env` locally (already gitignored) and must be set in Render dashboard as `NVIDIA_API_KEY`
+
 ### v6.0 Completed (June 2026 session)
 
 **Endpoint Agent v6.0** (agent/aegistrace_agent.py — ~3650 lines)
@@ -457,6 +508,8 @@ VIRUSTOTAL_API_KEY    # Free at virustotal.com
 ADMIN_PIN             # Set on first deploy
 JWT_SECRET            # Auto-generated
 PUBLIC_URL            # https://aegistrace-7qvn.onrender.com
+NVIDIA_API_KEY        # Free at build.nvidia.com — enables all 5 NVIDIA phases
+NVIDIA_GUARDRAILS     # true (default) — enables Llama Guard safety layer
 ```
 
 ### Optional (for EDR integrations)
@@ -585,6 +638,37 @@ react, react-dom, react-router-dom, axios, zustand, lucide-react, react-scripts
 - [ ] Endpoint Agent Layer 3 (eBPF) — Falco companion process on Linux
 - [ ] Endpoint Agent Layer 4 (Memory Forensics) — Volatility 3 integration
 
+### Priority 8 — NVIDIA NIM Phases (v7.0 built, v8.0 planned)
+
+**v7.0 Already Built (all free on build.nvidia.com):**
+- [x] Phase 1: Nemotron-70B function-calling triage agent (triage_agent.py)
+- [x] Phase 2: NV-EmbedQA-E5-v5 case memory + semantic search (embeddings.py)
+- [x] Phase 3: Llama Guard 3 safety classifier on chat (guardrails.py)
+- [x] Phase 4: Multi-agent coordinator — Email/Endpoint/IOC/Identity/Report agents in parallel (agents/)
+- [x] Phase 5: Llama-70B alert normalization for any source format (ingest_normalizer.py)
+
+**v8.0 Planned (all free on build.nvidia.com):**
+- [ ] Phase 6: Swap Nemotron → Hermes-3 (`nousresearch/hermes-3-llama-3.1-70b`) in triage_agent.py — better tool calling reliability, one-line model constant change
+- [ ] Phase 7: Add NV-RerankQA-Mistral-4B reranker after cosine similarity in embeddings.py — "relevant" not just "similar"
+- [ ] Phase 8: Llama 3.2 Vision 11B — `POST /api/cases/{id}/analyze-screenshot`; new CaseDetail tab for image upload + AI verdict; analyzes malware screenshots, phishing pages, terminal output images
+- [ ] Phase 9: Codestral 22B — replace `code` task in ai_router.py; `POST /api/cases/{id}/generate-rules` returns YARA + Sigma + KQL + Splunk SPL rules from case IOCs
+- [ ] Phase 10: NVIDIA Morpheus — GPU-accelerated DGA detection, log anomaly scoring, network flow analysis; replaces Python implementations in endpoint agent; requires Kafka + GPU (post-Render-free-tier)
+
+**NVIDIA Skills Research (suggestions only, not started):**
+- NeMo Curator: curate closed cases into fine-tuning dataset → Hermes-3 fine-tuned on AegisTrace case history
+- NeMo Evaluator: benchmark Nemotron vs Hermes-3 vs Groq on historical cases — evidence-based model selection
+- NVIDIA RAPIDS cuGraph: GPU-accelerated identity graph analysis (PageRank, community detection) — needed when identity graph >1k nodes
+- NVIDIA Riva: speech transcription → analyst dictates case notes → auto-populates case fields
+- NeMo FLARE: federated learning across multiple AegisTrace deployments — privacy-preserving threat intelligence
+- NeMo + AutoGen: group-chat multi-agent debate (3 analyst agents debate severity → judge produces final verdict)
+- NeMo + CrewAI: role-based agent framework on NVIDIA NIM — replace custom coordinator.py
+- NeMo + LangGraph: state machine agent workflows with conditional branching (if IOC score >80 → trigger endpoint deep-dive)
+
+**Free vs Paid on NVIDIA Build:**
+- Free: All NIM hosted model API calls (free credits via build.nvidia.com API key), NeMo Guardrails (open source), AgentIQ (open source), NeMo Curator (open source), NeMo Evaluator (open source), NVIDIA Morpheus (open source but needs GPU to self-host)
+- Needs GPU (not free on Render): RAPIDS cuGraph, Morpheus self-hosted, Riva self-hosted, NeMo Microservices enterprise
+- Paid: DGX Cloud, Fleet Command, NeMo Microservices enterprise tier
+
 ---
 
 ## HOW TO RESUME BUILDING
@@ -593,7 +677,12 @@ Start a new Claude session and paste this file. Then say:
 
 > "Read AEGISTRACE_CONTEXT.md — I want to work on [task from backlog above]"
 
-**Highest priority items (as of v5.5):** SOAR Playbooks engine, email notifications on ITDR anomaly, Trust score trending, DPDPA Compliance Report.
+**Highest priority items (as of v7.0):**
+- NVIDIA Phase 6: Swap to Hermes-3 in triage_agent.py (10 min, one-line change, big reliability gain)
+- NVIDIA Phase 7: Add NV-RerankQA reranker to embeddings.py (30 min)
+- NVIDIA Phase 8: Llama 3.2 Vision screenshot analysis tab in CaseDetail
+- NVIDIA Phase 9: Codestral YARA/Sigma/KQL rule generation
+- SOAR Playbooks engine, email notifications on ITDR anomaly, Trust score trending, DPDPA Compliance Report
 
 ### v5.2 Completed (this session)
 
