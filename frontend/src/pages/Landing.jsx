@@ -101,11 +101,13 @@ export default function Landing() {
 
   const MODULES = [
     { icon: Fingerprint,  label: 'Identity Threat Detection', desc: 'Real-time ITDR across human, machine, and AI agent identities — 4 detection engines running in parallel.' },
-    { icon: FolderSearch, label: 'Case Management',           desc: '13-tab investigation workspace. Evidence chain, AI analysis, timeline, IOC pivot, and DORA Article 19 compliance reporting.' },
+    { icon: FolderSearch, label: 'Case Management',           desc: '15-tab investigation workspace. Evidence chain, AI analysis, timeline, IOC pivot, vision analysis, detection rules, and DORA Article 19 compliance reporting.' },
     { icon: Mail,         label: 'Email Forensics',           desc: 'RFC header parsing, DKIM/SPF/DMARC analysis, AI phishing verdict with full MITRE ATT&CK technique mapping.' },
     { icon: Monitor,      label: 'Endpoint Detection',        desc: 'EDR telemetry, Sysmon integration, process tree analysis, and lateral movement detection across Windows, Linux, macOS.' },
     { icon: Activity,     label: 'Threat Intelligence',       desc: '7-source IOC engine: VirusTotal, AbuseIPDB, OTX, Shodan, GreyNoise, MISP, and MalwareBazaar — one query, unified result.' },
-    { icon: Brain,        label: 'AI Co-Analyst',             desc: 'Explainable AI with full reasoning chain. Every inference is grounded in evidence the analyst can read and verify.' },
+    { icon: Brain,        label: 'Agentic AI Triage',         desc: 'Hermes-3 70B function-calling agent on NVIDIA NIM. Autonomous tool use: IOC enrichment, case correlation, endpoint data, threat intel — parallel specialist agents in one pipeline.' },
+    { icon: Eye,          label: 'Vision Analysis',           desc: 'Llama 3.2 Vision 11B analyses screenshots for phishing indicators, malware artifacts, IOCs, and MITRE techniques — verdict in seconds.' },
+    { icon: Zap,          label: 'Detection Rule Generator',  desc: 'Codestral 22B generates deployable YARA, Sigma, KQL, and Splunk SPL rules from case IOCs and MITRE techniques — ready to paste into your SIEM.' },
     { icon: GitMerge,     label: 'Identity Graph',            desc: 'Visual map of every identity relationship — accounts, devices, sessions, and service principals — in a single graph.' },
     { icon: Shield,       label: 'ITDR Engine',               desc: 'Pluggable detection framework: impossible travel, credential stuffing, token replay, privilege escalation, and more.' },
     { icon: Server,       label: 'Endpoint Agent',            desc: 'Lightweight v5 agent for Windows, Linux, and macOS. Real-time telemetry, file integrity, and process monitoring.' },
@@ -113,8 +115,8 @@ export default function Landing() {
 
   const STEPS = [
     { n: '01', title: 'Alert arrives',      body: 'An alert fires from your SIEM, EDR, or identity provider. AegisTrace ingests it automatically and opens a new case.' },
-    { n: '02', title: 'AI triage begins',   body: 'The AI co-analyst pulls related IOCs, maps MITRE techniques, queries 7 intelligence sources, and scores the severity — in seconds.' },
-    { n: '03', title: 'Analyst investigates', body: 'You open the 13-tab workspace: timeline, identity graph, endpoint data, email forensics, AI reasoning, and the full evidence chain.' },
+    { n: '02', title: 'AI triage begins',   body: 'Hermes-3 on NVIDIA NIM runs a function-calling loop: IOC enrichment, similar case retrieval, endpoint queries, specialist agents — all in parallel. Verdict in seconds.' },
+    { n: '03', title: 'Analyst investigates', body: 'You open the 15-tab workspace: timeline, identity graph, endpoint data, email forensics, vision analysis, AI reasoning, detection rules, and the full evidence chain.' },
     { n: '04', title: 'Case resolved',      body: 'Containment actions, DORA Article 19 report, and full audit trail are generated automatically. The case closes with provenance intact.' },
   ];
 
@@ -220,7 +222,7 @@ export default function Landing() {
           </motion.h1>
           <motion.p initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.85, delay: 0.56, ease: E }}
             className="cg" style={{ fontSize: 'clamp(14px,1.5vw,17px)', color: 'rgba(245,240,232,0.62)', lineHeight: 1.72, marginBottom: 36, maxWidth: 480 }}>
-            AegisTrace is a full-stack security operations platform built for identity-first threat detection. From alert to resolved case — every step has provenance.
+            AegisTrace is a full-stack security operations platform with NVIDIA NIM-powered agentic AI. From alert ingestion to closed case — every step is provenance-backed.
           </motion.p>
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.75, delay: 0.72, ease: E }} style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
             <Link to="/app/login" className="gold-btn">Access Platform <ArrowRight size={15}/></Link>
@@ -245,6 +247,7 @@ export default function Landing() {
             { icon: Zap,         text: 'Sub-second alert triage' },
             { icon: Eye,         text: 'Full audit provenance' },
             { icon: GitMerge,    text: 'Identity-first detection' },
+            { icon: Brain,       text: 'NVIDIA NIM inference' },
           ].map(({ icon: Icon, text }) => (
             <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Icon size={13} color={GOLD}/>
@@ -310,12 +313,12 @@ export default function Landing() {
       <section style={{ padding: 'clamp(72px,10vw,120px) clamp(24px,5vw,72px)', background: '#060507', borderTop: '1px solid rgba(245,240,232,0.05)' }}>
         <div style={{ maxWidth: 1240, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'clamp(40px,6vw,64px)' }}>
           {[
-            { end: 13,  suffix: '',   label: 'Investigation modules per case' },
+            { end: 15,  suffix: '',   label: 'Investigation tabs per case — including Vision and Rules' },
             { end: 7,   suffix: '',   label: 'IOC intelligence sources queried per alert' },
-            { end: 847, suffix: '+',  label: 'Indicators of compromise processed' },
+            { end: 8,   suffix: '',   label: 'NVIDIA NIM models integrated across the platform' },
             { end: 100, suffix: '%',  label: 'DORA Article 19 report coverage' },
             { end: 4,   suffix: '',   label: 'Identity detection engines running in parallel' },
-            { end: 3,   suffix: ' OS', label: 'Endpoint agent: Windows, Linux, macOS' },
+            { end: 4,   suffix: '',   label: 'Rule formats generated: YARA, Sigma, KQL, Splunk SPL' },
           ].map(({ end, suffix, label }, i) => (
             <Reveal key={label} delay={i * 0.06}>
               <div>

@@ -15,8 +15,12 @@ Falls back to Groq single-call analysis if NVIDIA is unavailable.
 import json
 from typing import Optional
 
-from nvidia_client import nvidia_chat, NEMOTRON_70B, is_nvidia_available
+from nvidia_client import nvidia_chat, HERMES_3, NEMOTRON_70B, is_nvidia_available
 from agents.tools import TOOL_DEFINITIONS, execute_tool
+
+# Phase 6: Hermes-3 is the primary triage model — better multi-step tool calling than Nemotron.
+# Nemotron is kept as fallback and is used by the coordinator for synthesis.
+TRIAGE_MODEL = HERMES_3
 
 MAX_ITERATIONS = 6
 
@@ -83,7 +87,7 @@ Use your tools to enrich the IOCs, check endpoint data, find similar past cases,
 
     for iteration in range(MAX_ITERATIONS):
         resp = nvidia_chat(
-            model=NEMOTRON_70B,
+            model=TRIAGE_MODEL,
             messages=messages,
             tools=TOOL_DEFINITIONS,
             tool_choice="auto",
@@ -104,7 +108,7 @@ Use your tools to enrich the IOCs, check endpoint data, find similar past cases,
                 end   = content.rfind("}") + 1
                 result = json.loads(content[start:end])
                 result["tools_called"] = tools_called
-                result["agent_model"]  = NEMOTRON_70B
+                result["agent_model"]  = TRIAGE_MODEL
                 return result
             except Exception:
                 return {
@@ -118,7 +122,7 @@ Use your tools to enrich the IOCs, check endpoint data, find similar past cases,
                     "similar_cases":      [],
                     "agent_confidence":   30,
                     "tools_called":       tools_called,
-                    "agent_model":        NEMOTRON_70B,
+                    "agent_model":        TRIAGE_MODEL,
                 }
 
         # ── Execute tool calls ────────────────────────────────────────────────
@@ -147,7 +151,7 @@ Use your tools to enrich the IOCs, check endpoint data, find similar past cases,
         "content": "You have reached the tool call limit. Produce your final JSON verdict now based on the evidence gathered.",
     })
     final = nvidia_chat(
-        model=NEMOTRON_70B,
+        model=TRIAGE_MODEL,
         messages=messages,
         temperature=0.2,
         max_tokens=1500,
@@ -159,7 +163,7 @@ Use your tools to enrich the IOCs, check endpoint data, find similar past cases,
             end    = content.rfind("}") + 1
             result = json.loads(content[start:end])
             result["tools_called"] = tools_called
-            result["agent_model"]  = NEMOTRON_70B
+            result["agent_model"]  = TRIAGE_MODEL
             return result
         except Exception:
             pass

@@ -1,5 +1,5 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v7.0 | **Last updated:** June 2026
+**Version:** v8.0 | **Last updated:** June 2026
 **Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files.
 
 ---
@@ -105,7 +105,7 @@ backend/ingest_normalizer.py Alert format normalizer — Wazuh/osquery/Falco/Sys
 backend/agents/
   __init__.py
   tools.py          5 tool definitions + executors for function-calling agents
-  triage_agent.py   Nemotron-70B agentic triage loop (max 6 iterations, Groq fallback)
+  triage_agent.py   Hermes-3 70B (NVIDIA NIM) agentic triage loop (max 6 iterations, Groq fallback)
   specialist.py     EmailAgent, EndpointAgent, IOCAgent, IdentityAgent, ReportAgent
   coordinator.py    asyncio.gather parallel coordinator + synthesis (Phase 4)
 ```
@@ -146,6 +146,8 @@ backend/agents/
 | defense | /api/defense | AI Defense Engine — fingerprinting, honeypots, Groq triage, HITL review (v5.3) |
 | demo | /api/demo | Demo data seeder — seeds Identity, ITDR, Shadow AI, Defense, Agent Security (v5.5) |
 | semantic | /api/semantic + /api/ingest/normalize | NVIDIA Phase 2+5: similar-case search, case embedding, alert normalization (v7.0) |
+| vision | /api/vision | NVIDIA Phase 8: screenshot analysis via Llama 3.2 Vision 11B — verdict, IOCs, MITRE, recommended actions (v8.0) |
+| rules | /api/rules | NVIDIA Phase 9: detection rule generation via Codestral 22B — YARA, Sigma, KQL, Splunk SPL (v8.0) |
 
 ---
 
@@ -220,8 +222,12 @@ backend/agents/
 - `/app/edr/:caseId` → removed (EDR tab inside CaseDetail is sufficient)
 - ToolResult.jsx → removed (inline results in HardwareTools)
 
-### CaseDetail Tabs (13 total)
-`overview` · `investigation` · `iocs` · `terminal` · `timeline` · `trust-timeline` · `playbook` · `ai-analysis` · `ai-chat` · `comments` · `provenance` · `report` · `edr`
+### CaseDetail Tabs (15 total — v8.0)
+`overview` · `investigation` · `iocs` · `terminal` · `timeline` · `trust-timeline` · `playbook` · `ai-analysis` · `ai-chat` · `vision` · `rules` · `comments` · `provenance` · `report` · `edr`
+
+**v8.0 new tabs:**
+- `vision` — VisionTab.jsx: screenshot upload → Llama 3.2 Vision 11B analysis → verdict, IOCs, MITRE, recommended actions
+- `rules` — RulesTab.jsx: Generate Rules button → Codestral 22B → YARA + Sigma + KQL + Splunk SPL with copy buttons
 
 ---
 

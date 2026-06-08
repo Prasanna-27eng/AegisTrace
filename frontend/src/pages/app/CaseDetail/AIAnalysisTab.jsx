@@ -45,7 +45,7 @@ export default function AIAnalysisTab({ caseData, updateCase, caseId, reload }) 
           <Brain size={18} style={{ color: '#8FAFC0' }} />
           <div>
             <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>AI-Powered Analysis</div>
-            <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 1 }}>Groq · llama-3.3-70b-versatile</div>
+            <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 1 }}>Hermes-3 · NVIDIA NIM · Groq fallback</div>
           </div>
         </div>
         <button className="btn-accent" onClick={generate} disabled={loading} style={{ fontSize: '0.8rem' }}>
@@ -140,8 +140,8 @@ export default function AIAnalysisTab({ caseData, updateCase, caseId, reload }) 
 
               {/* Model provenance */}
               <div style={{ marginTop: 10, display: 'flex', gap: 16, fontSize: '0.65rem', color: '#787878', ...MONO }}>
-                <span>Model: <span style={{ color: '#8FAFC0' }}>llama-3.3-70b-versatile</span></span>
-                <span>Provider: <span style={{ color: '#8FAFC0' }}>Groq</span></span>
+                <span>Model: <span style={{ color: '#8FAFC0' }}>Hermes-3 70B</span></span>
+                <span>Provider: <span style={{ color: '#8FAFC0' }}>NVIDIA NIM</span></span>
                 <span>Confidence: <span style={{ color: caseData.ai_severity_score >= 80 ? '#22C55E' : caseData.ai_severity_score >= 50 ? '#EAB308' : '#EF4444' }}>{caseData.ai_severity_score || 0}%</span></span>
               </div>
             </div>

@@ -95,7 +95,7 @@ export default function Mission() {
   const V1 = [
     { text: 'ITDR — Identity Threat Detection (4 detectors)',          why: 'Credential stuffing, impossible travel, privilege escalation, token theft — all built in.' },
     { text: 'Identity Risk Engine with pluggable detectors',           why: 'Each detector contributes to a unified risk score. Swap or add detectors without touching the core.' },
-    { text: 'Case Management — 13-tab investigation lifecycle',        why: 'From detection to report, the full SOC workflow is in one place.' },
+    { text: 'Case Management — 15-tab investigation lifecycle',        why: 'From detection to report, the full SOC workflow is in one place.' },
     { text: 'Identity Graph + Trust Timeline',                         why: 'See exactly how an identity moved through your environment over time.' },
     { text: 'Explainable AI with full reasoning chain',                why: 'Every AI verdict includes the evidence it used. No black-box verdicts.' },
     { text: '7-Source IOC Intelligence Engine',                        why: 'VirusTotal, GreyNoise, threat feeds — all merged into one IOC verdict.' },
@@ -103,6 +103,10 @@ export default function Mission() {
     { text: 'Endpoint Agent v5 (Windows / Linux / macOS)',             why: 'One command deploys. Ships telemetry every 3 seconds. No config files.' },
     { text: 'Threat Hunting + Campaign Detection',                     why: 'Cross-case IOC correlation surfaces campaigns you would otherwise miss.' },
     { text: 'DORA Article 19 Compliance Reports',                      why: 'Generated from investigation data automatically. No manual assembly.' },
+    { text: 'NVIDIA NIM: Hermes-3 Agentic Triage (Phase 6)',          why: 'Function-calling loop with 5 tools — IOC enrichment, case correlation, endpoint data, threat intel. Replaces single-shot prompting with autonomous multi-step reasoning.' },
+    { text: 'NVIDIA NIM: Semantic Search + NV-RerankQA (Phase 7)',     why: 'NV-EmbedQA-E5-v5 embeddings with NV-RerankQA-Mistral-4B reranker. Similar case retrieval with precision you cannot get from keyword search.' },
+    { text: 'NVIDIA NIM: Vision Analysis — Llama 3.2 Vision (Phase 8)', why: 'Drop a screenshot; get a verdict. Detects phishing pages, malware artifacts, and IOCs embedded in images. Findings append to case automatically.' },
+    { text: 'NVIDIA NIM: Detection Rule Generator — Codestral 22B (Phase 9)', why: 'Generates deployable YARA, Sigma, KQL, and Splunk SPL from case IOCs and MITRE techniques. No manual rule authoring.' },
   ];
 
   const V2 = [

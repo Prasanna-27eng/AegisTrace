@@ -153,6 +153,7 @@ export default function Portfolio() {
     { cat: 'Threat Intelligence',  tags: ['IOC Enrichment', 'VirusTotal', 'OTX', 'AbuseIPDB', 'Shodan', 'Campaign Analysis'] },
     { cat: 'Forensics',            tags: ['Email Forensics', 'DKIM/SPF/DMARC', 'Memory Analysis', 'Endpoint Forensics', 'PCAP'] },
     { cat: 'Engineering',          tags: ['React 18', 'FastAPI', 'Python', 'PostgreSQL', 'Docker', 'AWS', 'REST APIs'] },
+    { cat: 'AI / LLM',            tags: ['NVIDIA NIM', 'Hermes-3', 'Llama 3.2 Vision', 'Codestral 22B', 'Groq', 'Llama Guard', 'Function Calling', 'Embeddings'] },
   ];
 
   return (
@@ -350,8 +351,8 @@ export default function Portfolio() {
               <ProjectCard
                 large
                 title="AegisTrace — AI-Powered SOC Platform"
-                tags={['React 18', 'FastAPI', 'PostgreSQL', 'Docker', 'Three.js', 'MITRE ATT&CK']}
-                desc="Full-stack security control plane: ITDR with 4 detection engines, 13-tab case management, 7-source IOC intelligence, email forensics with AI verdict, identity graph, trust timeline, DORA Article 19 compliance reports, and an endpoint agent for Windows, Linux, and macOS."
+                tags={['React 18', 'FastAPI', 'NVIDIA NIM', 'PostgreSQL', 'Docker', 'MITRE ATT&CK']}
+                desc="Full-stack security control plane with NVIDIA NIM agentic AI. 15-tab case management, ITDR with 4 detection engines, 7-source IOC intelligence, email forensics, identity graph, trust timeline, screenshot vision analysis (Llama 3.2 Vision 11B), detection rule generation (Codestral 22B — YARA, Sigma, KQL, Splunk SPL), Hermes-3 function-calling triage agent, semantic case search with NV-RerankQA, Llama Guard safety classifier, and DORA Article 19 compliance reports. Runs on Windows, Linux, and macOS."
                 url="https://github.com/Prasanna-27eng/AegisTrace"
                 delay={0}
               />

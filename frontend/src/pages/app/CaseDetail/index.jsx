@@ -17,6 +17,8 @@ import ReportTab        from './ReportTab';
 import CommentsTab      from './CommentsTab';
 import TrustTimelineTab from './TrustTimelineTab';
 import ProvenanceTab    from './ProvenanceTab';
+import VisionTab        from './VisionTab';
+import RulesTab         from './RulesTab';
 
 const TABS = [
   { id: 'overview',      label: 'Overview' },
@@ -28,6 +30,8 @@ const TABS = [
   { id: 'playbook',      label: 'Playbook' },
   { id: 'ai',            label: 'AI Analysis' },
   { id: 'chat',          label: 'AI Chat' },
+  { id: 'vision',        label: '👁 Vision' },
+  { id: 'rules',         label: '⚡ Rules' },
   { id: 'comments',      label: 'Comments' },
   { id: 'provenance',    label: 'Provenance' },
   { id: 'report',        label: 'Report' },
@@ -208,6 +212,8 @@ export default function CaseDetail() {
         {tab === 'playbook'      && <PlaybookTab {...tabProps} />}
         {tab === 'ai'            && <AIAnalysisTab {...tabProps} />}
         {tab === 'chat'          && <AIChatTab {...tabProps} />}
+        {tab === 'vision'        && <VisionTab {...tabProps} />}
+        {tab === 'rules'         && <RulesTab {...tabProps} />}
         {tab === 'comments'      && <CommentsTab caseId={id} />}
         {tab === 'provenance'    && <ProvenanceTab caseId={id} />}
         {tab === 'report'        && <ReportTab {...tabProps} />}

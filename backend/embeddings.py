@@ -15,7 +15,7 @@ from typing import Optional
 
 from sqlmodel import Session, select
 
-from nvidia_client import nvidia_embed
+from nvidia_client import nvidia_embed, nvidia_rerank
 
 
 # ── Cosine similarity (pure Python — no numpy required) ───────────────────────
@@ -127,8 +127,30 @@ def find_similar_cases(
             continue
 
     scored.sort(key=lambda x: x[0], reverse=True)
+
+    # Phase 7: rerank top candidates using NV-RerankQA for higher precision
+    candidates = scored[: top_k * 3]   # fetch 3x candidates, rerank to top_k
+    if len(candidates) > 1:
+        passages   = [row.summary_text[:400] for _, row in candidates]
+        reranked   = nvidia_rerank(query_text, passages, top_n=top_k)
+        # map reranker output indices back to candidates
+        final_rows = []
+        seen_indices = set()
+        for r in reranked:
+            idx = r.get("index", 0)
+            if idx < len(candidates) and idx not in seen_indices:
+                seen_indices.add(idx)
+                score, row = candidates[idx]
+                final_rows.append((r.get("logit", score), row))
+        # fill with any remaining candidates not picked by reranker
+        for i, (score, row) in enumerate(candidates):
+            if i not in seen_indices and len(final_rows) < top_k:
+                final_rows.append((score, row))
+    else:
+        final_rows = candidates
+
     results = []
-    for score, row in scored[:top_k]:
+    for score, row in final_rows[:top_k]:
         case = session.get(Case, row.case_id)
         if case:
             results.append({
@@ -137,7 +159,7 @@ def find_similar_cases(
                 "title":        case.title,
                 "severity":     case.severity,
                 "status":       case.status,
-                "score":        round(score, 3),
+                "score":        round(float(score), 3),
                 "summary_text": row.summary_text[:400],
             })
     return results
