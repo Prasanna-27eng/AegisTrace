@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Navigate, Outlet, useNavigate, NavLink } from 'react-router-dom';
-import { Search, Menu, LayoutDashboard, FolderOpen, Crosshair, Monitor, Settings, ChevronDown, LogOut, Home, ArrowLeft, X, Keyboard } from 'lucide-react';
+import { Search, Menu, LayoutDashboard, FolderOpen, Crosshair, Monitor, Settings, ChevronDown, LogOut, Home, ArrowLeft, X, Keyboard, Bell } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import CommandPalette from '../../components/CommandPalette';
 import useStore from '../../store/useStore';
@@ -112,6 +112,10 @@ export default function AppShell() {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [recentCases, setRecentCases] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [bellOpen, setBellOpen] = useState(false);
+  const bellRef = useRef(null);
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
   const gKeyRef = useRef(false);
@@ -119,12 +123,28 @@ export default function AppShell() {
 
   if (!token) return <Navigate to="/app/login" replace />;
 
-  // Global incident stream — toast fires the moment any critical/high alert hits any endpoint
+  // Global incident stream — toast + notification bell
   useSSE('/api/ingest/stream/global-alerts', useCallback((alert) => {
     const label = ALERT_LABELS[alert.alert_type] || alert.alert_type?.replace(/_/g, ' ') || 'Alert';
     const type  = alert.severity === 'critical' ? 'error' : alert.severity === 'high' ? 'warning' : 'success';
     addToast(`${alert.hostname}: ${label}`, type);
+    setNotifications(prev => [{
+      id:          alert.id,
+      label,
+      severity:    alert.severity,
+      hostname:    alert.hostname,
+      detected_at: alert.detected_at,
+    }, ...prev].slice(0, 20));
+    setUnreadCount(c => c + 1);
   }, [addToast]));
+
+  // Close bell on outside click
+  useEffect(() => {
+    if (!bellOpen) return;
+    const fn = (e) => { if (bellRef.current && !bellRef.current.contains(e.target)) setBellOpen(false); };
+    document.addEventListener('mousedown', fn);
+    return () => document.removeEventListener('mousedown', fn);
+  }, [bellOpen]);
 
   useEffect(() => {
     api.get('/api/cases?limit=10').then(r => setRecentCases(r.data)).catch(() => {});
@@ -274,6 +294,52 @@ export default function AppShell() {
           >
             <Keyboard size={14} />
           </button>
+
+          {/* Notification bell */}
+          <div ref={bellRef} style={{ position: 'relative', flexShrink: 0 }}>
+            <button
+              onClick={() => { setBellOpen(o => !o); if (!bellOpen) setUnreadCount(0); }}
+              title="Alerts"
+              style={{ background: unreadCount > 0 ? 'rgba(239,68,68,0.08)' : 'none', border: `1px solid ${unreadCount > 0 ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.08)'}`, borderRadius: 6, padding: '5px 8px', cursor: 'pointer', color: unreadCount > 0 ? '#EF4444' : '#686868', display: 'flex', alignItems: 'center', transition: 'all 0.15s', position: 'relative' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = unreadCount > 0 ? 'rgba(239,68,68,0.5)' : 'rgba(255,255,255,0.2)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = unreadCount > 0 ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.08)'; }}
+            >
+              <Bell size={14} />
+              {unreadCount > 0 && (
+                <span style={{ position: 'absolute', top: -4, right: -4, background: '#EF4444', color: '#fff', borderRadius: '50%', fontSize: '0.55rem', fontWeight: 700, minWidth: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'JetBrains Mono,monospace', padding: '0 3px', lineHeight: 1 }}>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+            {bellOpen && (
+              <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: 340, background: '#0D0D0D', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, boxShadow: '0 16px 48px rgba(0,0,0,0.7)', zIndex: 200, overflow: 'hidden' }}>
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#EBEBEB' }}>Recent Alerts</span>
+                  <button onClick={() => { setNotifications([]); setBellOpen(false); }} style={{ background: 'none', border: 'none', color: '#555', cursor: 'pointer', fontSize: '0.68rem', fontFamily: 'JetBrains Mono,monospace' }}>Clear all</button>
+                </div>
+                {notifications.length === 0 ? (
+                  <div style={{ padding: '24px 16px', textAlign: 'center', color: '#555', fontSize: '0.78rem' }}>No recent alerts</div>
+                ) : (
+                  <div style={{ maxHeight: 360, overflowY: 'auto' }}>
+                    {notifications.map((n, i) => {
+                      const sevColor = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'#22C55E' }[n.severity] || '#787878';
+                      const ts = n.detected_at ? new Date(n.detected_at).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}) : '';
+                      return (
+                        <div key={n.id || i} style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                          <span style={{ width: 6, height: 6, borderRadius: '50%', background: sevColor, flexShrink: 0, marginTop: 5 }}/>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: '0.76rem', color: '#EBEBEB', fontWeight: 500, marginBottom: 2 }}>{n.label}</div>
+                            <div style={{ fontSize: '0.65rem', color: '#787878', fontFamily: 'JetBrains Mono,monospace' }}>{n.hostname} · {ts}</div>
+                          </div>
+                          <span style={{ fontSize: '0.58rem', color: sevColor, background: `${sevColor}14`, padding: '1px 6px', borderRadius: 3, fontFamily: 'JetBrains Mono,monospace', textTransform: 'uppercase', flexShrink: 0 }}>{n.severity}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* User dropdown */}
           <div ref={dropdownRef} style={{ marginLeft: 'auto', position: 'relative' }}>

@@ -21,6 +21,7 @@ const TACTIC_COLOR = {
 };
 
 export default function ThreatHunt() {
+  useEffect(() => { document.title = 'Threat Hunt | AegisTrace'; }, []);
   const navigate = useNavigate();
   const [tab, setTab]         = useState('iocs');
   const [iocs, setIocs]       = useState([]);

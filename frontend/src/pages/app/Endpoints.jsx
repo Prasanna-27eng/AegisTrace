@@ -835,6 +835,7 @@ function SetupGuideModal({ onClose, ingestKey, onFetchKey }) {
    MAIN PAGE
 ───────────────────────────────────────────────────────────────────────────── */
 export default function Endpoints() {
+  useEffect(() => { document.title = 'Endpoints | AegisTrace'; }, []);
   const { addToast } = useStore();
   const [endpoints, setEndpoints] = useState([]);
   const [loading, setLoading]     = useState(true);

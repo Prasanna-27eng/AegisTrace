@@ -52,6 +52,7 @@ export default function CaseDetail() {
     try {
       const res = await api.get(`/api/cases/${id}`);
       setCaseData(res.data);
+      document.title = `${res.data.case_number} | AegisTrace`;
     } catch { addToast('Failed to load case', 'error'); }
     setLoading(false);
   }, [id]);
@@ -102,7 +103,44 @@ export default function CaseDetail() {
     addToast('Share link copied!', 'success');
   };
 
-  if (loading) return <div style={{ padding: 40, color: '#787878', textAlign: 'center' }}>Loading case…</div>;
+  if (loading) return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Header skeleton */}
+      <div style={{ background: '#111111', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '12px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+          <div className="skeleton" style={{ height: 14, width: 60, borderRadius: 4 }} />
+          <div className="skeleton" style={{ height: 14, width: 90, borderRadius: 4 }} />
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+            {[70, 34, 34, 80, 34].map((w, i) => <div key={i} className="skeleton" style={{ height: 28, width: w, borderRadius: 5 }} />)}
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div className="skeleton" style={{ height: 18, flex: 1, maxWidth: 400, borderRadius: 4 }} />
+          <div className="skeleton" style={{ height: 20, width: 56, borderRadius: 4 }} />
+          <div className="skeleton" style={{ height: 20, width: 72, borderRadius: 4 }} />
+        </div>
+      </div>
+      {/* Tab bar skeleton */}
+      <div style={{ background: '#111111', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: 4, padding: '0 4px', flexShrink: 0 }}>
+        {[70, 100, 48, 68, 68, 52, 72, 96, 64, 76, 88, 56, 60].map((w, i) => (
+          <div key={i} className="skeleton" style={{ height: 8, width: w, borderRadius: 3, margin: '18px 8px' }} />
+        ))}
+      </div>
+      {/* Content skeleton */}
+      <div style={{ flex: 1, padding: '24px 28px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div className="skeleton" style={{ height: 200, borderRadius: 8 }} />
+          <div className="skeleton" style={{ height: 120, borderRadius: 8 }} />
+          <div className="skeleton" style={{ height: 80, borderRadius: 8 }} />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div className="skeleton" style={{ height: 140, borderRadius: 8 }} />
+          <div className="skeleton" style={{ height: 100, borderRadius: 8 }} />
+          <div className="skeleton" style={{ height: 60, borderRadius: 8 }} />
+        </div>
+      </div>
+    </div>
+  );
   if (!caseData && !isNew) return <div style={{ padding: 40, color: '#787878' }}>Case not found.</div>;
 
   const tabProps = { caseData, updateCase, reload: loadCase, caseId: id };

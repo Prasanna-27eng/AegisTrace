@@ -69,6 +69,7 @@ const QUICK_FILTERS = [
 ];
 
 export default function CaseList() {
+  useEffect(() => { document.title = 'Cases | AegisTrace'; }, []);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { addToast, user } = useStore();

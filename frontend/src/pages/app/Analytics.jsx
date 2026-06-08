@@ -79,6 +79,7 @@ function Panel({ children, style = {} }) {
 
 /* ── Main Page ────────────────────────────────────────────────────────────── */
 export default function Analytics() {
+  useEffect(() => { document.title = 'Analytics | AegisTrace'; }, []);
   const [overview, setOverview]       = useState(null);
   const [severity, setSeverity]       = useState([]);
   const [sla, setSla]                 = useState([]);

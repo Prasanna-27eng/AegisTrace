@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Plus, AlertTriangle, Activity, Shield, Mail, BarChart2, ExternalLink,
   Clock, TrendingUp, CheckCircle, Zap, GitMerge, Eye, FolderOpen,
-  Lock, Unlock, XCircle, Terminal, Cpu
+  Lock, Unlock, XCircle, Terminal, Cpu, RefreshCw
 } from 'lucide-react';
 import { SeverityBadge, StatusBadge } from '../../components/SeverityBadge';
 import api from '../../api/client';
@@ -83,6 +83,7 @@ function StatTile({ icon: Icon, label, value, sub, subColor, color, onClick }) {
 }
 
 export default function Dashboard() {
+  useEffect(() => { document.title = 'Dashboard | AegisTrace'; }, []);
   const navigate = useNavigate();
   const { addToast } = useStore();
   const [cases, setCases]           = useState([]);
@@ -92,6 +93,8 @@ export default function Dashboard() {
   const [edrStatus, setEdrStatus]   = useState(null);
   const [edrRecent, setEdrRecent]   = useState([]);
   const [analytics, setAnalytics]   = useState(null);
+  const [lastRefreshed, setLastRefreshed] = useState(null);
+  const [refreshAge, setRefreshAge]  = useState(0);
 
   const loadDashboard = () => {
     Promise.all([
@@ -103,6 +106,7 @@ export default function Dashboard() {
       setVtHistory(vtRes.data.slice(0, 6));
       setStats(statsRes.data);
       setLoading(false);
+      setLastRefreshed(new Date());
     }).catch(() => setLoading(false));
 
     // EDR status + recent actions (non-blocking)
@@ -123,6 +127,13 @@ export default function Dashboard() {
     const interval = setInterval(loadDashboard, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // Live "X seconds ago" counter for last refreshed
+  useEffect(() => {
+    if (!lastRefreshed) return;
+    const t = setInterval(() => setRefreshAge(Math.floor((Date.now() - lastRefreshed) / 1000)), 1000);
+    return () => clearInterval(t);
+  }, [lastRefreshed]);
 
   const now = Date.now();
   const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -221,12 +232,23 @@ export default function Dashboard() {
             {' · '}{new Date().toLocaleTimeString('en-IE', { hour: '2-digit', minute: '2-digit' })} UTC
           </div>
         </div>
-        <button onClick={() => navigate('/app/cases')}
-          style={{ background: '#FFFFFF', color: '#000000', border: 'none', padding: '10px 22px', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.12em', textTransform: 'uppercase', ...MONO, display: 'flex', alignItems: 'center', gap: 7, transition: 'opacity 0.2s' }}
-          onMouseEnter={e => e.currentTarget.style.opacity = '0.82'}
-          onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
-          <Plus size={12} /> NEW CASE
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+          <button onClick={() => navigate('/app/cases')}
+            style={{ background: '#FFFFFF', color: '#000000', border: 'none', padding: '10px 22px', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.12em', textTransform: 'uppercase', ...MONO, display: 'flex', alignItems: 'center', gap: 7, transition: 'opacity 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.82'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+            <Plus size={12} /> NEW CASE
+          </button>
+          {lastRefreshed && (
+            <button onClick={loadDashboard}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, color: '#505050', fontSize: '0.62rem', ...MONO, padding: 0 }}
+              onMouseEnter={e => e.currentTarget.style.color = '#787878'}
+              onMouseLeave={e => e.currentTarget.style.color = '#505050'}
+              title="Refresh now">
+              <RefreshCw size={10} /> Updated {refreshAge < 5 ? 'just now' : `${refreshAge}s ago`}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ── BIG KPI ROW ── */}
