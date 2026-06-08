@@ -3,7 +3,7 @@ import {
   Monitor, RefreshCw, Loader2, AlertTriangle, CheckCircle, Shield,
   FileText, ChevronRight, Copy, X, Download, Terminal, Activity,
   Wifi, Lock, Unlock, Zap, Eye, Clock, User, Server, Database,
-  Search, ChevronUp, ChevronDown, ChevronsUpDown, Radio
+  Search, ChevronUp, ChevronDown, ChevronsUpDown, Radio, ShieldAlert, ScanLine
 } from 'lucide-react';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
@@ -109,6 +109,9 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
   const [cmdLoading, setCmdLoading]   = useState('');
   const [expandedAlert, setExpandedAlert] = useState(null);
   const [confirmModal, setConfirmModal]   = useState(null);
+  const [vulnData, setVulnData]           = useState(null);
+  const [vulnLoading, setVulnLoading]     = useState(false);
+  const [vulnScanning, setVulnScanning]   = useState(false);
   const [sortProc, setSortProc] = useState({ col: 'cpu_percent', dir: 'desc' });
   const [sortConn, setSortConn] = useState({ col: 'remote_port', dir: 'desc' });
   const logsRef     = useRef(null);
@@ -135,7 +138,24 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
   }, [ep.id, logFilter]);
 
   // Initial data load
-  useEffect(() => { loadDetail(); loadLogs(); }, [ep.id]);
+  const loadVulns = useCallback(() => {
+    setVulnLoading(true);
+    api.get(`/api/ingest/vulns/${ep.id}`)
+      .then(r => setVulnData(r.data))
+      .catch(() => {})
+      .finally(() => setVulnLoading(false));
+  }, [ep.id]);
+
+  const triggerVulnScan = async () => {
+    setVulnScanning(true);
+    try {
+      await api.post(`/api/ingest/vulns/${ep.id}/scan`);
+      addToast('Vulnerability scan queued — results will appear within 5 minutes', 'info');
+    } catch { addToast('Failed to queue scan', 'error'); }
+    setVulnScanning(false);
+  };
+
+  useEffect(() => { loadDetail(); loadLogs(); loadVulns(); }, [ep.id]);
 
   // SSE: real-time updates (replaces all polling intervals)
   const sseUrl = `/api/ingest/stream/${ep.id}`;
@@ -210,8 +230,12 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
       )
     : rawLogs;
 
+  const vulnCritical = vulnData ? vulnData.critical : 0;
+  const vulnHigh     = vulnData ? vulnData.high     : 0;
+
   const TABS = [
     { id:'overview',  label:'Overview' },
+    { id:'vulns',     label:`Vulns${vulnCritical + vulnHigh > 0 ? ` (${vulnCritical + vulnHigh})` : ''}` },
     { id:'logs',      label:'Live Logs' },
     { id:'processes', label:'Processes' },
     { id:'network',   label:'Network' },
@@ -610,6 +634,84 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                       </div>
                     </div>
                   )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ══ VULNERABILITIES ══ */}
+        {tab === 'vulns' && (
+          <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+            {/* Header row */}
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:8 }}>
+              <div style={{ display:'flex', gap:8 }}>
+                {[['CRITICAL','#EF4444'], ['HIGH','#F97316'], ['MEDIUM','#EAB308'], ['LOW','#22C55E']].map(([sev, clr]) => (
+                  <div key={sev} style={{ fontSize:'0.65rem', color:clr, background:`${clr}14`, border:`1px solid ${clr}30`, borderRadius:4, padding:'2px 10px', ...MONO }}>
+                    {sev}: {(vulnData?.findings||[]).filter(f=>f.severity===sev).length}
+                  </div>
+                ))}
+              </div>
+              <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+                {vulnData?.last_scan && (
+                  <span style={{ fontSize:'0.62rem', color:'#555', ...MONO }}>
+                    Last scan: {new Date(vulnData.last_scan).toLocaleString()}
+                  </span>
+                )}
+                <button onClick={() => { loadVulns(); }} style={{ fontSize:'0.65rem', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', color:'#787878', borderRadius:5, padding:'4px 10px', cursor:'pointer', display:'flex', alignItems:'center', gap:5, ...MONO }}>
+                  <RefreshCw size={10}/> Refresh
+                </button>
+                <button onClick={triggerVulnScan} disabled={vulnScanning} style={{ fontSize:'0.65rem', background:'rgba(90,138,159,0.12)', border:'1px solid rgba(90,138,159,0.3)', color:'#5A8A9F', borderRadius:5, padding:'4px 10px', cursor:'pointer', display:'flex', alignItems:'center', gap:5, ...MONO }}>
+                  {vulnScanning ? <Loader2 size={10} className="spinner"/> : <ScanLine size={10}/>} Scan Now
+                </button>
+              </div>
+            </div>
+
+            {vulnLoading && (
+              <div style={{ padding:40, textAlign:'center', color:'#555' }}>
+                <Loader2 size={24} className="spinner" style={{ margin:'0 auto 12px', display:'block' }}/>
+                <div>Loading findings…</div>
+              </div>
+            )}
+
+            {!vulnLoading && (!vulnData || vulnData.findings.length === 0) && (
+              <div style={{ padding:48, textAlign:'center', color:'#555' }}>
+                <ShieldAlert size={36} style={{ margin:'0 auto 14px', opacity:0.25, display:'block', color:'#22C55E' }}/>
+                <div style={{ fontSize:'0.9rem', marginBottom:6, color:'#787878' }}>No findings</div>
+                <div style={{ fontSize:'0.72rem', color:'#444' }}>
+                  {vulnData?.last_scan ? 'No vulnerabilities detected in the last scan.' : 'Vulnerability scan runs every 5 minutes after the agent connects. Click Scan Now to trigger immediately.'}
+                </div>
+              </div>
+            )}
+
+            {!vulnLoading && (vulnData?.findings || []).map(f => {
+              const sev = f.severity || 'INFO';
+              const clr = { CRITICAL:'#EF4444', HIGH:'#F97316', MEDIUM:'#EAB308', LOW:'#22C55E', INFO:'#5A8A9F' }[sev] || '#5A8A9F';
+              const catIcon = { network:'🌐', ssh:'🔑', permissions:'🔒', firewall:'🛡', accounts:'👤', software:'📦', persistence:'⚓', config:'⚙', crypto:'🔐' }[f.category] || '⚠';
+              return (
+                <div key={f.id} style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, overflow:'hidden', borderLeft:`3px solid ${clr}` }}>
+                  <div style={{ padding:'14px 16px' }}>
+                    <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
+                      <span style={{ fontSize:16, flexShrink:0, marginTop:1 }}>{catIcon}</span>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ display:'flex', gap:8, alignItems:'center', marginBottom:6, flexWrap:'wrap' }}>
+                          <span style={{ fontWeight:600, fontSize:'0.83rem', color:'#EBEBEB' }}>{f.title}</span>
+                          <span style={{ fontSize:'0.6rem', color:clr, background:`${clr}14`, padding:'1px 7px', borderRadius:3, ...MONO, textTransform:'uppercase', flexShrink:0 }}>{sev}</span>
+                          <span style={{ fontSize:'0.6rem', color:'#555', background:'rgba(255,255,255,0.04)', padding:'1px 7px', borderRadius:3, ...MONO, textTransform:'uppercase' }}>{f.category}</span>
+                        </div>
+                        <div style={{ fontSize:'0.75rem', color:'#A0A0A0', lineHeight:1.55, marginBottom:8 }}>{f.description}</div>
+                        <div style={{ fontSize:'0.71rem', color:'#5A8A9F', background:'rgba(90,138,159,0.06)', border:'1px solid rgba(90,138,159,0.15)', borderRadius:5, padding:'7px 10px', lineHeight:1.5 }}>
+                          <span style={{ color:'#5A8A9F', fontWeight:600, ...MONO, fontSize:'0.62rem' }}>REMEDIATION </span>
+                          {f.remediation}
+                        </div>
+                        {f.detected_at && (
+                          <div style={{ fontSize:'0.6rem', color:'#444', marginTop:6, ...MONO }}>
+                            Detected: {new Date(f.detected_at).toLocaleString()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               );
             })}

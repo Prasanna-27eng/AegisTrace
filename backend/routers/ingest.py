@@ -722,9 +722,10 @@ async def ingest_telemetry(
     endpoint = session.exec(
         select(Endpoint).where(Endpoint.hostname == hostname)
     ).first()
-    processes   = data.get("processes", [])
-    connections = data.get("network_connections", [])
-    risk_score  = data.get("local_anomaly_score", 0)
+    processes     = data.get("processes", [])
+    connections   = data.get("network_connections", [])
+    risk_score    = data.get("local_anomaly_score", 0)
+    vuln_findings = data.get("vuln_findings", [])
 
     if endpoint:
         endpoint.last_seen        = datetime.utcnow()
@@ -737,6 +738,9 @@ async def ingest_telemetry(
         endpoint.last_connections = json.dumps(connections[:50])
         endpoint.last_system_info = json.dumps(data.get("system_info", {}))
         endpoint.local_risk_score = int(risk_score) if risk_score else 0
+        if vuln_findings:
+            endpoint.vuln_findings  = json.dumps(vuln_findings)
+            endpoint.last_vuln_scan = datetime.utcnow()
     else:
         endpoint = Endpoint(
             hostname=hostname, os_type=os_type, ip_address=ip_addr,
@@ -1305,6 +1309,54 @@ def review_shadow_ai(
     session.add(ev)
     session.commit()
     return {"ok": True}
+
+
+# ── Vulnerability Findings ────────────────────────────────────────────────────
+
+@router.get("/vulns/{ep_id}")
+async def get_vuln_findings(
+    ep_id: int,
+    _user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Return the latest vulnerability scan results for an endpoint."""
+    ep = session.get(Endpoint, ep_id)
+    if not ep:
+        raise HTTPException(404, "Endpoint not found")
+    findings = json.loads(ep.vuln_findings or "[]")
+    return {
+        "endpoint_id":   ep_id,
+        "hostname":      ep.hostname,
+        "findings":      findings,
+        "total":         len(findings),
+        "critical":      sum(1 for f in findings if f.get("severity") == "CRITICAL"),
+        "high":          sum(1 for f in findings if f.get("severity") == "HIGH"),
+        "medium":        sum(1 for f in findings if f.get("severity") == "MEDIUM"),
+        "low":           sum(1 for f in findings if f.get("severity") == "LOW"),
+        "last_scan":     ep.last_vuln_scan.isoformat() + "Z" if ep.last_vuln_scan else None,
+    }
+
+
+@router.post("/vulns/{ep_id}/scan")
+async def trigger_vuln_scan(
+    ep_id: int,
+    _user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Queue an on-demand vulnerability scan on the agent."""
+    ep = session.get(Endpoint, ep_id)
+    if not ep:
+        raise HTTPException(404, "Endpoint not found")
+    from models import AgentCommand
+    cmd = AgentCommand(
+        agent_id=ep.hostname,
+        command="vuln_scan_now",
+        payload="{}",
+        status="pending",
+    )
+    session.add(cmd)
+    session.commit()
+    return {"queued": True, "command_id": cmd.id}
 
 
 # ── Real-time SSE streams ─────────────────────────────────────────────────────

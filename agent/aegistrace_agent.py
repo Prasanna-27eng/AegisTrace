@@ -1967,6 +1967,511 @@ _autoblock = AutoBlockEngine()
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# § 15.5  VULNERABILITY & MISCONFIGURATION SCANNER  (new v6.0)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class VulnerabilityScanner:
+    """
+    Active security scanner — runs every 5 minutes independently of the 30s
+    telemetry cycle. Checks the host for vulnerabilities and misconfigurations
+    and reports structured findings back to AegisTrace.
+
+    Checks performed:
+      Linux/macOS  ─ SSH config audit, SUID/SGID binaries, world-writable
+                     system files, cron job inspection, kernel version,
+                     Linux security config (/tmp exec, core dumps, /etc/passwd)
+      All OSes     ─ Open port survey, dangerous listening services,
+                     firewall status, user account audit
+      Linux        ─ Installed package CVE cross-reference (dpkg / rpm)
+      Windows      ─ Defender, UAC, accounts without passwords
+    """
+    SCAN_INTERVAL = 300   # seconds between scans
+
+    # Ports that are dangerous if listening on all interfaces
+    _DANGEROUS_PORTS = {
+        21:    ("FTP",           "CRITICAL", "FTP is plaintext. Credentials travel in the clear. Replace with SFTP/SCP."),
+        23:    ("Telnet",        "CRITICAL", "Telnet is completely unencrypted. Replace with SSH immediately."),
+        135:   ("Windows RPC",  "HIGH",     "RPC endpoint mapper. Restrict to trusted networks."),
+        139:   ("NetBIOS-SMB",  "HIGH",     "SMBv1 over NetBIOS. Disable SMBv1 and block externally."),
+        445:   ("SMB",          "HIGH",     "SMB exposed. Exploited by EternalBlue / ransomware. Block at perimeter."),
+        512:   ("rexec",        "CRITICAL", "rexec is obsolete and transmits credentials in plaintext."),
+        513:   ("rlogin",       "CRITICAL", "rlogin is obsolete and completely insecure."),
+        1433:  ("MSSQL",        "HIGH",     "SQL Server exposed. Use firewall rules — never expose DB directly."),
+        2049:  ("NFS",          "HIGH",     "NFS exposed. Check /etc/exports for overly permissive entries."),
+        3306:  ("MySQL",        "MEDIUM",   "MySQL listening. Bind to 127.0.0.1 if not intentionally external."),
+        3389:  ("RDP",          "HIGH",     "RDP brute-forced constantly. Require NLA, restrict to VPN only."),
+        4444:  ("Meterpreter",  "CRITICAL", "Default Metasploit C2 port — active compromise likely."),
+        5432:  ("PostgreSQL",   "MEDIUM",   "PostgreSQL listening. Bind to 127.0.0.1 unless intentional."),
+        5900:  ("VNC",          "HIGH",     "VNC often unencrypted. Restrict to localhost, use SSH tunnel."),
+        6379:  ("Redis",        "CRITICAL", "Unauthenticated Redis leads to full host compromise. Bind to localhost."),
+        9200:  ("Elasticsearch","CRITICAL", "Elasticsearch default has no auth — all data publicly readable."),
+        11211: ("Memcached",    "HIGH",     "Memcached has no built-in auth. Bind to localhost only."),
+        27017: ("MongoDB",      "CRITICAL", "MongoDB defaults to no auth. Restrict access immediately."),
+        31337: ("Back Orifice", "CRITICAL", "Port 31337 is a known malware/C2 backdoor indicator."),
+    }
+
+    # Simplified CVE list: (package, version_prefix, cve, severity, description)
+    _CVE_SIGNATURES = [
+        ("openssl",       "1.0.",  "CVE-2022-0778",  "HIGH",     "OpenSSL 1.0.x is EOL with multiple unpatched critical CVEs."),
+        ("openssh-server","7.",    "CVE-2023-38408", "HIGH",     "OpenSSH 7.x has memory-corruption vulnerabilities."),
+        ("bash",          "4.0",   "CVE-2014-6271",  "CRITICAL", "ShellShock: bash 4.0 allows RCE via environment variables."),
+        ("python2",       "2.",    "EOL",            "HIGH",     "Python 2.x is EOL since Jan 2020 — no security patches."),
+        ("python2.7",     "2.7",   "EOL",            "HIGH",     "Python 2.7 is EOL. Migrate to Python 3."),
+        ("curl",          "7.2",   "CVE-2023-23916", "MEDIUM",   "curl 7.2x has an HTTP header injection vulnerability."),
+        ("apache2",       "2.2",   "CVE-2021-41773", "CRITICAL", "Apache 2.2.x is EOL with multiple critical CVEs."),
+        ("libssl1.0",     "1.0.",  "CVE-2022-0778",  "HIGH",     "libssl 1.0.x is EOL."),
+    ]
+
+    def __init__(self):
+        self._last_run: float = 0.0
+
+    def _finding(self, fid: str, severity: str, title: str, description: str,
+                 remediation: str, category: str) -> dict:
+        return {
+            "id":           fid,
+            "type":         "vulnerability" if severity in ("CRITICAL", "HIGH") else "misconfiguration",
+            "severity":     severity,
+            "title":        title,
+            "description":  description,
+            "remediation":  remediation,
+            "category":     category,
+            "detected_at":  datetime.utcnow().isoformat() + "Z",
+        }
+
+    def run_if_due(self) -> list:
+        if time.time() - self._last_run < self.SCAN_INTERVAL:
+            return []
+        self._last_run = time.time()
+        return self.full_scan()
+
+    def full_scan(self) -> list:
+        findings: list = []
+        OS = platform.system().lower()
+
+        for check in [self._check_open_ports, self._check_firewall_status, self._check_user_accounts]:
+            try: findings += check()
+            except Exception as e: logger.debug(f"[vuln] {check.__name__}: {e}")
+
+        if OS in ("linux", "darwin"):
+            for check in [self._check_ssh_config, self._check_suid_sgid,
+                          self._check_world_writable, self._check_cron_jobs,
+                          self._check_kernel_version]:
+                try: findings += check()
+                except Exception as e: logger.debug(f"[vuln] {check.__name__}: {e}")
+
+        if OS == "linux":
+            for check in [self._check_linux_packages, self._check_linux_security_config]:
+                try: findings += check()
+                except Exception as e: logger.debug(f"[vuln] {check.__name__}: {e}")
+
+        if OS == "windows":
+            try: findings += self._check_windows_security()
+            except Exception as e: logger.debug(f"[vuln] windows: {e}")
+
+        logger.info(f"[vuln] Scan complete — {len(findings)} finding(s): "
+                    f"{sum(1 for f in findings if f['severity']=='CRITICAL')} critical, "
+                    f"{sum(1 for f in findings if f['severity']=='HIGH')} high")
+        return findings
+
+    # ── Individual checks ─────────────────────────────────────────────────────
+
+    def _check_ssh_config(self) -> list:
+        config_path = Path("/etc/ssh/sshd_config")
+        if not config_path.exists():
+            return []
+        findings = []
+        settings = {}
+        try:
+            for line in config_path.read_text(errors="replace").splitlines():
+                line = line.strip()
+                if line.startswith("#") or not line:
+                    continue
+                parts = line.split(None, 1)
+                if len(parts) == 2:
+                    settings[parts[0].lower()] = parts[1].strip().lower()
+        except Exception:
+            return []
+
+        prl = settings.get("permitrootlogin", "prohibit-password")
+        if prl in ("yes", "without-password", "prohibit-password"):
+            findings.append(self._finding(
+                "ssh_root_login", "HIGH",
+                "SSH Root Login Permitted",
+                f"PermitRootLogin={prl}. Direct SSH root access exposes the highest-privilege account to brute-force and credential theft.",
+                "Set PermitRootLogin no in /etc/ssh/sshd_config, then: sudo systemctl restart sshd",
+                "ssh"))
+
+        if settings.get("passwordauthentication", "yes") == "yes":
+            findings.append(self._finding(
+                "ssh_password_auth", "MEDIUM",
+                "SSH Password Authentication Enabled",
+                "SSH allows password-based login. Passwords are vulnerable to brute-force and credential stuffing. SSH key auth is significantly more secure.",
+                "Set PasswordAuthentication no in /etc/ssh/sshd_config. Add your public key to ~/.ssh/authorized_keys first.",
+                "ssh"))
+
+        if settings.get("permitemptypasswords") == "yes":
+            findings.append(self._finding(
+                "ssh_empty_passwords", "CRITICAL",
+                "SSH Permits Empty Passwords",
+                "PermitEmptyPasswords yes: any account with no password is SSH-accessible with no credentials.",
+                "Set PermitEmptyPasswords no in /etc/ssh/sshd_config immediately. Restart sshd.",
+                "ssh"))
+
+        if settings.get("x11forwarding") == "yes":
+            findings.append(self._finding(
+                "ssh_x11_forwarding", "LOW",
+                "SSH X11 Forwarding Enabled",
+                "X11 forwarding can be exploited to intercept keystrokes or inject input into GUI applications over SSH.",
+                "Set X11Forwarding no in /etc/ssh/sshd_config unless required by specific users.",
+                "ssh"))
+
+        try:
+            max_tries = int(settings.get("maxauthtries", "6"))
+            if max_tries > 6:
+                findings.append(self._finding(
+                    "ssh_high_maxauthtries", "LOW",
+                    f"SSH MaxAuthTries Too High ({max_tries})",
+                    f"SSH allows {max_tries} auth attempts per connection, making brute-force less costly.",
+                    "Set MaxAuthTries 3 in /etc/ssh/sshd_config.",
+                    "ssh"))
+        except ValueError:
+            pass
+        return findings
+
+    def _check_suid_sgid(self) -> list:
+        LEGIT_SUID = {
+            "/usr/bin/sudo", "/usr/bin/passwd", "/usr/bin/su", "/usr/bin/ping",
+            "/usr/bin/chfn", "/usr/bin/chsh", "/usr/bin/newgrp", "/usr/bin/gpasswd",
+            "/usr/bin/mount", "/usr/bin/umount", "/usr/bin/at", "/usr/bin/crontab",
+            "/usr/bin/pkexec", "/usr/lib/openssh/ssh-keysign",
+            "/usr/lib/policykit-1/polkit-agent-helper-1", "/bin/su",
+            "/bin/ping", "/bin/mount", "/bin/umount",
+        }
+        suspicious = []
+        for dir_path in ["/usr/bin", "/usr/sbin", "/bin", "/sbin", "/usr/local/bin", "/tmp", "/var/tmp"]:
+            p = Path(dir_path)
+            if not p.exists():
+                continue
+            try:
+                for f in p.iterdir():
+                    if not f.is_file():
+                        continue
+                    try:
+                        mode = f.stat().st_mode
+                        if (mode & 0o4000 or mode & 0o2000) and str(f) not in LEGIT_SUID:
+                            tag = "SUID" if mode & 0o4000 else "SGID"
+                            suspicious.append(f"{f.name} ({tag})")
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+        if not suspicious:
+            return []
+        return [self._finding(
+            "unexpected_suid_sgid", "HIGH",
+            f"Unexpected SUID/SGID Binaries ({len(suspicious)})",
+            f"Binaries with elevated execution bits outside the known-safe set: {', '.join(suspicious[:8])}. These can be exploited for privilege escalation.",
+            "Audit: sudo find / -perm /6000 -type f 2>/dev/null. Remove bit if unneeded: sudo chmod u-s <path>",
+            "permissions")]
+
+    def _check_world_writable(self) -> list:
+        world_writable = []
+        for dir_path in ["/etc", "/usr/bin", "/usr/sbin", "/bin", "/sbin"]:
+            p = Path(dir_path)
+            if not p.exists():
+                continue
+            try:
+                for f in p.iterdir():
+                    try:
+                        if f.stat().st_mode & 0o002:
+                            world_writable.append(str(f))
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+        if not world_writable:
+            return []
+        return [self._finding(
+            "world_writable_system_files", "HIGH",
+            f"World-Writable Files in System Directories ({len(world_writable)})",
+            f"Any user or process can overwrite: {', '.join(world_writable[:6])}. Malware can replace system binaries or config files.",
+            "Fix: sudo chmod o-w <file> for each. Audit: find /etc /usr/bin /bin -perm -o+w",
+            "permissions")]
+
+    def _check_cron_jobs(self) -> list:
+        RISKY = [
+            (b"curl ",        "remote download via curl"),
+            (b"wget ",        "remote download via wget"),
+            (b"base64 -d",    "base64 decode — possible obfuscated payload"),
+            (b"/dev/tcp/",    "TCP bash redirect — reverse shell pattern"),
+            (b"bash -i",      "interactive bash — reverse shell pattern"),
+            (b"python -c",    "inline Python exec in cron"),
+            (b"eval ",        "eval in cron — code injection risk"),
+        ]
+        hits = []
+        cron_dirs = ["/etc/cron.d", "/etc/cron.daily", "/etc/cron.hourly",
+                     "/etc/cron.weekly", "/etc/cron.monthly", "/var/spool/cron", "/var/spool/cron/crontabs"]
+        for dir_path in cron_dirs + ["/etc/crontab"]:
+            p = Path(dir_path)
+            targets = list(p.iterdir()) if p.is_dir() else [p] if p.is_file() else []
+            for f in targets:
+                if not f.is_file():
+                    continue
+                try:
+                    content = f.read_bytes().lower()
+                    for pattern, label in RISKY:
+                        if pattern in content:
+                            hits.append(f"{f.name}: {label}")
+                            break
+                except Exception:
+                    pass
+        if not hits:
+            return []
+        return [self._finding(
+            "suspicious_cron_patterns", "HIGH",
+            f"Risky Patterns in Cron Jobs ({len(hits)})",
+            f"Cron entries with potentially malicious commands: {'; '.join(hits[:5])}. Attackers abuse cron for persistence and staged execution.",
+            "Review each cron file listed. Remove unauthorized jobs. Ensure cron scripts are not world-writable.",
+            "persistence")]
+
+    def _check_open_ports(self) -> list:
+        if not PSUTIL_AVAILABLE:
+            return []
+        findings = []
+        try:
+            external_listen = set()
+            for conn in psutil.net_connections(kind="inet"):
+                if conn.status == "LISTEN" and conn.laddr:
+                    if conn.laddr.ip in ("0.0.0.0", "::", ""):
+                        external_listen.add(conn.laddr.port)
+        except Exception:
+            return []
+
+        for port, (svc, severity, risk) in self._DANGEROUS_PORTS.items():
+            if port in external_listen:
+                findings.append(self._finding(
+                    f"dangerous_port_{port}", severity,
+                    f"{svc} Listening on Port {port} (All Interfaces)",
+                    f"Port {port} ({svc}) is publicly accessible. {risk}",
+                    risk, "network"))
+        return findings
+
+    def _check_firewall_status(self) -> list:
+        OS = platform.system().lower()
+        try:
+            if OS == "linux":
+                r_ufw = subprocess.run(["ufw", "status"], capture_output=True, text=True, timeout=5)
+                if "inactive" not in r_ufw.stdout.lower() and r_ufw.returncode == 0:
+                    return []
+                r_ipt = subprocess.run(["iptables", "-L", "-n"], capture_output=True, text=True, timeout=5)
+                rule_lines = [l for l in r_ipt.stdout.splitlines()
+                              if l.strip() and not l.startswith("Chain") and not l.startswith("target")]
+                if rule_lines:
+                    return []
+                return [self._finding(
+                    "no_host_firewall", "HIGH",
+                    "No Host Firewall Configured",
+                    "Neither ufw nor iptables rules are active. All listening ports are reachable without filtering.",
+                    "Enable ufw: sudo ufw enable && sudo ufw default deny incoming && sudo ufw allow ssh",
+                    "firewall")]
+
+            elif OS == "darwin":
+                r = subprocess.run(["defaults", "read", "/Library/Preferences/com.apple.alf", "globalstate"],
+                                   capture_output=True, text=True, timeout=5)
+                if r.stdout.strip() == "0":
+                    return [self._finding(
+                        "macos_firewall_off", "HIGH",
+                        "macOS Application Firewall Disabled",
+                        "The macOS Application Firewall is off. Inbound connections are not filtered.",
+                        "Enable: System Settings → Network → Firewall → Turn On Firewall",
+                        "firewall")]
+
+            elif OS == "windows":
+                r = subprocess.run(["netsh", "advfirewall", "show", "allprofiles", "state"],
+                                   capture_output=True, text=True, timeout=10)
+                if "off" in r.stdout.lower():
+                    return [self._finding(
+                        "windows_firewall_off", "HIGH",
+                        "Windows Firewall Disabled on One or More Profiles",
+                        "Windows Firewall is disabled. Inbound connections are unfiltered.",
+                        "Enable: netsh advfirewall set allprofiles state on",
+                        "firewall")]
+        except Exception:
+            pass
+        return []
+
+    def _check_user_accounts(self) -> list:
+        findings = []
+        OS = platform.system().lower()
+        if OS in ("linux", "darwin"):
+            try:
+                passwd = Path("/etc/passwd").read_text(errors="replace")
+                shadow_exists = Path("/etc/shadow").exists()
+                uid_zero, no_pw = [], []
+                for line in passwd.splitlines():
+                    parts = line.split(":")
+                    if len(parts) < 7:
+                        continue
+                    username, pw_field, uid = parts[0], parts[1], parts[2]
+                    if uid == "0" and username != "root":
+                        uid_zero.append(username)
+                    if not shadow_exists and pw_field == "":
+                        no_pw.append(username)
+                if uid_zero:
+                    findings.append(self._finding(
+                        "uid_zero_non_root", "CRITICAL",
+                        f"Non-Root Accounts With UID 0 ({len(uid_zero)})",
+                        f"Accounts with root privileges: {', '.join(uid_zero)}. These are invisible backdoors with full system access.",
+                        "Investigate immediately. Delete or reassign UID: sudo usermod -u <new_uid> <user>",
+                        "accounts"))
+                if no_pw:
+                    findings.append(self._finding(
+                        "empty_password_accounts", "CRITICAL",
+                        f"Accounts With No Password ({len(no_pw)})",
+                        f"Login without credentials possible for: {', '.join(no_pw)}",
+                        "Set password: sudo passwd <user>  or lock: sudo passwd -l <user>",
+                        "accounts"))
+            except Exception:
+                pass
+
+        elif OS == "windows":
+            try:
+                ps_cmd = ("Get-LocalUser | Where-Object {$_.Enabled -and -not $_.PasswordRequired} "
+                          "| Select-Object -ExpandProperty Name")
+                r = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_cmd],
+                                   capture_output=True, text=True, timeout=15)
+                accts = [a.strip() for a in r.stdout.strip().splitlines() if a.strip()]
+                if accts:
+                    findings.append(self._finding(
+                        "windows_no_password_accounts", "HIGH",
+                        f"Windows Accounts With No Password Required ({len(accts)})",
+                        f"These accounts have no mandatory password: {', '.join(accts)}",
+                        "Require passwords via Local Security Policy or: net user <name> * (set a password)",
+                        "accounts"))
+            except Exception:
+                pass
+        return findings
+
+    def _check_linux_packages(self) -> list:
+        findings = []
+        def check_packages(lines, pkg_col, ver_col, pkg_filter=None):
+            for line in lines:
+                parts = line.split()
+                if len(parts) <= max(pkg_col, ver_col):
+                    continue
+                if pkg_filter and not line.startswith(pkg_filter):
+                    continue
+                pkg, ver = parts[pkg_col], parts[ver_col]
+                for vuln_pkg, ver_prefix, cve, severity, desc in self._CVE_SIGNATURES:
+                    if vuln_pkg in pkg and ver.startswith(ver_prefix):
+                        findings.append(self._finding(
+                            f"pkg_cve_{pkg}_{cve}".replace(".", "_"), severity,
+                            f"Vulnerable Package: {pkg} {ver} ({cve})",
+                            f"{desc} Installed version: {pkg} {ver}",
+                            f"Update: sudo apt-get update && sudo apt-get upgrade {pkg}",
+                            "software"))
+        try:
+            r = subprocess.run(["dpkg", "-l"], capture_output=True, text=True, timeout=15)
+            if r.returncode == 0:
+                check_packages(r.stdout.splitlines(), 1, 2, "ii")
+                return findings
+        except Exception:
+            pass
+        try:
+            r = subprocess.run(["rpm", "-qa", "--qf", "%{NAME} %{VERSION}\n"],
+                                capture_output=True, text=True, timeout=15)
+            if r.returncode == 0:
+                check_packages(r.stdout.splitlines(), 0, 1)
+        except Exception:
+            pass
+        return findings
+
+    def _check_linux_security_config(self) -> list:
+        findings = []
+        try:
+            mode = Path("/etc/passwd").stat().st_mode
+            if mode & 0o002:
+                findings.append(self._finding(
+                    "passwd_world_writable", "CRITICAL",
+                    "/etc/passwd is World-Writable",
+                    "Any process can modify user accounts, add root-level entries, or disable authentication.",
+                    "Run immediately: sudo chmod 644 /etc/passwd",
+                    "permissions"))
+        except Exception:
+            pass
+        try:
+            mounts = Path("/proc/mounts").read_text()
+            tmp_line = next((l for l in mounts.splitlines() if " /tmp " in l), "")
+            if tmp_line and "noexec" not in tmp_line:
+                findings.append(self._finding(
+                    "tmp_executable", "MEDIUM",
+                    "/tmp is Executable (noexec not set)",
+                    "/tmp lacks the noexec mount option. Malware can download a file to /tmp and run it directly.",
+                    "Add to /etc/fstab: tmpfs /tmp tmpfs defaults,noexec,nosuid,nodev 0 0  then remount.",
+                    "config"))
+        except Exception:
+            pass
+        return findings
+
+    def _check_kernel_version(self) -> list:
+        try:
+            kernel = platform.release()
+            parts = kernel.split(".")
+            major, minor = int(parts[0]), int(parts[1]) if len(parts) > 1 else 0
+            if major < 4:
+                return [self._finding(
+                    "very_old_kernel", "HIGH",
+                    f"Very Old Linux Kernel ({kernel})",
+                    f"Kernel {kernel} is before 4.0. Many privilege escalation CVEs are unpatched (Dirty COW, etc.).",
+                    "Update: sudo apt-get update && sudo apt-get dist-upgrade, then reboot.",
+                    "software")]
+            if major == 4 and minor < 15:
+                return [self._finding(
+                    "aging_kernel", "MEDIUM",
+                    f"Aging Linux Kernel ({kernel})",
+                    f"Kernel {kernel} may not receive security backports from your distribution.",
+                    "Verify your distro still provides security updates for this kernel version.",
+                    "software")]
+        except Exception:
+            pass
+        return []
+
+    def _check_windows_security(self) -> list:
+        findings = []
+        try:
+            r = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command",
+                                 "Get-MpComputerStatus | Select-Object -ExpandProperty AntivirusEnabled"],
+                                capture_output=True, text=True, timeout=15)
+            if r.stdout.strip().lower() == "false":
+                findings.append(self._finding(
+                    "defender_disabled", "HIGH",
+                    "Windows Defender Disabled",
+                    "Real-time antivirus protection is off. Malware will not be intercepted.",
+                    "Re-enable: Set-MpPreference -DisableRealtimeMonitoring $false (admin PowerShell)",
+                    "software"))
+        except Exception:
+            pass
+        try:
+            import winreg as _wr
+            with _wr.OpenKey(_wr.HKEY_LOCAL_MACHINE,
+                             r"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System") as k:
+                uac, _ = _wr.QueryValueEx(k, "EnableLUA")
+                if uac == 0:
+                    findings.append(self._finding(
+                        "uac_disabled", "HIGH",
+                        "User Account Control (UAC) Disabled",
+                        "UAC disabled — all processes run as administrator without elevation prompts. Malware escalates silently.",
+                        "Enable UAC via Group Policy or: reg add HKLM\\...\\Policies\\System /v EnableLUA /t REG_DWORD /d 1",
+                        "config"))
+        except Exception:
+            pass
+        return findings
+
+
+_vuln_scanner = VulnerabilityScanner()
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # § 16  LOCAL ANOMALY SCORER  (enhanced v5.0)
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -2368,6 +2873,18 @@ def _execute_command(cmd: dict):
             alerts = _fim.check()
             result = {"fim_alerts": alerts, "count": len(alerts)}
 
+        elif command_type == "vuln_scan_now":
+            findings = _vuln_scanner.full_scan()
+            _transport.send({
+                "system_info":    {"hostname": AGENT_ID, "ip_address": ""},
+                "processes": [], "network_connections": [], "login_events": [],
+                "file_events": [], "alerts": [], "raw_logs": [],
+                "vuln_findings":  findings,
+            })
+            result = {"findings": len(findings),
+                      "critical": sum(1 for f in findings if f["severity"] == "CRITICAL"),
+                      "high":     sum(1 for f in findings if f["severity"] == "HIGH")}
+
         elif command_type == "stop_agent":
             reason = payload.get("reason", "Remote stop command received")
             logger.warning(f"[command] STOP AGENT — reason: {reason}")
@@ -2567,6 +3084,9 @@ def _run_collection_cycle() -> list:
     # FIM
     alerts += _fim.check()
 
+    # v6.0 — vulnerability & misconfiguration scan (every 5 min)
+    vuln_findings = _vuln_scanner.run_if_due()
+
     # Behavioural baseline
     anomalies = _baseline.check_anomalies(processes, connections)
     _baseline.record(processes, connections)
@@ -2623,6 +3143,7 @@ def _run_collection_cycle() -> list:
         "alerts":              alerts,
         "raw_logs":            raw_logs,
         "local_anomaly_score": anomaly_score,
+        "vuln_findings":       vuln_findings,
     })
 
     return alerts

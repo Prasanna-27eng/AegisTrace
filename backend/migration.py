@@ -126,4 +126,18 @@ def run_migrations(engine):
                     conn.commit()
                 print(f"[migration] Added {col} to endpoint table")
 
+    # ── 9. Vulnerability scan columns on endpoint ─────────────────────────────
+    if "endpoint" in existing_tables:
+        ep_cols = [c["name"] for c in inspector.get_columns("endpoint")]
+        vuln_cols = {
+            "vuln_findings":  "TEXT DEFAULT '[]'",
+            "last_vuln_scan": "DATETIME DEFAULT NULL",
+        }
+        for col, definition in vuln_cols.items():
+            if col not in ep_cols:
+                with engine.connect() as conn:
+                    conn.execute(text(f"ALTER TABLE endpoint ADD COLUMN {col} {definition}"))
+                    conn.commit()
+                print(f"[migration] Added {col} to endpoint table")
+
     print("[migration] All migrations complete.")

@@ -47,6 +47,8 @@ class Endpoint(SQLModel, table=True):
     local_risk_score:  int = Field(default=0)   # 0-100 from agent
     total_alerts:      int = Field(default=0)
     total_failed_logins: int = Field(default=0)
+    vuln_findings:     Optional[str] = Field(default="[]", sa_column=Column(Text))   # JSON: latest vuln scan
+    last_vuln_scan:    Optional[datetime] = Field(default=None)
 
 
 class LogBatch(SQLModel, table=True):
