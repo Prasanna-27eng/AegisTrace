@@ -13,14 +13,14 @@ const GOLD = '#F59E0B';
 const BG   = '#050405';
 
 /* ─── Scroll reveal ─────────────────────────────────────────────────────── */
-function Reveal({ children, delay = 0, y = 28, style = {} }) {
+function Reveal({ children, delay = 0, y = 36, style = {} }) {
   const ref    = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
   return (
     <motion.div ref={ref}
       initial={{ opacity: 0, y }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.85, delay, ease: E }}
+      transition={{ duration: 0.88, delay, ease: E }}
       style={style}
     >{children}</motion.div>
   );
@@ -40,7 +40,7 @@ function RoadItem({ text, why, done = false, active = false, delay = 0 }) {
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
         <div style={{ flexShrink: 0, marginTop: 4 }}>
-          {done   ? <CheckCircle size={14} color={GOLD}/>
+          {done   ? <CheckCircle size={14} color={GOLD} style={{ filter: 'drop-shadow(0 0 4px rgba(245,158,11,0.4))' }}/>
           : active ? <Clock size={14} color="#FBBF24"/>
           : <div style={{ width: 14, height: 14, borderRadius: '50%', border: '1px solid rgba(245,240,232,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(245,240,232,0.2)' }}/></div>
           }
@@ -69,13 +69,23 @@ function PrincipleCard({ icon: Icon, title, body, delay }) {
         onMouseEnter={() => setHov(true)}
         onMouseLeave={() => setHov(false)}
         style={{
-          background: hov ? 'rgba(245,158,11,0.04)' : 'rgba(245,240,232,0.02)',
-          border: `1px solid ${hov ? 'rgba(245,158,11,0.18)' : 'rgba(245,240,232,0.07)'}`,
+          background: hov ? 'rgba(245,158,11,0.05)' : 'rgba(245,240,232,0.02)',
+          border: `1px solid ${hov ? 'rgba(245,158,11,0.2)' : 'rgba(245,240,232,0.07)'}`,
+          backdropFilter: hov ? 'blur(10px)' : 'blur(0px)',
+          WebkitBackdropFilter: hov ? 'blur(10px)' : 'blur(0px)',
+          boxShadow: hov ? '0 0 32px rgba(245,158,11,0.07), inset 0 0 20px rgba(245,158,11,0.03)' : 'none',
           padding: '28px 24px',
-          transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms',
+          transition: 'background 240ms cubic-bezier(0.16,1,0.3,1), border-color 240ms, box-shadow 240ms, backdrop-filter 240ms',
+          position: 'relative', overflow: 'hidden',
         }}
       >
-        <Icon size={20} color={GOLD} style={{ marginBottom: 18, opacity: hov ? 1 : 0.7, transition: 'opacity 220ms' }}/>
+        {hov && <div aria-hidden style={{ position: 'absolute', top: 0, right: 0, width: 80, height: 80, background: 'radial-gradient(circle at top right, rgba(245,158,11,0.1), transparent 70%)', pointerEvents: 'none' }}/>}
+        <Icon size={20} color={GOLD} style={{
+          marginBottom: 18,
+          opacity: hov ? 1 : 0.7,
+          transition: 'opacity 220ms, filter 220ms',
+          filter: hov ? 'drop-shadow(0 0 6px rgba(245,158,11,0.5))' : 'none',
+        }}/>
         <div style={{ fontFamily: "'Clash Display',sans-serif", fontSize: 16, fontWeight: 600, color: '#F5F0E8', marginBottom: 10, letterSpacing: '-0.01em' }}>{title}</div>
         <div style={{ fontFamily: "'Cabinet Grotesk',sans-serif", fontSize: 13, color: 'rgba(245,240,232,0.46)', lineHeight: 1.68 }}>{body}</div>
       </div>
@@ -89,8 +99,10 @@ function PrincipleCard({ icon: Icon, title, body, delay }) {
 export default function Mission() {
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
-  const heroY       = useTransform(scrollYProgress, [0, 1], ['0%', '25%']);
+  const heroY       = useTransform(scrollYProgress, [0, 1], ['0%', '28%']);
+  const heroScale   = useTransform(scrollYProgress, [0, 1], [1.06, 1.0]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
+  const overlayY    = useTransform(scrollYProgress, [0, 1], ['0%', '12%']);
 
   const V1 = [
     { text: 'ITDR — Identity Threat Detection (4 detectors)',          why: 'Credential stuffing, impossible travel, privilege escalation, token theft — all built in.' },
@@ -147,9 +159,9 @@ export default function Mission() {
           font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px;
           padding: 13px 26px; border: none; cursor: pointer;
           text-decoration: none; letter-spacing: 0.03em;
-          transition: background 140ms cubic-bezier(0.16,1,0.3,1), transform 90ms;
+          transition: background 140ms cubic-bezier(0.16,1,0.3,1), transform 90ms, box-shadow 140ms;
         }
-        .gold-btn:hover  { background: #FBBF24; }
+        .gold-btn:hover  { background: #FBBF24; box-shadow: 0 0 24px rgba(245,158,11,0.35); }
         .gold-btn:active { transform: scale(0.97); }
 
         .ghost-btn {
@@ -170,7 +182,24 @@ export default function Mission() {
         }
         .nav-link:hover { color: #F5F0E8; }
 
-        @keyframes kenburns-m { from { transform: scale(1.06); } to { transform: scale(1.0); } }
+        @keyframes kenburns-m { from { transform: scale(1.08); } to { transform: scale(1.0); } }
+
+        @keyframes ripple-ring {
+          from { transform: translate(-50%,-50%) scale(.04); opacity: .65; }
+          to   { transform: translate(-50%,-50%) scale(2.6); opacity: 0; }
+        }
+
+        @keyframes data-flow {
+          0%   { opacity: 0; transform: translateY(-20px); }
+          20%  { opacity: 0.6; }
+          80%  { opacity: 0.6; }
+          100% { opacity: 0; transform: translateY(20px); }
+        }
+
+        @keyframes pulse-dot {
+          0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.5); }
+          50%     { box-shadow: 0 0 0 6px rgba(245,158,11,0); }
+        }
 
         @media (prefers-reduced-motion: reduce) {
           *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
@@ -197,6 +226,7 @@ export default function Mission() {
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section ref={heroRef} style={{ position: 'relative', height: '100vh', minHeight: 600, overflow: 'hidden' }}>
+        {/* Background — layer 1 (deepest, moves slowest) */}
         <motion.div
           aria-hidden
           style={{
@@ -204,12 +234,24 @@ export default function Mission() {
             backgroundImage: `url('/assets/pages/mission-bg.jpg')`,
             backgroundSize: 'cover', backgroundPosition: 'center',
             y: heroY,
-            animation: 'kenburns-m 20s ease-out forwards',
+            scale: heroScale,
           }}
         />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(5,4,5,0.22) 0%, rgba(5,4,5,0.05) 35%, rgba(5,4,5,0.92) 100%)' }}/>
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(100deg, rgba(5,4,5,0.7) 0%, rgba(5,4,5,0.25) 55%, transparent 100%)' }}/>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 50% 40% at 8% 92%, rgba(245,158,11,0.12) 0%, transparent 65%)' }}/>
+
+        {/* Atmospheric gradient layer — layer 2 */}
+        <motion.div
+          aria-hidden
+          style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(180deg, transparent 0%, rgba(245,158,11,0.03) 50%, transparent 100%)',
+            y: overlayY,
+          }}
+        />
+
+        {/* Dark overlays */}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(5,4,5,0.22) 0%, rgba(5,4,5,0.05) 35%, rgba(5,4,5,0.94) 100%)' }}/>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(100deg, rgba(5,4,5,0.72) 0%, rgba(5,4,5,0.25) 55%, transparent 100%)' }}/>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 50% 40% at 8% 92%, rgba(245,158,11,0.14) 0%, transparent 65%)' }}/>
 
         <motion.div style={{ opacity: heroOpacity }}>
           <div style={{
@@ -218,7 +260,7 @@ export default function Mission() {
             padding: '0 clamp(24px,5vw,72px) clamp(56px,8vh,96px)',
           }}>
             <motion.p
-              initial={{ opacity: 0, y: 14 }}
+              initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.25, ease: E }}
               className="cg"
@@ -228,7 +270,7 @@ export default function Mission() {
             </motion.p>
 
             <motion.h1
-              initial={{ opacity: 0, y: 36 }}
+              initial={{ opacity: 0, y: 52 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.95, delay: 0.38, ease: E }}
               className="cd"
@@ -236,11 +278,11 @@ export default function Mission() {
             >
               Attackers no longer<br/>
               break in —<br/>
-              <span style={{ color: GOLD }}>they sign in.</span>
+              <span style={{ color: GOLD, textShadow: '0 0 40px rgba(245,158,11,0.28)' }}>they sign in.</span>
             </motion.h1>
 
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.85, delay: 0.58, ease: E }}
               className="cg"
@@ -321,7 +363,7 @@ export default function Mission() {
                 { n: '03', title: 'AI agent sprawl creates invisible attack surfaces', body: 'Every unregistered AI agent is an identity without oversight. Shadow AI runs with service-account privileges nobody audited and nobody is monitoring.' },
                 { n: '04', title: 'Compliance reporting is still manual', body: 'DORA, NIS2, and GDPR reporting is assembled manually from scattered logs long after incidents close. Deadlines are missed and coverage is always partial.' },
               ].map(({ n, title, body }, i) => (
-                <Reveal key={n} delay={i * 0.07}>
+                <Reveal key={n} delay={i * 0.07} y={24}>
                   <div style={{ background: 'rgba(245,240,232,0.025)', border: '1px solid rgba(245,240,232,0.07)', padding: '28px 24px', height: '100%' }}>
                     <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: GOLD, letterSpacing: '0.12em', marginBottom: 16 }}>{n}</div>
                     <div className="cd" style={{ fontSize: 15, fontWeight: 600, color: '#F5F0E8', marginBottom: 10, letterSpacing: '-0.01em', lineHeight: 1.3 }}>{title}</div>
@@ -357,7 +399,7 @@ export default function Mission() {
                 { title: 'Identity, not just logs',  body: 'AegisTrace reasons about identities across events — not individual log lines. The graph shows you how an identity moved, not just what happened.' },
                 { title: 'One analyst can run it',   body: 'Designed for small, capable teams. One person can deploy the agent, investigate an incident, and close a DORA report the same day.' },
               ].map(({ title, body }, i) => (
-                <Reveal key={title} delay={i * 0.06}>
+                <Reveal key={title} delay={i * 0.06} y={24}>
                   <div style={{ background: 'rgba(245,240,232,0.025)', border: '1px solid rgba(245,240,232,0.07)', padding: '26px 24px', height: '100%' }}>
                     <div className="cd" style={{ fontSize: 15, fontWeight: 600, color: GOLD, marginBottom: 10, letterSpacing: '-0.01em' }}>{title}</div>
                     <div className="cg" style={{ fontSize: 13, color: 'rgba(245,240,232,0.46)', lineHeight: 1.68 }}>{body}</div>
@@ -385,10 +427,10 @@ export default function Mission() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 2 }}>
                 {[
                   { icon: Shield, title: 'SOC analysts', body: 'Working in an environment where multiple tools need to be correlated manually. AegisTrace replaces the pivot — everything shares one timeline.' },
-                  { icon: User,   title: 'Security engineers', body: "Building detection capabilities on top of a stack that wasn’t designed for identity threats. AegisTrace gives you a working base to extend." },
+                  { icon: User,   title: 'Security engineers', body: "Building detection capabilities on top of a stack that wasn't designed for identity threats. AegisTrace gives you a working base to extend." },
                   { icon: Brain,  title: 'Students and researchers', body: 'Learning incident response with access to a realistic, deployable platform — not a sandboxed demo with no real telemetry.' },
                 ].map(({ icon: Icon, title, body }, i) => (
-                  <Reveal key={title} delay={i * 0.08}>
+                  <Reveal key={title} delay={i * 0.08} y={24}>
                     <div style={{ background: 'rgba(245,240,232,0.02)', border: '1px solid rgba(245,240,232,0.07)', padding: '28px 24px', height: '100%' }}>
                       <Icon size={18} color={GOLD} style={{ marginBottom: 16, opacity: 0.8 }}/>
                       <div className="cd" style={{ fontSize: 15, fontWeight: 600, color: '#F5F0E8', marginBottom: 10 }}>{title}</div>
@@ -448,7 +490,7 @@ export default function Mission() {
               {/* v1 */}
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid rgba(245,240,232,0.07)' }}>
-                  <div style={{ width: 28, height: 28, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: 28, height: 28, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 12px rgba(245,158,11,0.15)' }}>
                     <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: GOLD, fontWeight: 700 }}>v1</span>
                   </div>
                   <span className="cd" style={{ fontSize: 14, fontWeight: 600, color: '#F5F0E8', letterSpacing: '-0.01em' }}>Foundation — Shipped</span>
@@ -459,7 +501,7 @@ export default function Mission() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid rgba(245,240,232,0.07)' }}>
-                    <div style={{ width: 28, height: 28, background: 'rgba(245,240,232,0.04)', border: '1px solid rgba(245,240,232,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: 28, height: 28, background: 'rgba(245,240,232,0.04)', border: '1px solid rgba(245,240,232,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'pulse-dot 2.5s ease-in-out infinite' }}>
                       <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'rgba(245,240,232,0.5)', fontWeight: 700 }}>v2</span>
                     </div>
                     <span className="cd" style={{ fontSize: 14, fontWeight: 600, color: '#F5F0E8', letterSpacing: '-0.01em' }}>Scale — In Progress</span>
@@ -483,7 +525,16 @@ export default function Mission() {
 
       {/* ── CTA ──────────────────────────────────────────────────────────── */}
       <section style={{ position: 'relative', overflow: 'hidden', padding: 'clamp(96px,12vw,160px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(245,240,232,0.05)' }}>
-        <div aria-hidden style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 600, height: 400, background: 'radial-gradient(ellipse, rgba(245,158,11,0.07) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+        <div aria-hidden style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 600, height: 400, background: 'radial-gradient(ellipse, rgba(245,158,11,0.08) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+        {/* Ripple rings */}
+        {[0, 1, 2].map(i => (
+          <div key={i} aria-hidden style={{
+            position: 'absolute', top: '50%', left: '50%',
+            width: 500, height: 500, border: '1px solid rgba(245,158,11,0.06)',
+            borderRadius: '50%', pointerEvents: 'none',
+            animation: `ripple-ring ${4.5 + i * 1.8}s cubic-bezier(0,0,.8,1) ${i * 1.5}s infinite`,
+          }}/>
+        ))}
         <div style={{ maxWidth: 760, margin: '0 auto', textAlign: 'center', position: 'relative' }}>
           <Reveal>
             <h2 className="cd" style={{ fontSize: 'clamp(32px,5vw,64px)', fontWeight: 700, color: '#F5F0E8', letterSpacing: '-0.03em', lineHeight: 0.94, marginBottom: 22, textWrap: 'balance' }}>

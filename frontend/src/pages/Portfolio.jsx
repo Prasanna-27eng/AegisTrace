@@ -43,9 +43,9 @@ function Reveal({ children, delay = 0, style = {} }) {
   const inView = useInView(ref, { once: true, margin: '-70px' });
   return (
     <motion.div ref={ref}
-      initial={{ opacity: 0, y: 26 }}
+      initial={{ opacity: 0, y: 32 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.8, delay, ease: E }}
+      transition={{ duration: 0.88, delay, ease: E }}
       style={style}
     >{children}</motion.div>
   );
@@ -61,16 +61,20 @@ function ProjectCard({ title, tags, desc, url, large = false, delay = 0 }) {
           onMouseEnter={() => setHov(true)}
           onMouseLeave={() => setHov(false)}
           style={{
-            background: hov ? 'rgba(245,158,11,0.04)' : 'rgba(245,240,232,0.025)',
-            border: `1px solid ${hov ? 'rgba(245,158,11,0.18)' : 'rgba(245,240,232,0.07)'}`,
+            background: hov ? 'rgba(245,158,11,0.05)' : 'rgba(245,240,232,0.025)',
+            border: `1px solid ${hov ? 'rgba(245,158,11,0.2)' : 'rgba(245,240,232,0.07)'}`,
+            backdropFilter: hov ? 'blur(10px)' : 'blur(0px)',
+            WebkitBackdropFilter: hov ? 'blur(10px)' : 'blur(0px)',
+            boxShadow: hov ? '0 0 40px rgba(245,158,11,0.07), inset 0 0 24px rgba(245,158,11,0.02)' : 'none',
             padding: large ? '36px 32px' : '28px 24px',
-            height: '100%',
-            display: 'flex', flexDirection: 'column',
-            transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms',
+            height: '100%', display: 'flex', flexDirection: 'column',
+            transition: 'background 240ms cubic-bezier(0.16,1,0.3,1), border-color 240ms, box-shadow 240ms, backdrop-filter 240ms',
+            position: 'relative', overflow: 'hidden',
           }}
         >
+          {hov && <div aria-hidden style={{ position: 'absolute', top: 0, right: 0, width: 100, height: 100, background: 'radial-gradient(circle at top right, rgba(245,158,11,0.1), transparent 70%)', pointerEvents: 'none' }}/>}
           {large && (
-            <div style={{ display: 'inline-flex', padding: '4px 10px', background: 'rgba(245,158,11,0.12)', marginBottom: 20, alignSelf: 'flex-start' }}>
+            <div style={{ display: 'inline-flex', padding: '4px 10px', background: 'rgba(245,158,11,0.12)', marginBottom: 20, alignSelf: 'flex-start', boxShadow: '0 0 12px rgba(245,158,11,0.15)' }}>
               <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: GOLD, letterSpacing: '0.12em', fontWeight: 600 }}>FLAGSHIP PROJECT</span>
             </div>
           )}
@@ -89,9 +93,9 @@ function ProjectCard({ title, tags, desc, url, large = false, delay = 0 }) {
           </div>
           {url && (
             <a href={url} target="_blank" rel="noopener noreferrer"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: "'Cabinet Grotesk',sans-serif", fontSize: 12, color: GOLD, textDecoration: 'none', fontWeight: 600, transition: 'gap 140ms' }}
-              onMouseEnter={e => (e.currentTarget.style.gap = '8px')}
-              onMouseLeave={e => (e.currentTarget.style.gap = '5px')}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: "'Cabinet Grotesk',sans-serif", fontSize: 12, color: GOLD, textDecoration: 'none', fontWeight: 600, transition: 'gap 140ms, text-shadow 140ms' }}
+              onMouseEnter={e => { e.currentTarget.style.gap = '8px'; e.currentTarget.style.textShadow = '0 0 12px rgba(245,158,11,0.5)'; }}
+              onMouseLeave={e => { e.currentTarget.style.gap = '5px'; e.currentTarget.style.textShadow = 'none'; }}
             >
               View on GitHub <ExternalLink size={11}/>
             </a>
@@ -112,14 +116,17 @@ function CertChip({ name, issuer, status, done, delay }) {
       animate={inView ? { opacity: 1, scale: 1 } : {}}
       transition={{ duration: 0.6, delay, ease: E }}
       style={{
-        background: 'rgba(245,240,232,0.025)', border: '1px solid rgba(245,240,232,0.07)',
+        background: done ? 'rgba(245,158,11,0.04)' : 'rgba(245,240,232,0.025)',
+        border: `1px solid ${done ? 'rgba(245,158,11,0.2)' : 'rgba(245,240,232,0.07)'}`,
         padding: '20px 22px',
+        boxShadow: done ? '0 0 20px rgba(245,158,11,0.07)' : 'none',
+        animation: done ? 'cert-glow 4s ease-in-out infinite' : 'none',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 6 }}>
         <div style={{ fontFamily: "'Cabinet Grotesk',sans-serif", fontSize: 13, fontWeight: 700, color: '#F5F0E8', lineHeight: 1.3 }}>{name}</div>
         {done
-          ? <CheckCircle size={14} color={GOLD} style={{ flexShrink: 0, marginTop: 2 }}/>
+          ? <CheckCircle size={14} color={GOLD} style={{ flexShrink: 0, marginTop: 2, filter: 'drop-shadow(0 0 4px rgba(245,158,11,0.5))' }}/>
           : <Clock size={14} color="rgba(245,240,232,0.3)" style={{ flexShrink: 0, marginTop: 2 }}/>
         }
       </div>
@@ -128,8 +135,9 @@ function CertChip({ name, issuer, status, done, delay }) {
         <span style={{
           fontFamily: "'JetBrains Mono',monospace", fontSize: 9,
           color: done ? GOLD : 'rgba(245,240,232,0.35)',
-          background: done ? 'rgba(245,158,11,0.1)' : 'transparent',
+          background: done ? 'rgba(245,158,11,0.12)' : 'transparent',
           padding: '3px 8px', letterSpacing: '0.1em',
+          boxShadow: done ? '0 0 8px rgba(245,158,11,0.15)' : 'none',
         }}>{status}</span>
       </div>
     </motion.div>
@@ -168,9 +176,9 @@ export default function Portfolio() {
           font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px;
           padding: 13px 26px; border: none; cursor: pointer;
           text-decoration: none; letter-spacing: 0.03em;
-          transition: background 140ms cubic-bezier(0.16,1,0.3,1), transform 90ms;
+          transition: background 140ms cubic-bezier(0.16,1,0.3,1), transform 90ms, box-shadow 140ms;
         }
-        .gold-btn:hover  { background: #FBBF24; }
+        .gold-btn:hover  { background: #FBBF24; box-shadow: 0 0 24px rgba(245,158,11,0.35); }
         .gold-btn:active { transform: scale(0.97); }
 
         .ghost-btn {
@@ -193,16 +201,35 @@ export default function Portfolio() {
 
         .skill-tag {
           display: inline-block;
-          fontFamily: 'Cabinet Grotesk', sans-serif; font-size: 12px; font-weight: 500;
+          font-family: 'Cabinet Grotesk', sans-serif; font-size: 12px; font-weight: 500;
           color: rgba(245,240,232,0.6); border: 1px solid rgba(245,240,232,0.1);
           padding: 6px 14px; cursor: default; line-height: 1;
-          transition: color 160ms, border-color 160ms, background 160ms;
+          transition: color 200ms, border-color 200ms, background 200ms, box-shadow 200ms;
         }
-        .skill-tag:hover { color: ${GOLD}; border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.05); }
+        .skill-tag:hover {
+          color: ${GOLD}; border-color: rgba(245,158,11,0.3);
+          background: rgba(245,158,11,0.05);
+          box-shadow: 0 0 12px rgba(245,158,11,0.1);
+        }
 
         @keyframes ticker {
           from { transform: translateX(0); }
           to   { transform: translateX(-50%); }
+        }
+
+        @keyframes cert-glow {
+          0%,100% { box-shadow: 0 0 16px rgba(245,158,11,0.06); }
+          50%     { box-shadow: 0 0 28px rgba(245,158,11,0.14); }
+        }
+
+        @keyframes pulse-dot {
+          0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.5), 0 0 0 0 rgba(245,158,11,0.2); }
+          50%     { box-shadow: 0 0 0 5px rgba(245,158,11,0), 0 0 12px rgba(245,158,11,0.2); }
+        }
+
+        @keyframes ripple-ring {
+          from { transform: translate(-50%,-50%) scale(.04); opacity: .6; }
+          to   { transform: translate(-50%,-50%) scale(2.6); opacity: 0; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -215,9 +242,9 @@ export default function Portfolio() {
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 clamp(20px,4vw,48px)', height: 64,
-        background: scrolled ? 'rgba(5,4,5,0.9)' : 'rgba(5,4,5,0.0)',
-        backdropFilter: scrolled ? 'blur(18px)' : 'none',
-        WebkitBackdropFilter: scrolled ? 'blur(18px)' : 'none',
+        background: scrolled ? 'rgba(5,4,5,0.92)' : 'rgba(5,4,5,0.0)',
+        backdropFilter: scrolled ? 'blur(18px) saturate(150%)' : 'none',
+        WebkitBackdropFilter: scrolled ? 'blur(18px) saturate(150%)' : 'none',
         borderBottom: scrolled ? '1px solid rgba(245,240,232,0.06)' : 'none',
         transition: 'background 300ms, backdrop-filter 300ms',
       }}>
@@ -235,21 +262,24 @@ export default function Portfolio() {
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section style={{ position: 'relative', padding: 'clamp(140px,16vh,200px) clamp(24px,5vw,72px) clamp(72px,8vw,96px)', borderBottom: '1px solid rgba(245,240,232,0.06)', overflow: 'hidden' }}>
-        {/* Background image with heavy dark overlay */}
+        {/* Background image — unchanged */}
         <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: "url('/assets/pages/portfolio-bg.jpg')", backgroundSize: 'cover', backgroundPosition: 'center 40%', filter: 'brightness(0.28) saturate(0.7)', zIndex: 0 }}/>
         <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(5,4,5,0.5) 0%, rgba(5,4,5,0.2) 40%, rgba(5,4,5,0.95) 100%)', zIndex: 1 }}/>
-        <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 60% 50% at 5% 90%, rgba(245,158,11,0.1) 0%, transparent 65%)', zIndex: 1 }}/>
+        <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 60% 50% at 5% 90%, rgba(245,158,11,0.12) 0%, transparent 65%)', zIndex: 1 }}/>
+        {/* Depth vignette */}
+        <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 80% 80% at 50% 50%, transparent 30%, rgba(5,4,5,0.5) 100%)', zIndex: 1 }}/>
+
         <div style={{ maxWidth: 1240, margin: '0 auto', position: 'relative', zIndex: 2 }}>
           <motion.div
-            initial={{ opacity: 0, y: 32 }}
+            initial={{ opacity: 0, y: 44 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.95, delay: 0.1, ease: E }}
           >
             {/* Gold accent line */}
-            <div style={{ width: 40, height: 2, background: GOLD, marginBottom: 32 }}/>
+            <div style={{ width: 40, height: 2, background: GOLD, marginBottom: 32, boxShadow: '0 0 16px rgba(245,158,11,0.5)' }}/>
             <h1 className="cd" style={{ fontSize: 'clamp(48px,7vw,88px)', fontWeight: 700, color: '#F5F0E8', margin: '0 0 14px', lineHeight: 0.94, letterSpacing: '-0.03em', textWrap: 'balance' }}>
               Prasanna Kumar<br/>
-              <span style={{ color: GOLD }}>Surendran.</span>
+              <span style={{ color: GOLD, textShadow: '0 0 40px rgba(245,158,11,0.28)' }}>Surendran.</span>
             </h1>
             <div className="cg" style={{ fontSize: 'clamp(16px,2vw,20px)', color: 'rgba(245,240,232,0.5)', marginTop: 20, marginBottom: 10, fontWeight: 500, letterSpacing: '0.02em' }}>
               Cybersecurity Engineer
@@ -345,7 +375,6 @@ export default function Portfolio() {
             </div>
           </Reveal>
 
-          {/* Asymmetric grid: 1 large top + 3 smaller below */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, marginBottom: 2 }}>
             <div style={{ gridColumn: '1 / -1' }}>
               <ProjectCard
@@ -396,8 +425,8 @@ export default function Portfolio() {
           <div style={{ display: 'grid', gridTemplateColumns: 'clamp(160px,20vw,240px) 1fr', gap: 'clamp(40px,6vw,80px)' }}>
             <div/>
             <div style={{ position: 'relative', paddingLeft: 28, borderLeft: '1px solid rgba(245,240,232,0.08)' }}>
-              {/* Gold dot */}
-              <div style={{ position: 'absolute', left: -5, top: 6, width: 10, height: 10, borderRadius: '50%', background: GOLD }}/>
+              {/* Animated gold dot */}
+              <div style={{ position: 'absolute', left: -5, top: 6, width: 10, height: 10, borderRadius: '50%', background: GOLD, animation: 'pulse-dot 2.5s ease-in-out infinite', boxShadow: '0 0 8px rgba(245,158,11,0.4)' }}/>
               <Reveal>
                 <div>
                   <div className="cd" style={{ fontSize: 18, fontWeight: 600, color: '#F5F0E8', marginBottom: 4, letterSpacing: '-0.01em' }}>
@@ -434,10 +463,10 @@ export default function Portfolio() {
           <div style={{ display: 'grid', gridTemplateColumns: 'clamp(160px,20vw,240px) 1fr', gap: 'clamp(40px,6vw,80px)' }}>
             <div/>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 2 }}>
-              <CertChip name="SC-200 Microsoft Security Operations Analyst" issuer="Microsoft · 2025"    status="CERTIFIED"     done delay={0}/>
-              <CertChip name="CompTIA Security+"                             issuer="CompTIA · 2024"     status="CERTIFIED"     done delay={0.07}/>
-              <CertChip name="TCM Practical Ethical Hacking"                 issuer="TCM Security"       status="CERTIFIED"     done delay={0.14}/>
-              <CertChip name="Blue Team Labs Level 1 (BTL1)"                 issuer="Security Blue Team" status="IN PROGRESS"   done={false} delay={0.21}/>
+              <CertChip name="SC-200 Microsoft Security Operations Analyst" issuer="Microsoft · 2025"    status="CERTIFIED"   done delay={0}/>
+              <CertChip name="CompTIA Security+"                             issuer="CompTIA · 2024"     status="CERTIFIED"   done delay={0.07}/>
+              <CertChip name="TCM Practical Ethical Hacking"                 issuer="TCM Security"       status="CERTIFIED"   done delay={0.14}/>
+              <CertChip name="Blue Team Labs Level 1 (BTL1)"                 issuer="Security Blue Team" status="IN PROGRESS" done={false} delay={0.21}/>
             </div>
           </div>
         </div>
@@ -463,10 +492,10 @@ export default function Portfolio() {
                 { deg: 'B.E. Electronics & Communication Engineering', school: 'PSG College of Technology', loc: 'Coimbatore, India', dates: '2019 – 2023' },
               ].map(({ deg, school, loc, dates }, i) => (
                 <motion.div key={deg}
-                  initial={{ opacity: 0, x: -12 }}
+                  initial={{ opacity: 0, x: -14 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.7, delay: i * 0.1, ease: E }}
+                  transition={{ duration: 0.75, delay: i * 0.1, ease: E }}
                   style={{ padding: '28px 0', borderBottom: '1px solid rgba(245,240,232,0.05)', display: 'grid', gridTemplateColumns: '1fr auto', gap: 16, alignItems: 'start' }}
                 >
                   <div>
@@ -484,7 +513,15 @@ export default function Portfolio() {
 
       {/* ── CTA ──────────────────────────────────────────────────────────── */}
       <section style={{ padding: 'clamp(96px,12vw,160px) clamp(24px,5vw,72px)', background: '#060507', borderTop: '1px solid rgba(245,240,232,0.05)', position: 'relative', overflow: 'hidden' }}>
-        <div aria-hidden style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 500, height: 300, background: 'radial-gradient(ellipse, rgba(245,158,11,0.07) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+        <div aria-hidden style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 500, height: 300, background: 'radial-gradient(ellipse, rgba(245,158,11,0.09) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+        {[0, 1, 2].map(i => (
+          <div key={i} aria-hidden style={{
+            position: 'absolute', top: '50%', left: '50%',
+            width: 440, height: 440, border: '1px solid rgba(245,158,11,0.06)',
+            borderRadius: '50%', pointerEvents: 'none',
+            animation: `ripple-ring ${4 + i * 1.6}s cubic-bezier(0,0,.8,1) ${i * 1.4}s infinite`,
+          }}/>
+        ))}
         <div style={{ maxWidth: 720, margin: '0 auto', textAlign: 'center', position: 'relative' }}>
           <Reveal>
             <h2 className="cd" style={{ fontSize: 'clamp(30px,4.5vw,56px)', fontWeight: 700, color: '#F5F0E8', letterSpacing: '-0.03em', lineHeight: 0.95, marginBottom: 22, textWrap: 'balance' }}>

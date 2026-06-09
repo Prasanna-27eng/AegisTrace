@@ -11,6 +11,51 @@ const E    = [0.16, 1, 0.3, 1];
 const GOLD = '#F59E0B';
 const BG   = '#050405';
 
+/* ─── Particle network canvas ──────────────────────────────────────────── */
+function ParticleCanvas() {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let raf;
+    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    resize();
+    window.addEventListener('resize', resize);
+    const pts = Array.from({ length: 72 }, () => ({
+      x: Math.random(), y: Math.random(),
+      vx: (Math.random() - .5) * .00035, vy: (Math.random() - .5) * .00035,
+      r: Math.random() * 1.3 + .4, o: Math.random() * .32 + .1,
+    }));
+    const draw = () => {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+      pts.forEach(p => {
+        p.x = (p.x + p.vx + 1) % 1; p.y = (p.y + p.vy + 1) % 1;
+        ctx.beginPath(); ctx.arc(p.x * W, p.y * H, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(245,158,11,${p.o})`; ctx.fill();
+      });
+      for (let i = 0; i < pts.length; i++) {
+        for (let j = i + 1; j < pts.length; j++) {
+          const dx = (pts[i].x - pts[j].x) * W, dy = (pts[i].y - pts[j].y) * H;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d < 130) {
+            ctx.beginPath(); ctx.moveTo(pts[i].x*W, pts[i].y*H);
+            ctx.lineTo(pts[j].x*W, pts[j].y*H);
+            ctx.strokeStyle = `rgba(245,158,11,${(1 - d / 130) * .055})`;
+            ctx.lineWidth = .5; ctx.stroke();
+          }
+        }
+      }
+      raf = requestAnimationFrame(draw);
+    };
+    draw();
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); };
+  }, []);
+  return <canvas ref={canvasRef} aria-hidden style={{ position: 'absolute', inset: 0, zIndex: 1, opacity: .65, pointerEvents: 'none' }}/>;
+}
+
+/* ─── 3D tilt ───────────────────────────────────────────────────────────── */
 function TiltCard({ children, style = {} }) {
   const ref  = useRef(null);
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
@@ -36,20 +81,22 @@ function TiltCard({ children, style = {} }) {
   );
 }
 
-function Reveal({ children, delay = 0, y = 24, style = {} }) {
+/* ─── Scroll reveal ─────────────────────────────────────────────────────── */
+function Reveal({ children, delay = 0, y = 36, style = {} }) {
   const ref    = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-70px' });
   return (
     <motion.div ref={ref}
       initial={{ opacity: 0, y }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.82, delay, ease: E }}
+      transition={{ duration: 0.88, delay, ease: E }}
       style={style}
     >{children}</motion.div>
   );
 }
 
-function ModuleCard({ icon: Icon, label, desc, delay, i }) {
+/* ─── Module card ───────────────────────────────────────────────────────── */
+function ModuleCard({ icon: Icon, label, desc, delay }) {
   const [hov, setHov] = useState(false);
   return (
     <Reveal key={label} delay={delay}>
@@ -57,9 +104,27 @@ function ModuleCard({ icon: Icon, label, desc, delay, i }) {
         <div
           onMouseEnter={() => setHov(true)}
           onMouseLeave={() => setHov(false)}
-          style={{ background: hov ? 'rgba(245,158,11,0.05)' : 'rgba(245,240,232,0.02)', border: `1px solid ${hov ? 'rgba(245,158,11,0.2)' : 'rgba(245,240,232,0.07)'}`, padding: '30px 26px', height: '100%', transition: 'background 220ms, border-color 220ms' }}
+          style={{
+            background: hov ? 'rgba(245,158,11,0.06)' : 'rgba(245,240,232,0.02)',
+            border: `1px solid ${hov ? 'rgba(245,158,11,0.22)' : 'rgba(245,240,232,0.07)'}`,
+            backdropFilter: hov ? 'blur(8px)' : 'blur(0px)',
+            WebkitBackdropFilter: hov ? 'blur(8px)' : 'blur(0px)',
+            boxShadow: hov ? '0 0 40px rgba(245,158,11,0.06), inset 0 0 30px rgba(245,158,11,0.03)' : 'none',
+            padding: '30px 26px', height: '100%',
+            transition: 'background 240ms, border-color 240ms, box-shadow 240ms, backdrop-filter 240ms',
+            position: 'relative', overflow: 'hidden',
+          }}
         >
-          <div style={{ width: 38, height: 38, background: hov ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, transition: 'background 220ms' }}>
+          {/* Corner accent */}
+          {hov && <div aria-hidden style={{ position: 'absolute', top: 0, right: 0, width: 60, height: 60, background: 'radial-gradient(circle at top right, rgba(245,158,11,0.12), transparent 70%)', pointerEvents: 'none' }}/>}
+          <div style={{
+            width: 38, height: 38,
+            background: hov ? 'rgba(245,158,11,0.18)' : 'rgba(245,158,11,0.08)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            marginBottom: 20,
+            transition: 'background 240ms',
+            boxShadow: hov ? '0 0 16px rgba(245,158,11,0.2)' : 'none',
+          }}>
             <Icon size={17} color={GOLD}/>
           </div>
           <div className="cd" style={{ fontSize: 15, fontWeight: 600, color: '#F5F0E8', marginBottom: 10, letterSpacing: '-0.01em', lineHeight: 1.25 }}>{label}</div>
@@ -70,6 +135,7 @@ function ModuleCard({ icon: Icon, label, desc, delay, i }) {
   );
 }
 
+/* ─── Animated counter ──────────────────────────────────────────────────── */
 function Counter({ end, suffix = '' }) {
   const ref    = useRef(null);
   const inView = useInView(ref, { once: true });
@@ -91,6 +157,9 @@ function Counter({ end, suffix = '' }) {
   return <span ref={ref}>{val}{suffix}</span>;
 }
 
+/* ════════════════════════════════════════════════════════════════════════════
+   LANDING
+════════════════════════════════════════════════════════════════════════════ */
 export default function Landing() {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
@@ -114,16 +183,16 @@ export default function Landing() {
   ];
 
   const STEPS = [
-    { n: '01', title: 'Alert arrives',      body: 'An alert fires from your SIEM, EDR, or identity provider. AegisTrace ingests it automatically and opens a new case.' },
-    { n: '02', title: 'AI triage begins',   body: 'Hermes-3 on NVIDIA NIM runs a function-calling loop: IOC enrichment, similar case retrieval, endpoint queries, specialist agents — all in parallel. Verdict in seconds.' },
+    { n: '01', title: 'Alert arrives',        body: 'An alert fires from your SIEM, EDR, or identity provider. AegisTrace ingests it automatically and opens a new case.' },
+    { n: '02', title: 'AI triage begins',     body: 'Hermes-3 on NVIDIA NIM runs a function-calling loop: IOC enrichment, similar case retrieval, endpoint queries, specialist agents — all in parallel. Verdict in seconds.' },
     { n: '03', title: 'Analyst investigates', body: 'You open the 15-tab workspace: timeline, identity graph, endpoint data, email forensics, vision analysis, AI reasoning, detection rules, and the full evidence chain.' },
-    { n: '04', title: 'Case resolved',      body: 'Containment actions, DORA Article 19 report, and full audit trail are generated automatically. The case closes with provenance intact.' },
+    { n: '04', title: 'Case resolved',        body: 'Containment actions, DORA Article 19 report, and full audit trail are generated automatically. The case closes with provenance intact.' },
   ];
 
   const FOR_WHOM = [
-    { icon: Users,      title: 'SOC Analysts',         body: 'Tier 1 and Tier 2 analysts who need faster triage, cleaner evidence chains, and AI-assisted investigation without the hallucinations.' },
-    { icon: ShieldCheck,title: 'Security Engineers',   body: 'Engineers building detection rules, running threat hunts, and integrating new telemetry sources into the security stack.' },
-    { icon: Eye,        title: 'Compliance Officers',  body: 'Teams responsible for DORA Article 19, NIS2, and GDPR incident reporting — AegisTrace generates the reports automatically.' },
+    { icon: Users,      title: 'SOC Analysts',        body: 'Tier 1 and Tier 2 analysts who need faster triage, cleaner evidence chains, and AI-assisted investigation without the hallucinations.' },
+    { icon: ShieldCheck,title: 'Security Engineers',  body: 'Engineers building detection rules, running threat hunts, and integrating new telemetry sources into the security stack.' },
+    { icon: Eye,        title: 'Compliance Officers', body: 'Teams responsible for DORA Article 19, NIS2, and GDPR incident reporting — AegisTrace generates the reports automatically.' },
   ];
 
   return (
@@ -139,9 +208,9 @@ export default function Landing() {
           font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px;
           padding: 13px 26px; border: none; cursor: pointer;
           text-decoration: none; letter-spacing: 0.03em;
-          transition: background 140ms cubic-bezier(0.16,1,0.3,1), transform 90ms;
+          transition: background 140ms cubic-bezier(0.16,1,0.3,1), transform 90ms, box-shadow 140ms;
         }
-        .gold-btn:hover  { background: #FBBF24; }
+        .gold-btn:hover  { background: #FBBF24; box-shadow: 0 0 24px rgba(245,158,11,0.35); }
         .gold-btn:active { transform: scale(0.97); }
 
         .ghost-btn {
@@ -166,6 +235,29 @@ export default function Landing() {
         @keyframes scrollPulse { 0%,100%{opacity:.22} 50%{opacity:1} }
         @keyframes bounce-y { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
 
+        @keyframes glow-pulse {
+          0%,100% { text-shadow: 0 0 20px rgba(245,158,11,.28), 0 0 40px rgba(245,158,11,.1); }
+          50%     { text-shadow: 0 0 36px rgba(245,158,11,.52), 0 0 72px rgba(245,158,11,.2); }
+        }
+        @keyframes scan-sweep {
+          from { transform: translateY(-4px); opacity: 0; }
+          5%   { opacity: 1; }
+          95%  { opacity: 1; }
+          to   { transform: translateY(calc(100vh + 4px)); opacity: 0; }
+        }
+        @keyframes ripple-ring {
+          from { transform: translate(-50%,-50%) scale(.04); opacity: .65; }
+          to   { transform: translate(-50%,-50%) scale(2.6); opacity: 0; }
+        }
+        @keyframes ticker {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+        @keyframes fade-in-up {
+          from { opacity: 0; transform: translateY(40px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+
         @media (prefers-reduced-motion: reduce) {
           *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
@@ -180,7 +272,7 @@ export default function Landing() {
           position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '0 clamp(20px,4vw,56px)', height: 64,
-          background: scrolled ? 'rgba(5,4,5,0.9)' : 'transparent',
+          background: scrolled ? 'rgba(5,4,5,0.92)' : 'transparent',
           backdropFilter: scrolled ? 'blur(20px) saturate(160%)' : 'none',
           WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(160%)' : 'none',
           borderBottom: scrolled ? '1px solid rgba(245,240,232,0.06)' : 'none',
@@ -201,30 +293,44 @@ export default function Landing() {
 
       {/* ── HERO ── */}
       <section style={{ position: 'relative', height: '100vh', minHeight: 640, overflow: 'hidden' }}>
+        {/* Kenburns background image */}
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
           backgroundImage: `url('/assets/pages/mainwebpage.jpg')`,
           backgroundSize: 'cover', backgroundPosition: 'center 30%',
           animation: 'kenburns 20s ease-out forwards',
         }}/>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(to bottom, rgba(5,4,5,0.25) 0%, rgba(5,4,5,0.05) 30%, rgba(5,4,5,0.88) 100%)' }}/>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(105deg, rgba(5,4,5,0.8) 0%, rgba(5,4,5,0.3) 55%, transparent 100%)' }}/>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'radial-gradient(ellipse 55% 45% at 2% 95%, rgba(245,158,11,0.14) 0%, transparent 65%)' }}/>
+
+        {/* Particle network */}
+        <ParticleCanvas/>
+
+        {/* Depth gradient overlays */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(to bottom, rgba(5,4,5,0.28) 0%, rgba(5,4,5,0.05) 30%, rgba(5,4,5,0.9) 100%)', zIndex: 2 }}/>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(105deg, rgba(5,4,5,0.82) 0%, rgba(5,4,5,0.3) 55%, transparent 100%)', zIndex: 2 }}/>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'radial-gradient(ellipse 55% 45% at 2% 95%, rgba(245,158,11,0.16) 0%, transparent 65%)', zIndex: 2 }}/>
+
+        {/* Scanline sweep */}
+        <div aria-hidden style={{
+          position: 'absolute', left: 0, right: 0, height: 2, zIndex: 6, pointerEvents: 'none',
+          background: 'linear-gradient(90deg, transparent 0%, rgba(245,158,11,0.3) 30%, rgba(245,158,11,0.5) 50%, rgba(245,158,11,0.3) 70%, transparent 100%)',
+          animation: 'scan-sweep 8s cubic-bezier(0.4,0,0.6,1) infinite',
+          boxShadow: '0 0 12px rgba(245,158,11,0.3)',
+        }}/>
 
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '0 clamp(24px,5vw,72px) clamp(56px,8vh,88px)', maxWidth: 960 }}>
-          <motion.p initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.25, ease: E }}
+          <motion.p initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.25, ease: E }}
             className="cg" style={{ fontSize: 11, color: GOLD, letterSpacing: '0.24em', textTransform: 'uppercase', marginBottom: 20, fontWeight: 600 }}>
             AI-Powered Security Operations Platform
           </motion.p>
-          <motion.h1 initial={{ opacity: 0, y: 36 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.95, delay: 0.38, ease: E }}
+          <motion.h1 initial={{ opacity: 0, y: 48 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.95, delay: 0.38, ease: E }}
             className="cd" style={{ fontSize: 'clamp(46px,7.5vw,92px)', fontWeight: 700, lineHeight: 0.94, letterSpacing: '-0.03em', color: '#F5F0E8', margin: '0 0 26px' }}>
-            Detect. Trace.<br/><span style={{ color: GOLD }}>Neutralize.</span>
+            Detect. Trace.<br/><span style={{ color: GOLD, textShadow: '0 0 40px rgba(245,158,11,0.3)' }}>Neutralize.</span>
           </motion.h1>
-          <motion.p initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.85, delay: 0.56, ease: E }}
+          <motion.p initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.85, delay: 0.56, ease: E }}
             className="cg" style={{ fontSize: 'clamp(14px,1.5vw,17px)', color: 'rgba(245,240,232,0.62)', lineHeight: 1.72, marginBottom: 36, maxWidth: 480 }}>
             AegisTrace is a full-stack security operations platform with NVIDIA NIM-powered agentic AI. From alert ingestion to closed case — every step is provenance-backed.
           </motion.p>
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.75, delay: 0.72, ease: E }} style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.75, delay: 0.72, ease: E }} style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
             <Link to="/app/login" className="gold-btn">Access Platform <ArrowRight size={15}/></Link>
             <Link to="/mission"   className="ghost-btn">See the Mission</Link>
           </motion.div>
@@ -237,21 +343,25 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── TRUST STRIP ── */}
-      <section style={{ padding: '20px clamp(24px,5vw,72px)', background: 'rgba(245,158,11,0.06)', borderTop: '1px solid rgba(245,158,11,0.15)', borderBottom: '1px solid rgba(245,158,11,0.15)' }}>
-        <div style={{ maxWidth: 1240, margin: '0 auto', display: 'flex', gap: 'clamp(20px,4vw,48px)', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
-          {[
-            { icon: ShieldCheck, text: 'MITRE ATT&CK aligned' },
-            { icon: CheckCircle, text: 'DORA Article 19 ready' },
-            { icon: Lock,        text: 'End-to-end encrypted' },
-            { icon: Zap,         text: 'Sub-second alert triage' },
-            { icon: Eye,         text: 'Full audit provenance' },
-            { icon: GitMerge,    text: 'Identity-first detection' },
-            { icon: Brain,       text: 'NVIDIA NIM inference' },
-          ].map(({ icon: Icon, text }) => (
-            <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Icon size={13} color={GOLD}/>
-              <span className="cg" style={{ fontSize: 12, color: 'rgba(245,240,232,0.5)', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>{text}</span>
+      {/* ── TRUST TICKER ── */}
+      <section style={{ padding: '20px 0', background: 'rgba(245,158,11,0.06)', borderTop: '1px solid rgba(245,158,11,0.15)', borderBottom: '1px solid rgba(245,158,11,0.15)', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', animation: 'ticker 28s linear infinite', width: 'max-content', whiteSpace: 'nowrap' }}>
+          {[...Array(2)].map((_, pass) => (
+            <div key={pass} style={{ display: 'flex', gap: 'clamp(28px,4vw,56px)', alignItems: 'center', paddingRight: 'clamp(28px,4vw,56px)' }}>
+              {[
+                { icon: ShieldCheck, text: 'MITRE ATT&CK aligned' },
+                { icon: CheckCircle, text: 'DORA Article 19 ready' },
+                { icon: Lock,        text: 'End-to-end encrypted' },
+                { icon: Zap,         text: 'Sub-second alert triage' },
+                { icon: Eye,         text: 'Full audit provenance' },
+                { icon: GitMerge,    text: 'Identity-first detection' },
+                { icon: Brain,       text: 'NVIDIA NIM inference' },
+              ].map(({ icon: Icon, text }) => (
+                <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                  <Icon size={13} color={GOLD}/>
+                  <span className="cg" style={{ fontSize: 12, color: 'rgba(245,240,232,0.5)', letterSpacing: '0.04em' }}>{text}</span>
+                </div>
+              ))}
             </div>
           ))}
         </div>
@@ -277,7 +387,7 @@ export default function Landing() {
           </Reveal>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: 2 }}>
             {MODULES.map(({ icon, label, desc }, i) => (
-              <ModuleCard key={label} icon={icon} label={label} desc={desc} delay={i * 0.05} i={i}/>
+              <ModuleCard key={label} icon={icon} label={label} desc={desc} delay={i * 0.05}/>
             ))}
           </div>
         </div>
@@ -296,9 +406,9 @@ export default function Landing() {
           </Reveal>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 0 }}>
             {STEPS.map(({ n, title, body }, i) => (
-              <Reveal key={n} delay={i * 0.08}>
-                <div style={{ padding: '36px 32px', borderRight: i < STEPS.length - 1 ? '1px solid rgba(245,240,232,0.06)' : 'none', borderTop: '2px solid transparent', transition: 'border-color 300ms', position: 'relative' }}>
-                  <div style={{ position: 'absolute', top: 0, left: 32, right: 32, height: 2, background: i === 0 ? GOLD : 'rgba(245,240,232,0.08)' }}/>
+              <Reveal key={n} delay={i * 0.08} y={24}>
+                <div style={{ padding: '36px 32px', borderRight: i < STEPS.length - 1 ? '1px solid rgba(245,240,232,0.06)' : 'none', position: 'relative' }}>
+                  <div style={{ position: 'absolute', top: 0, left: 32, right: 32, height: 2, background: i === 0 ? GOLD : 'rgba(245,240,232,0.08)', boxShadow: i === 0 ? '0 0 12px rgba(245,158,11,0.4)' : 'none' }}/>
                   <div className="mono" style={{ fontSize: 11, color: GOLD, letterSpacing: '0.12em', marginBottom: 18 }}>{n}</div>
                   <div className="cd" style={{ fontSize: 18, fontWeight: 600, color: '#F5F0E8', marginBottom: 12, letterSpacing: '-0.01em', lineHeight: 1.2 }}>{title}</div>
                   <div className="cg" style={{ fontSize: 13, color: 'rgba(245,240,232,0.46)', lineHeight: 1.68 }}>{body}</div>
@@ -320,9 +430,11 @@ export default function Landing() {
             { end: 4,   suffix: '',   label: 'Identity detection engines running in parallel' },
             { end: 4,   suffix: '',   label: 'Rule formats generated: YARA, Sigma, KQL, Splunk SPL' },
           ].map(({ end, suffix, label }, i) => (
-            <Reveal key={label} delay={i * 0.06}>
-              <div>
-                <div className="cd" style={{ fontSize: 'clamp(36px,5vw,60px)', fontWeight: 700, color: GOLD, lineHeight: 1, letterSpacing: '-0.04em', marginBottom: 12 }}>
+            <Reveal key={label} delay={i * 0.06} y={24}>
+              <div style={{ position: 'relative' }}>
+                {/* Glow bloom behind number */}
+                <div aria-hidden style={{ position: 'absolute', top: '50%', left: 0, transform: 'translateY(-60%)', width: 80, height: 80, background: 'radial-gradient(circle, rgba(245,158,11,0.12) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+                <div className="cd" style={{ fontSize: 'clamp(36px,5vw,60px)', fontWeight: 700, color: GOLD, lineHeight: 1, letterSpacing: '-0.04em', marginBottom: 12, position: 'relative', animation: 'glow-pulse 4s ease-in-out infinite' }}>
                   <Counter end={end} suffix={suffix}/>
                 </div>
                 <div className="cg" style={{ fontSize: 13, color: 'rgba(245,240,232,0.4)', lineHeight: 1.55, maxWidth: 200 }}>{label}</div>
@@ -342,7 +454,7 @@ export default function Landing() {
           </Reveal>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 2 }}>
             {FOR_WHOM.map(({ icon: Icon, title, body }, i) => (
-              <Reveal key={title} delay={i * 0.08}>
+              <Reveal key={title} delay={i * 0.08} y={24}>
                 <div style={{ padding: '36px 32px', background: 'rgba(245,240,232,0.02)', border: '1px solid rgba(245,240,232,0.07)' }}>
                   <Icon size={22} color={GOLD} style={{ marginBottom: 20 }}/>
                   <div className="cd" style={{ fontSize: 18, fontWeight: 600, color: '#F5F0E8', marginBottom: 12, letterSpacing: '-0.01em' }}>{title}</div>
@@ -356,7 +468,17 @@ export default function Landing() {
 
       {/* ── CTA ── */}
       <section style={{ padding: 'clamp(96px,12vw,160px) clamp(24px,5vw,72px)', position: 'relative', overflow: 'hidden', background: '#060507', borderTop: '1px solid rgba(245,240,232,0.05)' }}>
-        <div aria-hidden style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 600, height: 400, background: 'radial-gradient(ellipse, rgba(245,158,11,0.07) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+        {/* Radial glow */}
+        <div aria-hidden style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 600, height: 400, background: 'radial-gradient(ellipse, rgba(245,158,11,0.09) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+        {/* Ripple rings */}
+        {[0, 1, 2].map(i => (
+          <div key={i} aria-hidden style={{
+            position: 'absolute', top: '50%', left: '50%',
+            width: 500, height: 500, border: '1px solid rgba(245,158,11,0.07)',
+            borderRadius: '50%', pointerEvents: 'none',
+            animation: `ripple-ring ${4 + i * 1.6}s cubic-bezier(0,0,.8,1) ${i * 1.4}s infinite`,
+          }}/>
+        ))}
         <div style={{ maxWidth: 760, margin: '0 auto', textAlign: 'center', position: 'relative' }}>
           <Reveal>
             <h2 className="cd" style={{ fontSize: 'clamp(30px,5vw,64px)', fontWeight: 700, color: '#F5F0E8', letterSpacing: '-0.03em', lineHeight: 0.94, marginBottom: 22 }}>
