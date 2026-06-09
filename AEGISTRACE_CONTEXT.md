@@ -1,5 +1,5 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v9.0 | **Last updated:** June 2026
+**Version:** v9.1 | **Last updated:** June 2026
 **Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files.
 
 ---
@@ -641,16 +641,16 @@ react, react-dom, react-router-dom, axios, zustand, lucide-react, react-scripts
 ### Priority 7 — v5.0+ Planned
 - [ ] SCIM endpoint (`/api/scim/v2`) — enterprise push-based identity sync
 - [ ] Least Agency enforcement — per-agent scope definition, auto-reject out-of-scope actions
-- [x] **MCP Security Gateway** — shipped as standalone `mcp-aegis` package (see below)
+- [x] **MCP Security Gateway** — shipped as standalone `mcp-aegis` v0.2.0 package (see below); GitHub: Prasanna-27eng/mcp-aegis
 - [ ] Agent Supervision Console — per-AI-agent kill switches + task scope enforcement
 - [ ] Attacker Path Reconstruction — visual kill-chain across human + machine actors
 - [ ] Endpoint Agent Layer 3 (eBPF) — Falco companion process on Linux
 - [ ] Endpoint Agent Layer 4 (Memory Forensics) — Volatility 3 integration
 
-### mcp-aegis — Companion Project (v0.1.0, June 2026)
+### mcp-aegis — Companion Project (v0.2.0, June 2026)
 
 **Standalone PyPI package:** `pip install mcp-aegis`  
-**Repo:** `~/Documents/Claude/Projects/aegistrace-mcp-gateway/`  
+**Repo:** `~/Documents/Claude/Projects/aegistrace-mcp-gateway/` · GitHub: `https://github.com/Prasanna-27eng/mcp-aegis`  
 **Description:** MCP security gateway that sits between any AI agent and any MCP server. Blocks dangerous tool calls by default, logs everything to SQLite, ships with a 7-rule default TOML policy.
 
 **Architecture:**
@@ -659,22 +659,24 @@ AI Agent → POST http://localhost:8765/ → mcp-aegis gateway
                                           │
                                      PolicyEngine (TOML rules)
                                           │
-                                   BLOCK / ALLOW / LOG_ONLY
+                            BLOCK / ALLOW / LOG_ONLY / REQUIRE_APPROVAL
                                           │
                                      AuditLog (SQLite)
-                                     Webhook (optional → AegisTrace ingest)
+                                     Webhook (optional → any SIEM)
+                                     AegisSender (optional → AegisTrace AgentAction queue)
 ```
 
-**Files shipped (v0.1.0):**
-- `src/mcp_aegis/types.py` — shared dataclasses: MCPRequest, PolicyDecision, AuditEvent, Decision enum
-- `src/mcp_aegis/proxy.py` — MCPProxy: intercept JSON-RPC, policy-check, forward, write AuditEvent
+**Files shipped (v0.2.0):**
+- `src/mcp_aegis/types.py` — Decision enum (ALLOW/BLOCK/LOG_ONLY/REQUIRE_APPROVAL), MCPRequest, PolicyDecision, AuditEvent
+- `src/mcp_aegis/proxy.py` — MCPProxy: intercept JSON-RPC, policy-check, forward or block, add_pending on REQUIRE_APPROVAL
+- `src/mcp_aegis/stdio_transport.py` — NEW v0.2: async stdio proxy; run_stdio_http() + run_stdio_subprocess() (Claude Desktop compatible)
 - `src/mcp_aegis/server.py` — FastAPI app: POST /, GET /sse (streaming passthrough), GET /health
 - `src/mcp_aegis/policy.py` — PolicyEngine: TOML loader, evaluate(), test(), reload(), from_default()
-- `src/mcp_aegis/policy_default.toml` — 7 default rules (TOML, not YAML — avoids Norway problem)
-- `src/mcp_aegis/audit.py` — SQLite WAL-mode log: sessions + events tables with session_id, optional webhook
-- `src/mcp_aegis/cli.py` — typer CLI: serve, logs, stats, policy test, policy show; rich formatting + plain fallback
-- `pyproject.toml` — hatchling build, mcp-aegis 0.1.0, Python ≥ 3.10
-- `README.md` — marketing README: Problem → Demo → Install → Config → What it blocks
+- `src/mcp_aegis/policy_default.toml` — v2.0: 7 default rules + commented REQUIRE_APPROVAL example
+- `src/mcp_aegis/audit.py` — SQLite WAL-mode: sessions + events + pending_approvals tables; _WebhookSender + _AegisSender; add_pending/resolve_pending/list_pending
+- `src/mcp_aegis/cli.py` — typer CLI: serve (--transport, --upstream-cmd), logs, stats, pending, approve, deny, policy test/show
+- `pyproject.toml` — hatchling build, mcp-aegis 0.2.0, Python ≥ 3.10
+- `README.md` — updated: stdio, REQUIRE_APPROVAL, AegisTrace integration, Claude Desktop config example
 
 **Default policy decisions:**
 | Rule | Decision | Catches |
@@ -687,18 +689,24 @@ AI Agent → POST http://localhost:8765/ → mcp-aegis gateway
 | log_sampling_calls | LOG_ONLY | sampling/createMessage |
 | log_database_writes | LOG_ONLY | *_write, *_delete, *_drop, execute_sql, query |
 
-**CLI usage:**
+**CLI usage (v0.2):**
 ```bash
 mcp-aegis serve --upstream http://localhost:3000 --dry-run
+mcp-aegis serve --transport stdio --upstream-cmd "npx -y @modelcontextprotocol/server-filesystem ~/Documents"
 mcp-aegis logs --tail
 mcp-aegis stats
+mcp-aegis pending                  # list REQUIRE_APPROVAL items
+mcp-aegis approve <id>
+mcp-aegis deny <id>
 mcp-aegis policy test bash         # exit 1 = BLOCK
 mcp-aegis policy show
 ```
 
-**AegisTrace integration:** Set `MCP_AEGIS_WEBHOOK_URL` to `https://aegistrace/api/ingest/mcp-gateway` — every BLOCK/LOG_ONLY event POSTed in real time with session_id, tool name, decision, payload preview.
+**AegisTrace native integration (v0.2):** Set `AEGISTRACE_URL` + `AEGISTRACE_INGEST_KEY` — BLOCK/REQUIRE_APPROVAL events POST to `/api/ingest/mcp-event`, creating AgentAction entries at `/app/agent-security`.
 
-**v0.2 roadmap:** stdio transport, REQUIRE_APPROVAL decision, AegisTrace native integration (decisions in AI Action Approval Queue).
+**AegisTrace backend (v9.1):** `POST /api/ingest/mcp-event` added to `routers/ingest.py` — creates `AgentAction(agent_name="mcp-aegis", action_type="mcp_block"|"mcp_require_approval")`. Same INGEST_API_KEY auth as endpoint agents.
+
+**v0.3 roadmap:** Community policy library, STIX 2.1 export, MITRE ATT&CK tagging, Docker image, true async approval (SSE back-channel).
 
 ### Priority 8 — NVIDIA NIM Phases (v7.0–v9.0 built)
 
@@ -723,6 +731,12 @@ mcp-aegis policy show
 - [x] **Llama 3.2 Vision for screenshot evidence**: EndpointAgent checks for screenshot/image log batches and analyzes them with `nvidia_vision` before starting its investigation loop.
 - [x] **Codestral auto-Sigma rule generation**: After EndpointAgent loop, if endpoint_risk is critical/high, Codestral 22B auto-generates a Sigma YAML detection rule from the suspicious process findings.
 - [x] **Llama Guard 3 on EDR high-risk actions**: `isolate_endpoint`, `kill_process`, `run_command` in routers/edr.py now screen parameters through `_guard_edr_action()` (Llama Guard category S14) before executing. Blocks injection attempts in hostname/pid/command parameters.
+
+**v9.1 Built (June 2026) — mcp-aegis v0.2.0:**
+- [x] **mcp-aegis stdio transport**: `--transport stdio` mode; `run_stdio_http()` for HTTP upstream + `run_stdio_subprocess()` to spawn MCP server as child process. Claude Desktop compatible via `claude_desktop_config.json`.
+- [x] **REQUIRE_APPROVAL decision**: 4th policy decision in Decision enum. Blocks call + adds to `pending_approvals` SQLite table. `mcp-aegis pending/approve/deny` CLI workflow.
+- [x] **AegisTrace native integration**: `AEGISTRACE_URL` + `AEGISTRACE_INGEST_KEY` env vars. `_AegisSender` daemon thread POSTs BLOCK/REQUIRE_APPROVAL events to `/api/ingest/mcp-event`.
+- [x] **`POST /api/ingest/mcp-event`** added to `routers/ingest.py`: accepts mcp-aegis payloads, creates `AgentAction(agent_name="mcp-aegis")` entries visible in `/app/agent-security`.
 
 **Still planned:**
 - [ ] Phase 10: NVIDIA Morpheus — GPU-accelerated DGA detection, log anomaly scoring, network flow analysis; replaces Python implementations in endpoint agent; requires Kafka + GPU (post-Render-free-tier)
