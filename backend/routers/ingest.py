@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Header, Request
 from fastapi.responses import StreamingResponse
 from sqlmodel import Session, select, func
 from typing import Optional
-from models import Endpoint, LogBatch, Case, TimelineEvent, AuditLog, IOCCorrelation, ShadowAIEvent, AgentCommand, ITDRAlert, RawLogEvent
+from models import Endpoint, LogBatch, Case, TimelineEvent, AuditLog, IOCCorrelation, ShadowAIEvent, AgentCommand, ITDRAlert, RawLogEvent, AgentAction
 from database import get_session
 from routers.auth import get_current_user
 from models import User
@@ -1519,3 +1519,57 @@ async def endpoint_stream(
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no", "Connection": "keep-alive"},
     )
+
+
+# ── mcp-aegis Gateway Events ─────────────────────────────────────────────────
+
+@router.post("/mcp-event")
+async def ingest_mcp_event(
+    request: Request,
+    session: Session = Depends(get_session),
+    x_aegistrace_key: Optional[str] = Header(None),
+):
+    """
+    Receive BLOCK / REQUIRE_APPROVAL events from mcp-aegis gateway.
+    Creates an AgentAction entry so events appear in the AI Action Approval Queue.
+    Auth: X-AegisTrace-Key header (same INGEST_API_KEY used by endpoint agents).
+    """
+    _verify_key(x_aegistrace_key)
+
+    try:
+        data = await request.json()
+    except Exception:
+        raise HTTPException(400, "Invalid JSON payload")
+
+    decision   = data.get("decision", "BLOCK")
+    tool_name  = data.get("tool_name") or data.get("resource_uri") or "unknown"
+    method     = data.get("method", "tools/call")
+    rule_name  = data.get("rule_name", "")
+    reason     = data.get("reason", "")
+    session_id = data.get("session_id", "")
+    preview    = data.get("payload_preview", "")
+
+    action_type = "mcp_require_approval" if decision == "REQUIRE_APPROVAL" else "mcp_block"
+    approval_status = "pending" if decision == "REQUIRE_APPROVAL" else "auto"
+
+    action = AgentAction(
+        agent_name="mcp-aegis",
+        task_scope=f"{method}: {tool_name}",
+        action_type=action_type,
+        input_data=json.dumps({
+            "session_id": session_id,
+            "method": method,
+            "tool_name": tool_name,
+            "rule_name": rule_name,
+            "payload_preview": preview,
+        }),
+        output_data=reason,
+        confidence=100,
+        approval_required=(decision == "REQUIRE_APPROVAL"),
+        approval_status=approval_status,
+    )
+    session.add(action)
+    session.commit()
+
+    return {"status": "ok", "action_id": action.id, "action_type": action_type}
+
