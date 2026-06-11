@@ -1,5 +1,5 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v9.1 | **Last updated:** June 2026
+**Version:** v9.2 | **Last updated:** June 2026
 **Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files.
 
 ---
@@ -707,6 +707,59 @@ mcp-aegis policy show
 **AegisTrace backend (v9.1):** `POST /api/ingest/mcp-event` added to `routers/ingest.py` — creates `AgentAction(agent_name="mcp-aegis", action_type="mcp_block"|"mcp_require_approval")`. Same INGEST_API_KEY auth as endpoint agents.
 
 **v0.3 roadmap:** Community policy library, STIX 2.1 export, MITRE ATT&CK tagging, Docker image, true async approval (SSE back-channel).
+
+### mcp-sploit — Companion Project (v0.2.0, June 2026)
+
+**Standalone repo:** `~/Documents/Claude/Projects/mcp-sploit/` · GitHub: `https://github.com/Prasanna-27eng/mcp-sploit`
+**Description:** Metasploit-style exploitation framework for testing MCP servers and `mcp-aegis` itself. Speaks real JSON-RPC 2.0 MCP (`initialize`, `tools/list`, `tools/call`) so it works against a raw MCP server or an `mcp-aegis` gateway with no changes — purple-team validation is just pointing `TARGET` at the gateway URL.
+
+**Architecture:**
+```
+mcp-sploit console (msfconsole-style)
+   │  use / set / show options / check / exploit / back / search
+   ▼
+ModuleRegistry — dynamic-loads modules under msploit/modules/
+   │
+   ▼
+MCPClient (JSON-RPC 2.0 over POST /) ──► TARGET = raw MCP server
+                                      ──► TARGET = mcp-aegis gateway URL
+```
+
+**Files shipped (v0.1.0):**
+- `src/msploit/mcp_client.py` — JSON-RPC 2.0 client (`initialize`, `tools/list`, `tools/call`); raises `MCPError` on JSON-RPC error envelopes (covers both real upstream errors and mcp-aegis BLOCK responses)
+- `src/msploit/base.py` — `Option`, `Module`, `AuxiliaryModule`, `ExploitModule`; option get/set/validate, `show_options()`, `info()`
+- `src/msploit/framework.py` — `ModuleRegistry`: dynamic module discovery via `pkgutil.walk_packages`
+- `src/msploit/cli.py` — `cmd.Cmd`-based REPL: `show modules/exploits/auxiliary/options`, `search`, `use`, `back`, `info`, `set`, `unset`, `check`, `exploit`/`run`, `exit`
+- `src/msploit/modules/auxiliary/scanner/mcp_enum.py` — enumerates tools via `tools/list`, flags high-risk tool names
+- `src/msploit/modules/exploit/mcp/file_exfiltration.py` — reads arbitrary files via an unauthenticated `read_file` tool (`FILE`, `TOOL` options)
+- `src/msploit/modules/exploit/mcp/shell_exec.py` — RCE via an unauthenticated `execute_shell` tool (`CMD`, `TOOL` options)
+- `target_server/app.py` — intentionally vulnerable JSON-RPC 2.0 MCP server (no auth) exposing `read_file` + `execute_shell`, for deterministic sandbox testing
+- `docker-compose.yml` + `Dockerfile`s — isolated `mcp-net` bridge network, `vulnerable-mcp` + `mcp-sploit` services
+- `tests/test_framework.py` — pytest: module loading, option validation, `check()` never sends the exploit payload (5/5 passing)
+
+**New in v0.2.0 — 4 modules + MITRE ATT&CK/ATLAS references:**
+- `src/msploit/modules/exploit/mcp/prompt_injection.py` — calls a tool that returns externally-sourced content (`web_fetch`, `URL` option) and scans the response for embedded attacker instructions (e.g. `<!-- AI-AGENT-INSTRUCTION: ... -->`, "ignore previous instructions"). The MCP-native attack: indirect prompt injection / tool response poisoning. References **MITRE ATLAS AML.T0051 (LLM Prompt Injection)** + AML.T0054 (LLM Jailbreak).
+- `src/msploit/modules/auxiliary/scanner/mcp_auth_bypass.py` — sends `initialize` + `tools/list` with zero credentials; flags target as vulnerable (CWE-306) if the full handshake succeeds unauthenticated.
+- `src/msploit/modules/exploit/mcp/tool_schema_abuse.py` — sends 5 type-confused payloads (int, array, object, 100k-char string, null-byte) for a tool's declared `string` field (`TOOL`/`FIELD` options) and reports ACCEPTED vs REJECTED per payload. CWE-20.
+- `src/msploit/modules/auxiliary/scanner/mcp_policy_probe.py` — fires 8 representative `tools/call` probes mirroring mcp-aegis's default policy categories (shell exec, `~/.ssh/id_rsa`, `.env`, home dir crawl, SSRF-style network request, `.git/config`, SQL write, benign read) and classifies each as `[BLOCKED]` (JSON-RPC -32600), `[ALLOWED-NOOP]`, or `[ALLOWED]` — fingerprints the gateway's effective ruleset in one run, including the known `tools/call` credential-read gap below.
+- Existing modules now carry references too: `file_exfiltration` → ATT&CK T1005 + T1552.001, `shell_exec` → ATT&CK T1059, `mcp_enum` → ATT&CK T1518.
+- `target_server/app.py` — added 4 new mock tools (`list_files`, `http_request`, `execute_sql`, `web_fetch`, `search_logs` — 5 total) so the new scanners/exploits have realistic targets; `tools/call` dispatch now wraps `_call_tool` in try/except and returns a JSON-RPC `-32000` error instead of crashing on type-confused input.
+- `tests/test_framework.py` — 9/9 passing (4 new tests covering the new modules).
+
+**Verified end-to-end (June 2026):**
+- `use exploit/mcp/file_exfiltration` → `check` → `exploit` against `target_server` → retrieved `/etc/passwd` ✅
+- `use exploit/mcp/shell_exec` → `exploit` against `target_server` → ran `id` via `execute_shell` ✅
+- `use exploit/mcp/prompt_injection` → `exploit` against `target_server` (`web_fetch` URL=`https://evil.test/article`) → response contained the injected `AI-AGENT-INSTRUCTION` HTML comment, both injection markers detected ✅
+- `use exploit/mcp/tool_schema_abuse` → `exploit` against `target_server` (`search_logs`/`query`) → 5/5 malformed payloads ACCEPTED (no schema enforcement) ✅
+- `use auxiliary/scanner/mcp_auth_bypass` → `run` against `target_server` → unauthenticated `initialize` + `tools/list` both succeeded, flagged VULNERABLE ✅
+- `use auxiliary/scanner/mcp_policy_probe` → `run` against `target_server` (no gateway) → all 8 probes `[ALLOWED]`/`[ALLOWED-NOOP]` (no policy in front) ✅
+- **Purple team vs mcp-aegis (default policy, port 8766 → upstream 8765):**
+  - `exploit/mcp/shell_exec` → **BLOCKED** by `block_shell_execution` (JSON-RPC error -32600) ✅
+  - `exploit/mcp/file_exfiltration` (FILE=`~/.ssh/id_rsa`, via `tools/call read_file`) → **NOT BLOCKED**, decision=`ALLOW`/`default_allow` ⚠️
+
+**Known gap found via purple-team testing (mcp-aegis, not yet fixed):** `block_credential_reads` and `log_home_directory_crawl` in `policy_default.toml` only match `resource_patterns` against `MCPRequest.resource_uri`, which is populated **only for `method == "resources/read"`**. A `tools/call` to `read_file` with `arguments.path` pointing at `~/.ssh/id_rsa` or `.env` bypasses both rules entirely (falls through to `default_allow`) — `auxiliary/scanner/mcp_policy_probe` surfaces this directly via its `credential_read_ssh`/`credential_read_env` probes. To close this, `policy.py`'s `_rule_matches` would need to also check tool-call argument values (e.g. `path`, `file`, `uri` keys in `params.arguments`) against `resource_patterns` for `tools/call` requests. Separately, `mcp-aegis logs` (non-`--tail`) currently crashes (`AttributeError: 'AuditEvent' object has no attribute 'get'` in `cli.py:226`) — `_print_table` calls `.get()` on a dataclass row.
+
+**Roadmap:** re-run `mcp_policy_probe` against the mcp-aegis gateway (port 8766) once the `tools/call` argument-matching gap above is fixed, to confirm `credential_read_ssh`/`credential_read_env` flip to `[BLOCKED]`; community modules (e.g. `exploit/mcp/sql_injection`); AegisTrace dashboard view for mcp-sploit run history; GitHub Actions CI.
 
 ### Priority 8 — NVIDIA NIM Phases (v7.0–v9.0 built)
 
