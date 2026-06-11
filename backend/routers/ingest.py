@@ -1626,3 +1626,56 @@ async def ingest_promptfuzz_event(
 
     return {"status": "ok", "action_id": action.id, "action_type": "prompt_fuzz_bypass"}
 
+
+# ── nhi-hunter IAM Privilege-Escalation Path Events ─────────────────────────
+
+@router.post("/nhihunter-event")
+async def ingest_nhihunter_event(
+    request: Request,
+    session: Session = Depends(get_session),
+    x_aegistrace_key: Optional[str] = Header(None),
+):
+    """
+    Receive a discovered IAM privilege-escalation path from an nhi-hunter scan.
+    Creates an AgentAction entry so escalation paths appear in the
+    AI Action Approval Queue alongside mcp-aegis and prompt-fuzz events.
+    Auth: X-AegisTrace-Key header (same INGEST_API_KEY used by endpoint agents).
+    """
+    _verify_key(x_aegistrace_key)
+
+    try:
+        data = await request.json()
+    except Exception:
+        raise HTTPException(400, "Invalid JSON payload")
+
+    source          = data.get("source", "unknown")
+    start_identity  = data.get("start_identity", source)
+    target_identity = data.get("target_identity", "unknown")
+    path_length     = data.get("path_length", 0)
+    path            = data.get("path", [])
+    techniques      = data.get("techniques", [])
+    mitre_attack    = data.get("mitre_attack", "")
+    rendered        = data.get("rendered", "")
+
+    action = AgentAction(
+        agent_name="nhi-hunter",
+        task_scope=f"IAM privesc path [{path_length} hop(s)]: {start_identity} -> {target_identity}",
+        action_type="iam_privesc_path_found",
+        input_data=json.dumps({
+            "start_identity": start_identity,
+            "target_identity": target_identity,
+            "path_length": path_length,
+            "path": path,
+            "techniques": techniques,
+            "mitre_attack": mitre_attack,
+        }),
+        output_data=rendered,
+        confidence=100,
+        approval_required=False,
+        approval_status="auto",
+    )
+    session.add(action)
+    session.commit()
+
+    return {"status": "ok", "action_id": action.id, "action_type": "iam_privesc_path_found"}
+
