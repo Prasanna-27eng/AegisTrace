@@ -813,9 +813,9 @@ MCPClient (JSON-RPC 2.0 over POST /) ──► TARGET = raw MCP server
 
 **Verified end-to-end (June 2026):** `nhi-hunter scan --input examples/sample_iam_dump.json --start-role CIRunner` → found the 2-hop `sts:AssumeRole` chain to `AdminRole` and a 3-hop chain to `LambdaAdminRole`, exit code 1; `--start-role GitHubActionsOIDC` → found the 1-hop `iam:PassRole + lambda:*` chain to `LambdaAdminRole` (and a 2-hop chain onward to `AdminRole`, since an AdministratorAccess holder has wildcard permissions over every other identity too); `clean_iam.json` / `ReadOnlyRole` → "No privilege-escalation path found", exit code 0. Clean `pip install` of the built wheel verified in a fresh venv.
 
-**PyPI:** name `nhi-hunter` confirmed fully available (no collision, unlike `prompt-fuzz`) — not yet published, pending user go-ahead.
+**Published to PyPI (June 2026):** `pip install nhi-hunter` works — v0.1.0 live at https://pypi.org/project/nhi-hunter/0.1.0/ (no name collision this time).
 
-**Roadmap:** publish to PyPI (`pip install nhi-hunter`); demo GIF for README; add `shadow-sniffer` (4th and final tool in the Grassroots Expansion Pack) next.
+**Roadmap:** demo GIF for README; add `shadow-sniffer` (4th and final tool in the Grassroots Expansion Pack) next.
 
 ### Priority 8 — NVIDIA NIM Phases (v7.0–v9.0 built)
 
