@@ -4,7 +4,7 @@ import {
   ArrowRight, Shield, Brain, Fingerprint, FolderSearch,
   Mail, Monitor, Activity, ArrowUpRight, Zap, Eye, CheckCircle,
   ShieldCheck, Lock, GitMerge, Users, Server, ChevronDown,
-  GitBranch, Workflow,
+  GitBranch, Workflow, Radar, ShieldAlert, Gauge, Key,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -183,6 +183,10 @@ export default function Landing() {
     { icon: Server,       label: 'Endpoint Agent',            desc: 'Lightweight v5 agent for Windows, Linux, and macOS. Real-time telemetry, file integrity, and process monitoring.' },
     { icon: GitBranch,    label: 'Attack Graph Reconstruction', desc: 'Temporal Linker correlates alerts, endpoint logs, and defense events within seconds of each other, then asks Nemotron-70B to reconstruct the full attack chain as a narrative with MITRE technique mapping.' },
     { icon: Workflow,     label: 'Playbook Engine (SOAR)',    desc: 'If-this-then-that automation: trigger on ITDR alerts, Shadow AI detections, or blocked MCP tool calls — auto-create cases, enrich IOCs, page on-call, and queue endpoint isolation for one-click approval.' },
+    { icon: Radar,        label: 'Shadow AI Detection',       desc: 'Cross-references endpoint and network telemetry against 14+ known AI API domains and your approved-services allowlist — flags unsanctioned ChatGPT, Copilot, and agent traffic, with ITDR escalation on repeat hits.' },
+    { icon: ShieldAlert,  label: 'AI Defense Console',        desc: 'Live attack feed with human-in-the-loop control. Every automated containment suggestion — block, isolate, escalate, dismiss — surfaces for a one-click analyst decision before it executes.' },
+    { icon: Gauge,        label: 'Control Plane',             desc: 'Real-time SOC command view: 5 KPI cards, high-risk identity panel, AI action queue, ITDR threat feed, and endpoint heartbeats — auto-refreshing every 30 seconds.' },
+    { icon: Key,          label: 'NHI Lifecycle & Connectors', desc: 'Tracks service accounts, API keys, and tokens through sprawl scoring and trust decay, and connects identity providers plus approved AI services into one allowlist.' },
   ];
 
   const STEPS = [
@@ -426,12 +430,13 @@ export default function Landing() {
       <section style={{ padding: 'clamp(72px,10vw,120px) clamp(24px,5vw,72px)', background: '#060507', borderTop: '1px solid rgba(245,240,232,0.05)' }}>
         <div style={{ maxWidth: 1240, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'clamp(40px,6vw,64px)' }}>
           {[
-            { end: 15,  suffix: '',   label: 'Investigation tabs per case — including Vision and Rules' },
+            { end: 15,  suffix: '',   label: 'Investigation tabs per case — including Vision, Rules, and Attack Graph' },
             { end: 7,   suffix: '',   label: 'IOC intelligence sources queried per alert' },
             { end: 8,   suffix: '',   label: 'NVIDIA NIM models integrated across the platform' },
             { end: 100, suffix: '%',  label: 'DORA Article 19 report coverage' },
-            { end: 4,   suffix: '',   label: 'Identity detection engines running in parallel' },
+            { end: 6,   suffix: '',   label: 'Identity (ITDR) detection engines running in parallel' },
             { end: 4,   suffix: '',   label: 'Rule formats generated: YARA, Sigma, KQL, Splunk SPL' },
+            { end: 7,   suffix: '',   label: 'Automated SOAR playbook actions, from case creation to endpoint isolation' },
           ].map(({ end, suffix, label }, i) => (
             <Reveal key={label} delay={i * 0.06} y={24}>
               <div style={{ position: 'relative' }}>

@@ -121,13 +121,17 @@ export default function Mission() {
     { text: 'NVIDIA NIM: Detection Rule Generator — Codestral 22B (Phase 9)', why: 'Generates deployable YARA, Sigma, KQL, and Splunk SPL from case IOCs and MITRE techniques. No manual rule authoring.' },
     { text: 'Temporal Linker — Attack Graph Reconstruction (v10.0)',         why: 'Correlates alerts, endpoint logs, and defense events within seconds of each other across a case, then asks Nemotron-70B to reconstruct the full attack chain as a narrative with MITRE technique mapping.' },
     { text: 'SOAR Playbook Engine (v10.0)',                                  why: 'If-this-then-that automation rules trigger on ITDR alerts, Shadow AI detections, or blocked MCP tool calls — auto-creating cases, enriching IOCs, and queuing high-impact actions like endpoint isolation for one-click approval.' },
+    { text: 'Shadow AI Detection Dashboard (v4.3)',                          why: 'Cross-references endpoint and network telemetry against 14+ known AI API domains and an approved-services allowlist. 3+ hits in 24h auto-escalates into ITDR.' },
+    { text: 'AI Defense Console (v5.3)',                                     why: 'Live attack feed with human-in-the-loop block / isolate / escalate / dismiss — every automated containment suggestion needs a one-click analyst decision before it runs.' },
+    { text: 'Control Plane — live SOC command view',                        why: '5 KPI cards, high-risk identity panel, AI action queue, ITDR threat feed, and endpoint heartbeats, auto-refreshing every 30 seconds.' },
+    { text: 'NHI Lifecycle Health Dashboard',                                why: 'Service accounts, API keys, and tokens get sprawl scores and trust-decay tracking — the identities most tools never look at.' },
+    { text: 'Connector Hub — identity providers + approved AI services',    why: 'One place to register identity provider connections and the AI services your org has actually approved, feeding the Shadow AI allowlist.' },
   ];
 
   const V2 = [
-    { text: 'Shadow AI Detection — unregistered AI agents',            why: 'Every AI agent is an identity. This maps them and flags the ones nobody authorised.', active: true },
     { text: 'Adaptive Thresholds Agent',                               why: 'Nemotron reviews detector false-positive/false-negative rates on a 4-hour cycle and adjusts thresholds within safe bounds — without touching permissions or data.', active: true },
-    { text: 'Control Plane — real-time identity state changes',        why: 'Catch privilege grants, group changes, and account mutations the moment they happen.' },
-    { text: 'Non-human Identity (NHI) vault and lifecycle',            why: 'Service accounts and API keys have the same identity rights as users. Most tools ignore them.' },
+    { text: 'Auto-Rule Generation Trigger',                            why: 'When the same MITRE technique appears in 3+ cases within 7 days, Codestral 22B auto-generates YARA/Sigma/KQL/Splunk rules into a pending-review queue — the detection library grows without analyst effort.' },
+    { text: 'Non-human Identity (NHI) vault + credential rotation',    why: 'The lifecycle health dashboard already scores sprawl and trust decay — next is a vault that actually rotates and revokes the credentials it flags.' },
     { text: 'Quantum-Resistant Key Monitoring',                        why: 'Flags RSA/EC keys in environments migrating toward post-quantum cryptography.' },
     { text: 'Agent Supervision Layer for AI workflows',                why: 'Governs what actions AI agents can take. Logs everything. Flags deviations.' },
   ];

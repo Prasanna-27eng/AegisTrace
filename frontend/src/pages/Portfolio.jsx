@@ -37,6 +37,28 @@ function TiltCard({ children, style = {} }) {
   );
 }
 
+/* ─── Animated counter ──────────────────────────────────────────────────── */
+function Counter({ end, suffix = '' }) {
+  const ref    = useRef(null);
+  const inView = useInView(ref, { once: true });
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (!inView) return;
+    let raf;
+    const dur   = 2000;
+    const start = performance.now();
+    const tick  = now => {
+      const t    = Math.min((now - start) / dur, 1);
+      const ease = 1 - Math.pow(1 - t, 4);
+      setVal(Math.round(ease * end));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [inView, end]);
+  return <span ref={ref}>{val}{suffix}</span>;
+}
+
 /* ─── Scroll reveal ─────────────────────────────────────────────────────── */
 function Reveal({ children, delay = 0, style = {} }) {
   const ref    = useRef(null);
@@ -381,12 +403,33 @@ export default function Portfolio() {
                 large
                 title="AegisTrace — AI-Powered SOC Platform"
                 tags={['React 18', 'FastAPI', 'NVIDIA NIM', 'PostgreSQL', 'Docker', 'MITRE ATT&CK']}
-                desc="Full-stack security control plane with NVIDIA NIM agentic AI. 15-tab case management, ITDR with 4 detection engines, 7-source IOC intelligence, email forensics, identity graph, trust timeline, screenshot vision analysis (Llama 3.2 Vision 11B), detection rule generation (Codestral 22B — YARA, Sigma, KQL, Splunk SPL), Hermes-3 function-calling triage agent, semantic case search with NV-RerankQA, Llama Guard safety classifier, DORA Article 19 compliance reports, a Temporal Linker that reconstructs full attack chains from correlated alerts (Nemotron-70B + MITRE mapping), and a SOAR playbook engine for if-this-then-that automation with one-click approval gating. Runs on Windows, Linux, and macOS."
+                desc="Full-stack security control plane with NVIDIA NIM agentic AI. 15-tab case management (including Vision, Rules, and Attack Graph), ITDR with 6 parallel detection engines, 7-source IOC intelligence, email forensics, identity graph, trust timeline, screenshot vision analysis (Llama 3.2 Vision 11B), detection rule generation (Codestral 22B — YARA, Sigma, KQL, Splunk SPL), Hermes-3 function-calling triage agent, semantic case search with NV-RerankQA, Llama Guard safety classifier, DORA Article 19 compliance reports, a Temporal Linker that reconstructs full attack chains from correlated alerts (Nemotron-70B + MITRE mapping), and a SOAR playbook engine for if-this-then-that automation with one-click approval gating. Beyond the case workflow, it ships a Shadow AI Detection dashboard that flags unsanctioned AI tool usage against 14+ known API domains, an AI Defense Console for human-in-the-loop attack response, a live Control Plane SOC command view with 30-second auto-refresh, and an NHI lifecycle health dashboard with sprawl scoring and trust decay. Runs on Windows, Linux, and macOS."
                 url="https://github.com/Prasanna-27eng/AegisTrace"
                 delay={0}
               />
             </div>
           </div>
+
+          {/* Platform highlights strip */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 'clamp(28px,4vw,48px)', padding: 'clamp(32px,5vw,48px) clamp(8px,2vw,24px)', marginBottom: 2, borderBottom: '1px solid rgba(245,240,232,0.05)' }}>
+            {[
+              { end: 17, suffix: '',  label: 'Platform modules, from case management to Shadow AI detection' },
+              { end: 8,  suffix: '',  label: 'NVIDIA NIM models integrated (Nemotron, Hermes-3, Codestral, Llama Guard...)' },
+              { end: 6,  suffix: '',  label: 'ITDR detection engines running in parallel' },
+              { end: 7,  suffix: '',  label: 'SOAR playbook actions, fully automatable with approval gating' },
+            ].map(({ end, suffix, label }, i) => (
+              <Reveal key={label} delay={i * 0.06}>
+                <div style={{ position: 'relative' }}>
+                  <div aria-hidden style={{ position: 'absolute', top: '50%', left: 0, transform: 'translateY(-60%)', width: 70, height: 70, background: 'radial-gradient(circle, rgba(245,158,11,0.1) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+                  <div className="cd" style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, color: GOLD, lineHeight: 1, letterSpacing: '-0.04em', marginBottom: 10, position: 'relative' }}>
+                    <Counter end={end} suffix={suffix}/>
+                  </div>
+                  <div className="cg" style={{ fontSize: 12, color: 'rgba(245,240,232,0.4)', lineHeight: 1.55, maxWidth: 200 }}>{label}</div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 2 }}>
             <ProjectCard
               title="WebSecGuard — Web Security Scanner"
