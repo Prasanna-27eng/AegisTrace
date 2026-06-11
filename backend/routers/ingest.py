@@ -1573,3 +1573,56 @@ async def ingest_mcp_event(
 
     return {"status": "ok", "action_id": action.id, "action_type": action_type}
 
+
+# ── prompt-fuzz Jailbreak/Bypass Events ─────────────────────────────────────
+
+@router.post("/promptfuzz-event")
+async def ingest_promptfuzz_event(
+    request: Request,
+    session: Session = Depends(get_session),
+    x_aegistrace_key: Optional[str] = Header(None),
+):
+    """
+    Receive a bypassed-payload finding from a prompt-fuzz scan.
+    Creates an AgentAction entry so jailbreak bypasses appear in the
+    AI Action Approval Queue alongside mcp-aegis events.
+    Auth: X-AegisTrace-Key header (same INGEST_API_KEY used by endpoint agents).
+    """
+    _verify_key(x_aegistrace_key)
+
+    try:
+        data = await request.json()
+    except Exception:
+        raise HTTPException(400, "Invalid JSON payload")
+
+    target       = data.get("target", "unknown")
+    payload_id   = data.get("payload_id", "unknown")
+    payload_name = data.get("payload_name", payload_id)
+    category     = data.get("category", "")
+    severity     = data.get("severity", "medium")
+    prompt       = data.get("prompt", "")
+    response_preview = data.get("response_preview", "")
+    reasons      = data.get("reasons", [])
+
+    action = AgentAction(
+        agent_name="prompt-fuzz",
+        task_scope=f"jailbreak bypass [{category}]: {payload_name}",
+        action_type="prompt_fuzz_bypass",
+        input_data=json.dumps({
+            "target": target,
+            "payload_id": payload_id,
+            "category": category,
+            "severity": severity,
+            "prompt": prompt,
+            "reasons": reasons,
+        }),
+        output_data=response_preview,
+        confidence=100,
+        approval_required=False,
+        approval_status="auto",
+    )
+    session.add(action)
+    session.commit()
+
+    return {"status": "ok", "action_id": action.id, "action_type": "prompt_fuzz_bypass"}
+
