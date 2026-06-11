@@ -50,6 +50,8 @@ from routers.demo import router as demo_router
 from routers.semantic import router as semantic_router
 from routers.vision import router as vision_router
 from routers.rules import router as rules_router
+from routers.graph import router as graph_router
+from routers.orchestration import router as orchestration_router
 from hardware_tools import router as hardware_router
 from ai_router import call_ai_json
 from core.identity_engine import register_default_detectors
@@ -227,7 +229,7 @@ for r in [auth_router, cases_router, vt_router, email_router, ioc_router,
           policies_router, itdr_router, agent_security_router,
           connectors_router, nhi_router, health_router, simulation_router,
           defense_router, demo_router, semantic_router,
-          vision_router, rules_router]:
+          vision_router, rules_router, graph_router, orchestration_router]:
     app.include_router(r)
 
 
@@ -443,6 +445,15 @@ async def startup():
             seed_builtin_devices(_s)
     except Exception as _e:
         print(f"[hardware] Seed skipped: {_e}")
+
+    # ── Playbook engine (SOAR) seed ───────────────────────────────────────────
+    try:
+        from sqlmodel import Session
+        from routers.orchestration import seed_builtin_playbooks
+        with Session(engine) as _s:
+            seed_builtin_playbooks(_s)
+    except Exception as _e:
+        print(f"[orchestration] Seed skipped: {_e}")
 
     # ── Event bus handlers ────────────────────────────────────────────────────
     @event_bus.on(Events.IDENTITY_DISCOVERED)

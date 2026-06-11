@@ -4,6 +4,7 @@ import {
   ArrowRight, Shield, Brain, Fingerprint, FolderSearch,
   Mail, Monitor, Activity, ArrowUpRight, Zap, Eye, CheckCircle,
   ShieldCheck, Lock, GitMerge, Users, Server, ChevronDown,
+  GitBranch, Workflow,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -180,6 +181,8 @@ export default function Landing() {
     { icon: GitMerge,     label: 'Identity Graph',            desc: 'Visual map of every identity relationship — accounts, devices, sessions, and service principals — in a single graph.' },
     { icon: Shield,       label: 'ITDR Engine',               desc: 'Pluggable detection framework: impossible travel, credential stuffing, token replay, privilege escalation, and more.' },
     { icon: Server,       label: 'Endpoint Agent',            desc: 'Lightweight v5 agent for Windows, Linux, and macOS. Real-time telemetry, file integrity, and process monitoring.' },
+    { icon: GitBranch,    label: 'Attack Graph Reconstruction', desc: 'Temporal Linker correlates alerts, endpoint logs, and defense events within seconds of each other, then asks Nemotron-70B to reconstruct the full attack chain as a narrative with MITRE technique mapping.' },
+    { icon: Workflow,     label: 'Playbook Engine (SOAR)',    desc: 'If-this-then-that automation: trigger on ITDR alerts, Shadow AI detections, or blocked MCP tool calls — auto-create cases, enrich IOCs, page on-call, and queue endpoint isolation for one-click approval.' },
   ];
 
   const STEPS = [

@@ -737,6 +737,39 @@ class ITDRAlert(SQLModel, table=True):
     resolved_at: Optional[datetime] = Field(default=None)
 
 
+# ── v10.0 Playbook Engine (SOAR) ──────────────────────────────────────────────
+class Playbook(SQLModel, table=True):
+    """A trigger -> conditions -> actions automation rule."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(default="")
+    description: Optional[str] = Field(default=None, sa_column=Column(Text))
+    trigger_event_type: str = Field(default="")
+    # itdr_alert | defense_event | shadow_ai | mcp_event | case_created | endpoint_alert
+    trigger_conditions: Optional[str] = Field(default="{}", sa_column=Column(Text))  # JSON
+    actions: str = Field(default="[]", sa_column=Column(Text))  # JSON array of action objects
+    is_active: bool = Field(default=True)
+    requires_approval: bool = Field(default=True)   # global approval gate
+    run_count: int = Field(default=0)
+    last_run_at: Optional[datetime] = Field(default=None)
+    created_by: Optional[int] = Field(default=None, foreign_key="user.id")
+    org_id: int = Field(default=1)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class PlaybookRun(SQLModel, table=True):
+    """Audit record for every playbook execution."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    playbook_id: int = Field(foreign_key="playbook.id", index=True)
+    trigger_event_type: str = Field(default="")
+    trigger_event_id: Optional[str] = Field(default=None)
+    actions_taken: Optional[str] = Field(default="[]", sa_column=Column(Text))    # JSON
+    actions_pending: Optional[str] = Field(default="[]", sa_column=Column(Text))  # JSON (awaiting approval)
+    status: str = Field(default="running")  # running | completed | failed | pending_approval
+    result_summary: Optional[str] = Field(default=None, sa_column=Column(Text))
+    run_at: datetime = Field(default_factory=datetime.utcnow)
+    completed_at: Optional[datetime] = Field(default=None)
+
+
 # ── NVIDIA Phase 2: Case Embeddings ──────────────────────────────────────────
 class CaseEmbedding(SQLModel, table=True):
     """Stores NV-EmbedQA-E5-v5 embeddings for semantic case similarity search."""

@@ -19,6 +19,7 @@ import TrustTimelineTab from './TrustTimelineTab';
 import ProvenanceTab    from './ProvenanceTab';
 import VisionTab        from './VisionTab';
 import RulesTab         from './RulesTab';
+import AttackGraphTab   from './AttackGraphTab';
 
 const TABS = [
   { id: 'overview',      label: 'Overview' },
@@ -26,6 +27,7 @@ const TABS = [
   { id: 'iocs',          label: 'IOCs' },
   { id: 'terminal',      label: 'Terminal' },
   { id: 'timeline',      label: 'Timeline' },
+  { id: 'graph',         label: '🕸 Attack Graph' },
   { id: 'trust',         label: 'Trust' },
   { id: 'playbook',      label: 'Playbook' },
   { id: 'ai',            label: 'AI Analysis' },
@@ -208,6 +210,7 @@ export default function CaseDetail() {
         {tab === 'iocs'          && <IOCsTab {...tabProps} />}
         {tab === 'terminal'      && <TerminalTab {...tabProps} />}
         {tab === 'timeline'      && <TimelineTab {...tabProps} />}
+        {tab === 'graph'         && <AttackGraphTab {...tabProps} />}
         {tab === 'trust'         && <TrustTimelineTab caseId={id} />}
         {tab === 'playbook'      && <PlaybookTab {...tabProps} />}
         {tab === 'ai'            && <AIAnalysisTab {...tabProps} />}

@@ -62,6 +62,7 @@ const ShadowAI         = lazy(() => import('./pages/app/ShadowAI'));
 const ControlPlane     = lazy(() => import('./pages/app/ControlPlane'));
 const SimulationHub    = lazy(() => import('./pages/app/SimulationHub'));
 const DefenseConsole   = lazy(() => import('./pages/app/DefenseConsole'));
+const Playbooks        = lazy(() => import('./pages/app/Playbooks'));
 
 export default function App() {
   return (
@@ -109,6 +110,7 @@ export default function App() {
             <Route path="control-plane"     element={<ControlPlane />} />
             <Route path="simulation"        element={<SimulationHub />} />
             <Route path="defense-console"   element={<DefenseConsole />} />
+            <Route path="playbooks"         element={<Playbooks />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

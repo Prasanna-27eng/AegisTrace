@@ -762,6 +762,7 @@ async def ingest_telemetry(
     # ── Process shadow AI alerts ──────────────────────────────────────────────
     shadow_ai_count = 0
     itdr_alerts = []
+    shadow_events = []
     for alert in alerts:
         alert_type = alert.get("type", "")
 
@@ -775,6 +776,7 @@ async def ingest_telemetry(
                 detected_at=datetime.utcnow(),
             )
             session.add(shadow_event)
+            shadow_events.append(shadow_event)
             shadow_ai_count += 1
             event_bus.emit(Events.SHADOW_AI_DETECTED, {
                 "process_name": alert.get("process_name"),
@@ -1012,6 +1014,31 @@ async def ingest_telemetry(
                 ))
 
     session.commit()
+
+    # ── Evaluate playbooks (SOAR) for newly created alerts ───────────────────
+    try:
+        from routers.orchestration import evaluate_playbooks
+        for alert_obj in itdr_alerts:
+            if alert_obj.id is not None:
+                session.refresh(alert_obj)
+                await evaluate_playbooks(session, "itdr_alert", {
+                    "id": alert_obj.id,
+                    "alert_type": alert_obj.alert_type,
+                    "severity": alert_obj.severity,
+                    "hostname": hostname,
+                    "case_id": alert_obj.case_id,
+                })
+        for shadow_event in shadow_events:
+            if shadow_event.id is not None:
+                session.refresh(shadow_event)
+                await evaluate_playbooks(session, "shadow_ai", {
+                    "id": shadow_event.id,
+                    "hostname": hostname,
+                    "process_name": shadow_event.process_name,
+                    "destination_domain": shadow_event.destination_domain,
+                })
+    except Exception as e:
+        print(f"[orchestration] evaluate_playbooks (telemetry) failed: {e}")
 
     return {
         "ok": True,
@@ -1570,6 +1597,21 @@ async def ingest_mcp_event(
     )
     session.add(action)
     session.commit()
+    session.refresh(action)
+
+    # ── Evaluate playbooks (SOAR) for this MCP event ─────────────────────────
+    try:
+        from routers.orchestration import evaluate_playbooks
+        await evaluate_playbooks(session, "mcp_event", {
+            "id": action.id,
+            "action_type": action_type,
+            "confidence": action.confidence / 100,
+            "case_id": action.case_id,
+            "hostname": session_id,
+            "tool_name": tool_name,
+        })
+    except Exception as e:
+        print(f"[orchestration] evaluate_playbooks (mcp_event) failed: {e}")
 
     return {"status": "ok", "action_id": action.id, "action_type": action_type}
 

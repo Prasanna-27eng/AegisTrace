@@ -5,7 +5,7 @@ import {
   Wrench, Globe, Settings, LogOut, ChevronLeft, ChevronRight,
   Crosshair, ScrollText, Monitor, Network, Rss, Cpu,
   Terminal, Fingerprint, BarChart2, ShieldAlert, ShieldCheck, Bot,
-  Plug, Activity, Brain, Radio, Swords, Shield as ShieldIcon
+  Plug, Activity, Brain, Radio, Swords, Shield as ShieldIcon, Workflow
 } from 'lucide-react';
 import Logo from './Logo';
 import useStore from '../store/useStore';
@@ -16,6 +16,7 @@ const NAV_GROUPS = [
     items: [
       { to: '/app/defense-console', label: 'Defense Console',   Icon: ShieldAlert },
       { to: '/app/control-plane',   label: 'Control Plane',     Icon: Radio },
+      { to: '/app/playbooks',       label: 'Playbooks',         Icon: Workflow },
       { to: '/app/dashboard',       label: 'Dashboard',         Icon: LayoutDashboard },
     ],
   },

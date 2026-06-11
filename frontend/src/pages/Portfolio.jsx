@@ -381,7 +381,7 @@ export default function Portfolio() {
                 large
                 title="AegisTrace — AI-Powered SOC Platform"
                 tags={['React 18', 'FastAPI', 'NVIDIA NIM', 'PostgreSQL', 'Docker', 'MITRE ATT&CK']}
-                desc="Full-stack security control plane with NVIDIA NIM agentic AI. 15-tab case management, ITDR with 4 detection engines, 7-source IOC intelligence, email forensics, identity graph, trust timeline, screenshot vision analysis (Llama 3.2 Vision 11B), detection rule generation (Codestral 22B — YARA, Sigma, KQL, Splunk SPL), Hermes-3 function-calling triage agent, semantic case search with NV-RerankQA, Llama Guard safety classifier, and DORA Article 19 compliance reports. Runs on Windows, Linux, and macOS."
+                desc="Full-stack security control plane with NVIDIA NIM agentic AI. 15-tab case management, ITDR with 4 detection engines, 7-source IOC intelligence, email forensics, identity graph, trust timeline, screenshot vision analysis (Llama 3.2 Vision 11B), detection rule generation (Codestral 22B — YARA, Sigma, KQL, Splunk SPL), Hermes-3 function-calling triage agent, semantic case search with NV-RerankQA, Llama Guard safety classifier, DORA Article 19 compliance reports, a Temporal Linker that reconstructs full attack chains from correlated alerts (Nemotron-70B + MITRE mapping), and a SOAR playbook engine for if-this-then-that automation with one-click approval gating. Runs on Windows, Linux, and macOS."
                 url="https://github.com/Prasanna-27eng/AegisTrace"
                 delay={0}
               />

@@ -53,7 +53,7 @@ def agent_security_stats(
 
 
 @router.patch("/api/agent-security/actions/{action_id}/approve")
-def approve_action(
+async def approve_action(
     action_id: int,
     session: Session = Depends(get_session),
     user: User = Depends(get_current_user),
@@ -80,6 +80,16 @@ def approve_action(
     session.add(audit)
     session.commit()
     session.refresh(record)
+
+    # ── If this was a deferred playbook action, execute it now ───────────────
+    if record.action_type == "playbook_action":
+        try:
+            from routers.orchestration import execute_approved_playbook_action
+            await execute_approved_playbook_action(session, record)
+            session.refresh(record)
+        except Exception as e:
+            print(f"[orchestration] approved playbook action execution failed: {e}")
+
     return record
 
 
