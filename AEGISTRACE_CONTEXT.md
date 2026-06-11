@@ -791,24 +791,31 @@ MCPClient (JSON-RPC 2.0 over POST /) ──► TARGET = raw MCP server
 
 **Roadmap:** demo GIF for README (same VHS approach as mcp-sploit); `nhi-hunter` (3rd tool in the Grassroots Expansion Pack) — see new section below.
 
-### nhi-hunter — Companion Project (v0.1.0, planned — June 2026)
+### nhi-hunter — Companion Project (v0.1.0, built June 2026)
 
-**Standalone repo:** `~/Documents/Claude/Projects/nhi-hunter/` · GitHub: `https://github.com/Prasanna-27eng/nhi-hunter` (created, empty)
+**Standalone repo:** `~/Documents/Claude/Projects/nhi-hunter/` · GitHub: `https://github.com/Prasanna-27eng/nhi-hunter` (pushed, public)
 **Description:** Non-Human Identity (NHI) attacker — an AWS IAM privilege-escalation graph builder and pathfinder. Where `mcp-sploit` attacks the AI's *tools* and `prompt-fuzz` attacks the AI's *brain*, `nhi-hunter` attacks the *identity layer* underneath an AI agent's cloud deployment: the IAM roles, trust policies, and permission chains that let a low-privilege role (e.g. a CI/CD OIDC role) pivot to Admin/PowerUser. Third tool in the "Grassroots Expansion Pack" (`mcp-sploit` → `prompt-fuzz` → `nhi-hunter` → `shadow-sniffer`).
 
-**Why it's a natural fit for AegisTrace:** AegisTrace's Identity Graph + Risk Engine (`/app` Identity Graph view) already models identities and relationships; `nhi-hunter` produces the same kind of graph (nodes = IAM roles/users, edges = `sts:AssumeRole`/`iam:PassRole`/`lambda:InvokeFunction` permissions) from a local AWS IAM JSON dump, so its output can feed or cross-validate AegisTrace's Identity Graph Risk Engine — a purple-team check for "can our identity graph actually find this escalation path."
+**Why it's a natural fit for AegisTrace:** AegisTrace's Identity Graph + Risk Engine (`/app` Identity Graph view) already models identities and relationships; `nhi-hunter` produces the same kind of graph (nodes = IAM roles/users, edges = `sts:AssumeRole`/`iam:PassRole`+`lambda:*` permissions) from a local AWS IAM JSON dump, so its output can feed or cross-validate AegisTrace's Identity Graph Risk Engine — a purple-team check for "can our identity graph actually find this escalation path."
 
-**V1 scope (intentionally narrow — mature tools like PMapper/Cloudsplaining/Cartography already do full policy evaluation; V1 focuses on speed-to-readable-attack-tree from a local dump, not policy-evaluation completeness):**
-- `nhi_hunter/parsers.py` — parse a local AWS IAM JSON dump (roles, users, attached/inline policies, trust policies) into identity + permission records (no live AWS API calls in V1)
-- `nhi_hunter/graph_builder.py` — build a `networkx` directed graph: nodes = identities (roles/users), edges = escalation-relevant permissions (`sts:AssumeRole`, `iam:PassRole`, `lambda:InvokeFunction`, etc.)
-- `nhi_hunter/pathfinder.py` — shortest-path search from a `--start-role` to any role/user whose name or attached policy suggests Admin/PowerUser, using `networkx.shortest_path`
-- `nhi_hunter/cli.py` — Typer CLI: `nhi-hunter scan --input aws_iam_dump.json --start-role "GitHubActionsOIDC"` → readable text-tree of the escalation path(s) found
-- Test fixtures: deliberately misconfigured IAM JSON (e.g. a CI/CD OIDC role with `iam:PassRole` + `lambda:InvokeFunction` onto an admin-attached execution role) plus a "clean" fixture with no path
-- MIT `LICENSE`, `CITATION.cff`, `CONTRIBUTING.md`, `README.md` (same conventions as prompt-fuzz/mcp-sploit: MITRE ATT&CK references for privilege-escalation techniques, e.g. T1078.004 Cloud Accounts)
+**Files shipped (v0.1.0, Core + Wrapper architecture):**
+- `src/nhi_hunter/parsers.py` — parses a real `aws iam get-account-authorization-details` JSON dump (`RoleDetailList`/`UserDetailList`/`GroupDetailList`/`Policies`) into `Identity` records: name, ARN, kind (role/user), flattened `Allow` statements (inline + attached managed + group policies resolved), trust-policy principals, and an `is_admin` flag (AdministratorAccess/PowerUserAccess attached, a `*`/`*` statement, or "admin"/"poweruser" in the name). Documented V1 limitations: `NotAction`/`NotResource` statements skipped, `Condition` blocks ignored, resource policies (S3/Lambda) not modeled.
+- `src/nhi_hunter/graph_builder.py` — builds a `networkx.MultiDiGraph`: edge `A -> B` = "A can obtain B's permissions" via **`sts:AssumeRole`** (A's policy allows AssumeRole on B's ARN *and* B's trust policy allows A) or **`iam:PassRole + lambda:*`** (A can PassRole to B *and* create/update/invoke Lambda functions). Both techniques tagged with MITRE ATT&CK **T1078.004** (Valid Accounts: Cloud Accounts).
+- `src/nhi_hunter/pathfinder.py` — `find_escalation_paths()` runs `networkx.shortest_path` from `--start-role` to every `is_admin` identity, sorted shortest-first; `EscalationPath.render()` produces the readable attack-tree text.
+- `src/nhi_hunter/cli.py` — Typer CLI: `nhi-hunter scan --input <dump.json> --start-role <name> [--output --aegistrace-url --aegistrace-key]` (rich tables, exits non-zero if any path found — usable as a CI gate) + `nhi-hunter list-identities`.
+- `src/nhi_hunter/reporter.py` — posts discovered paths to AegisTrace's `/api/ingest/nhihunter-event`.
+- `tests/fixtures/vulnerable_iam.json` — 5-identity dump with a 2-hop `sts:AssumeRole` chain (`CIRunner` → `DevRole` → `AdminRole`) and a 1-hop `iam:PassRole`+Lambda chain (`GitHubActionsOIDC` → `LambdaAdminRole`); `tests/fixtures/clean_iam.json` — a `ReadOnlyRole` with zero outgoing escalation edges, demonstrating no false positives.
+- `examples/sample_iam_dump.json` (copy of the vulnerable fixture, for `pip install`-only trying-out without AWS credentials).
+- `tests/` — 24/24 passing: parser, graph-builder, pathfinder, and Typer CLI (`CliRunner`) tests.
+- MIT `LICENSE`, `CITATION.cff`, `CONTRIBUTING.md`, `README.md` (quick start, attack-tree examples, edge-technique table, AegisTrace integration, companion-projects links), `.github/workflows/ci.yml` (pytest matrix 3.10-3.12 — on disk only, same `workflow`-scope PAT issue as mcp-sploit/prompt-fuzz, needs manual add via GitHub web UI).
 
-**AegisTrace integration (planned):** `POST /api/ingest/nhihunter-event` in `routers/ingest.py` (same `X-AegisTrace-Key` pattern as `/mcp-event` and `/promptfuzz-event`), creating `AgentAction(agent_name="nhi-hunter", action_type="iam_privesc_path_found")` entries for any discovered escalation path, visible in `/app/agent-security`.
+**AegisTrace backend (this session):** `POST /api/ingest/nhihunter-event` added to `routers/ingest.py` (mirrors `/promptfuzz-event`) — creates `AgentAction(agent_name="nhi-hunter", action_type="iam_privesc_path_found")` entries visible in `/app/agent-security`. Same `X-AegisTrace-Key`/`INGEST_API_KEY` auth. No new frontend needed.
 
-**Roadmap:** scaffold Core+Wrapper package, write parser/graph/pathfinder + tests against fixtures, CLI, README/docs, AegisTrace ingest endpoint, push to GitHub, then PyPI (check name availability for `nhi-hunter` before publishing — given the `prompt-fuzz`/`promptfuzz` collision just hit, verify with `curl -s https://pypi.org/pypi/nhi-hunter/json` and a few normalized variants first).
+**Verified end-to-end (June 2026):** `nhi-hunter scan --input examples/sample_iam_dump.json --start-role CIRunner` → found the 2-hop `sts:AssumeRole` chain to `AdminRole` and a 3-hop chain to `LambdaAdminRole`, exit code 1; `--start-role GitHubActionsOIDC` → found the 1-hop `iam:PassRole + lambda:*` chain to `LambdaAdminRole` (and a 2-hop chain onward to `AdminRole`, since an AdministratorAccess holder has wildcard permissions over every other identity too); `clean_iam.json` / `ReadOnlyRole` → "No privilege-escalation path found", exit code 0. Clean `pip install` of the built wheel verified in a fresh venv.
+
+**PyPI:** name `nhi-hunter` confirmed fully available (no collision, unlike `prompt-fuzz`) — not yet published, pending user go-ahead.
+
+**Roadmap:** publish to PyPI (`pip install nhi-hunter`); demo GIF for README; add `shadow-sniffer` (4th and final tool in the Grassroots Expansion Pack) next.
 
 ### Priority 8 — NVIDIA NIM Phases (v7.0–v9.0 built)
 
