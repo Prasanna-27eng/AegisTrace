@@ -1679,3 +1679,60 @@ async def ingest_nhihunter_event(
 
     return {"status": "ok", "action_id": action.id, "action_type": "iam_privesc_path_found"}
 
+
+@router.post("/shadowsniffer-event")
+async def ingest_shadowsniffer_event(
+    request: Request,
+    session: Session = Depends(get_session),
+    x_aegistrace_key: Optional[str] = Header(None),
+):
+    """
+    Receive a shadow-AI finding from a shadow-sniffer scan (a connection to
+    an unapproved third-party AI service). Creates an AgentAction entry so
+    findings appear in the AI Action Approval Queue alongside mcp-aegis,
+    prompt-fuzz, and nhi-hunter events.
+    Auth: X-AegisTrace-Key header (same INGEST_API_KEY used by endpoint agents).
+    """
+    _verify_key(x_aegistrace_key)
+
+    try:
+        data = await request.json()
+    except Exception:
+        raise HTTPException(400, "Invalid JSON payload")
+
+    source       = data.get("source", "unknown")
+    src_host     = data.get("src_host") or data.get("src_ip", "unknown")
+    service_name = data.get("service_name", "unknown service")
+    category     = data.get("category", "")
+    dest_host    = data.get("dest_host", "")
+    bytes_sent   = data.get("bytes_sent", 0)
+    mitre_attack = data.get("mitre_attack", "")
+
+    action = AgentAction(
+        agent_name="shadow-sniffer",
+        task_scope=f"Shadow AI: {src_host} -> {service_name} ({dest_host})",
+        action_type="shadow_ai_usage_detected",
+        input_data=json.dumps({
+            "source": source,
+            "src_host": src_host,
+            "src_ip": data.get("src_ip", ""),
+            "user": data.get("user", ""),
+            "process_name": data.get("process_name", ""),
+            "dest_host": dest_host,
+            "dest_ip": data.get("dest_ip", ""),
+            "dest_port": data.get("dest_port", 0),
+            "bytes_sent": bytes_sent,
+            "service_name": service_name,
+            "category": category,
+            "mitre_attack": mitre_attack,
+        }),
+        output_data=f"{service_name} ({category}) — {bytes_sent} bytes sent to {dest_host}",
+        confidence=100,
+        approval_required=False,
+        approval_status="auto",
+    )
+    session.add(action)
+    session.commit()
+
+    return {"status": "ok", "action_id": action.id, "action_type": "shadow_ai_usage_detected"}
+

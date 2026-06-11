@@ -817,6 +817,32 @@ MCPClient (JSON-RPC 2.0 over POST /) ──► TARGET = raw MCP server
 
 **Roadmap:** demo GIF for README; add `shadow-sniffer` (4th and final tool in the Grassroots Expansion Pack) next.
 
+### shadow-sniffer — Companion Project (v0.1.0, built June 2026)
+
+**Standalone repo:** `~/Documents/Claude/Projects/shadow-sniffer/` · GitHub: `https://github.com/Prasanna-27eng/shadow-sniffer` (pushed, public)
+**Description:** Shadow AI detector — scans a local network connection log (JSON or CSV) against a curated catalog of known third-party AI service domains, cross-references matches against an organization's approved-services allowlist, and reports unsanctioned AI usage. Where `mcp-sploit` attacks the AI's *tools*, `prompt-fuzz` attacks its *brain*, and `nhi-hunter` attacks the *identity layer*, `shadow-sniffer` looks at the *data layer* — where is data actually going. Fourth and final tool in the "Grassroots Expansion Pack" (`mcp-sploit` → `prompt-fuzz` → `nhi-hunter` → `shadow-sniffer`).
+
+**Why it's a natural fit for AegisTrace:** AegisTrace's endpoint agent (v3.0+) already ships a live `detect_shadow_ai()` detector (`agent/aegistrace_agent.py`) with a 14-domain `AI_API_DOMAINS` list, an `ApprovedAIService` allowlist model, a `ShadowAIEvent` table, and an `/app/shadow-ai` dashboard — but it requires the endpoint agent to be installed and running. `shadow-sniffer` is the offline/standalone counterpart: point it at an exported connection log (no agent install needed) to do the same cross-reference, expanded to a 39-domain catalog across 8 categories (LLM Chat, LLM API, Code Assistant, Image/Video Generation, Voice & Audio, etc. — vs. the agent's 14 LLM-API-only domains).
+
+**Files shipped (v0.1.0, Core + Wrapper architecture):**
+- `src/shadow_sniffer/catalog.py` — `AI_SERVICE_CATALOG`: 39 `AIService(name, domain, category)` entries across 8 categories; `match_domain()` does case-insensitive suffix matching (e.g. `eu.api.openai.com` matches `api.openai.com`, but `api.openai.com.attacker.net` does not).
+- `src/shadow_sniffer/parsers.py` — `ConnectionRecord` dataclass; `parse_json_log()`/`parse_csv_log()`/`parse_log()` (extension dispatch) with flexible field aliases (`dest_domain`/`destination_domain`/`remote_hostname` all map to `dest_host`, etc., reusing the same field names as the endpoint agent's `connections` list); `load_approved_domains()` reads a JSON `{"approved_domains": [...]}` file or a plain-text one-domain-per-line allowlist.
+- `src/shadow_sniffer/engine.py` — `scan_connections()` matches each connection's `dest_host` against the catalog and flags it as a `ShadowAIFinding` unless covered by the allowlist (suffix-matched, so `openai.com` in the allowlist covers both `api.openai.com` and `chat.openai.com`); tagged **MITRE ATT&CK T1567 (Exfiltration Over Web Service)**. `summarize()` aggregates by category/service/host and total bytes sent. V1 limitation (documented): hostname-based matching only, no DNS/reverse-DNS lookups for IP-only logs.
+- `src/shadow_sniffer/cli.py` — Typer CLI: `shadow-sniffer scan --input <log.json|csv> [--approved <allowlist>] [--output --aegistrace-url --aegistrace-key]` (rich tables, exits non-zero if any shadow AI usage found — usable as a CI gate) + `shadow-sniffer list-services`.
+- `src/shadow_sniffer/reporter.py` — posts findings to AegisTrace's `/api/ingest/shadowsniffer-event`.
+- `tests/fixtures/sample_connections.json` (8 connections: 1 normal, 1 internal, 6 AI-service hits across LLM API/Chat/Code Assistant/Image Generation) + `approved_services.json` (allowlists `api.anthropic.com`) + `clean_connections.json` (3 connections, 0 findings) + `sample_connections.csv` (CSV format variant).
+- `examples/sample_connections.json` + `examples/approved_services.json` (copies of the fixtures, for `pip install`-only trying-out with no setup).
+- `tests/` — 24/24 passing: catalog matching, parser (JSON/CSV/allowlist), engine (scan/summarize/subdomain-allowlist), and Typer CLI (`CliRunner`) tests.
+- MIT `LICENSE`, `CITATION.cff`, `CONTRIBUTING.md`, `README.md` (quick start, connection-log field reference, AegisTrace integration, companion-projects links), `.github/workflows/ci.yml` (pytest matrix 3.10-3.12 — on disk only, same `workflow`-scope PAT issue as the other three tools, needs manual add via GitHub web UI).
+
+**AegisTrace backend (this session):** `POST /api/ingest/shadowsniffer-event` added to `routers/ingest.py` (mirrors `/nhihunter-event`) — creates `AgentAction(agent_name="shadow-sniffer", action_type="shadow_ai_usage_detected")` entries visible in `/app/agent-security`. Same `X-AegisTrace-Key`/`INGEST_API_KEY` auth. No new frontend needed.
+
+**Verified end-to-end (June 2026):** `shadow-sniffer scan --input examples/sample_connections.json --approved examples/approved_services.json` → 8 connections scanned, 5 shadow AI findings (OpenAI API, Claude, ChatGPT, GitHub Copilot, Midjourney — `api.anthropic.com` excluded via allowlist), 623,005 bytes sent to unapproved services, exit code 1; `clean_connections.json` → "No shadow AI usage found", exit code 0; `list-services` → all 39 catalog entries across 8 categories.
+
+**Published to PyPI:** not yet — pending. PyPI name `shadow-sniffer` confirmed available (no collision, unlike `prompt-fuzz`).
+
+**Roadmap:** publish `shadow-sniffer` to PyPI (need a confirmed-fresh API token — the token used for `prompt-fuzz-cli` and `nhi-hunter` has now been reused twice and should be rotated first); demo GIFs for all four tools; this completes the Grassroots Expansion Pack (`mcp-sploit` → `prompt-fuzz` → `nhi-hunter` → `shadow-sniffer`), all four feeding the AegisTrace `/app/agent-security` dashboard via `/api/ingest/<tool>-event`.
+
 ### Priority 8 — NVIDIA NIM Phases (v7.0–v9.0 built)
 
 **v7.0 Already Built (all free on build.nvidia.com):**
