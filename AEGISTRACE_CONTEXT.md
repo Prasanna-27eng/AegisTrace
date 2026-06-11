@@ -839,9 +839,11 @@ MCPClient (JSON-RPC 2.0 over POST /) ──► TARGET = raw MCP server
 
 **Verified end-to-end (June 2026):** `shadow-sniffer scan --input examples/sample_connections.json --approved examples/approved_services.json` → 8 connections scanned, 5 shadow AI findings (OpenAI API, Claude, ChatGPT, GitHub Copilot, Midjourney — `api.anthropic.com` excluded via allowlist), 623,005 bytes sent to unapproved services, exit code 1; `clean_connections.json` → "No shadow AI usage found", exit code 0; `list-services` → all 39 catalog entries across 8 categories.
 
-**Published to PyPI:** not yet — pending. PyPI name `shadow-sniffer` confirmed available (no collision, unlike `prompt-fuzz`).
+**Published to PyPI (June 2026):** `pip install shadow-sniffer` works — v0.1.0 live at https://pypi.org/project/shadow-sniffer/0.1.0/ (no name collision).
 
-**Roadmap:** publish `shadow-sniffer` to PyPI (need a confirmed-fresh API token — the token used for `prompt-fuzz-cli` and `nhi-hunter` has now been reused twice and should be rotated first); demo GIFs for all four tools; this completes the Grassroots Expansion Pack (`mcp-sploit` → `prompt-fuzz` → `nhi-hunter` → `shadow-sniffer`), all four feeding the AegisTrace `/app/agent-security` dashboard via `/api/ingest/<tool>-event`.
+**Grassroots Expansion Pack complete:** all four tools (`mcp-sploit` → `prompt-fuzz` → `nhi-hunter` → `shadow-sniffer`) are built, tested, published to PyPI, and feeding the AegisTrace `/app/agent-security` dashboard via `/api/ingest/<tool>-event`.
+
+**Roadmap:** demo GIFs for all four tools.
 
 ### Priority 8 — NVIDIA NIM Phases (v7.0–v9.0 built)
 
