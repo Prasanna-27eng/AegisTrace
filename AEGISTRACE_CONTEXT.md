@@ -787,7 +787,28 @@ MCPClient (JSON-RPC 2.0 over POST /) ──► TARGET = raw MCP server
 
 **Verified end-to-end (June 2026):** ran `prompt-fuzz scan` against the bundled `mock_target` (live uvicorn on :8090) — 51/51 payloads, 0 errors, 23 bypassed (45.1%), with `jailbreak` and `encoding_bypass` categories at 100% bypass and `exfiltration`/`instruction_inject`/`template_inject` fully blocked by the mock's refusal path. `--output`/JSON results and `--categories` filtering both verified.
 
-**Roadmap:** publish to PyPI (`pip install prompt-fuzz`) once name availability is confirmed; demo GIF for README (same VHS approach as mcp-sploit); add `nhi-hunter` (3rd tool in the Grassroots Expansion Pack) next.
+**Published to PyPI (June 2026):** `pip install prompt-fuzz-cli` works — v0.1.0 live at https://pypi.org/project/prompt-fuzz-cli/0.1.0/ (PyPI rejected the literal name `prompt-fuzz` as "too similar" to an existing unrelated package `promptfuzz`; CLI command stays `prompt-fuzz`, GitHub repo stays `prompt-fuzz`, only the PyPI distribution name changed).
+
+**Roadmap:** demo GIF for README (same VHS approach as mcp-sploit); `nhi-hunter` (3rd tool in the Grassroots Expansion Pack) — see new section below.
+
+### nhi-hunter — Companion Project (v0.1.0, planned — June 2026)
+
+**Standalone repo:** `~/Documents/Claude/Projects/nhi-hunter/` · GitHub: `https://github.com/Prasanna-27eng/nhi-hunter` (created, empty)
+**Description:** Non-Human Identity (NHI) attacker — an AWS IAM privilege-escalation graph builder and pathfinder. Where `mcp-sploit` attacks the AI's *tools* and `prompt-fuzz` attacks the AI's *brain*, `nhi-hunter` attacks the *identity layer* underneath an AI agent's cloud deployment: the IAM roles, trust policies, and permission chains that let a low-privilege role (e.g. a CI/CD OIDC role) pivot to Admin/PowerUser. Third tool in the "Grassroots Expansion Pack" (`mcp-sploit` → `prompt-fuzz` → `nhi-hunter` → `shadow-sniffer`).
+
+**Why it's a natural fit for AegisTrace:** AegisTrace's Identity Graph + Risk Engine (`/app` Identity Graph view) already models identities and relationships; `nhi-hunter` produces the same kind of graph (nodes = IAM roles/users, edges = `sts:AssumeRole`/`iam:PassRole`/`lambda:InvokeFunction` permissions) from a local AWS IAM JSON dump, so its output can feed or cross-validate AegisTrace's Identity Graph Risk Engine — a purple-team check for "can our identity graph actually find this escalation path."
+
+**V1 scope (intentionally narrow — mature tools like PMapper/Cloudsplaining/Cartography already do full policy evaluation; V1 focuses on speed-to-readable-attack-tree from a local dump, not policy-evaluation completeness):**
+- `nhi_hunter/parsers.py` — parse a local AWS IAM JSON dump (roles, users, attached/inline policies, trust policies) into identity + permission records (no live AWS API calls in V1)
+- `nhi_hunter/graph_builder.py` — build a `networkx` directed graph: nodes = identities (roles/users), edges = escalation-relevant permissions (`sts:AssumeRole`, `iam:PassRole`, `lambda:InvokeFunction`, etc.)
+- `nhi_hunter/pathfinder.py` — shortest-path search from a `--start-role` to any role/user whose name or attached policy suggests Admin/PowerUser, using `networkx.shortest_path`
+- `nhi_hunter/cli.py` — Typer CLI: `nhi-hunter scan --input aws_iam_dump.json --start-role "GitHubActionsOIDC"` → readable text-tree of the escalation path(s) found
+- Test fixtures: deliberately misconfigured IAM JSON (e.g. a CI/CD OIDC role with `iam:PassRole` + `lambda:InvokeFunction` onto an admin-attached execution role) plus a "clean" fixture with no path
+- MIT `LICENSE`, `CITATION.cff`, `CONTRIBUTING.md`, `README.md` (same conventions as prompt-fuzz/mcp-sploit: MITRE ATT&CK references for privilege-escalation techniques, e.g. T1078.004 Cloud Accounts)
+
+**AegisTrace integration (planned):** `POST /api/ingest/nhihunter-event` in `routers/ingest.py` (same `X-AegisTrace-Key` pattern as `/mcp-event` and `/promptfuzz-event`), creating `AgentAction(agent_name="nhi-hunter", action_type="iam_privesc_path_found")` entries for any discovered escalation path, visible in `/app/agent-security`.
+
+**Roadmap:** scaffold Core+Wrapper package, write parser/graph/pathfinder + tests against fixtures, CLI, README/docs, AegisTrace ingest endpoint, push to GitHub, then PyPI (check name availability for `nhi-hunter` before publishing — given the `prompt-fuzz`/`promptfuzz` collision just hit, verify with `curl -s https://pypi.org/pypi/nhi-hunter/json` and a few normalized variants first).
 
 ### Priority 8 — NVIDIA NIM Phases (v7.0–v9.0 built)
 
