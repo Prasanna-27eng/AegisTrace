@@ -765,21 +765,29 @@ MCPClient (JSON-RPC 2.0 over POST /) ──► TARGET = raw MCP server
 
 **Published to PyPI (June 2026):** `pip install mcp-sploit` works — v0.2.0 live at https://pypi.org/project/mcp-sploit/0.2.0/.
 
-### prompt-fuzz — Companion Project (v1.0, planned June 2026)
+### prompt-fuzz — Companion Project (v0.1.0, built June 2026)
 
-**Standalone repo:** `~/Documents/Claude/Projects/prompt-fuzz/` · GitHub: `https://github.com/Prasanna-27eng/prompt-fuzz` (created, empty — build in progress)
+**Standalone repo:** `~/Documents/Claude/Projects/prompt-fuzz/` · GitHub: `https://github.com/Prasanna-27eng/prompt-fuzz` (pushed, public)
 **Description:** Async CLI that fuzzes OpenAI-compatible chat completion endpoints (`/v1/chat/completions`) with a curated jailbreak/prompt-injection payload library and reports which payloads bypass the target's guardrails. Where `mcp-sploit` attacks the AI's *tools* (MCP layer), `prompt-fuzz` attacks the AI's *brain* (the LLM/system-prompt layer). Second tool in the "Grassroots Expansion Pack" (`mcp-sploit` → `prompt-fuzz` → `nhi-hunter` → `shadow-sniffer`, all feeding the AegisTrace enterprise dashboard).
 
-**Why it's a natural fit for AegisTrace:** AegisTrace already ships a *defensive* prompt-injection layer — `backend/core/prompt_shield.py` (singleton `shield`, 24 regex patterns across 9 categories: `system_override`, `instruction_inject`, `role_hijack`, `jailbreak`, `delimiter_inject`, `role_delimiter`, `exfiltration`, `xml_inject`, `template_inject`, `encoding_bypass`, wired into every `ai_router.py` Groq call). `prompt-fuzz`'s built-in payload library will tag each payload with the **same category names**, so it doubles as a literal purple-team test suite for `prompt_shield.py` — exactly the `mcp-sploit`/`mcp-aegis` purple-team pattern, one layer up the stack (LLM guardrails instead of MCP tool policy).
+**Why it's a natural fit for AegisTrace:** AegisTrace already ships a *defensive* prompt-injection layer — `backend/core/prompt_shield.py` (singleton `shield`, 24 regex patterns across 9 categories: `system_override`, `instruction_inject`, `role_hijack`, `jailbreak`, `delimiter_inject`, `role_delimiter`, `exfiltration`, `xml_inject`, `template_inject`, `encoding_bypass`, wired into every `ai_router.py` Groq call). `prompt-fuzz`'s built-in payload library tags each payload with the **same category names**, so it doubles as a literal purple-team test suite for `prompt_shield.py` — the `mcp-sploit`/`mcp-aegis` purple-team pattern, one layer up the stack (LLM guardrails instead of MCP tool policy).
 
-**Planned V1 scope (Core + Wrapper architecture):**
-- `src/promptfuzz/engine.py` — async `httpx` executor, N-way concurrency, posts each payload as a chat message to `/v1/chat/completions`
-- `src/promptfuzz/payloads.py` + `src/promptfuzz/data/payloads.json` — ~50-60 built-in payloads tagged by category (mirroring `prompt_shield` categories + classic jailbreaks: DAN, STAN, Developer Mode, grandma exploit, base64-encoded instructions, etc.)
-- `src/promptfuzz/detectors.py` — refusal-phrase detector, canary-leak detector (system prompt contains a secret token; bypass = token appears in response), compliance/echo detector
-- `src/promptfuzz/cli.py` — Typer CLI: `prompt-fuzz scan --target <url> --api-key <key> --model <model> [--concurrency 20]`, rich summary table (`Total / Blocked / Bypassed`)
-- `mock_target/app.py` — deliberately weak FastAPI OpenAI-compatible mock (canary secret + naive guardrail) for deterministic pytest testing — same role as `mcp-sploit`'s `target_server/`
-- AegisTrace integration: `--aegistrace-url`/`--aegistrace-key` reporter option posts bypassed payloads to a new `POST /api/ingest/promptfuzz-event` endpoint (mirrors the existing `/api/ingest/mcp-event` pattern in `routers/ingest.py`), creating `AgentAction(agent_name="prompt-fuzz")` entries visible in `/app/agent-security` — no new frontend needed for V1.
-- Same packaging/discoverability treatment as `mcp-sploit`: MIT license, `CITATION.cff`, `CONTRIBUTING.md`, pytest suite, README with quick start + example output, PyPI-ready `pyproject.toml`.
+**Files shipped (v0.1.0, Core + Wrapper architecture):**
+- `src/promptfuzz/engine.py` — `FuzzEngine`: async `httpx` executor with bounded concurrency (`asyncio.Semaphore`), posts `[system?, user=payload]` to `/v1/chat/completions`, optional `transport=` override for in-process ASGI testing; `summarize()` computes total/blocked/bypassed + per-category breakdown
+- `src/promptfuzz/payloads.py` — loader for built-in/custom payload JSON, category filtering, `make_canary()` (random `AEGIS-CANARY-<hex>` token per scan) + `make_system_prompt()` (default canary-bearing system prompt)
+- `src/promptfuzz/data/payloads.json` — **51 built-in payloads across 10 categories** (the 9 `prompt_shield` categories + `jailbreak`), each with `id`/`category`/`severity`/`prompt`/optional `success_markers`/MITRE ATLAS or CWE `references`. Includes DAN 6.0, STAN, AIM, Developer Mode, DUDE, grandma exploit, base64/ROT13/fromCharCode encoding bypasses, fake `[SYSTEM]`/`<|im_start|>system`/XML delimiter injections, etc.
+- `src/promptfuzz/detectors.py` — `evaluate()` combines 3 signals into a `Verdict`: canary-leak (token from system prompt appears in response), compliance markers (payload-specific phrases like "DAN Mode enabled"), and refusal-absence (regex bank of refusal phrases — every built-in payload is an attack, so no refusal = bypass)
+- `src/promptfuzz/cli.py` — Typer CLI: `prompt-fuzz scan --target <url> [--api-key --model --concurrency --categories --payloads --no-system-prompt --output --show-responses --aegistrace-url --aegistrace-key]` (rich tables, exits non-zero if any bypass — usable as a CI gate) + `prompt-fuzz list-payloads`
+- `src/promptfuzz/reporter.py` — posts bypassed payloads to AegisTrace's `/api/ingest/promptfuzz-event`
+- `mock_target/app.py` — deliberately weak FastAPI OpenAI-compatible `/v1/chat/completions` mock (complies with DAN/STAN/AIM/`[SYSTEM]`/encoding triggers, refuses everything else) — same role as `mcp-sploit`'s `target_server/`
+- `tests/` — 17/17 passing: payload-library integrity, detector unit tests, engine tests via `httpx.ASGITransport` against `mock_target` (no live server needed), CLI `list-payloads` tests
+- MIT `LICENSE`, `CITATION.cff`, `CONTRIBUTING.md`, `README.md` (quick start, payload table, AegisTrace integration section, companion-projects links), `.github/workflows/ci.yml` (pytest matrix 3.10-3.12 — on disk only, same `workflow`-scope PAT issue as mcp-sploit, needs manual add via GitHub web UI)
+
+**AegisTrace backend (this session):** `POST /api/ingest/promptfuzz-event` added to `routers/ingest.py` (mirrors `/mcp-event`) — creates `AgentAction(agent_name="prompt-fuzz", action_type="prompt_fuzz_bypass")` entries visible in `/app/agent-security`. Same `X-AegisTrace-Key`/`INGEST_API_KEY` auth as mcp-aegis and endpoint agents. No new frontend needed.
+
+**Verified end-to-end (June 2026):** ran `prompt-fuzz scan` against the bundled `mock_target` (live uvicorn on :8090) — 51/51 payloads, 0 errors, 23 bypassed (45.1%), with `jailbreak` and `encoding_bypass` categories at 100% bypass and `exfiltration`/`instruction_inject`/`template_inject` fully blocked by the mock's refusal path. `--output`/JSON results and `--categories` filtering both verified.
+
+**Roadmap:** publish to PyPI (`pip install prompt-fuzz`) once name availability is confirmed; demo GIF for README (same VHS approach as mcp-sploit); add `nhi-hunter` (3rd tool in the Grassroots Expansion Pack) next.
 
 ### Priority 8 — NVIDIA NIM Phases (v7.0–v9.0 built)
 
