@@ -1,6 +1,6 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v9.2 | **Last updated:** June 2026
-**Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files.
+**Version:** v10.0 | **Last updated:** June 2026 (Priority 1 & 2 of the v10.0 plan shipped: Temporal Linker/Attack Graph + SOAR Playbook Engine)
+**Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files. **This is the single master doc for this project — all other planning/session/deploy docs have been folded into this file and removed.**
 
 ---
 
@@ -231,6 +231,15 @@ backend/agents/
 **v8.0 new tabs:**
 - `vision` — VisionTab.jsx: screenshot upload → Llama 3.2 Vision 11B analysis → verdict, IOCs, MITRE, recommended actions
 - `rules` — RulesTab.jsx: Generate Rules button → Codestral 22B → YARA + Sigma + KQL + Splunk SPL with copy buttons
+
+### Frontend gotchas (non-obvious — read before editing)
+- `caseData.iocs` and `caseData.mitre_techniques` are **JSON strings**, not arrays/objects — always `JSON.parse(caseData.iocs || '[]')`
+- `PlaybookTab` (case-level playbook checklist, not the SOAR `Playbook` model) reads its state from `caseData.playbook_state` on mount and saves via `updateCase`
+- `useParams()` returns the case ID as a **string**; the backend expects an int — Axios converts automatically for path params, but `parseInt(id)` if comparing client-side
+- Report/file downloads need `{ responseType: 'blob' }` in the Axios config
+- `addToast` from `useStore()` supports types `'success' | 'error' | 'warning'` — there is no separate "info" style
+- Admin-only UI: gate on `user?.role === 'admin'`
+- `case.is_public: bool` controls public-share visibility — use it to show/hide public-related UI
 
 ---
 
@@ -528,6 +537,33 @@ SENTINELONE_BASE_URL / SENTINELONE_API_TOKEN
 CARBONBLACK_ORG_KEY / CARBONBLACK_API_ID / CARBONBLACK_API_SECRET
 ```
 
+### Local Development
+```bash
+# Backend
+cd backend
+pip install -r requirements.txt
+DATABASE_URL=sqlite:///./dev.db GROQ_API_KEY=your_key VIRUSTOTAL_API_KEY=your_key ADMIN_PIN=aegis2025 uvicorn main:app --reload --port 8000
+
+# Frontend
+cd frontend
+npm install
+npm start   # runs on :3000, proxies API to :8000
+```
+
+### Docker
+```bash
+docker build -t aegistrace .
+docker run -p 8000:8000 \
+  -e GROQ_API_KEY=your_groq_key_here \
+  -e VIRUSTOTAL_API_KEY=your_vt_key_here \
+  -e ADMIN_PIN=aegis2025 \
+  -v aegistrace_data:/var/data \
+  aegistrace
+# App available at http://localhost:8000
+```
+
+**Default admin login:** `prasanna80564@gmail.com` / password = `ADMIN_PIN` (default `aegis2025` if unset). Change immediately after first login via Admin → Your Account → Change Password.
+
 ---
 
 ## FRONTEND DEPENDENCIES (package.json)
@@ -598,10 +634,31 @@ react, react-dom, react-router-dom, axios, zustand, lucide-react, react-scripts
   - New models `Playbook` (trigger_event_type, trigger_conditions JSON, actions JSON array, is_active, requires_approval global gate, run_count, last_run_at) and `PlaybookRun` (playbook_id, trigger_event_type, trigger_event_id, actions_taken/actions_pending JSON, status, result_summary, run_at, completed_at) in `backend/models.py`. Rule engine evaluates `min_*`/`max_*` numeric-threshold conditions plus exact/case-insensitive string matches against incoming event data, then runs each action immediately or queues it to the `/app/agent-security` approval queue (`ProvenanceLedger`, `action_type="playbook_action"`) depending on the per-action × per-playbook approval gate (`requires_approval = action_default AND playbook.requires_approval` — the playbook flag can only relax approval, never add it).
   - **Files shipped:** `backend/routers/orchestration.py` (new, ~400 lines — `ACTION_TYPES` default-approval map, `SEED_PLAYBOOK`, `_conditions_match()`, action handlers `_action_isolate_endpoint`/`_action_create_case`/`_action_send_webhook`/`_action_page_oncall`/`_action_add_case_comment`/`_action_enrich_ioc`/`_action_generate_rules`, `_execute_action()` dispatcher, `execute_approved_playbook_action()` approval-execution closure, `evaluate_playbooks()` core evaluator + `PlaybookRun` audit trail, `seed_builtin_playbooks()`, full CRUD + `/api/orchestration/evaluate` (dry-run) + `/api/orchestration/seed` REST endpoints); `backend/main.py` (router registration + startup seed of the built-in "Critical MCP Block → Contain" playbook); `backend/routers/ingest.py` (`evaluate_playbooks()` hooked into `ingest_telemetry` for new `ITDRAlert`/`ShadowAIEvent` rows and into `ingest_mcp_event` for blocked/flagged MCP tool calls); `backend/routers/agent_security.py` (`approve_action` is now async and, for `action_type="playbook_action"` records, calls `execute_approved_playbook_action()` to run the deferred action e.g. endpoint isolation); `frontend/src/pages/app/Playbooks.jsx` (new — full CRUD UI with dynamic condition/action editors, run history, dry-run "Test" modal); `frontend/src/App.jsx` + `frontend/src/components/Sidebar.jsx` (route + "Playbooks" nav item under "Control", Workflow icon); public pages `frontend/src/pages/Landing.jsx` (new "Attack Graph Reconstruction" + "Playbook Engine (SOAR)" entries in `MODULES`), `frontend/src/pages/Mission.jsx` (Temporal Linker + SOAR Playbook Engine moved to V1 "Foundation — Shipped"; V2 "SOAR Playbook Engine" replaced with "Adaptive Thresholds Agent" for Priority 3), `frontend/src/pages/Portfolio.jsx` (flagship project description updated to mention the Temporal Linker and SOAR playbook engine).
   - **Verified:** end-to-end tested in a throwaway venv (`DATABASE_URL=sqlite:////tmp/testdb.db`) — seed idempotency, dry-run match/no-match via `/api/orchestration/evaluate`, a real run creating a `Case` + `ProvenanceLedger` (pending approval) + `PlaybookRun`, and the approval-execution closure creating an `AgentCommand` for endpoint isolation after approval. Frontend: `npm run build` compiles cleanly with the new Playbooks page, routes, sidebar entry, and updated public pages.
-- [ ] **Priority 3 — Adaptive Thresholds Agent** (2 days, deferred)
-  - New `AdaptiveThresholdLog` model. `backend/adaptive_config.py` (in-memory runtime config singleton, `ADJUSTMENT_BOUNDS` ±20% from defaults). `backend/adaptive_agent.py` — 4-hour cycle: compute FP/FN rates → ask Nemotron for threshold adjustments within bounds → apply + log. Hardcoded safety prompt: agent may ONLY adjust listed numeric thresholds, never disable detectors/change permissions/delete data/modify auth.
-- [ ] **Priority 4 — Auto-Rule Generation Trigger** (1 day, deferred)
-  - New `DetectionRule` model. Extends existing `/api/rules/cases/{id}/generate` (Codestral 22B) — nightly job checks if the same MITRE technique appears in 3+ cases within 7 days and auto-triggers rule generation into a "pending review" queue.
+- [ ] **Priority 3 — Adaptive Thresholds Agent** (2 days, next up — "it improves itself")
+  - **What it does:** background agent runs every 4 hours, computes FP/FN rates and avg detection confidence from the last 24h, asks Nemotron-70B for threshold adjustments within hardcoded bounds, applies them at runtime (no restart), logs every change.
+  - **New model** `AdaptiveThresholdLog` in `backend/models.py`: `threshold_name` (anomaly_score | behavioral_similarity | itdr_confidence), `old_value`/`new_value` (float), `reason` (Text), `fp_rate_24h`, `fn_rate_24h`, `agent_model`, `applied_at`.
+  - **`backend/adaptive_config.py`** — in-memory runtime config singleton:
+    ```python
+    _config = {
+        "anomaly_score_threshold": 70,
+        "behavioral_similarity_threshold": 0.85,
+        "itdr_confidence_threshold": 0.75,
+        "defense_fp_tolerance": 0.05,
+    }
+    ADJUSTMENT_BOUNDS = {  # agent can only move within ±20% of defaults
+        "anomaly_score_threshold":         (56, 84),
+        "behavioral_similarity_threshold": (0.68, 1.0),
+        "itdr_confidence_threshold":       (0.60, 0.90),
+    }
+    ```
+  - **`backend/adaptive_agent.py`** — `adaptive_agent_cycle()`: compute `fp_rate` (DefenseEvents dismissed/total), `fn_estimate` (ITDRAlerts marked false_positive), `avg_confidence`; build a Nemotron prompt with current stats + thresholds + bounds, target FP<5%/FN<2%/confidence>75%; on response, clamp each returned value to its bound, log via `AdaptiveThresholdLog`, and update `_config`.
+  - **Hardcoded safety prompt:** "You may ONLY adjust the numeric thresholds listed. You may NEVER disable detectors, change user permissions, delete data, or modify authentication settings. All adjustments must stay within the provided bounds."
+  - **Files to create/modify:** `backend/adaptive_config.py` (new), `backend/adaptive_agent.py` (new — start as background thread/task in `backend/main.py` startup, after the scheduler), `backend/routers/defense.py` + `backend/routers/itdr.py` (read thresholds from `adaptive_config` instead of hardcoded constants), new `GET /api/adaptive/log` endpoint (last 30 changes, in `routers/analytics.py` or `routers/admin.py`), `frontend/src/pages/app/DefenseConsole.jsx` (add an "Adaptive Engine" panel showing current thresholds + last change).
+- [ ] **Priority 4 — Auto-Rule Generation Trigger** (1 day, after Priority 3)
+  - **What it does:** extends the existing `/api/rules/cases/{id}/generate` (Codestral 22B, already built) — a nightly job checks if the same MITRE technique appears across 3+ cases within 7 days and auto-triggers rule generation into a "pending review" queue, without analyst input.
+  - **New model** `DetectionRule` in `backend/models.py`: `rule_name`, `source_case_id` (FK → case.id), `mitre_technique`, `yara`/`sigma`/`kql`/`splunk_spl` (Text), `generated_by` (auto|analyst), `status` (pending_review|approved|rejected|deployed), `reviewed_by`, `reviewed_at`, `org_id`, `created_at`.
+  - **Trigger logic** (nightly via existing scheduler) — `check_rule_generation_triggers()`: for cases created in the last 7 days, group by MITRE technique ID (from `case.mitre_techniques` JSON); for any technique appearing in 3+ cases with no `DetectionRule` already generated this week, call Codestral rule generation for the most recent case and insert a `pending_review` `DetectionRule`.
+  - **Files to modify:** `backend/models.py` (add `DetectionRule`), `backend/routers/rules.py` (add `GET /api/rules/pending`, `POST /api/rules/{id}/approve`, `POST /api/rules/{id}/reject`), scheduler module (add nightly `check_rule_generation_triggers()` call), frontend Rules UI (add a "Pending Review" tab, or create a minimal page if none exists).
 
 **Deferred items (do NOT build yet):** PIPROXY (mitmproxy prompt-injection proxy, month 2+), fine-tuning pipeline (needs PIPROXY data first), MCP Guard full sandbox (scoped down to a future `mcp-verify` CLI: static analysis + VirusTotal + Sigstore — companion to `mcp-aegis`), NHI Guard as separate repo (rejected — extend `/api/nhi` with `AWSConnector` in `backend/core/connectors/aws_iam.py` instead, 2-3 days), Shadow Sentry eBPF (deferred — mitmproxy+JA3 fingerprinting user-space alternative, month 2), SBC Edge Agent (Phase 5+, needs Playbook Engine + Adaptive Thresholds first), NVIDIA Morpheus (post free-tier, needs GPU+Kafka).
 
