@@ -763,6 +763,24 @@ MCPClient (JSON-RPC 2.0 over POST /) ──► TARGET = raw MCP server
 
 **Discoverability/community assets added (June 2026):** `.github/workflows/ci.yml` (pytest matrix on 3.10/3.11/3.12 — created on disk, must be added via GitHub web UI since the local PAT lacks `workflow` scope), `CITATION.cff`, `CONTRIBUTING.md`, README "Why mcp-sploit?" section (positions mcp-sploit as the dynamic/offensive complement to static scanners like `mcp-scan`, links OWASP MCP Top 10 + MITRE ATLAS), `pyproject.toml` keywords/classifiers for PyPI search, `demo.tape` + `demo.gif` (VHS-recorded console walkthrough embedded in README). Package builds clean (`python -m build` + `twine check` pass) and is ready for `twine upload` to PyPI under the unclaimed name `mcp-sploit` — pending the user's PyPI account/API token.
 
+**Published to PyPI (June 2026):** `pip install mcp-sploit` works — v0.2.0 live at https://pypi.org/project/mcp-sploit/0.2.0/.
+
+### prompt-fuzz — Companion Project (v1.0, planned June 2026)
+
+**Standalone repo:** `~/Documents/Claude/Projects/prompt-fuzz/` · GitHub: `https://github.com/Prasanna-27eng/prompt-fuzz` (created, empty — build in progress)
+**Description:** Async CLI that fuzzes OpenAI-compatible chat completion endpoints (`/v1/chat/completions`) with a curated jailbreak/prompt-injection payload library and reports which payloads bypass the target's guardrails. Where `mcp-sploit` attacks the AI's *tools* (MCP layer), `prompt-fuzz` attacks the AI's *brain* (the LLM/system-prompt layer). Second tool in the "Grassroots Expansion Pack" (`mcp-sploit` → `prompt-fuzz` → `nhi-hunter` → `shadow-sniffer`, all feeding the AegisTrace enterprise dashboard).
+
+**Why it's a natural fit for AegisTrace:** AegisTrace already ships a *defensive* prompt-injection layer — `backend/core/prompt_shield.py` (singleton `shield`, 24 regex patterns across 9 categories: `system_override`, `instruction_inject`, `role_hijack`, `jailbreak`, `delimiter_inject`, `role_delimiter`, `exfiltration`, `xml_inject`, `template_inject`, `encoding_bypass`, wired into every `ai_router.py` Groq call). `prompt-fuzz`'s built-in payload library will tag each payload with the **same category names**, so it doubles as a literal purple-team test suite for `prompt_shield.py` — exactly the `mcp-sploit`/`mcp-aegis` purple-team pattern, one layer up the stack (LLM guardrails instead of MCP tool policy).
+
+**Planned V1 scope (Core + Wrapper architecture):**
+- `src/promptfuzz/engine.py` — async `httpx` executor, N-way concurrency, posts each payload as a chat message to `/v1/chat/completions`
+- `src/promptfuzz/payloads.py` + `src/promptfuzz/data/payloads.json` — ~50-60 built-in payloads tagged by category (mirroring `prompt_shield` categories + classic jailbreaks: DAN, STAN, Developer Mode, grandma exploit, base64-encoded instructions, etc.)
+- `src/promptfuzz/detectors.py` — refusal-phrase detector, canary-leak detector (system prompt contains a secret token; bypass = token appears in response), compliance/echo detector
+- `src/promptfuzz/cli.py` — Typer CLI: `prompt-fuzz scan --target <url> --api-key <key> --model <model> [--concurrency 20]`, rich summary table (`Total / Blocked / Bypassed`)
+- `mock_target/app.py` — deliberately weak FastAPI OpenAI-compatible mock (canary secret + naive guardrail) for deterministic pytest testing — same role as `mcp-sploit`'s `target_server/`
+- AegisTrace integration: `--aegistrace-url`/`--aegistrace-key` reporter option posts bypassed payloads to a new `POST /api/ingest/promptfuzz-event` endpoint (mirrors the existing `/api/ingest/mcp-event` pattern in `routers/ingest.py`), creating `AgentAction(agent_name="prompt-fuzz")` entries visible in `/app/agent-security` — no new frontend needed for V1.
+- Same packaging/discoverability treatment as `mcp-sploit`: MIT license, `CITATION.cff`, `CONTRIBUTING.md`, pytest suite, README with quick start + example output, PyPI-ready `pyproject.toml`.
+
 ### Priority 8 — NVIDIA NIM Phases (v7.0–v9.0 built)
 
 **v7.0 Already Built (all free on build.nvidia.com):**
