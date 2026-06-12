@@ -229,17 +229,20 @@ function Stat83Scene() {
 
 export default function Mission() {
   const heroRef = useRef(null);
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
-  const heroY       = useTransform(scrollYProgress, [0, 1], ['0%', '28%']);
-  const heroScale   = useTransform(scrollYProgress, [0, 1], [1.06, 1.0]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
-  const overlayY    = useTransform(scrollYProgress, [0, 1], ['0%', '12%']);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end end'] });
+  const heroY     = useTransform(scrollYProgress, [0, 1], ['0%', '14%']);
+  const heroScale = useTransform(scrollYProgress, [0, 1], [1.08, 1.0]);
+  const overlayY  = useTransform(scrollYProgress, [0, 1], ['0%', '8%']);
 
-  /* Hero dolly (Scene 1 pattern, ported from Landing) — the headline scales
-     up and blurs away as the camera "passes through" it on scroll. */
-  const heroContentScale = useTransform(scrollYProgress, [0, 0.6], [1, 1.6]);
-  const heroBlurPx       = useTransform(scrollYProgress, [0, 0.5], [0, 14], { clamp: true });
-  const heroBlur         = useTransform(heroBlurPx, v => `blur(${v}px)`);
+  /* Pinned two-beat dolly (Landing scene 1 pattern): beat 1 holds, then the
+     camera passes through it; beat 2 zooms in from depth; kicker lands last. */
+  const b1Opacity  = useTransform(scrollYProgress, [0.28, 0.48], [1, 0], { clamp: true });
+  const b1Scale    = useTransform(scrollYProgress, [0, 1], [1, 2.3]);
+  const b1BlurPx   = useTransform(scrollYProgress, [0.26, 0.48], [0, 12], { clamp: true });
+  const b1Filter   = useTransform(b1BlurPx, v => 'blur(' + v + 'px)');
+  const b2Opacity  = useTransform(scrollYProgress, [0.46, 0.64], [0, 1], { clamp: true });
+  const b2Scale    = useTransform(scrollYProgress, [0.44, 0.72], [0.55, 1], { clamp: true });
+  const subOpacity = useTransform(scrollYProgress, [0.72, 0.86], [0, 1], { clamp: true });
 
   const V1 = [
     { text: 'ITDR — Identity Threat Detection (4 detectors)',          why: 'Credential stuffing, impossible travel, privilege escalation, token theft — all built in.' },
@@ -384,7 +387,8 @@ export default function Mission() {
       </nav>
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section ref={heroRef} style={{ position: 'relative', height: '100vh', minHeight: 600, overflow: 'hidden' }}>
+      <section ref={heroRef} style={{ position: 'relative', height: '280vh' }}>
+        <div style={{ position: 'sticky', top: 0, height: '100vh', minHeight: 600, overflow: 'hidden' }}>
         {/* Background — layer 1 (deepest, moves slowest) */}
         <motion.div
           aria-hidden
@@ -412,7 +416,7 @@ export default function Mission() {
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(100deg, rgba(5,4,5,0.72) 0%, rgba(5,4,5,0.25) 55%, transparent 100%)' }}/>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 50% 40% at 8% 92%, rgba(245,158,11,0.14) 0%, transparent 65%)' }}/>
 
-        <motion.div style={{ opacity: heroOpacity, scale: heroContentScale, filter: heroBlur, willChange: 'transform, opacity, filter' }}>
+        <motion.div style={{ opacity: b1Opacity, scale: b1Scale, filter: b1Filter, willChange: 'transform, opacity, filter' }}>
           <div style={{
             position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
             justifyContent: 'flex-end', zIndex: 10,
@@ -451,6 +455,30 @@ export default function Mission() {
             </motion.p>
           </div>
         </motion.div>
+
+        {/* Beat 2 — zooms in from depth as beat 1 passes through */}
+        <motion.div style={{
+          position: 'absolute', inset: 0, zIndex: 10,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+          opacity: b2Opacity, scale: b2Scale, willChange: 'transform, opacity',
+        }}>
+          <h1 className="cd" style={{ fontSize: 'clamp(44px,7vw,96px)', fontWeight: 700, lineHeight: 0.95, letterSpacing: '-0.03em', color: '#F5F0E8', margin: 0, padding: '0 24px' }}>
+            The trust layer for<br/><span style={{ color: GOLD, textShadow: '0 0 40px rgba(245,158,11,0.28)' }}>the AI-agent era.</span>
+          </h1>
+        </motion.div>
+
+        {/* Kicker — lands last */}
+        <motion.div style={{
+          position: 'absolute', left: 0, right: 0, bottom: '7vh', zIndex: 10,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
+          opacity: subOpacity,
+        }}>
+          <p className="cg" style={{ fontSize: 16, color: 'rgba(245,240,232,0.6)', maxWidth: 480, textAlign: 'center', margin: 0, padding: '0 24px' }}>
+            Built inside a SOC, where the gaps were impossible to ignore.
+          </p>
+          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, letterSpacing: '0.3em', color: 'rgba(245,240,232,0.35)' }}>SCROLL</span>
+        </motion.div>
+        </div>
       </section>
 
       {/* ── ORIGIN STORY ─────────────────────────────────────────────────── */}
