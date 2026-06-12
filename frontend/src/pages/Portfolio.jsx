@@ -112,13 +112,10 @@ function useIsMobile() {
 
 /* ─── Cinematic camera (same spring as Landing scenes) ─────────────────── */
 function useCamera(ref) {
+  /* Scroll-locked camera — 1:1 with the scrollbar, like the design
+     prototype: stop scrolling and the frame freezes instantly. */
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
-  const spring = useSpring(scrollYProgress, { stiffness: 170, damping: 30, mass: 0.3, restDelta: 0.0001 });
-  useEffect(() => {
-    if (typeof spring.jump === 'function') spring.jump(scrollYProgress.get());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  return spring;
+  return scrollYProgress;
 }
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -139,8 +136,6 @@ function ScrollProgress() {
 function HeroScene() {
   const ref = useRef(null);
   const p = useCamera(ref);
-  const { scrollYProgress: raw } = useScroll({ target: ref, offset: ['start start', 'end end'] });
-  const exitOpacity = useTransform(raw, [0.93, 1], [1, 0], { clamp: true });
 
   const bgScale = useTransform(p, [0, 1], [1.12, 1.0]);
   const bgY     = useTransform(p, v => v * 60);
@@ -152,16 +147,17 @@ function HeroScene() {
 
   const line2Opacity = useTransform(p, [0.42, 0.6], [0, 1], { clamp: true });
   const line2Scale   = useTransform(p, [0.4, 0.68, 1], [0.55, 1, 1.05], { clamp: true });
+  const line2BlurPx  = useTransform(p, [0.46, 0.64], [8, 0], { clamp: true });
+  const line2Filter  = useTransform(line2BlurPx, v => 'blur(' + v + 'px)');
 
   const kickerOpacity = useTransform(p, [0.66, 0.8], [0, 1], { clamp: true });
   const kickerY       = useTransform(kickerOpacity, o => (1 - o) * 20);
 
   return (
-    <section ref={ref} style={{ height: '260vh', position: 'relative' }}>
+    <section ref={ref} style={{ height: '300vh', position: 'relative' }}>
       <motion.div style={{
         position: 'sticky', top: 0, height: '100vh', overflow: 'hidden',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        opacity: exitOpacity, willChange: 'opacity',
       }}>
         <motion.div aria-hidden style={{
           position: 'absolute', inset: '-8%',
@@ -196,8 +192,8 @@ function HeroScene() {
             position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 'clamp(44px,7.5vw,116px)', fontWeight: 600, lineHeight: 1,
             letterSpacing: '-0.02em', color: INK, margin: 0,
-            opacity: line2Opacity, scale: line2Scale,
-            willChange: 'transform, opacity',
+            opacity: line2Opacity, scale: line2Scale, filter: line2Filter,
+            willChange: 'transform, opacity, filter',
           }}>
             <span>One analyst.<br/><span style={{ color: GOLD }}>An entire SOC.</span></span>
           </motion.h1>

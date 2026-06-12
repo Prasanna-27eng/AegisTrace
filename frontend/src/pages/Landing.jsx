@@ -18,15 +18,10 @@ const M = (p, a, b) => Math.max(0, Math.min(1, (p - a) / (b - a)));
    position instead of tracking every wheel detent — this is the single
    biggest difference between "scrubbed" and "filmed".                    */
 function useCamera(ref) {
+  /* Scroll-locked camera — 1:1 with the scrollbar, exactly like the design
+     prototype: stop scrolling and the frame freezes instantly. */
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
-  const spring = useSpring(scrollYProgress, { stiffness: 170, damping: 30, mass: 0.3, restDelta: 0.0001 });
-  /* Snap to the live scroll position on mount so restored / hash-anchored
-     loads don't replay the scenes ("page moves before you scroll"). */
-  useEffect(() => {
-    if (typeof spring.jump === 'function') spring.jump(scrollYProgress.get());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  return spring;
+  return scrollYProgress;
 }
 
 /* ─── Mobile breakpoint ─────────────────────────────────────────────────── */
@@ -138,22 +133,17 @@ function AmbientEmbers() {
    Tall scroll runway with a sticky 100vh viewport — the "camera" is the
    scroll progress measured across the runway.                            */
 function PinnedScene({ vh, sceneRef, children }) {
-  /* Exit handoff: as the runway runs out the whole frame eases to black,
-     so un-pinning never hard-cuts — the next scene fades up from the same
-     void. Uses RAW progress (not the spring) so it stays locked to the
-     actual un-pin point.                                                  */
-  const { scrollYProgress } = useScroll({ target: sceneRef, offset: ['start start', 'end end'] });
-  const exitOpacity = useTransform(scrollYProgress, [0.93, 1], [1, 0], { clamp: true });
-  const exitScale   = useTransform(scrollYProgress, [0.93, 1], [1, 0.985], { clamp: true });
+  /* Prototype behavior: the frame holds its final state while it scrolls
+     away — no exit fade (fading creates blank black stretches between
+     scenes), no spring (the camera must freeze the instant you stop). */
   return (
     <section ref={sceneRef} style={{ height: vh, position: 'relative' }}>
-      <motion.div style={{
+      <div style={{
         position: 'sticky', top: 0, height: '100vh', overflow: 'hidden',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        opacity: exitOpacity, scale: exitScale, willChange: 'opacity, transform',
       }}>
         {children}
-      </motion.div>
+      </div>
     </section>
   );
 }
@@ -180,7 +170,7 @@ function HeroScene() {
   const line1Filter  = useTransform(line1BlurPx, v => `blur(${v}px)`);
 
   const line2Opacity = useTransform(p, [0.4, 0.58], [0, 1], { clamp: true });
-  const line2Scale   = useTransform(p, [0.38, 0.66, 1], [0.5, 1, 1.06], { clamp: true });
+  const line2Scale   = useTransform(p, [0.38, 0.66], [0.5, 1], { clamp: true });
   const line2BlurPx  = useTransform(p, [0.45, 0.62], [6, 0], { clamp: true });
   const line2Filter  = useTransform(line2BlurPx, v => `blur(${v}px)`);
 
@@ -195,7 +185,7 @@ function HeroScene() {
   const bgOpacity = useTransform(p, [0.35, 0.62], [0.55, 0], { clamp: true });
 
   return (
-    <PinnedScene vh="280vh" sceneRef={ref}>
+    <PinnedScene vh="320vh" sceneRef={ref}>
       {/* Background image */}
       <motion.div style={{
         position: 'absolute', inset: '-6%',
@@ -290,7 +280,7 @@ function StatScene() {
   const captionOpacity = useTransform(p, [0.45, 0.65], [0, 1], { clamp: true });
 
   return (
-    <PinnedScene vh="230vh" sceneRef={ref}>
+    <PinnedScene vh="260vh" sceneRef={ref}>
       <motion.div aria-hidden style={{
         position: 'absolute', inset: '-160px 0',
         backgroundImage: 'radial-gradient(circle, rgba(245,240,232,0.18) 1.5px, transparent 1.5px)',
@@ -360,7 +350,7 @@ function BreachScene() {
   const ev3Opacity = useTransform(p, [0.58, 0.67], [0, 1], { clamp: true });
   const ev3Y       = useTransform(ev3Opacity, o => (1 - o) * 24);
 
-  const finalOpacity = useTransform(p, [0.70, 0.82], [0, 1], { clamp: true });
+  const finalOpacity = useTransform(p, [0.82, 0.93], [0, 1], { clamp: true });
   const finalY       = useTransform(finalOpacity, o => (1 - o) * 24);
 
   const eventMotion = [
@@ -371,7 +361,7 @@ function BreachScene() {
   ];
 
   return (
-    <PinnedScene vh="300vh" sceneRef={ref}>
+    <PinnedScene vh="340vh" sceneRef={ref}>
       <motion.div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30, scale: stageScale, padding: '0 clamp(20px,5vw,60px)', width: '100%', willChange: 'transform' }}>
         <motion.h2 className="cd" style={{
           fontSize: 'clamp(36px,4.5vw,64px)', fontWeight: 600, color: INK, margin: 0, textAlign: 'center', letterSpacing: '-0.02em',
@@ -507,7 +497,7 @@ function GraphScene() {
   }, [p]);
 
   return (
-    <PinnedScene vh="260vh" sceneRef={ref}>
+    <PinnedScene vh="300vh" sceneRef={ref}>
       <motion.div style={{ position: 'absolute', top: 'clamp(60px,8vh,100px)', left: 0, right: 0, textAlign: 'center', opacity: headOpacity, padding: '0 24px' }}>
         <h2 className="cd" style={{ fontSize: 'clamp(34px,4.2vw,58px)', fontWeight: 600, color: INK, margin: 0, letterSpacing: '-0.02em' }}>
           The graph sees what logs can't.
@@ -610,7 +600,7 @@ function VerdictScene() {
   useMotionValueEvent(p, 'change', v => setConf(Math.round(M(v, 0.55, 0.82) * 94)));
 
   return (
-    <PinnedScene vh="260vh" sceneRef={ref}>
+    <PinnedScene vh="300vh" sceneRef={ref}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30, padding: '0 clamp(20px,5vw,60px)', width: '100%' }}>
         <h2 className="cd" style={{ fontSize: 'clamp(34px,4.2vw,58px)', fontWeight: 600, color: INK, margin: 0, textAlign: 'center', letterSpacing: '-0.02em' }}>
           Every verdict shows its work.
@@ -683,7 +673,7 @@ function ApproveScene() {
   const ledgerY       = useTransform(ledgerOpacity, o => (1 - o) * 14);
 
   return (
-    <PinnedScene vh="230vh" sceneRef={ref}>
+    <PinnedScene vh="260vh" sceneRef={ref}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 36, padding: '0 clamp(20px,5vw,60px)', width: '100%' }}>
         <h2 className="cd" style={{ fontSize: 'clamp(38px,5vw,72px)', fontWeight: 600, color: INK, margin: 0, textAlign: 'center', letterSpacing: '-0.02em', lineHeight: 1.05 }}>
           AI suggests.<br/><span style={{ color: GOLD }}>Humans confirm.</span>
@@ -797,7 +787,7 @@ function BridgeScene() {
   const captionY       = useTransform(captionOpacity, o => (1 - o) * 16);
 
   return (
-    <PinnedScene vh="260vh" sceneRef={ref}>
+    <PinnedScene vh="300vh" sceneRef={ref}>
       <motion.div style={{ position: 'absolute', zIndex: 2, textAlign: 'center', opacity: headOpacity, padding: '0 24px' }}>
         <h2 className="cd" style={{ fontSize: 'clamp(40px,6vw,96px)', fontWeight: 600, color: INK, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.02 }}>
           One identity.<br/>Two worlds.
@@ -1140,8 +1130,7 @@ function PlatformGrid() {
 function MissionBreak() {
   const ref = useRef(null);
   const { scrollYProgress: progress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  const smooth    = useSpring(progress, { stiffness: 170, damping: 30, mass: 0.3 });
-  const parallaxY = useTransform(smooth, v => (v - 0.5) * 110);
+  const parallaxY = useTransform(progress, v => (v - 0.5) * 110);
 
   return (
     <section id="mission" ref={ref} style={{ position: 'relative', height: '88vh', overflow: 'hidden' }}>
@@ -1275,8 +1264,7 @@ const BUILDER_LINKS = [
 function BuilderSection() {
   const ref = useRef(null);
   const { scrollYProgress: progress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  const smooth    = useSpring(progress, { stiffness: 170, damping: 30, mass: 0.3 });
-  const parallaxY = useTransform(smooth, v => (v - 0.5) * 110);
+  const parallaxY = useTransform(progress, v => (v - 0.5) * 110);
 
   return (
     <section id="builder" ref={ref} style={{ position: 'relative', overflow: 'hidden', padding: 'clamp(72px,10vw,120px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(245,240,232,0.05)' }}>

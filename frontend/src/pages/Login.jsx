@@ -224,22 +224,32 @@ export default function Login() {
       `}</style>
 
       {/* ── BACKGROUND IMAGE with parallax ─────────────────────────────── */}
-      <div
+      <motion.div
         aria-hidden
-        style={{
-          position: 'absolute',
-          inset: '-30px',
+        initial={{ scale: 1.32 }}
+        animate={{ scale: 1.08 }}
+        transition={{ duration: 1.9, ease: E }}
+        style={{ position: 'absolute', inset: '-30px', zIndex: 0, willChange: 'transform' }}
+      >
+        <div style={{
+          position: 'absolute', inset: 0,
           backgroundImage: `url('/assets/pages/login-bg.jpg')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          transform: `translate(${offset.x * -0.5}px, ${offset.y * -0.5}px) scale(1.08)`,
+          transform: `translate(${offset.x * -0.5}px, ${offset.y * -0.5}px)`,
           willChange: 'transform',
-          zIndex: 0,
-        }}
-      />
+        }}/>
+      </motion.div>
 
       {/* Dark overlay */}
       <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'rgba(5,4,5,0.72)', zIndex: 1 }}/>
+      {/* Aperture open — darkness lifts as the camera pulls back */}
+      <motion.div aria-hidden
+        initial={{ opacity: 1 }}
+        animate={{ opacity: 0 }}
+        transition={{ duration: 1.6, ease: E }}
+        style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, rgba(2,2,2,0.55) 0%, #020202 78%)', zIndex: 3, pointerEvents: 'none' }}
+      />
       {/* Gold radial from bottom */}
       <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 110%, rgba(245,158,11,0.1) 0%, transparent 55%)', zIndex: 1 }}/>
 
@@ -265,9 +275,9 @@ export default function Login() {
       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, zIndex: 10 }}>
         <div style={{ width: '100%', maxWidth: 420, transform: `translate(${offset.x * 0.18}px, ${offset.y * 0.18}px)`, willChange: 'transform' }}>
         <motion.div
-          initial={{ opacity: 0, scale: 0.93, y: 32 }}
-          animate={{ opacity: 1, scale: 1,    y: 0  }}
-          transition={{ duration: 0.75, ease: E }}
+          initial={{ opacity: 0, scale: 0.9, y: 44 }}
+          animate={{ opacity: 1, scale: 1,   y: 0  }}
+          transition={{ duration: 0.95, delay: 0.35, ease: E }}
           style={{
             width: '100%',
             position: 'relative',

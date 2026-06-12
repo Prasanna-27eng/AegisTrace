@@ -177,12 +177,10 @@ function Stat83Scene() {
     return () => window.removeEventListener('resize', fn);
   }, []);
 
-  const { scrollYProgress: raw } = useScroll({ target: ref, offset: ['start start', 'end end'] });
-  const p = useSpring(raw, { stiffness: 170, damping: 30, mass: 0.3, restDelta: 0.0001 });
+  const { scrollYProgress: p } = useScroll({ target: ref, offset: ['start start', 'end end'] });
   const [count, setCount] = useState(0);
   useMotionValueEvent(p, 'change', v => setCount(Math.round(Math.max(0, Math.min(1, (v - 0.08) / 0.45)) * 83)));
 
-  const exitOpacity    = useTransform(raw, [0.93, 1], [1, 0], { clamp: true });
   const statOpacity    = useTransform(p, [0.02, 0.22], [0, 1], { clamp: true });
   const statY          = useTransform(statOpacity, o => (1 - o) * 70);
   const captionOpacity = useTransform(p, [0.42, 0.6], [0, 1], { clamp: true });
@@ -204,11 +202,10 @@ function Stat83Scene() {
   }
 
   return (
-    <section ref={ref} style={{ height: '230vh', position: 'relative' }}>
+    <section ref={ref} style={{ height: '260vh', position: 'relative' }}>
       <motion.div style={{
         position: 'sticky', top: 0, height: '100vh', overflow: 'hidden',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        opacity: exitOpacity, willChange: 'opacity',
       }}>
         <motion.div aria-hidden style={{
           position: 'absolute', inset: '-160px 0',
@@ -232,9 +229,7 @@ function Stat83Scene() {
 
 export default function Mission() {
   const heroRef = useRef(null);
-  const { scrollYProgress: heroRaw } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
-  /* Damped camera — same spring as the landing scenes */
-  const scrollYProgress = useSpring(heroRaw, { stiffness: 170, damping: 30, mass: 0.3, restDelta: 0.0001 });
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const heroY       = useTransform(scrollYProgress, [0, 1], ['0%', '28%']);
   const heroScale   = useTransform(scrollYProgress, [0, 1], [1.06, 1.0]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
