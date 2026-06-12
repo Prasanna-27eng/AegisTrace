@@ -1,32 +1,5 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { motion, useScroll, useSpring, useTransform } from 'framer-motion';
-
-/* Inject scroll-snap styles once */
-const SNAP_STYLE_ID = '__aegis_snap';
-
-function ensureSnapStyles() {
-  if (typeof document === 'undefined') return;
-  if (document.getElementById(SNAP_STYLE_ID)) return;
-  const style = document.createElement('style');
-  style.id = SNAP_STYLE_ID;
-  style.textContent = `
-    /* Enable scroll-snap on pages with story-based scrolling */
-    body.has-story-scroll {
-      scroll-snap-type: y proximity;
-      scroll-behavior: smooth;
-    }
-    body.has-story-scroll .story-scene {
-      scroll-snap-align: start;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      body.has-story-scroll {
-        scroll-behavior: auto !important;
-        scroll-snap-type: none !important;
-      }
-    }
-  `;
-  document.head.appendChild(style);
-}
 
 /* ─── Scene-level progress hook ───────────────────────────────────────────
    Smooth spring-damped camera that eases between scroll positions.
@@ -44,54 +17,17 @@ export function useSceneCamera(ref, { smooth = true } = {}) {
   });
 }
 
-/* ─── Hook to activate story-scroll on the page body ──────────────────── */
-export function useStoryScroll() {
-  React.useEffect(() => {
-    ensureSnapStyles();
-    document.body.classList.add('has-story-scroll');
-    return () => document.body.classList.remove('has-story-scroll');
-  }, []);
-}
-
-/* ─── PinnedScene v2 — gapless transitions ───────────────────────────────
-   Each scene gets a negative margin-top equal to 100vh so that the blank
-   tail at the end of one scene is absorbed by the start of the next.
-   scroll-snap-align enables snap-to-section behavior.                    */
-export function PinnedScene({
-  vh,
-  sceneRef,
-  children,
-  index = 0,
-}) {
-  /* Pull each scene (except the first) up by the full 100vh tail.
-     This eliminates the blank gap between scenes completely:
-     when scene N's sticky releases (at progress=1), scene N+1's
-     sticky immediately engages because its section top is at that
-     exact scroll position.                                               */
-  const pullUp = index > 0 ? '-100vh' : '0';
-
+/* ─── PinnedScene — tall scroll runway with a sticky 100vh viewport ────
+   The "camera" is the scroll progress measured across the runway.
+   The frame holds its final state while it scrolls away — no exit fade
+   (fading creates blank black stretches between scenes).               */
+export function PinnedScene({ vh, sceneRef, children }) {
   return (
-    <section
-      ref={sceneRef}
-      className="story-scene"
-      style={{
-        height: vh,
-        position: 'relative',
-        marginTop: pullUp,
-        flexShrink: 0,
-      }}
-    >
-      <div
-        style={{
-          position: 'sticky',
-          top: 0,
-          height: '100vh',
-          overflow: 'hidden',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
+    <section ref={sceneRef} style={{ height: vh, position: 'relative' }}>
+      <div style={{
+        position: 'sticky', top: 0, height: '100vh', overflow: 'hidden',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
         {children}
       </div>
     </section>

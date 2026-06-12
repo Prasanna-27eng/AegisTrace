@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useSpring, useTransform, useInView, useReducedMotion } from 'framer-motion';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useSceneCamera, PinnedScene, useStoryScroll, ScrollProgressBar } from '../components/SceneController';
+import { useSceneCamera, PinnedScene, ScrollProgressBar } from '../components/SceneController';
 
 const E    = [0.16, 1, 0.3, 1];
 const GOLD = '#F59E0B';
@@ -135,7 +135,7 @@ function HeroScene({ sceneIndex = 0 }) {
   const kickerY       = useTransform(kickerOpacity, o => (1 - o) * 20);
 
   return (
-    <PinnedScene vh="300vh" sceneRef={ref} index={sceneIndex}>
+    <PinnedScene vh="300vh" sceneRef={ref}>
       <motion.div aria-hidden style={{
         position: 'absolute', inset: '-8%',
         backgroundImage: "url('/assets/pages/login-bg.jpg')",
@@ -261,13 +261,12 @@ function EditorialRow({ label, children }) {
    PORTFOLIO / BUILDER PAGE
 ════════════════════════════════════════════════════════════════════════ */
 export default function Portfolio() {
-  useStoryScroll();
   const isMobile = useIsMobile();
   const reduced  = useReducedMotion();
   const useFallback = isMobile || reduced;
 
   return (
-    <div style={{ background: BG, color: INK, overflowX: 'hidden', minHeight: '100vh', position: 'relative', isolation: 'isolate' }}>
+    <div style={{ background: BG, color: INK, overflowX: 'clip', minHeight: '100vh', position: 'relative', isolation: 'isolate' }}>
       <AmbientEmbers/>
       <ScrollProgressBar/>
       <style>{`

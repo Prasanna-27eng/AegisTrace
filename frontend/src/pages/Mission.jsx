@@ -6,7 +6,7 @@ import {
   Zap, Eye, Lock, GitMerge, Layers, ShieldCheck, User,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useSceneCamera, PinnedScene, useStoryScroll, ScrollProgressBar } from '../components/SceneController';
+import { useSceneCamera, PinnedScene, ScrollProgressBar } from '../components/SceneController';
 
 /* ─── Tokens ─────────────────────────────────────────────────────────────── */
 const E    = [0.16, 1, 0.3, 1];
@@ -191,7 +191,7 @@ function Stat83Scene({ sceneIndex = 0 }) {
   }
 
   return (
-    <PinnedScene vh="260vh" sceneRef={ref} index={sceneIndex}>
+    <PinnedScene vh="260vh" sceneRef={ref}>
       <motion.div aria-hidden style={{
         position: 'absolute', inset: '-160px 0',
         backgroundImage: 'radial-gradient(circle, rgba(245,240,232,0.18) 1.5px, transparent 1.5px)',
@@ -212,7 +212,6 @@ function Stat83Scene({ sceneIndex = 0 }) {
 }
 
 export default function Mission() {
-  useStoryScroll();
   const heroRef = useRef(null);
   const p = useSceneCamera(heroRef);
   const heroY     = useTransform(p, [0, 1], ['0%', '14%']);
@@ -279,7 +278,7 @@ export default function Mission() {
   ];
 
   return (
-    <div style={{ background: BG, color: '#F5F0E8', overflowX: 'hidden', position: 'relative', isolation: 'isolate' }}>
+    <div style={{ background: BG, color: '#F5F0E8', overflowX: 'clip', position: 'relative', isolation: 'isolate' }}>
       <AmbientEmbers/>
       <ScrollProgressBar/>
       <style>{`
@@ -372,7 +371,7 @@ export default function Mission() {
       </nav>
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <PinnedScene vh="280vh" sceneRef={heroRef} index={0}>
+      <PinnedScene vh="280vh" sceneRef={heroRef}>
         {/* Background — layer 1 (deepest, moves slowest) */}
         <motion.div
           aria-hidden

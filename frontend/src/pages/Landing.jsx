@@ -4,12 +4,7 @@ import {
   ArrowRight, Minus, Plus,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useSceneCamera, PinnedScene, useStoryScroll, ScrollProgressBar } from '../components/SceneController';
-
-/* Simple fallback wrapper for mobile/reduced-motion */
-function FallbackWrapper({ children }) {
-  return <>{children}</>;
-}
+import { useSceneCamera, PinnedScene, ScrollProgressBar } from '../components/SceneController';
 
 const E    = [0.16, 1, 0.3, 1];
 const GOLD = '#F59E0B';
@@ -161,7 +156,7 @@ function HeroScene({ sceneIndex = 0 }) {
   const bgOpacity = useTransform(p, [0.35, 0.62], [0.55, 0], { clamp: true });
 
   return (
-    <PinnedScene vh="320vh" sceneRef={ref} index={sceneIndex}>
+    <PinnedScene vh="320vh" sceneRef={ref}>
       {/* Background image */}
       <motion.div style={{
         position: 'absolute', inset: '-6%',
@@ -256,7 +251,7 @@ function StatScene({ sceneIndex = 0 }) {
   const captionOpacity = useTransform(p, [0.45, 0.65], [0, 1], { clamp: true });
 
   return (
-    <PinnedScene vh="260vh" sceneRef={ref} index={sceneIndex}>
+    <PinnedScene vh="260vh" sceneRef={ref}>
       <motion.div aria-hidden style={{
         position: 'absolute', inset: '-160px 0',
         backgroundImage: 'radial-gradient(circle, rgba(245,240,232,0.18) 1.5px, transparent 1.5px)',
@@ -337,7 +332,7 @@ function BreachScene({ sceneIndex = 0 }) {
   ];
 
   return (
-    <PinnedScene vh="340vh" sceneRef={ref} index={sceneIndex}>
+    <PinnedScene vh="340vh" sceneRef={ref}>
       <motion.div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30, scale: stageScale, padding: '0 clamp(20px,5vw,60px)', width: '100%', willChange: 'transform' }}>
         <motion.h2 className="cd" style={{
           fontSize: 'clamp(36px,4.5vw,64px)', fontWeight: 600, color: INK, margin: 0, textAlign: 'center', letterSpacing: '-0.02em',
@@ -473,7 +468,7 @@ function GraphScene({ sceneIndex = 0 }) {
   }, [p]);
 
   return (
-    <PinnedScene vh="300vh" sceneRef={ref} index={sceneIndex}>
+    <PinnedScene vh="300vh" sceneRef={ref}>
       <motion.div style={{ position: 'absolute', top: 'clamp(60px,8vh,100px)', left: 0, right: 0, textAlign: 'center', opacity: headOpacity, padding: '0 24px' }}>
         <h2 className="cd" style={{ fontSize: 'clamp(34px,4.2vw,58px)', fontWeight: 600, color: INK, margin: 0, letterSpacing: '-0.02em' }}>
           The graph sees what logs can't.
@@ -576,7 +571,7 @@ function VerdictScene({ sceneIndex = 0 }) {
   useMotionValueEvent(p, 'change', v => setConf(Math.round(M(v, 0.55, 0.82) * 94)));
 
   return (
-    <PinnedScene vh="300vh" sceneRef={ref} index={sceneIndex}>
+    <PinnedScene vh="300vh" sceneRef={ref}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30, padding: '0 clamp(20px,5vw,60px)', width: '100%' }}>
         <h2 className="cd" style={{ fontSize: 'clamp(34px,4.2vw,58px)', fontWeight: 600, color: INK, margin: 0, textAlign: 'center', letterSpacing: '-0.02em' }}>
           Every verdict shows its work.
@@ -649,7 +644,7 @@ function ApproveScene({ sceneIndex = 0 }) {
   const ledgerY       = useTransform(ledgerOpacity, o => (1 - o) * 14);
 
   return (
-    <PinnedScene vh="260vh" sceneRef={ref} index={sceneIndex}>
+    <PinnedScene vh="260vh" sceneRef={ref}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 36, padding: '0 clamp(20px,5vw,60px)', width: '100%' }}>
         <h2 className="cd" style={{ fontSize: 'clamp(38px,5vw,72px)', fontWeight: 600, color: INK, margin: 0, textAlign: 'center', letterSpacing: '-0.02em', lineHeight: 1.05 }}>
           AI suggests.<br/><span style={{ color: GOLD }}>Humans confirm.</span>
@@ -763,7 +758,7 @@ function BridgeScene({ sceneIndex = 0 }) {
   const captionY       = useTransform(captionOpacity, o => (1 - o) * 16);
 
   return (
-    <PinnedScene vh="300vh" sceneRef={ref} index={sceneIndex}>
+    <PinnedScene vh="300vh" sceneRef={ref}>
       <motion.div style={{ position: 'absolute', zIndex: 2, textAlign: 'center', opacity: headOpacity, padding: '0 24px' }}>
         <h2 className="cd" style={{ fontSize: 'clamp(40px,6vw,96px)', fontWeight: 600, color: INK, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.02 }}>
           One identity.<br/>Two worlds.
@@ -1366,7 +1361,6 @@ function FooterSection() {
    LANDING
 ════════════════════════════════════════════════════════════════════════════ */
 export default function Landing() {
-  useStoryScroll();
   const [scrolled, setScrolled] = useState(false);
   const isMobile = useIsMobile();
   const reduced  = useReducedMotion();
@@ -1388,7 +1382,7 @@ export default function Landing() {
   }, []);
 
   return (
-    <div style={{ background: BG, color: '#F5F0E8', overflowX: 'hidden', minHeight: '100vh', position: 'relative', isolation: 'isolate' }}>
+    <div style={{ background: BG, color: '#F5F0E8', overflowX: 'clip', minHeight: '100vh', position: 'relative', isolation: 'isolate' }}>
       <AmbientEmbers/>
       <ScrollProgressBar/>
       <style>{`
