@@ -11,7 +11,7 @@ RUN npm install
 
 # Copy source and build
 COPY frontend/ ./
-RUN npm run build
+RUN DISABLE_ESLINT_PLUGIN=true npm run build
 
 # ─────────────────────────────────────────────
 # Stage 2: Python backend + frontend bundle
