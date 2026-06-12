@@ -14,11 +14,17 @@ from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select
-from models import ProvenanceLedger, TrustEvent, User, AuditLog
+from sqlalchemy import or_ as _or
+from models import ProvenanceLedger, TrustEvent, User, AuditLog, Case
 from database import get_session
 from routers.auth import get_current_user
 
 router = APIRouter(tags=["provenance"])
+
+
+def _org_case_ids(session: Session, user: User) -> set:
+    """Case IDs visible to the caller's org."""
+    return set(session.exec(select(Case.id).where(Case.org_id == user.org_id)).all())
 
 
 # ── Provenance Ledger ─────────────────────────────────────────────────────────
@@ -29,6 +35,9 @@ def get_provenance_for_case(
     session: Session = Depends(get_session),
     _user: User = Depends(get_current_user),
 ):
+    case = session.get(Case, case_id)
+    if not case or case.org_id != _user.org_id:
+        raise HTTPException(404, "Case not found")
     records = session.exec(
         select(ProvenanceLedger)
         .where(ProvenanceLedger.case_id == case_id)
@@ -44,7 +53,13 @@ def list_provenance(
     session: Session = Depends(get_session),
     _user: User = Depends(get_current_user),
 ):
-    q = select(ProvenanceLedger).order_by(ProvenanceLedger.timestamp.desc()).limit(limit)
+    org_case_ids = _org_case_ids(session, _user)
+    q = (
+        select(ProvenanceLedger)
+        .where(_or(ProvenanceLedger.case_id == None, ProvenanceLedger.case_id.in_(org_case_ids)))  # noqa: E711
+        .order_by(ProvenanceLedger.timestamp.desc())
+        .limit(limit)
+    )
     if action_type:
         q = q.where(ProvenanceLedger.action_type == action_type)
     return session.exec(q).all()
@@ -56,8 +71,13 @@ def log_provenance(
     session: Session = Depends(get_session),
     user: User = Depends(get_current_user),
 ):
+    case_id = data.get("case_id")
+    if case_id is not None:
+        case = session.get(Case, case_id)
+        if not case or case.org_id != user.org_id:
+            raise HTTPException(404, "Case not found")
     record = ProvenanceLedger(
-        case_id=data.get("case_id"),
+        case_id=case_id,
         action_type=data.get("action_type", "manual"),
         actor=data.get("actor") or user.email,
         model_used=data.get("model_used"),
@@ -85,6 +105,10 @@ def approve_action(
     record = session.get(ProvenanceLedger, record_id)
     if not record:
         raise HTTPException(404, "Record not found")
+    if record.case_id is not None:
+        case = session.get(Case, record.case_id)
+        if not case or case.org_id != user.org_id:
+            raise HTTPException(404, "Record not found")
     record.approval_status = "approved" if data.get("approved", True) else "rejected"
     record.approved_by = user.email
     session.add(record)
@@ -109,7 +133,13 @@ def list_trust_events(
     session: Session = Depends(get_session),
     _user: User = Depends(get_current_user),
 ):
-    q = select(TrustEvent).order_by(TrustEvent.timestamp.desc()).limit(limit)
+    org_case_ids = _org_case_ids(session, _user)
+    q = (
+        select(TrustEvent)
+        .where(_or(TrustEvent.case_id == None, TrustEvent.case_id.in_(org_case_ids)))  # noqa: E711
+        .order_by(TrustEvent.timestamp.desc())
+        .limit(limit)
+    )
     if event_category:
         q = q.where(TrustEvent.event_category == event_category)
     return session.exec(q).all()
@@ -121,6 +151,9 @@ def get_trust_events_for_case(
     session: Session = Depends(get_session),
     _user: User = Depends(get_current_user),
 ):
+    case = session.get(Case, case_id)
+    if not case or case.org_id != _user.org_id:
+        raise HTTPException(404, "Case not found")
     events = session.exec(
         select(TrustEvent)
         .where(TrustEvent.case_id == case_id)
@@ -135,8 +168,13 @@ def create_trust_event(
     session: Session = Depends(get_session),
     user: User = Depends(get_current_user),
 ):
+    case_id = data.get("case_id")
+    if case_id is not None:
+        case = session.get(Case, case_id)
+        if not case or case.org_id != user.org_id:
+            raise HTTPException(404, "Case not found")
     event = TrustEvent(
-        case_id=data.get("case_id"),
+        case_id=case_id,
         event_category=data.get("event_category", "action"),
         actor=data.get("actor") or user.email,
         actor_type=data.get("actor_type", "human"),

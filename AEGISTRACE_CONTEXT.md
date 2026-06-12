@@ -1,5 +1,5 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v10.0 | **Last updated:** June 2026 (Priority 1 & 2 of the v10.0 plan shipped: Temporal Linker/Attack Graph + SOAR Playbook Engine)
+**Version:** v10.1 | **Last updated:** June 2026 (v10.0 Priority 1, 2 & 3 shipped — Temporal Linker/Attack Graph + SOAR Playbook Engine + Adaptive Thresholds Agent — followed by v10.1 deep multi-tenancy security audit: dependency CVE remediation + org-scoping IDOR fixes across the entire backend)
 **Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files. **This is the single master doc for this project — all other planning/session/deploy docs have been folded into this file and removed.**
 
 ---
@@ -126,7 +126,7 @@ backend/agents/
 | public | /api/public | Public case gallery, demo-analyse |
 | portfolio | /api/portfolio | Stats for public portfolio page |
 | webhooks | /api/webhooks | Slack-compatible HMAC webhooks |
-| hunt | /api/hunt | Threat hunt: cross-case IOC correlation |
+| hunt | /api/hunt | Threat hunt: cross-case IOC correlation + DuckDB SQL console over telemetry |
 | audit | /api/audit | Audit log (all actions) |
 | ingest | /api/ingest | Agent telemetry ingestion + command channel |
 | enrichment | /api/enrichment | Multi-source IOC enrichment — Shodan, GreyNoise, IPInfo, URLhaus, ThreatFox, MalwareBazaar, NVD, CISA KEV, Feodo Tracker C2 (rate limited: 20/min) |
@@ -199,7 +199,7 @@ backend/agents/
 | /app/dashboard | Dashboard.jsx | Live stats, analytics trends, case queue, EDR status |
 | /app/cases | CaseList.jsx | Case list with SLA badges, templates, quick filters |
 | /app/cases/:id | CaseDetail/ | 13-tab case investigation workspace |
-| /app/hunt | ThreatHunt.jsx | Cross-case IOC correlation + MITRE heatmap |
+| /app/hunt | ThreatHunt.jsx | Cross-case IOC correlation + MITRE heatmap + SQL Console (DuckDB) |
 | /app/endpoints | Endpoints.jsx | Endpoint agent management + log viewer |
 | /app/vt-lookup | VTLookup.jsx | VirusTotal v3 with history |
 | /app/email | EmailAnalysis.jsx | Email header forensics + SPF/DKIM/DMARC |
@@ -619,6 +619,65 @@ react, react-dom, react-router-dom, axios, zustand, lucide-react, react-scripts
 
 ---
 
+## SECURITY AUDIT v10.1 (June 2026) — Dependency CVEs + Multi-Tenancy IDOR Sweep
+
+A full pass over the backend: dependency CVE remediation, then a systematic
+search for logic bugs, auth bypasses, injection, SSRF, and cross-org IDOR
+(every current user defaults to `org_id=1`, but the org-scoping bugs below
+would let any tenant read/modify/delete another tenant's data the moment a
+second org exists — so they were fixed now rather than left as landmines).
+
+**Dependency CVE remediation (`backend/requirements.txt`):**
+- [x] `fastapi` 0.111.0 → 0.121.0, pinned `starlette>=0.49.1,<0.50.0` (multipart DoS / form-parsing CVEs)
+- [x] `python-multipart` 0.0.20 → 0.0.27
+- [x] `scapy` 2.5.0 → 2.7.0
+- [x] `cryptography` 42.0.8 → 46.0.7
+- [x] **JWT library swapped again: `python-jose` → `PyJWT==2.13.0`** — python-jose's pinned `cryptography` had unresolved CVEs and the project is unmaintained. `auth.py` now does `import jwt` (PyJWT), `jwt.decode(...)`, catches `jwt.PyJWTError`. **Rule for future sessions: PyJWT is now the standard — do not reintroduce python-jose.**
+- [x] All existing sessions invalidated again on this deploy (JWT lib swap = signing format compatible, but treat as a clean break)
+
+**Install-token hardening (Task #36 — `main.py` + `ingest.py`):**
+- [x] `GET /api/install/{token}` was previously unauthenticated and the `token` placed directly into the generated bootstrap script became the long-lived `INGEST_API_KEY` itself — anyone who saw the URL (browser history, proxy logs, shoulder-surfing) got a permanent ingest credential.
+- [x] Fixed: `GET /api/ingest/install-token` (requires login) issues a short-lived (15 min) signed `type=install_bootstrap` JWT. `/api/install/{token}` now verifies that JWT, then looks up the real `INGEST_API_KEY` server-side via `_get_ingest_key()` and embeds *that* in the script — the long-lived key never appears in a URL.
+
+**CORS + CSP hardening (Tasks #37–38 — `main.py`):**
+- [x] `CORSMiddleware`: `allow_methods=["*"]` / `allow_headers=["*"]` → explicit allow-lists: `GET, POST, PATCH, DELETE, OPTIONS` and `Authorization, Content-Type, X-AegisTrace-Key, X-Agent-Token, X-Agent-Version`.
+- [x] CSP `script-src`: removed `'unsafe-inline'` → `script-src 'self'` only (style-src still allows `'unsafe-inline'` for Google Fonts CSS, which is low-risk).
+
+**Multi-tenancy org-scoping IDOR sweep (Task #40 — the bulk of this audit):**
+
+New `org_id: int = Field(default=1)` columns added to 11 tables that predated
+the org_id pattern (migration auto-adds the column on startup, default `1`,
+zero-downtime): `vthistory`, `emailanalysisrecord`, `pcapanalysis`, `policy`,
+`webhookconfig`, `identityconnector`, `approvedaiservice`, `authevent`,
+`identityanomaly`, `itdralert`, `ioccorrelation`.
+
+Two reusable scoping patterns were established and applied everywhere a model
+has no `org_id` of its own but links (nullably) to `Case` or `User`:
+- `_org_case_ids(session, user)` → `set` of Case IDs in the caller's org; rows are included if `Model.case_id IS NULL OR Model.case_id IN org_case_ids` (via `sqlalchemy.or_`).
+- `_org_user_ids(session, user)` → `set` of User IDs in the caller's org; used for `AuditLog` (no org_id, but has `user_id`).
+
+Per-file fixes:
+- [x] **`identity.py`** — every IdentityNode/edge lookup now checks `node.org_id == user.org_id` (404 if not), including the graph-edge endpoint (both source AND target node must be in-org).
+- [x] **`cases.py`, `comments.py`** — case + case-comment endpoints re-verified for `case.org_id == user.org_id` 404 checks (closing gaps from the v5.4 pass).
+- [x] **`email_router.py`, `pcap.py`, `vt.py`** — `EmailAnalysisRecord` / `PcapAnalysis` / `VTHistory` now stamped with `org_id=user.org_id` on create, list endpoints filter by `org_id`, and single-record GETs 404 on org mismatch. Optional `case_id` on create validated against the caller's org.
+- [x] **`hunt.py`** — IOC/threat-hunting queries scoped to `Case.org_id == user.org_id`; per-case lookups use `org_id`-validated case sets via walrus-operator filtering.
+- [x] **`provenance.py`** (ProvenanceLedger + TrustEvent, both nullable `case_id`, no `org_id`) — `_org_case_ids` applied to `list_provenance` / `list_trust_events`; `get_provenance_for_case` / `get_trust_events_for_case` / `log_provenance` / `create_trust_event` / `approve_action` all validate `case.org_id == user.org_id` before reading/writing.
+- [x] **`agent_security.py`** — `list_agent_actions`, `agent_security_stats`, `approve_action`, `reject_action` all org-scoped via `_org_case_ids` + per-record case-org check.
+- [x] **`edr.py`** — added `_require_responder(user)` (analyst/admin only) on `isolate_endpoint` / `un_isolate_endpoint` / `kill_process` / `run_command` — previously ANY authenticated user (incl. viewers) could isolate hosts, kill processes, or run arbitrary commands on production endpoints via CrowdStrike/SentinelOne/CarbonBlack. Also added `_check_case_org` + `_org_case_ids` to scope `/history` and `/history/recent`.
+- [x] **`audit.py`** — AuditLog has no `org_id` but `user_id` → `User.org_id`; `_org_user_ids` + `_org_scope` (rows where `user_id IN org_user_ids OR user_id IS NULL`) applied to `list_audit`, `audit_since`, `audit_stats` (incl. the daily-trend loop and `total_cases`), and the `/stream` SSE generator (recomputed each poll).
+- [x] **`itdr.py`** — `AuthEvent`, `IdentityAnomaly`, `ITDRAlert` now all org-scoped end-to-end: all 5 non-shadow-AI detector functions (`_detect_credential_stuffing`, `_detect_impossible_travel`, `_detect_new_device`, `_detect_privilege_escalation`, `_detect_token_theft`) take an `org_id` param and filter `AuthEvent.org_id`; `_create_anomaly` stamps `org_id`; `list_auth_events`/`create_auth_event`/`create_bulk_events`/`list_itdr_anomalies`/`list_itdr_alerts`/`get_itdr_analytics`/`update_itdr_alert` all filter or validate by `org_id`. `run_itdr_detectors` now 404s if the target `IdentityNode` isn't in the caller's org. Also removed a dead duplicate `_create_anomaly` definition that was shadowing the real one. **Residual (accepted, low-risk):** `_detect_shadow_ai_usage` queries `ShadowAIEvent`/`Endpoint`, neither of which has `org_id` — out of scope until those tables get org_id too.
+- [x] **`webhooks.py`** — `WebhookConfig` CRUD fully org-scoped + `require_admin`. **New SSRF defense-in-depth layer**: existing save-time `_validate_webhook_url()` (hostname/IP regex + port allow-list) is now joined by send-time `_resolve_and_check()` — resolves the hostname via `socket.getaddrinfo` at send time and rejects if any resolved address is private/loopback/link-local/reserved/multicast/unspecified (handles IPv4-mapped IPv6 too via `ip.ipv4_mapped`). Defends against **DNS rebinding** (hostname is public at save time, resolves to `127.0.0.1`/`169.254.169.254`/internal IP at send time).
+- [x] **`connectors.py`** — all connector CRUD + `ApprovedAIService` list/status/delete org-scoped. **Critical fix**: `POST /api/connectors/approved-ai` (`save_approved_ai`) previously deleted **ALL** `ApprovedAIService` rows globally (across every org) on every save by ANY authenticated user — now scoped to `org_id == admin.org_id` and gated behind `require_admin`.
+- [x] **`policies.py`** — `Policy` CRUD (`list`/`create`/`update`/`delete`) all org-scoped; create/update/delete now `require_admin` (previously any authenticated user could edit/delete any org's access-control policies). `POST /validate`: policy lookup scoped to `Policy.org_id`, and the target `IdentityNode` is treated as not-found (no `node_risk_score` leak) if it belongs to another org.
+- [x] **`orchestration.py`** (SOAR playbooks) — `evaluate_playbooks()` and `execute_approved_playbook_action()` now take an `org_id` param: the `Playbook` query is filtered by `org_id` (previously ANY org's playbooks fired for ANY org's events), and any `case_id` pulled from attacker-influenced `event_data` is verified against `org_id` before a case is attached to an action (`POST /api/orchestration/evaluate` passes `user.org_id`; telemetry callers in `ingest.py` default to `org_id=1`).
+- [x] **`portfolio.py`** — `GET /api/portfolio/stats` was **fully unauthenticated** and returned platform-wide aggregate counts (cases, IOCs, VT lookups, email analyses) across ALL orgs. Now requires `get_current_user` and every query is scoped to `Case.org_id` / `VTHistory.org_id` / `EmailAnalysisRecord.org_id == user.org_id`.
+- [x] **`terminal.py`** — `POST /api/terminal/analyse` validates an optional `case_id` against the caller's org before creating a `ToolRun`; `GET /api/terminal/history` either validates a single `case_id` against the org or, with no filter, uses `_org_case_ids` (`case_id IS NULL OR case_id IN org_case_ids`) instead of returning every org's tool runs.
+- [x] **`analytics.py`** — `GET /api/analytics/ioc-types` now filters `IOCCorrelation.org_id == user.org_id` (new column + `ingest.py`'s `_correlate()` now takes/stamps `org_id`, default 1 for the shared-key telemetry pipeline).
+
+**Net effect:** with the current single-org deployment (`org_id=1` for everyone) none of this changes runtime behavior. The value is structural — when a second tenant is provisioned, none of the above endpoints leak or allow cross-tenant tampering. All edited files re-verified with `ast.parse()`; no test suite exists yet for this backend (manual/agent-driven verification only).
+
+---
+
 ## FULL FUTURE WORK BACKLOG
 
 ### Priority 0 — v10.0 Session Plan (ACTIVE — June 2026)
@@ -634,10 +693,10 @@ react, react-dom, react-router-dom, axios, zustand, lucide-react, react-scripts
   - New models `Playbook` (trigger_event_type, trigger_conditions JSON, actions JSON array, is_active, requires_approval global gate, run_count, last_run_at) and `PlaybookRun` (playbook_id, trigger_event_type, trigger_event_id, actions_taken/actions_pending JSON, status, result_summary, run_at, completed_at) in `backend/models.py`. Rule engine evaluates `min_*`/`max_*` numeric-threshold conditions plus exact/case-insensitive string matches against incoming event data, then runs each action immediately or queues it to the `/app/agent-security` approval queue (`ProvenanceLedger`, `action_type="playbook_action"`) depending on the per-action × per-playbook approval gate (`requires_approval = action_default AND playbook.requires_approval` — the playbook flag can only relax approval, never add it).
   - **Files shipped:** `backend/routers/orchestration.py` (new, ~400 lines — `ACTION_TYPES` default-approval map, `SEED_PLAYBOOK`, `_conditions_match()`, action handlers `_action_isolate_endpoint`/`_action_create_case`/`_action_send_webhook`/`_action_page_oncall`/`_action_add_case_comment`/`_action_enrich_ioc`/`_action_generate_rules`, `_execute_action()` dispatcher, `execute_approved_playbook_action()` approval-execution closure, `evaluate_playbooks()` core evaluator + `PlaybookRun` audit trail, `seed_builtin_playbooks()`, full CRUD + `/api/orchestration/evaluate` (dry-run) + `/api/orchestration/seed` REST endpoints); `backend/main.py` (router registration + startup seed of the built-in "Critical MCP Block → Contain" playbook); `backend/routers/ingest.py` (`evaluate_playbooks()` hooked into `ingest_telemetry` for new `ITDRAlert`/`ShadowAIEvent` rows and into `ingest_mcp_event` for blocked/flagged MCP tool calls); `backend/routers/agent_security.py` (`approve_action` is now async and, for `action_type="playbook_action"` records, calls `execute_approved_playbook_action()` to run the deferred action e.g. endpoint isolation); `frontend/src/pages/app/Playbooks.jsx` (new — full CRUD UI with dynamic condition/action editors, run history, dry-run "Test" modal); `frontend/src/App.jsx` + `frontend/src/components/Sidebar.jsx` (route + "Playbooks" nav item under "Control", Workflow icon); public pages `frontend/src/pages/Landing.jsx` (new "Attack Graph Reconstruction" + "Playbook Engine (SOAR)" entries in `MODULES`), `frontend/src/pages/Mission.jsx` (Temporal Linker + SOAR Playbook Engine moved to V1 "Foundation — Shipped"; V2 "SOAR Playbook Engine" replaced with "Adaptive Thresholds Agent" for Priority 3), `frontend/src/pages/Portfolio.jsx` (flagship project description updated to mention the Temporal Linker and SOAR playbook engine).
   - **Verified:** end-to-end tested in a throwaway venv (`DATABASE_URL=sqlite:////tmp/testdb.db`) — seed idempotency, dry-run match/no-match via `/api/orchestration/evaluate`, a real run creating a `Case` + `ProvenanceLedger` (pending approval) + `PlaybookRun`, and the approval-execution closure creating an `AgentCommand` for endpoint isolation after approval. Frontend: `npm run build` compiles cleanly with the new Playbooks page, routes, sidebar entry, and updated public pages.
-- [ ] **Priority 3 — Adaptive Thresholds Agent** (2 days, next up — "it improves itself")
-  - **What it does:** background agent runs every 4 hours, computes FP/FN rates and avg detection confidence from the last 24h, asks Nemotron-70B for threshold adjustments within hardcoded bounds, applies them at runtime (no restart), logs every change.
-  - **New model** `AdaptiveThresholdLog` in `backend/models.py`: `threshold_name` (anomaly_score | behavioral_similarity | itdr_confidence), `old_value`/`new_value` (float), `reason` (Text), `fp_rate_24h`, `fn_rate_24h`, `agent_model`, `applied_at`.
-  - **`backend/adaptive_config.py`** — in-memory runtime config singleton:
+- [x] **Priority 3 — Adaptive Thresholds Agent** — DONE (June 2026, "it improves itself")
+  - **What it does:** background agent runs every 4 hours, computes FP/FN rates and avg detection confidence from the last 24h, asks Nemotron-70B (Groq fallback) for threshold adjustments within hardcoded bounds, applies them at runtime (no restart), logs every change to `AdaptiveThresholdLog`.
+  - **New model** `AdaptiveThresholdLog` in `backend/models.py`: `threshold_name`, `old_value`/`new_value` (float), `reason` (Text), `fp_rate_24h`, `fn_rate_24h`, `agent_model`, `org_id`, `applied_at`.
+  - **`backend/adaptive_config.py`** — in-memory runtime config singleton (thread-safe via `threading.Lock`), `get()`/`get_all()`/`set_value()` (clamps to bounds):
     ```python
     _config = {
         "anomaly_score_threshold": 70,
@@ -645,15 +704,26 @@ react, react-dom, react-router-dom, axios, zustand, lucide-react, react-scripts
         "itdr_confidence_threshold": 0.75,
         "defense_fp_tolerance": 0.05,
     }
-    ADJUSTMENT_BOUNDS = {  # agent can only move within ±20% of defaults
+    ADJUSTMENT_BOUNDS = {  # agent can only move within ~+/-20% of defaults
         "anomaly_score_threshold":         (56, 84),
         "behavioral_similarity_threshold": (0.68, 1.0),
         "itdr_confidence_threshold":       (0.60, 0.90),
     }
     ```
-  - **`backend/adaptive_agent.py`** — `adaptive_agent_cycle()`: compute `fp_rate` (DefenseEvents dismissed/total), `fn_estimate` (ITDRAlerts marked false_positive), `avg_confidence`; build a Nemotron prompt with current stats + thresholds + bounds, target FP<5%/FN<2%/confidence>75%; on response, clamp each returned value to its bound, log via `AdaptiveThresholdLog`, and update `_config`.
-  - **Hardcoded safety prompt:** "You may ONLY adjust the numeric thresholds listed. You may NEVER disable detectors, change user permissions, delete data, or modify authentication settings. All adjustments must stay within the provided bounds."
-  - **Files to create/modify:** `backend/adaptive_config.py` (new), `backend/adaptive_agent.py` (new — start as background thread/task in `backend/main.py` startup, after the scheduler), `backend/routers/defense.py` + `backend/routers/itdr.py` (read thresholds from `adaptive_config` instead of hardcoded constants), new `GET /api/adaptive/log` endpoint (last 30 changes, in `routers/analytics.py` or `routers/admin.py`), `frontend/src/pages/app/DefenseConsole.jsx` (add an "Adaptive Engine" panel showing current thresholds + last change).
+    `defense_fp_tolerance` has no bounds entry — it's a fixed target the agent reasons about, not an adjustable output (the agent can only return adjustments for the three bounded keys; anything else is ignored).
+  - **`backend/adaptive_agent.py`** — `adaptive_agent_cycle()`: computes `fp_rate` (DefenseEvent `dismissed`/total, last 24h, global — DefenseEvent predates multi-tenancy and is IP-fingerprint based), `fn_rate` (ITDRAlert `false_positive`/total, last 24h, scoped by `org_id`), `avg_confidence` (mean `DefenseEvent.ai_confidence`); builds a prompt with current thresholds + bounds + targets (FP<5%/FN<2%/confidence>75%); follows the `_call_linker_ai` pattern (Nemotron-70B via `nvidia_chat` if available, else `call_ai_json` Groq fallback) returning `(dict, model_name)`; clamps each returned adjustment to `ADJUSTMENT_BOUNDS`, writes `AdaptiveThresholdLog` only if the clamped value actually changed, and updates `_config`. `start_adaptive_agent(engine)` runs this as a daemon thread, sleeping `4 * 3600`s between cycles, started in `main.py`'s `startup()` after `start_scheduler()`.
+  - **Hardcoded safety prompt (verbatim, in `_ADAPTIVE_SYSTEM`):** "You may ONLY adjust the numeric thresholds listed. You may NEVER disable detectors, change user permissions, delete data, or modify authentication settings. All adjustments must stay within the provided bounds."
+  - **Threshold -> real codepath mapping (decided during implementation):**
+    - `anomaly_score_threshold` (0-100, default 70) -> `routers/identity.py` `/api/identity/graph` `high_risk` count: `IdentityNode.risk_score >= adaptive_config.get("anomaly_score_threshold")` (was hardcoded `>= 70`).
+    - `itdr_confidence_threshold` (0-1, default 0.75) -> two consumers: (1) `routers/itdr.py` `run_itdr_detectors()` now gates `_create_anomaly()` — a detector hit only creates an `IdentityAnomaly`/fires `ITDR_ALERT_FIRED` if `result["confidence"] >= itdr_confidence_threshold` (previously every detector hit created an anomaly unconditionally); (2) `routers/defense.py` `_detect_and_triage()` — replaces the old hardcoded `HITL_CONF = 0.70` (confidence above this -> `pending_review` for Defense Console).
+    - `behavioral_similarity_threshold` (0-1, default 0.85) -> `routers/defense.py` `_detect_and_triage()` — replaces the old hardcoded `AUTO_BLOCK_CONF = 0.92` (confidence above this -> `auto_handled` + watchlist).
+    - `defense_fp_tolerance` (default 0.05) -> not a runtime gate; used only inside the agent's own prompt as the FP-rate target it tunes toward.
+  - **`GET /api/analytics/adaptive-thresholds`** (in `routers/analytics.py`) — returns `{current, bounds, log}` where `log` is the last 30 `AdaptiveThresholdLog` rows for the caller's org.
+  - **Frontend:** `frontend/src/pages/app/DefenseConsole.jsx` — new `AdaptivePanel` component, fetched alongside events/stats on each refresh cycle, shows the 4 current threshold values + their bounds and the most recent change (threshold, old -> new, agent model, reason, time ago).
+- [x] **Priority 3.5 — SQL Hunting Console (DuckDB)** — DONE (June 2026)
+  - **What it does:** read-only SQL query console over the live telemetry DB, added as a "SQL Console" tab on `/app/hunt`. Uses DuckDB's `sqlite_scan()` to query the production SQLite file directly (zero ETL, zero second database, safe under WAL with concurrent app writes). Each request opens a fresh in-memory DuckDB connection, installs/loads the `sqlite` extension, and creates a fixed set of views — `raw_log_events`, `endpoints`, `agent_actions`, `shadow_ai_events`, `defense_events`, `hardware_alerts` (unfiltered, matching existing app-wide exposure for tables that predate multi-tenancy) and `itdr_alerts`, `cases`, `audit_logs` (org-scoped to `user.org_id`; `audit_logs` additionally excludes `entity_type='user_pw'`). The caller's query must be a single `SELECT`/`WITH` statement, is checked against a keyword blocklist (DDL/DML/admin/catalog-introspection incl. `sqlite_master`, `duckdb_*`, `information_schema`, `pragma_*`), then wrapped as `SELECT * FROM (<query>) LIMIT n` — so it can only ever read from the pre-built views. 10s execution timeout (via thread + `con.interrupt()`), 1000-row hard cap (200 default).
+  - **Files shipped:** `backend/routers/hunt.py` (new `_validate_hunt_query`, `_open_hunt_connection`, `_execute_with_timeout`, `_jsonable`, `POST /api/hunt/sql`, `GET /api/hunt/sql/schema`); `backend/requirements.txt` (`duckdb==1.5.3`); `backend/main.py` (startup pre-caches the DuckDB `sqlite` extension so the first user query isn't slow); `frontend/src/pages/app/ThreatHunt.jsx` (new "SQL Console" tab — collapsible schema/columns reference, example-query dropdown (`SQL_EXAMPLES`), query textarea with Cmd/Ctrl+Enter to run, results table with sticky header + truncation indicator).
+  - **Verified:** end-to-end tested in a throwaway venv against a real `models.py`-generated SQLite DB with two orgs — `sqlite_scan` reads live WAL-mode data concurrently with app writes, org-scoped views correctly isolate `cases`/`itdr_alerts`/`audit_logs` between orgs, and the blocklist/validator correctly rejects non-SELECT statements, multi-statement input, and `sqlite_master`/`information_schema`/`pragma_*` introspection attempts. Frontend: `CI=true npm run build` compiles cleanly with no new warnings.
 - [ ] **Priority 4 — Auto-Rule Generation Trigger** (1 day, after Priority 3)
   - **What it does:** extends the existing `/api/rules/cases/{id}/generate` (Codestral 22B, already built) — a nightly job checks if the same MITRE technique appears across 3+ cases within 7 days and auto-triggers rule generation into a "pending review" queue, without analyst input.
   - **New model** `DetectionRule` in `backend/models.py`: `rule_name`, `source_case_id` (FK → case.id), `mitre_technique`, `yara`/`sigma`/`kql`/`splunk_spl` (Text), `generated_by` (auto|analyst), `status` (pending_review|approved|rejected|deployed), `reviewed_by`, `reviewed_at`, `org_id`, `created_at`.

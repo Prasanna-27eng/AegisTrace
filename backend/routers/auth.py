@@ -2,7 +2,7 @@
 AegisTrace Authentication — v5.4
 ──────────────────────────────────
 Passwords: bcrypt (transparent upgrade from SHA-256 on first login).
-JWT tokens — python-jose HS256, 7-day expiry, server-side invalidation.
+JWT tokens — PyJWT HS256, 7-day expiry, server-side invalidation.
 Progressive lockout: 5 fails→60s, 10 fails→15min, 20 fails→1hr.
 Admin 2FA enforcement: admin accounts without 2FA are blocked after login.
 Admin: prasanna80564@gmail.com / ADMIN_PIN env var (default: aegis2025)
@@ -13,7 +13,7 @@ from collections import defaultdict
 from typing import Optional
 import bcrypt
 import pyotp
-from jose import jwt, JWTError
+import jwt
 from fastapi import APIRouter, Depends, HTTPException, Header, Request
 from sqlmodel import Session, select
 from models import User, AuditLog, TokenBlocklist
@@ -65,7 +65,7 @@ def _get_real_ip(request: Request) -> str:
     return getattr(request.client, "host", "unknown")
 
 
-# ── JWT helpers — python-jose (replaces custom implementation in v5.4) ─────────
+# ── JWT helpers — PyJWT (replaces custom implementation in v5.4) ───────────────
 def hash_password(pw: str) -> str:
     """Returns bcrypt hash. Used for new passwords and upgrades."""
     return bcrypt.hashpw(pw.encode(), bcrypt.gensalt(12)).decode()
@@ -88,7 +88,7 @@ def verify_password(pw: str, stored: str) -> bool:
 
 
 def create_token(payload: dict, ttl: int = TTL) -> str:
-    """Create a signed JWT using python-jose HS256."""
+    """Create a signed JWT using PyJWT HS256."""
     jti  = str(uuid.uuid4())
     now  = datetime.utcnow()
     data = {
@@ -104,7 +104,7 @@ def verify_token(token: str, session: Session = None) -> dict:
     """Verify JWT signature, expiry, and server-side revocation."""
     try:
         payload = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
-    except JWTError as e:
+    except jwt.PyJWTError as e:
         raise HTTPException(401, f"Invalid or expired token: {e}")
 
     # Server-side invalidation (logout / forced expiry)
@@ -536,10 +536,10 @@ def login_mfa(data: dict, request: Request, session: Session = Depends(get_sessi
     if not pending_token or not code:
         raise HTTPException(400, "pending_token and code required")
 
-    # Decode and validate the pending token using python-jose
+    # Decode and validate the pending token
     try:
         payload = jwt.decode(pending_token, SECRET, algorithms=[ALGORITHM])
-    except JWTError:
+    except jwt.PyJWTError:
         raise HTTPException(401, "Invalid or expired MFA session — please log in again")
 
     if payload.get("type") != "mfa_pending":

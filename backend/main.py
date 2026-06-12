@@ -52,6 +52,7 @@ from routers.vision import router as vision_router
 from routers.rules import router as rules_router
 from routers.graph import router as graph_router
 from routers.orchestration import router as orchestration_router
+from adaptive_agent import start_adaptive_agent
 from hardware_tools import router as hardware_router
 from ai_router import call_ai_json
 from core.identity_engine import register_default_detectors
@@ -85,8 +86,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-AegisTrace-Key", "X-Agent-Token", "X-Agent-Version"],
 )
 
 # ── Request Size Limiter ──────────────────────────────────────────────────────
@@ -119,7 +120,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline'; "
+            "script-src 'self'; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.fontshare.com; "
             "font-src 'self' https://fonts.gstatic.com https://api.fontshare.com; "
             "img-src 'self' data: https:; "
@@ -299,7 +300,14 @@ _AGENT_DIR = Path(__file__).parent / "agent_files"
 @app.get("/api/install/{token}")
 def install_bootstrap(token: str, request: Request):
     """
-    Returns a Python bootstrap script personalised with the caller's token.
+    Returns a Python bootstrap script personalised with the real ingest key.
+
+    `token` is a short-lived (15 min) signed bootstrap token from
+    GET /api/ingest/install-token (requires login) — NOT the ingest key
+    itself. This keeps the long-lived INGEST_API_KEY out of URLs/access
+    logs/browser history; only this narrow, single-purpose, expiring token
+    ever appears in the install URL.
+
     Run with: python3 -c "import urllib.request; exec(urllib.request.urlopen('URL').read())"
 
     The bootstrap:
@@ -308,13 +316,25 @@ def install_bootstrap(token: str, request: Request):
       3. Writes it to /tmp/aegistrace_agent.py and starts it in the background
       4. All env vars pre-set — zero manual configuration needed
     """
+    import jwt
+    from routers.auth import SECRET, ALGORITHM
+    from routers.ingest import _get_ingest_key
+
+    try:
+        payload = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
+    except jwt.PyJWTError:
+        raise HTTPException(401, "Install link expired or invalid — generate a new one from the Endpoints page.")
+    if payload.get("type") != "install_bootstrap":
+        raise HTTPException(401, "Invalid install token.")
+
+    ingest_key = _get_ingest_key()
     server_url = str(request.base_url).rstrip("/")
     agent_url  = f"{server_url}/agent/aegistrace_agent.py"
 
     script = f"""
 import subprocess, sys, os, urllib.request, tempfile, pathlib
 
-TOKEN   = {repr(token)}
+TOKEN   = {repr(ingest_key)}
 AGENT   = {repr(agent_url)}
 SERVER  = {repr(server_url)}
 LOGFILE = pathlib.Path.home() / "aegistrace.log"
@@ -428,6 +448,7 @@ async def startup():
     seed_demo_data(engine)   # idempotent — skips if demo cases already exist
     ensure_admin(engine)     # sync admin password from ADMIN_PIN env var
     start_scheduler()        # launch background report-delivery scheduler
+    start_adaptive_agent(engine)  # v10.1 self-tuning thresholds agent (every 4h)
     register_default_detectors()  # v4.0 identity risk engine
 
     # ── Qdrant vector store ───────────────────────────────────────────────────
@@ -454,6 +475,16 @@ async def startup():
             seed_builtin_playbooks(_s)
     except Exception as _e:
         print(f"[orchestration] Seed skipped: {_e}")
+
+    # ── SQL Hunting Console — pre-cache the DuckDB sqlite extension ───────────
+    try:
+        import duckdb
+        _con = duckdb.connect(":memory:")
+        _con.execute("INSTALL sqlite")
+        _con.execute("LOAD sqlite")
+        _con.close()
+    except Exception as _e:
+        print(f"[hunt] DuckDB sqlite extension pre-cache skipped: {_e}")
 
     # ── Event bus handlers ────────────────────────────────────────────────────
     @event_bus.on(Events.IDENTITY_DISCOVERED)

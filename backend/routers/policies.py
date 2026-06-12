@@ -17,7 +17,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select
 from models import Policy, IdentityNode, User, AuditLog
 from database import get_session
-from routers.auth import get_current_user
+from routers.auth import get_current_user, require_admin
 
 router = APIRouter(prefix="/api/policies", tags=["policies"])
 
@@ -30,7 +30,7 @@ def list_policies(
     session: Session = Depends(get_session),
     _user: User = Depends(get_current_user),
 ):
-    q = select(Policy)
+    q = select(Policy).where(Policy.org_id == _user.org_id)
     if active_only:
         q = q.where(Policy.is_active == True)   # noqa: E712
     return session.exec(q.order_by(Policy.created_at.desc())).all()
@@ -42,7 +42,7 @@ def list_policies(
 def create_policy(
     data: dict,
     session: Session = Depends(get_session),
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_admin),
 ):
     policy = Policy(
         name=data.get("name", "Unnamed Policy"),
@@ -55,6 +55,7 @@ def create_policy(
         allowed_hours_start=data.get("allowed_hours_start"),
         allowed_hours_end=data.get("allowed_hours_end"),
         is_active=data.get("is_active", True),
+        org_id=user.org_id,
     )
     session.add(policy)
     session.add(AuditLog(
@@ -73,10 +74,10 @@ def update_policy(
     policy_id: int,
     data: dict,
     session: Session = Depends(get_session),
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_admin),
 ):
     policy = session.get(Policy, policy_id)
-    if not policy:
+    if not policy or policy.org_id != user.org_id:
         raise HTTPException(404, "Policy not found")
     for field in ("name", "description", "identity_type", "role",
                   "allowed_hours_start", "allowed_hours_end"):
@@ -99,10 +100,10 @@ def update_policy(
 def delete_policy(
     policy_id: int,
     session: Session = Depends(get_session),
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_admin),
 ):
     policy = session.get(Policy, policy_id)
-    if not policy:
+    if not policy or policy.org_id != user.org_id:
         raise HTTPException(404, "Policy not found")
     session.delete(policy)
     session.commit()
@@ -137,10 +138,15 @@ def validate_action(
     ip_address = data.get("ip_address")
 
     node = session.get(IdentityNode, node_id) if node_id else None
+    if node and node.org_id != _user.org_id:
+        node = None
 
     # Fetch active policies, scoped to node type / role if available
     policies = session.exec(
-        select(Policy).where(Policy.is_active == True)   # noqa: E712
+        select(Policy).where(
+            Policy.is_active == True,   # noqa: E712
+            Policy.org_id == _user.org_id,
+        )
     ).all()
 
     if node:

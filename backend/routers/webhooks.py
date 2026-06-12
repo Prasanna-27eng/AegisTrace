@@ -5,7 +5,7 @@ Fires HTTP POST to configured URLs when SOC events occur.
 Supports Slack-compatible and generic JSON payloads.
 Events: case_created | case_closed | case_status_changed | critical_case | malicious_ioc
 """
-import json, hashlib, hmac, threading, re
+import json, hashlib, hmac, threading, re, socket, ipaddress
 from datetime import datetime
 from typing import Optional
 import httpx
@@ -56,13 +56,52 @@ def _validate_webhook_url(url: str) -> None:
         raise HTTPException(400, f"Webhook port {port} not allowed. Use 80, 443, 8080, or 8443")
 
 
+def _is_blocked_ip(ip_str: str) -> bool:
+    """True if the IP (or its IPv4-mapped form) is private/loopback/link-local/reserved."""
+    try:
+        ip = ipaddress.ip_address(ip_str)
+    except ValueError:
+        return True
+    mapped = ip.ipv4_mapped if ip.version == 6 else None
+    if mapped:
+        ip = mapped
+    return (
+        ip.is_private or ip.is_loopback or ip.is_link_local
+        or ip.is_reserved or ip.is_multicast or ip.is_unspecified
+    )
+
+
+def _resolve_and_check(url: str) -> bool:
+    """
+    Send-time SSRF re-check: resolve the webhook hostname and verify every
+    address it resolves to is a public address. Defends against DNS
+    rebinding (hostname passes validation at save-time but later resolves
+    to an internal IP). Returns True if safe to send, False if blocked.
+    """
+    try:
+        host = urlparse(url).hostname or ""
+        if not host:
+            return False
+        infos = socket.getaddrinfo(host, None)
+        for _, _, _, _, sockaddr in infos:
+            if _is_blocked_ip(sockaddr[0]):
+                return False
+        return True
+    except Exception:
+        return False
+
+
 # ── CRUD ──────────────────────────────────────────────────────────────────────
 @router.get("")
 def list_webhooks(
     admin: User = Depends(require_admin),
     session: Session = Depends(get_session),
 ):
-    return session.exec(select(WebhookConfig).order_by(WebhookConfig.created_at.desc())).all()
+    return session.exec(
+        select(WebhookConfig)
+        .where(WebhookConfig.org_id == admin.org_id)
+        .order_by(WebhookConfig.created_at.desc())
+    ).all()
 
 
 @router.post("")
@@ -85,6 +124,7 @@ def create_webhook(
         events=json.dumps(events),
         secret=data.get("secret"),
         is_active=True,
+        org_id=admin.org_id,
     )
     session.add(wh)
     session.commit()
@@ -99,7 +139,7 @@ def update_webhook(
     session: Session = Depends(get_session),
 ):
     wh = session.get(WebhookConfig, wh_id)
-    if not wh:
+    if not wh or wh.org_id != admin.org_id:
         raise HTTPException(404)
     if "name" in data:
         wh.name = data["name"]
@@ -125,7 +165,7 @@ def delete_webhook(
     session: Session = Depends(get_session),
 ):
     wh = session.get(WebhookConfig, wh_id)
-    if not wh:
+    if not wh or wh.org_id != admin.org_id:
         raise HTTPException(404)
     session.delete(wh)
     session.commit()
@@ -139,7 +179,7 @@ def test_webhook(
     session: Session = Depends(get_session),
 ):
     wh = session.get(WebhookConfig, wh_id)
-    if not wh:
+    if not wh or wh.org_id != admin.org_id:
         raise HTTPException(404)
     payload = {
         "event": "test",
@@ -198,6 +238,9 @@ def fire_event(event: str, payload: dict):
 
 def _send_webhook(wh: WebhookConfig, payload: dict) -> Optional[int]:
     """Send payload to webhook URL. Returns HTTP status code."""
+    if not _resolve_and_check(wh.url):
+        print(f"[webhook] Blocked send to {wh.url}: resolves to an internal/private address")
+        return None
     try:
         body = json.dumps(payload)
         headers = {"Content-Type": "application/json", "X-AegisTrace-Event": payload.get("event", "")}

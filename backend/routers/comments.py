@@ -73,6 +73,9 @@ def update_comment(
     session: Session = Depends(get_session),
     user: User = Depends(get_current_user),
 ):
+    case = session.get(Case, case_id)
+    if not case or case.org_id != user.org_id:
+        raise HTTPException(404, "Case not found")
     comment = session.get(CaseComment, comment_id)
     if not comment or comment.case_id != case_id:
         raise HTTPException(404, "Comment not found")
@@ -95,6 +98,9 @@ def delete_comment(
     session: Session = Depends(get_session),
     _user: User = Depends(get_current_user),
 ):
+    case = session.get(Case, case_id)
+    if not case or case.org_id != _user.org_id:
+        raise HTTPException(404, "Case not found")
     comment = session.get(CaseComment, comment_id)
     if not comment or comment.case_id != case_id:
         raise HTTPException(404, "Comment not found")

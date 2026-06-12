@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Loader2, AlertTriangle, Shield, GitMerge, Activity, Download } from 'lucide-react';
+import { Search, Loader2, AlertTriangle, Shield, GitMerge, Activity, Download, Database, Play, ChevronDown, ChevronRight } from 'lucide-react';
 import api from '../../api/client';
 import { SeverityBadge } from '../../components/SeverityBadge';
 import { useNavigate } from 'react-router-dom';
@@ -9,6 +9,34 @@ const TABS = [
   { id: 'mitre',     label: 'MITRE Heatmap' },
   { id: 'campaigns', label: 'Campaign Alerts' },
   { id: 'search',    label: 'Cross-Case Search' },
+  { id: 'sql',       label: 'SQL Console' },
+];
+
+const SQL_EXAMPLES = [
+  {
+    label: 'Recent failed logins',
+    query: "SELECT ts, hostname, username, source_ip, raw\nFROM raw_log_events\nWHERE event_type = 'failed_login'\nORDER BY ts DESC\nLIMIT 50",
+  },
+  {
+    label: 'Top source IPs by failed logins',
+    query: "SELECT source_ip, count(*) AS attempts, count(DISTINCT username) AS usernames_tried\nFROM raw_log_events\nWHERE event_type = 'failed_login' AND source_ip IS NOT NULL\nGROUP BY source_ip\nORDER BY attempts DESC\nLIMIT 20",
+  },
+  {
+    label: 'Critical/high raw logs (24h)',
+    query: "SELECT ts, hostname, category, event_type, source, raw\nFROM raw_log_events\nWHERE severity IN ('critical','high') AND ts >= now() - INTERVAL 1 DAY\nORDER BY ts DESC\nLIMIT 50",
+  },
+  {
+    label: 'ITDR alerts by severity',
+    query: 'SELECT severity, count(*) AS alerts\nFROM itdr_alerts\nGROUP BY severity\nORDER BY alerts DESC',
+  },
+  {
+    label: 'Endpoints by alert count',
+    query: 'SELECT hostname, os_type, total_alerts, total_failed_logins, last_seen\nFROM endpoints\nORDER BY total_alerts DESC\nLIMIT 20',
+  },
+  {
+    label: 'Defense events by attack type',
+    query: 'SELECT attack_type, status, count(*) AS n\nFROM defense_events\nGROUP BY attack_type, status\nORDER BY n DESC\nLIMIT 30',
+  },
 ];
 
 const TACTIC_COLOR = {
@@ -32,6 +60,14 @@ export default function ThreatHunt() {
   const [q, setQ]             = useState('');
   const [searchResults, setSearchResults] = useState(null);
   const [searching, setSearching] = useState(false);
+
+  // SQL Console
+  const [sqlQuery, setSqlQuery]     = useState(SQL_EXAMPLES[0].query);
+  const [sqlResult, setSqlResult]   = useState(null);
+  const [sqlError, setSqlError]     = useState(null);
+  const [sqlLoading, setSqlLoading] = useState(false);
+  const [sqlSchema, setSqlSchema]   = useState(null);
+  const [schemaOpen, setSchemaOpen] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -57,6 +93,29 @@ export default function ThreatHunt() {
       setSearchResults(res.data);
     } catch { }
     setSearching(false);
+  };
+
+  // SQL Console — load the schema reference once, on first visit to the tab
+  useEffect(() => {
+    if (tab === 'sql' && !sqlSchema) {
+      api.get('/api/hunt/sql/schema')
+        .then(r => setSqlSchema(r.data.views))
+        .catch(() => setSqlSchema({}));
+    }
+  }, [tab, sqlSchema]);
+
+  const runSql = async () => {
+    if (!sqlQuery.trim()) return;
+    setSqlLoading(true);
+    setSqlError(null);
+    try {
+      const res = await api.post('/api/hunt/sql', { query: sqlQuery, limit: 200 });
+      setSqlResult(res.data);
+    } catch (e) {
+      setSqlResult(null);
+      setSqlError(e.response?.data?.detail || 'Query failed');
+    }
+    setSqlLoading(false);
   };
 
   const maxMitreCount = mitre.length > 0 ? mitre[0].count : 1;
@@ -299,6 +358,122 @@ export default function ThreatHunt() {
                     <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#787878' }}>No results found for "{q}"</div>
                   )}
                 </div>
+              )}
+            </div>
+          )}
+
+          {/* SQL Console */}
+          {tab === 'sql' && (
+            <div>
+              <div style={{ fontSize: '0.72rem', color: '#787878', marginBottom: 14, fontFamily: 'JetBrains Mono' }}>
+                Read-only SQL over your telemetry, powered by DuckDB — SELECT / WITH only, capped at 200 rows and 10s.
+              </div>
+
+              {/* Schema reference */}
+              <div className="at-card" style={{ padding: 0, marginBottom: 14 }}>
+                <div
+                  onClick={() => setSchemaOpen(o => !o)}
+                  style={{ padding: '10px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', color: '#A8A8A8' }}
+                >
+                  {schemaOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+                  <Database size={13} style={{ color: '#5A8A9F' }} />
+                  Available tables {sqlSchema ? `(${Object.keys(sqlSchema).length})` : ''}
+                </div>
+                {schemaOpen && (
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {!sqlSchema ? (
+                      <Loader2 size={14} className="spinner" style={{ color: '#5A8A9F' }} />
+                    ) : Object.entries(sqlSchema).map(([view, cols]) => (
+                      <div key={view}>
+                        <div style={{ fontFamily: 'JetBrains Mono', fontSize: '0.78rem', color: '#8FAFC0', marginBottom: 4 }}>{view}</div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                          {cols.map(c => (
+                            <span key={c.name} title={c.type} style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono', color: '#787878', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', padding: '1px 6px', borderRadius: 3 }}>
+                              {c.name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Examples */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
+                <span style={{ fontSize: '0.7rem', color: '#787878' }}>Examples:</span>
+                <select
+                  className="at-select"
+                  style={{ fontSize: '0.74rem' }}
+                  value=""
+                  onChange={e => { if (e.target.value) setSqlQuery(e.target.value); }}
+                >
+                  <option value="">Pick a starting query…</option>
+                  {SQL_EXAMPLES.map(ex => (
+                    <option key={ex.label} value={ex.query}>{ex.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Query editor */}
+              <textarea
+                className="at-input"
+                value={sqlQuery}
+                onChange={e => setSqlQuery(e.target.value)}
+                onKeyDown={e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') runSql(); }}
+                placeholder="SELECT * FROM raw_log_events LIMIT 50"
+                style={{ width: '100%', minHeight: 120, fontFamily: 'JetBrains Mono', fontSize: '0.8rem', resize: 'vertical', boxSizing: 'border-box' }}
+              />
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, marginBottom: 16 }}>
+                <button className="btn-accent" onClick={runSql} disabled={sqlLoading || !sqlQuery.trim()}>
+                  {sqlLoading ? <Loader2 size={14} className="spinner" /> : <Play size={14} />} Run
+                </button>
+                <span style={{ fontSize: '0.68rem', color: '#555', fontFamily: 'JetBrains Mono' }}>⌘/Ctrl + Enter to run</span>
+                {sqlResult && (
+                  <span style={{ fontSize: '0.72rem', color: '#787878', fontFamily: 'JetBrains Mono', marginLeft: 'auto' }}>
+                    {sqlResult.row_count} row{sqlResult.row_count !== 1 ? 's' : ''}{sqlResult.truncated ? ' (truncated to 200)' : ''}
+                  </span>
+                )}
+              </div>
+
+              {/* Error */}
+              {sqlError && (
+                <div className="at-card" style={{ padding: '12px 16px', borderLeft: '2px solid #EF4444', color: '#EF4444', fontFamily: 'JetBrains Mono', fontSize: '0.78rem', marginBottom: 14 }}>
+                  {sqlError}
+                </div>
+              )}
+
+              {/* Results */}
+              {sqlResult && (
+                sqlResult.rows.length === 0 ? (
+                  <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#787878' }}>Query returned no rows.</div>
+                ) : (
+                  <div className="at-card" style={{ padding: 0, overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'JetBrains Mono', fontSize: '0.74rem' }}>
+                      <thead>
+                        <tr>
+                          {sqlResult.columns.map(c => (
+                            <th key={c} style={{ textAlign: 'left', padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,0.08)', color: '#8FAFC0', whiteSpace: 'nowrap', position: 'sticky', top: 0, background: '#0A0A0A' }}>
+                              {c}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sqlResult.rows.map((row, i) => (
+                          <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                            {row.map((v, j) => (
+                              <td key={j} style={{ padding: '6px 12px', color: '#A8A8A8', whiteSpace: 'nowrap', maxWidth: 360, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {v === null || v === undefined ? <span style={{ color: '#444' }}>—</span> : String(v)}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )
               )}
             </div>
           )}

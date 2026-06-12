@@ -13,7 +13,7 @@ from sqlmodel import Session, select, func
 from typing import Optional
 from models import Endpoint, LogBatch, Case, TimelineEvent, AuditLog, IOCCorrelation, ShadowAIEvent, AgentCommand, ITDRAlert, RawLogEvent, AgentAction
 from database import get_session
-from routers.auth import get_current_user
+from routers.auth import get_current_user, create_token
 from models import User
 from ai_router import call_ai_json
 from core.events import event_bus, Events
@@ -95,13 +95,13 @@ def _extract_iocs(text: str) -> list:
     return found[:50]  # cap at 50
 
 
-def _correlate(session: Session, iocs: list, batch_id: int, case_id: int = None):
+def _correlate(session: Session, iocs: list, batch_id: int, case_id: int = None, org_id: int = 1):
     for item in iocs:
         val = item.get("ioc", "")
         if not val:
             continue
         existing = session.exec(
-            select(IOCCorrelation).where(IOCCorrelation.ioc == val)
+            select(IOCCorrelation).where(IOCCorrelation.ioc == val, IOCCorrelation.org_id == org_id)
         ).first()
         if existing:
             ids = json.loads(existing.case_ids or "[]")
@@ -116,7 +116,8 @@ def _correlate(session: Session, iocs: list, batch_id: int, case_id: int = None)
             session.add(IOCCorrelation(
                 ioc=val, ioc_type=item.get("type",""),
                 case_ids=json.dumps([case_id or f"batch:{batch_id}"]),
-                case_count=1
+                case_count=1,
+                org_id=org_id,
             ))
 
 
@@ -527,6 +528,18 @@ def get_batch(
 def get_ingest_key(_user: User = Depends(get_current_user)):
     """Returns the ingest API key for configuring agents."""
     return {"ingest_key": _get_ingest_key(), "note": "Use as X-AegisTrace-Key header in agent config"}
+
+
+@router.get("/install-token")
+def get_install_token(_user: User = Depends(get_current_user)):
+    """
+    Issue a short-lived (15 min), single-purpose bootstrap token for
+    GET /api/install/{token}. Keeps the long-lived INGEST_API_KEY out of
+    URLs/logs — the install endpoint validates this token, then embeds the
+    real ingest key in the script response server-side.
+    """
+    token = create_token({"user_id": _user.id, "type": "install_bootstrap"}, ttl=900)
+    return {"token": token, "expires_in": 900}
 
 
 # ── Heartbeat — v2.0 agent keepalive ─────────────────────────────────────────

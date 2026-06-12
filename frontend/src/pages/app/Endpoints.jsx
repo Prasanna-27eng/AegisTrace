@@ -963,9 +963,9 @@ export default function Endpoints() {
   }, [loadEndpoints]));
 
   const fetchKey = () => {
-    api.get('/api/ingest/key')
-      .then(r => { setIngestKey(r.data.ingest_key); addToast('Agent token loaded successfully', 'success'); })
-      .catch(() => addToast('Unable to retrieve agent token — check your session', 'error'));
+    api.get('/api/ingest/install-token')
+      .then(r => { setIngestKey(r.data.token); addToast('Deploy link loaded — expires in 15 minutes', 'success'); })
+      .catch(() => addToast('Unable to retrieve deploy link — check your session', 'error'));
   };
 
   const deleteEndpoint = (epId) => {

@@ -39,6 +39,7 @@ from database import get_session
 from models import DefenseEvent, AuditLog, ProvenanceLedger, User
 from routers.auth import get_current_user
 from ai_router import call_ai_json
+import adaptive_config
 
 router = APIRouter(prefix="/api/defense", tags=["defense-engine"])
 
@@ -55,8 +56,9 @@ _rate_limited: set = set()
 SCAN_THRESHOLD_REQ  = 40    # requests in 60s = suspicious
 SCAN_THRESHOLD_EP   = 8     # unique endpoints in 60s = scanner
 RATE_ABUSE_WINDOW   = 60    # seconds
-AUTO_BLOCK_CONF     = 0.92  # confidence above this → auto-handle (watchlist + alert)
-HITL_CONF           = 0.70  # confidence above this → send to Defense Console for review
+# AUTO_BLOCK_CONF and HITL_CONF are now read live from adaptive_config (v10.1
+# Adaptive Thresholds Agent): behavioral_similarity_threshold (was 0.92, default
+# 0.85) and itdr_confidence_threshold (was 0.70, default 0.75) respectively.
 
 
 # ── Honeypot endpoint paths — real users never visit these ────────────────────
@@ -161,13 +163,15 @@ async def _detect_and_triage(
     threat_type  = triage.get("threat_type", "Unknown")
     reasoning    = triage.get("reasoning", "")
 
-    # Determine status and response
-    if confidence >= AUTO_BLOCK_CONF:
+    # Determine status and response (live thresholds from the adaptive agent)
+    auto_block_conf = adaptive_config.get("behavioral_similarity_threshold")
+    hitl_conf       = adaptive_config.get("itdr_confidence_threshold")
+    if confidence >= auto_block_conf:
         status          = "auto_handled"
         response_action = recommended
         if ip not in _watchlist:
             _watchlist.add(ip)
-    elif confidence >= HITL_CONF:
+    elif confidence >= hitl_conf:
         status          = "pending_review"
         response_action = None
     else:

@@ -178,6 +178,7 @@ class VTHistory(SQLModel, table=True):
     full_result: Optional[str] = Field(default="{}", sa_column=Column(Text))
     looked_up_at: datetime = Field(default_factory=datetime.utcnow)
     notes: str = Field(default="")
+    org_id: int = Field(default=1)
 
 
 # ── Email Analysis ────────────────────────────────────────────────────────────
@@ -196,6 +197,7 @@ class EmailAnalysisRecord(SQLModel, table=True):
     ai_verdict: str = Field(default="")
     ai_analysis: str = Field(default="", sa_column=Column(Text))
     case_id: Optional[int] = Field(default=None, foreign_key="case.id")
+    org_id: int = Field(default=1)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -244,6 +246,7 @@ class IOCCorrelation(SQLModel, table=True):
     case_count: int = Field(default=1)
     first_seen: datetime = Field(default_factory=datetime.utcnow)
     last_seen: datetime = Field(default_factory=datetime.utcnow)
+    org_id: int = Field(default=1)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -266,6 +269,7 @@ class PcapAnalysis(SQLModel, table=True):
     ai_summary: str = Field(default="", sa_column=Column(Text))
     ai_findings: Optional[str] = Field(default="[]", sa_column=Column(Text))
     threat_score: int = Field(default=0)
+    org_id: int = Field(default=1)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -318,6 +322,7 @@ class WebhookConfig(SQLModel, table=True):
     is_active: bool = Field(default=True)
     last_fired_at: Optional[datetime] = Field(default=None)
     last_status_code: Optional[int] = Field(default=None)
+    org_id: int = Field(default=1)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -519,6 +524,7 @@ class IdentityAnomaly(SQLModel, table=True):
     confidence: float = Field(default=0.8)            # 0.0–1.0
     detected_at: datetime = Field(default_factory=datetime.utcnow)
     resolved: bool = Field(default=False)
+    org_id: int = Field(default=1)
     resolved_at: Optional[datetime] = Field(default=None)
     case_id: Optional[int] = Field(default=None, foreign_key="case.id")
 
@@ -536,6 +542,7 @@ class Policy(SQLModel, table=True):
     allowed_hours_start: Optional[str] = Field(default=None)   # "09:00" UTC
     allowed_hours_end: Optional[str] = Field(default=None)     # "17:00" UTC
     is_active: bool = Field(default=True)
+    org_id: int = Field(default=1)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -578,6 +585,7 @@ class AuthEvent(SQLModel, table=True):
     # Case linkage
     case_id: Optional[int] = Field(default=None, foreign_key="case.id")
     notes: Optional[str] = Field(default=None, sa_column=Column(Text))
+    org_id: int = Field(default=1)
 
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -609,6 +617,7 @@ class IdentityConnector(SQLModel, table=True):
     last_error: Optional[str] = Field(default=None, sa_column=Column(Text))
     created_by: Optional[int] = Field(default=None, foreign_key="user.id")
     is_active: bool = Field(default=True)
+    org_id: int = Field(default=1)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -619,6 +628,7 @@ class ApprovedAIService(SQLModel, table=True):
     api_domain: str = Field(default="", index=True)
     is_approved: bool = Field(default=True)
     added_by: Optional[int] = Field(default=None, foreign_key="user.id")
+    org_id: int = Field(default=1)
     added_at: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -733,6 +743,7 @@ class ITDRAlert(SQLModel, table=True):
     status: str = Field(default="open")                   # open | investigating | resolved | false_positive
     resolved_by: Optional[str] = Field(default=None)
     case_id: Optional[int] = Field(default=None, foreign_key="case.id")
+    org_id: int = Field(default=1)
     detected_at: datetime = Field(default_factory=datetime.utcnow)
     resolved_at: Optional[datetime] = Field(default=None)
 
@@ -768,6 +779,21 @@ class PlaybookRun(SQLModel, table=True):
     result_summary: Optional[str] = Field(default=None, sa_column=Column(Text))
     run_at: datetime = Field(default_factory=datetime.utcnow)
     completed_at: Optional[datetime] = Field(default=None)
+
+
+# ── v10.1 Priority 3: Adaptive Thresholds Agent ──────────────────────────────
+class AdaptiveThresholdLog(SQLModel, table=True):
+    """Audit trail of every change the adaptive agent makes to runtime thresholds."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    threshold_name: str = Field(default="", index=True)  # anomaly_score_threshold | behavioral_similarity_threshold | itdr_confidence_threshold | defense_fp_tolerance
+    old_value: float = Field(default=0.0)
+    new_value: float = Field(default=0.0)
+    reason: str = Field(default="", sa_column=Column(Text))
+    fp_rate_24h: float = Field(default=0.0)
+    fn_rate_24h: float = Field(default=0.0)
+    agent_model: str = Field(default="")
+    org_id: int = Field(default=1)
+    applied_at: datetime = Field(default_factory=datetime.utcnow)
 
 
 # ── NVIDIA Phase 2: Case Embeddings ──────────────────────────────────────────

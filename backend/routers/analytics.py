@@ -12,15 +12,17 @@ GET /api/analytics/time-to-close
 GET /api/analytics/mitre-heatmap
 GET /api/analytics/analyst-throughput
 GET /api/analytics/sla-status
+GET /api/analytics/adaptive-thresholds
 """
 from datetime import datetime, timedelta
 from collections import Counter, defaultdict
 import json
 from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session, select, func
-from models import Case, IOCCorrelation, TimelineEvent, User
+from models import Case, IOCCorrelation, TimelineEvent, User, AdaptiveThresholdLog
 from database import get_session
 from routers.auth import get_current_user
+import adaptive_config
 
 router = APIRouter(prefix="/api/analytics", tags=["analytics"])
 
@@ -117,7 +119,10 @@ def ioc_types(
     _user: User = Depends(get_current_user),
 ):
     correlations = session.exec(
-        select(IOCCorrelation).order_by(IOCCorrelation.case_count.desc()).limit(100)
+        select(IOCCorrelation)
+        .where(IOCCorrelation.org_id == _user.org_id)
+        .order_by(IOCCorrelation.case_count.desc())
+        .limit(100)
     ).all()
     type_counts = Counter(c.ioc_type for c in correlations)
     return [{"type": t, "count": n} for t, n in type_counts.most_common()]
@@ -233,3 +238,22 @@ def sla_status(
             "pct_used": round(pct * 100, 1),
         })
     return sorted(result, key=lambda x: -x["pct_used"])
+
+
+@router.get("/adaptive-thresholds")
+def adaptive_thresholds(
+    session: Session = Depends(get_session),
+    user: User = Depends(get_current_user),
+):
+    """v10.1 Adaptive Thresholds Agent — current config + last 30 changes."""
+    log = session.exec(
+        select(AdaptiveThresholdLog)
+        .where(AdaptiveThresholdLog.org_id == user.org_id)
+        .order_by(AdaptiveThresholdLog.applied_at.desc())
+        .limit(30)
+    ).all()
+    return {
+        "current": adaptive_config.get_all(),
+        "bounds": adaptive_config.ADJUSTMENT_BOUNDS,
+        "log": log,
+    }

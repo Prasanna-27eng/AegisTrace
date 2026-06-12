@@ -3,7 +3,7 @@ import {
   Shield, ShieldAlert, ShieldCheck, AlertTriangle, Eye,
   CheckCircle, XCircle, Clock, RefreshCw, Zap, Terminal,
   Activity, ChevronDown, ChevronRight, Target, Cpu, Radio,
-  Lock, Unlock, Ban, BookOpen
+  Lock, Unlock, Ban, BookOpen, SlidersHorizontal, History
 } from 'lucide-react';
 import api from '../../api/client';
 
@@ -308,12 +308,86 @@ function EventCard({ event, onAction, processing }) {
   );
 }
 
+// ── Adaptive Thresholds panel ──────────────────────────────────────────────────
+const THRESHOLD_META = {
+  anomaly_score_threshold:          { label: 'Anomaly Score',          scale: 1,   suffix: '',  fmt: v => Math.round(v) },
+  behavioral_similarity_threshold:  { label: 'Auto-Block Confidence',  scale: 100, suffix: '%', fmt: v => Math.round(v * 100) },
+  itdr_confidence_threshold:        { label: 'HITL Review Confidence', scale: 100, suffix: '%', fmt: v => Math.round(v * 100) },
+  defense_fp_tolerance:             { label: 'FP Tolerance Target',    scale: 100, suffix: '%', fmt: v => Math.round(v * 100) },
+};
+
+function AdaptivePanel({ adaptive }) {
+  if (!adaptive) return null;
+  const { current = {}, bounds = {}, log = [] } = adaptive;
+  const lastChange = log[0];
+
+  return (
+    <div style={{
+      background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)',
+      borderRadius: 10, padding: '16px 18px', marginBottom: 24,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <SlidersHorizontal size={14} style={{ color: '#5A8A9F' }} />
+          <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#EBEBEB' }}>Adaptive Thresholds Agent</span>
+          <span style={{ fontSize: '0.62rem', color: '#686868', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            self-tunes every 4h · Nemotron-70B
+          </span>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+        {Object.entries(THRESHOLD_META).map(([key, meta]) => {
+          const val = current[key];
+          const b = bounds[key];
+          if (val === undefined) return null;
+          return (
+            <div key={key} style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 8, padding: '10px 12px' }}>
+              <div style={{ fontSize: '0.62rem', color: '#686868', ...MONO, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+                {meta.label}
+              </div>
+              <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#5A8A9F', ...MONO }}>
+                {meta.fmt(val)}{meta.suffix}
+              </div>
+              {b && (
+                <div style={{ fontSize: '0.6rem', color: '#686868', ...MONO, marginTop: 2 }}>
+                  range: {meta.fmt(b[0])}{meta.suffix}–{meta.fmt(b[1])}{meta.suffix}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+        <History size={12} style={{ color: '#686868', marginTop: 2, flexShrink: 0 }} />
+        {lastChange ? (
+          <div style={{ fontSize: '0.68rem', color: '#A8A8A8', ...MONO, lineHeight: 1.6 }}>
+            Last change: <span style={{ color: '#EBEBEB' }}>{lastChange.threshold_name}</span>{' '}
+            {THRESHOLD_META[lastChange.threshold_name]?.fmt(lastChange.old_value) ?? lastChange.old_value}
+            {' → '}
+            {THRESHOLD_META[lastChange.threshold_name]?.fmt(lastChange.new_value) ?? lastChange.new_value}
+            {' via '}<span style={{ color: '#7AABB5' }}>{lastChange.agent_model}</span>
+            {' · '}{timeAgo(lastChange.applied_at)}
+            {lastChange.reason && <div style={{ color: '#686868', marginTop: 2 }}>"{lastChange.reason}"</div>}
+          </div>
+        ) : (
+          <div style={{ fontSize: '0.68rem', color: '#686868', ...MONO }}>
+            No adjustments yet — agent reviews FP/FN rates every 4 hours and only adjusts when targets drift.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // DEFENSE CONSOLE — main page
 // ══════════════════════════════════════════════════════════════════════════════
 export default function DefenseConsole() {
   const [events, setEvents]         = useState([]);
   const [stats, setStats]           = useState({});
+  const [adaptive, setAdaptive]     = useState(null);
   const [loading, setLoading]       = useState(true);
   const [processing, setProcessing] = useState(false);
   const [filter, setFilter]         = useState('all');
@@ -340,6 +414,12 @@ export default function DefenseConsole() {
       console.error('Defense load error', err);
     } finally {
       setLoading(false);
+    }
+    try {
+      const adRes = await api.get('/api/analytics/adaptive-thresholds');
+      setAdaptive(adRes.data || null);
+    } catch (err) {
+      console.error('Adaptive thresholds load error', err);
     }
   }, []);
 
@@ -533,6 +613,9 @@ export default function DefenseConsole() {
           color="#EAB308"
         />
       </div>
+
+      {/* ── Adaptive Thresholds Agent ───────────────────────────────────────── */}
+      <AdaptivePanel adaptive={adaptive} />
 
       {/* ── Filter Tabs ──────────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 16, borderBottom: '1px solid #101010', paddingBottom: 12 }}>

@@ -220,10 +220,14 @@ async def _execute_action(session: Session, atype: str, params: dict, event_data
 
 
 # ── Approval closure (called from agent_security.approve_action) ─────────────
-async def execute_approved_playbook_action(session: Session, record: ProvenanceLedger) -> dict:
+async def execute_approved_playbook_action(session: Session, record: ProvenanceLedger, org_id: int = 1) -> dict:
     """
     Execute a deferred playbook action after a ProvenanceLedger entry
     (action_type == "playbook_action") has been approved.
+
+    `org_id` scopes the fallback case_id lookup (record.case_id is already
+    org-validated by the caller, but event_data.case_id is attacker-influenced
+    and must be re-checked).
     """
     try:
         ctx = json.loads(record.input_context or "{}")
@@ -240,6 +244,8 @@ async def execute_approved_playbook_action(session: Session, record: ProvenanceL
         case = session.get(Case, record.case_id)
     elif event_data.get("case_id"):
         case = session.get(Case, event_data["case_id"])
+        if case and case.org_id != org_id:
+            case = None
 
     try:
         outcome = await _execute_action(session, atype, params, event_data, case)
@@ -253,17 +259,22 @@ async def execute_approved_playbook_action(session: Session, record: ProvenanceL
 
 
 # ── Core evaluator (called from ingest routers) ───────────────────────────────
-async def evaluate_playbooks(session: Session, event_type: str, event_data: dict, dry_run: bool = False):
+async def evaluate_playbooks(session: Session, event_type: str, event_data: dict, dry_run: bool = False, org_id: int = 1):
     """
     Evaluate all active playbooks for `event_type` against `event_data`.
     Non-approval actions execute immediately; approval-gated actions are queued
     in ProvenanceLedger (visible at /app/agent-security).
     Returns a list of PlaybookRun records (or preview dicts if dry_run).
+
+    `org_id` scopes which org's playbooks run and which Case (if any) the
+    actions are attributed to — defaults to the single-tenant default org (1)
+    for telemetry-driven callers that have no user context.
     """
     playbooks = session.exec(
         select(Playbook)
         .where(Playbook.is_active == True)
         .where(Playbook.trigger_event_type == event_type)
+        .where(Playbook.org_id == org_id)
     ).all()
 
     results = []
@@ -279,6 +290,8 @@ async def evaluate_playbooks(session: Session, event_type: str, event_data: dict
         case_id = event_data.get("case_id")
         if case_id:
             case = session.get(Case, case_id)
+            if case and case.org_id != org_id:
+                case = None
 
         try:
             actions = json.loads(pb.actions or "[]")
@@ -443,7 +456,7 @@ async def evaluate_endpoint(data: dict, user: User = Depends(get_current_user), 
         raise HTTPException(400, "trigger_event_type required")
     event_data = data.get("event_data", {})
     dry_run = data.get("dry_run", True)
-    results = await evaluate_playbooks(session, event_type, event_data, dry_run=dry_run)
+    results = await evaluate_playbooks(session, event_type, event_data, dry_run=dry_run, org_id=user.org_id)
     return {"dry_run": dry_run, "results": results}
 
 

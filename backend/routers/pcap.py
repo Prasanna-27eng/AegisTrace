@@ -238,6 +238,11 @@ async def analyse_pcap(
     Returns protocol breakdown, top talkers, DNS queries, HTTP hosts,
     extracted IOCs, suspicious flows, and an AI threat summary.
     """
+    if case_id is not None:
+        case = session.get(Case, case_id)
+        if not case or case.org_id != user.org_id:
+            raise HTTPException(404, "Case not found")
+
     filename = file.filename or "upload.pcap"
     if not filename.lower().endswith(('.pcap', '.pcapng', '.cap')):
         raise HTTPException(400, "Only .pcap / .pcapng / .cap files are accepted")
@@ -314,6 +319,7 @@ Respond ONLY with valid JSON:
         ai_summary=ai_result.get("summary", ""),
         ai_findings=json.dumps(ai_result.get("key_findings", [])),
         threat_score=ai_result.get("threat_score", 0),
+        org_id=user.org_id,
     )
     session.add(record)
     session.add(AuditLog(action="pcap_analysed", entity_type="pcap",
@@ -361,7 +367,12 @@ def pcap_history(
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    query = select(PcapAnalysis).order_by(PcapAnalysis.created_at.desc()).limit(limit)
+    query = (
+        select(PcapAnalysis)
+        .where(PcapAnalysis.org_id == user.org_id)
+        .order_by(PcapAnalysis.created_at.desc())
+        .limit(limit)
+    )
     if case_id:
         query = query.where(PcapAnalysis.case_id == case_id)
     return session.exec(query).all()
@@ -374,6 +385,6 @@ def get_pcap(
     session: Session = Depends(get_session),
 ):
     r = session.get(PcapAnalysis, record_id)
-    if not r:
+    if not r or r.org_id != user.org_id:
         raise HTTPException(404)
     return r

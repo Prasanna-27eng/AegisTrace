@@ -27,7 +27,8 @@ from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
-from models import EDRAction, User, AuditLog
+from sqlalchemy import or_ as _or
+from models import EDRAction, User, AuditLog, Case
 from database import get_session
 from routers.auth import get_current_user
 import httpx
@@ -661,6 +662,25 @@ def _finish_action(session: Session, action: EDRAction, result: dict = None, err
     session.commit()
 
 
+def _require_responder(user: User):
+    """Destructive EDR actions (isolate/kill/run-command) require analyst or admin."""
+    if user.role not in ("admin", "analyst"):
+        raise HTTPException(403, "Analysts and admins only")
+
+
+def _check_case_org(session: Session, case_id: Optional[int], user: User):
+    """If a case_id is supplied, ensure it belongs to the caller's org."""
+    if case_id is not None:
+        case = session.get(Case, case_id)
+        if not case or case.org_id != user.org_id:
+            raise HTTPException(404, "Case not found")
+
+
+def _org_case_ids(session: Session, user: User) -> set:
+    """Case IDs visible to the caller's org."""
+    return set(session.exec(select(Case.id).where(Case.org_id == user.org_id)).all())
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 #  API Endpoints
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -720,8 +740,10 @@ def isolate_endpoint(
     session: Session = Depends(get_session),
 ):
     """Isolate (network-contain) an endpoint from the network."""
-    client   = _get_client(platform)
+    _require_responder(user)
     case_id  = data.get("case_id")
+    _check_case_org(session, case_id, user)
+    client   = _get_client(platform)
     hostname = data.get("hostname", endpoint_id)
     note     = data.get("note", "")
 
@@ -759,8 +781,10 @@ def un_isolate_endpoint(
     session: Session = Depends(get_session),
 ):
     """Lift network isolation from an endpoint."""
-    client = _get_client(platform)
+    _require_responder(user)
     case_id = data.get("case_id")
+    _check_case_org(session, case_id, user)
+    client = _get_client(platform)
     hostname = data.get("hostname", endpoint_id)
 
     action = _log_action(session, EDRAction(
@@ -813,13 +837,15 @@ def kill_process(
     session: Session = Depends(get_session),
 ):
     """Kill a process by PID on an endpoint."""
+    _require_responder(user)
     pid = str(data.get("pid", "")).strip()
     if not pid:
         raise HTTPException(400, "pid is required")
 
+    case_id  = data.get("case_id")
+    _check_case_org(session, case_id, user)
     client   = _get_client(platform)
     hostname = data.get("hostname", endpoint_id)
-    case_id  = data.get("case_id")
 
     # Llama Guard screen — catch injected PIDs or hostile hostnames
     blocked = _guard_edr_action("kill process", hostname, f"pid={pid}")
@@ -853,6 +879,7 @@ def run_command(
     session: Session = Depends(get_session),
 ):
     """Run a forensic/read-only command on an endpoint via RTR / Live Response."""
+    _require_responder(user)
     command = (data.get("command") or "").strip()
     if not command:
         raise HTTPException(400, "command is required")
@@ -863,9 +890,10 @@ def run_command(
     if blocked:
         raise HTTPException(403, f"Command blocked by safety policy: {blocked}")
 
+    case_id  = data.get("case_id")
+    _check_case_org(session, case_id, user)
     client   = _get_client(platform)
     hostname = data.get("hostname", endpoint_id)
-    case_id  = data.get("case_id")
 
     action = _log_action(session, EDRAction(
         case_id=case_id, platform=platform, action="run_command",
@@ -896,8 +924,16 @@ def edr_history(
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    """EDR action history — scoped to a case or globally."""
-    query = select(EDRAction).order_by(EDRAction.created_at.desc()).limit(limit)
+    """EDR action history — scoped to the caller's org, optionally filtered to a case."""
+    if case_id is not None:
+        _check_case_org(session, case_id, user)
+    org_case_ids = _org_case_ids(session, user)
+    query = (
+        select(EDRAction)
+        .where(_or(EDRAction.case_id == None, EDRAction.case_id.in_(org_case_ids)))  # noqa: E711
+        .order_by(EDRAction.created_at.desc())
+        .limit(limit)
+    )
     if case_id:
         query = query.where(EDRAction.case_id == case_id)
     if platform:
@@ -912,8 +948,12 @@ def edr_recent(
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    """Last N EDR actions across all cases — used by the dashboard widget."""
+    """Last N EDR actions for the caller's org — used by the dashboard widget."""
+    org_case_ids = _org_case_ids(session, user)
     actions = session.exec(
-        select(EDRAction).order_by(EDRAction.created_at.desc()).limit(limit)
+        select(EDRAction)
+        .where(_or(EDRAction.case_id == None, EDRAction.case_id.in_(org_case_ids)))  # noqa: E711
+        .order_by(EDRAction.created_at.desc())
+        .limit(limit)
     ).all()
     return actions

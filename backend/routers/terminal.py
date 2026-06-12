@@ -1,12 +1,18 @@
 import os, json
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
-from models import ToolRun, AuditLog, User
+from sqlalchemy import or_ as _or
+from models import ToolRun, AuditLog, User, Case
 from database import get_session
 from ai_router import call_ai_json
 from routers.auth import get_current_user
 
 router = APIRouter(prefix="/api/terminal", tags=["terminal"])
+
+
+def _org_case_ids(session: Session, user: User) -> set:
+    """Case IDs visible to the caller's org (for scoping nullable case_id rows)."""
+    return set(session.exec(select(Case.id).where(Case.org_id == user.org_id)).all())
 
 TOOLS = [
     "nmap", "whois", "dig", "host", "curl", "netstat", "ss", "ps",
@@ -25,6 +31,11 @@ async def analyse_terminal(data: dict, session: Session = Depends(get_session),
 
     if not output:
         raise HTTPException(400, "Output required")
+
+    if case_id is not None:
+        case = session.get(Case, case_id)
+        if not case or case.org_id != _user.org_id:
+            raise HTTPException(404, "Case not found")
 
     # Use extraction model (gemma2-9b-it) — fastest for structured parsing
     prompt = f"""Tool: {tool_name}
@@ -64,10 +75,17 @@ Respond ONLY with valid JSON:
 @router.get("/history")
 def list_runs(case_id: int = None, session: Session = Depends(get_session),
               _user: User = Depends(get_current_user)):
-    query = select(ToolRun).order_by(ToolRun.created_at.desc())
     if case_id:
-        query = query.where(ToolRun.case_id == case_id)
-    return session.exec(query).all()
+        case = session.get(Case, case_id)
+        if not case or case.org_id != _user.org_id:
+            raise HTTPException(404, "Case not found")
+        query = select(ToolRun).where(ToolRun.case_id == case_id)
+    else:
+        org_case_ids = _org_case_ids(session, _user)
+        query = select(ToolRun).where(
+            _or(ToolRun.case_id == None, ToolRun.case_id.in_(org_case_ids))  # noqa: E711
+        )
+    return session.exec(query.order_by(ToolRun.created_at.desc())).all()
 
 
 @router.get("/tools")

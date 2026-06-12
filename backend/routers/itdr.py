@@ -31,6 +31,7 @@ from database import get_session
 from routers.auth import get_current_user
 from ai_router import call_ai_json
 from core.events import event_bus, Events
+import adaptive_config
 
 router = APIRouter(prefix="/api/itdr", tags=["itdr"])
 
@@ -71,6 +72,7 @@ def _detect_credential_stuffing(
     identity_label: str,
     node_id: Optional[int],
     session: Session,
+    org_id: int,
 ) -> Optional[dict]:
     """
     v4.3 hardened: three time windows + cross-user distributed attack detection.
@@ -95,6 +97,7 @@ def _detect_credential_stuffing(
             AuthEvent.event_type == "failed_login",
             AuthEvent.success == False,   # noqa: E712
             AuthEvent.timestamp >= cutoff,
+            AuthEvent.org_id == org_id,
         )
         if node_id:
             q = q.where(AuthEvent.node_id == node_id)
@@ -127,6 +130,7 @@ def _detect_credential_stuffing(
         AuthEvent.success == False,      # noqa: E712
         AuthEvent.timestamp >= cutoff_1h,
         AuthEvent.source_ip != None,     # noqa: E711
+        AuthEvent.org_id == org_id,
     )
     all_failures = session.exec(distributed_q).all()
 
@@ -163,6 +167,7 @@ def _detect_impossible_travel(
     identity_label: str,
     node_id: Optional[int],
     session: Session,
+    org_id: int,
     hours: int = 4,
 ) -> Optional[dict]:
     """Two successful logins from different continents within `hours` hours."""
@@ -174,6 +179,7 @@ def _detect_impossible_travel(
             AuthEvent.success == True,      # noqa: E712
             AuthEvent.timestamp >= cutoff,
             AuthEvent.country != None,      # noqa: E711
+            AuthEvent.org_id == org_id,
         )
         .order_by(AuthEvent.timestamp.desc())
         .limit(20)
@@ -222,6 +228,7 @@ def _detect_new_device(
     identity_label: str,
     node_id: Optional[int],
     session: Session,
+    org_id: int,
     lookback_days: int = 90,
 ) -> Optional[dict]:
     """A login from a device_id never seen in the past `lookback_days` days."""
@@ -235,6 +242,7 @@ def _detect_new_device(
             AuthEvent.success == True,      # noqa: E712
             AuthEvent.timestamp < cutoff,
             AuthEvent.device_id != None,    # noqa: E711
+            AuthEvent.org_id == org_id,
         )
     )
     if node_id:
@@ -251,6 +259,7 @@ def _detect_new_device(
             AuthEvent.success == True,      # noqa: E712
             AuthEvent.timestamp >= cutoff,
             AuthEvent.device_id != None,    # noqa: E711
+            AuthEvent.org_id == org_id,
         )
         .order_by(AuthEvent.timestamp.desc())
         .limit(5)
@@ -294,6 +303,7 @@ def _detect_privilege_escalation(
     identity_label: str,
     node_id: Optional[int],
     session: Session,
+    org_id: int,
     hours: int = 24,
 ) -> Optional[dict]:
     """Privilege change event where approved is False or None within `hours`h."""
@@ -304,6 +314,7 @@ def _detect_privilege_escalation(
             AuthEvent.event_type == "privilege_change",
             AuthEvent.timestamp >= cutoff,
             AuthEvent.approved != True,     # noqa: E712 — catches False + None
+            AuthEvent.org_id == org_id,
         )
         .order_by(AuthEvent.timestamp.desc())
         .limit(5)
@@ -337,7 +348,7 @@ def _detect_privilege_escalation(
 
 # ── Helper: create anomaly from detection result ─────────────────────────────
 
-def _create_anomaly(detection: dict, node_id: Optional[int], session: Session) -> IdentityAnomaly:
+def _create_anomaly(detection: dict, node_id: Optional[int], session: Session, org_id: int) -> IdentityAnomaly:
     sev_map = {"low": "low", "medium": "medium", "high": "high", "critical": "critical"}
     anomaly = IdentityAnomaly(
         node_id=node_id,
@@ -345,6 +356,7 @@ def _create_anomaly(detection: dict, node_id: Optional[int], session: Session) -
         description=detection["description"],
         severity=sev_map.get(detection["severity"], "medium"),
         confidence=detection["confidence"],
+        org_id=org_id,
     )
     session.add(anomaly)
     return anomaly
@@ -361,7 +373,12 @@ def list_auth_events(
     session: Session = Depends(get_session),
     _user: User = Depends(get_current_user),
 ):
-    q = select(AuthEvent).order_by(AuthEvent.timestamp.desc()).limit(limit)
+    q = (
+        select(AuthEvent)
+        .where(AuthEvent.org_id == _user.org_id)
+        .order_by(AuthEvent.timestamp.desc())
+        .limit(limit)
+    )
     if node_id:
         q = q.where(AuthEvent.node_id == node_id)
     if identity:
@@ -380,6 +397,12 @@ def create_auth_event(
     """Create a single authentication event."""
     raw_ts = data.get("timestamp")
     ts = datetime.fromisoformat(raw_ts) if raw_ts else datetime.utcnow()
+    case_id = data.get("case_id")
+    if case_id is not None:
+        from models import Case
+        case = session.get(Case, case_id)
+        if not case or case.org_id != user.org_id:
+            raise HTTPException(404, "Case not found")
     event = AuthEvent(
         node_id=data.get("node_id"),
         identity_label=data.get("identity_label", ""),
@@ -395,8 +418,9 @@ def create_auth_event(
         privilege_before=data.get("privilege_before"),
         privilege_after=data.get("privilege_after"),
         approved=data.get("approved"),
-        case_id=data.get("case_id"),
+        case_id=case_id,
         notes=data.get("notes"),
+        org_id=user.org_id,
         timestamp=ts,
     )
     session.add(event)
@@ -435,6 +459,7 @@ def create_bulk_events(
             privilege_before=d.get("privilege_before"),
             privilege_after=d.get("privilege_after"),
             approved=d.get("approved"),
+            org_id=user.org_id,
             timestamp=ts,
         )
         session.add(ev)
@@ -495,6 +520,7 @@ def _detect_token_theft(
     identity_label: str,
     node_id: Optional[int],
     session: Session,
+    org_id: int,
     hours: int = 1,
 ) -> Optional[dict]:
     """
@@ -509,6 +535,7 @@ def _detect_token_theft(
             AuthEvent.timestamp >= cutoff,
             AuthEvent.device_id != None,    # noqa: E711
             AuthEvent.user_agent != None,   # noqa: E711
+            AuthEvent.org_id == org_id,
         )
         .order_by(AuthEvent.timestamp.desc())
     )
@@ -608,21 +635,6 @@ def _detect_shadow_ai_usage(
     return None
 
 
-# ── Helper: create anomaly from detection result ─────────────────────────────
-
-def _create_anomaly(detection: dict, node_id: Optional[int], session: Session) -> IdentityAnomaly:
-    sev_map = {"low": "low", "medium": "medium", "high": "high", "critical": "critical"}
-    anomaly = IdentityAnomaly(
-        node_id=node_id,
-        anomaly_type=detection["detector"],
-        description=detection["description"],
-        severity=sev_map.get(detection["severity"], "medium"),
-        confidence=detection["confidence"],
-    )
-    session.add(anomaly)
-    return anomaly
-
-
 # ── API Endpoints ─────────────────────────────────────────────────────────────
 
 
@@ -639,30 +651,34 @@ def run_itdr_detectors(
     node_id = data.get("node_id")
     label   = data.get("identity_label", "")
 
-    if node_id and not label:
+    if node_id:
         node = session.get(IdentityNode, node_id)
-        if node:
+        if not node or node.org_id != user.org_id:
+            raise HTTPException(404, "Node not found")
+        if not label:
             label = node.label
 
     if not label and not node_id:
         raise HTTPException(400, "node_id or identity_label required")
 
+    org_id = user.org_id
     detections = []
     detectors = [
-        lambda: _detect_credential_stuffing(label, node_id, session),
-        lambda: _detect_impossible_travel(label, node_id, session),
-        lambda: _detect_new_device(label, node_id, session),
-        lambda: _detect_privilege_escalation(label, node_id, session),
-        lambda: _detect_token_theft(label, node_id, session),
+        lambda: _detect_credential_stuffing(label, node_id, session, org_id),
+        lambda: _detect_impossible_travel(label, node_id, session, org_id),
+        lambda: _detect_new_device(label, node_id, session, org_id),
+        lambda: _detect_privilege_escalation(label, node_id, session, org_id),
+        lambda: _detect_token_theft(label, node_id, session, org_id),
         lambda: _detect_shadow_ai_usage(label, node_id, session),
     ]
 
+    min_confidence = adaptive_config.get("itdr_confidence_threshold")
     for fn in detectors:
         try:
             result = fn()
-            if result:
+            if result and result["confidence"] >= min_confidence:
                 detections.append(result)
-                _create_anomaly(result, node_id, session)
+                _create_anomaly(result, node_id, session, org_id)
                 event_bus.emit(Events.ITDR_ALERT_FIRED, {
                     "alert_type": result["detector"],
                     "identity_id": node_id,
@@ -706,6 +722,7 @@ def list_itdr_anomalies(
         .where(
             IdentityAnomaly.anomaly_type.in_(itdr_types),
             IdentityAnomaly.resolved == resolved,   # noqa: E712
+            IdentityAnomaly.org_id == _user.org_id,
         )
         .order_by(IdentityAnomaly.detected_at.desc())
     )
@@ -721,8 +738,8 @@ def list_itdr_alerts(
     session: Session = Depends(get_session),
     _user: User = Depends(get_current_user),
 ):
-    """List all ITDRAlert records (from agents + manual analysis)."""
-    q = select(ITDRAlert).order_by(ITDRAlert.detected_at.desc())
+    """List all ITDRAlert records (from agents + manual analysis), scoped to the caller's org."""
+    q = select(ITDRAlert).where(ITDRAlert.org_id == _user.org_id).order_by(ITDRAlert.detected_at.desc())
     if status:
         q = q.where(ITDRAlert.status == status)
     if severity:
@@ -765,22 +782,27 @@ def get_itdr_analytics(
     ]
     cutoff = datetime.utcnow() - timedelta(days=days)
 
-    # ── Raw data pulls ────────────────────────────────────────────────────────
+    # ── Raw data pulls (scoped to the caller's org) ──────────────────────────
     anomalies = session.exec(
         select(IdentityAnomaly).where(
             IdentityAnomaly.anomaly_type.in_(ITDR_TYPES),
             IdentityAnomaly.detected_at >= cutoff,
+            IdentityAnomaly.org_id == _user.org_id,
         )
     ).all()
 
     alerts = session.exec(
-        select(ITDRAlert).where(ITDRAlert.detected_at >= cutoff)
+        select(ITDRAlert).where(
+            ITDRAlert.detected_at >= cutoff,
+            ITDRAlert.org_id == _user.org_id,
+        )
     ).all()
 
     active_count = len(session.exec(
         select(IdentityAnomaly).where(
             IdentityAnomaly.anomaly_type.in_(ITDR_TYPES),
             IdentityAnomaly.resolved == False,  # noqa: E712
+            IdentityAnomaly.org_id == _user.org_id,
         )
     ).all()) + sum(1 for a in alerts if (a.status or "open") == "open")
 
@@ -871,7 +893,7 @@ def update_itdr_alert(
     session: Session = Depends(get_session),
 ):
     alert = session.get(ITDRAlert, alert_id)
-    if not alert:
+    if not alert or alert.org_id != user.org_id:
         raise HTTPException(404)
     if "status" in data:
         alert.status = data["status"]
@@ -879,7 +901,13 @@ def update_itdr_alert(
             alert.resolved_by = user.email
             alert.resolved_at = datetime.utcnow()
     if "case_id" in data:
-        alert.case_id = data["case_id"]
+        case_id = data["case_id"]
+        if case_id is not None:
+            from models import Case
+            case = session.get(Case, case_id)
+            if not case or case.org_id != user.org_id:
+                raise HTTPException(404, "Case not found")
+        alert.case_id = case_id
     session.add(alert)
     session.commit()
     return {"ok": True}

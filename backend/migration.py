@@ -148,4 +148,21 @@ def run_migrations(engine):
     else:
         print("[migration] CaseEmbedding table will be created by create_all")
 
+    # ── 11. Add org_id to tables that predate multi-tenancy (security hardening) ──
+    # These tables were created before the org_id pattern was established on
+    # User/Case/IdentityNode and were missing per-org isolation entirely.
+    _ORG_ID_TABLES = [
+        "vthistory", "emailanalysisrecord", "pcapanalysis", "policy",
+        "webhookconfig", "identityconnector", "approvedaiservice",
+        "authevent", "identityanomaly", "itdralert", "ioccorrelation",
+    ]
+    for table in _ORG_ID_TABLES:
+        if table in existing_tables:
+            cols = [c["name"] for c in inspector.get_columns(table)]
+            if "org_id" not in cols:
+                with engine.connect() as conn:
+                    conn.execute(text(f"ALTER TABLE {table} ADD COLUMN org_id INTEGER DEFAULT 1"))
+                    conn.commit()
+                print(f"[migration] Added org_id to {table} table")
+
     print("[migration] All migrations complete.")

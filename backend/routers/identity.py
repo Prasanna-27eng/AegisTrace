@@ -21,6 +21,7 @@ from sqlmodel import Session, select
 from models import IdentityNode, IdentityEdge, IdentityAnomaly, User, AuditLog
 from database import get_session
 from routers.auth import get_current_user
+import adaptive_config
 
 router = APIRouter(prefix="/api/identity", tags=["identity"])
 
@@ -75,7 +76,7 @@ def update_node(
     user: User = Depends(get_current_user),
 ):
     node = session.get(IdentityNode, node_id)
-    if not node:
+    if not node or node.org_id != user.org_id:
         raise HTTPException(404, "Node not found")
     for field in ("label", "node_type", "risk_score", "is_compromised"):
         if field in data:
@@ -96,7 +97,7 @@ def delete_node(
     _user: User = Depends(get_current_user),
 ):
     node = session.get(IdentityNode, node_id)
-    if not node:
+    if not node or node.org_id != _user.org_id:
         raise HTTPException(404, "Node not found")
     # Remove edges
     edges = session.exec(
@@ -119,7 +120,7 @@ def mark_compromised(
     user: User = Depends(get_current_user),
 ):
     node = session.get(IdentityNode, node_id)
-    if not node:
+    if not node or node.org_id != user.org_id:
         raise HTTPException(404, "Node not found")
     node.is_compromised = data.get("compromised", True)
     node.risk_score = 100 if node.is_compromised else data.get("risk_score", node.risk_score)
@@ -178,7 +179,7 @@ def get_graph(
         "stats": {
             "total_nodes": len(nodes),
             "compromised": sum(1 for n in nodes if n.is_compromised),
-            "high_risk": sum(1 for n in nodes if n.risk_score >= 70),
+            "high_risk": sum(1 for n in nodes if n.risk_score >= adaptive_config.get("anomaly_score_threshold")),
             "total_edges": len(valid_edges),
         }
     }
@@ -193,6 +194,8 @@ def create_edge(
     source = session.get(IdentityNode, data.get("source_id"))
     target = session.get(IdentityNode, data.get("target_id"))
     if not source or not target:
+        raise HTTPException(404, "Source or target node not found")
+    if source.org_id != user.org_id or target.org_id != user.org_id:
         raise HTTPException(404, "Source or target node not found")
     edge = IdentityEdge(
         source_id=data["source_id"],
@@ -216,6 +219,10 @@ def delete_edge(
     edge = session.get(IdentityEdge, edge_id)
     if not edge:
         raise HTTPException(404, "Edge not found")
+    source = session.get(IdentityNode, edge.source_id)
+    target = session.get(IdentityNode, edge.target_id)
+    if (source and source.org_id != _user.org_id) or (target and target.org_id != _user.org_id):
+        raise HTTPException(404, "Edge not found")
     session.delete(edge)
     session.commit()
     return {"ok": True}
@@ -232,6 +239,9 @@ def get_node_anomalies(
     _user: User = Depends(get_current_user),
 ):
     """Get all anomalies for a node."""
+    node = session.get(IdentityNode, node_id)
+    if not node or node.org_id != _user.org_id:
+        raise HTTPException(404, "Node not found")
     q = select(IdentityAnomaly).where(IdentityAnomaly.node_id == node_id)
     if resolved is not None:
         q = q.where(IdentityAnomaly.resolved == resolved)
@@ -253,7 +263,7 @@ def create_node_anomaly(
     from core.identity_engine import engine as identity_engine
 
     node = session.get(IdentityNode, node_id)
-    if not node:
+    if not node or node.org_id != user.org_id:
         raise HTTPException(404, "Node not found")
 
     anomaly = IdentityAnomaly(
@@ -263,6 +273,7 @@ def create_node_anomaly(
         severity=data.get("severity", "medium"),
         confidence=float(data.get("confidence", 0.8)),
         case_id=data.get("case_id"),
+        org_id=node.org_id,
     )
     session.add(anomaly)
     session.add(AuditLog(
@@ -294,6 +305,10 @@ def resolve_anomaly(
     """Mark an anomaly as resolved and recalculate risk."""
     from core.identity_engine import engine as identity_engine
 
+    node = session.get(IdentityNode, node_id)
+    if not node or node.org_id != user.org_id:
+        raise HTTPException(404, "Node not found")
+
     anomaly = session.get(IdentityAnomaly, anomaly_id)
     if not anomaly or anomaly.node_id != node_id:
         raise HTTPException(404, "Anomaly not found")
@@ -319,7 +334,7 @@ def recalculate_node_risk(
     from core.identity_engine import engine as identity_engine
 
     node = session.get(IdentityNode, node_id)
-    if not node:
+    if not node or node.org_id != user.org_id:
         raise HTTPException(404, "Node not found")
 
     return identity_engine.process(node_id=node_id, session=session)

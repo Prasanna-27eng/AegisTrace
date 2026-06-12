@@ -472,11 +472,15 @@ def update_evidence(
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
+    case = session.get(Case, case_id)
+    if not case or case.org_id != user.org_id:
+        raise HTTPException(404, "Case not found")
     ev = session.get(EvidenceArtifact, ev_id)
-    if not ev:
+    if not ev or ev.case_id != case_id:
         raise HTTPException(404)
+    ALLOWED_FIELDS = {"verdict", "ai_analysis", "confidence", "evidence_score", "analyst_confirmed", "normalized_output"}
     for k, v in data.items():
-        if hasattr(ev, k):
+        if k in ALLOWED_FIELDS:
             setattr(ev, k, v)
     ev.updated_at = datetime.utcnow()
     session.add(ev)
@@ -587,6 +591,7 @@ def import_alert(
         affected_systems=system,
         description=description,
         iocs=json.dumps(normalised_iocs),
+        org_id=user.org_id,
     )
     session.add(case)
     session.commit()

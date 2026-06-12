@@ -14,11 +14,17 @@ from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select
-from models import ProvenanceLedger, User, AuditLog
+from sqlalchemy import or_ as _or
+from models import ProvenanceLedger, User, AuditLog, Case
 from database import get_session
 from routers.auth import get_current_user
 
 router = APIRouter(tags=["agent-security"])
+
+
+def _org_case_ids(session: Session, user: User) -> set:
+    """Case IDs visible to the caller's org."""
+    return set(session.exec(select(Case.id).where(Case.org_id == user.org_id)).all())
 
 
 @router.get("/api/agent-security/actions")
@@ -28,8 +34,14 @@ def list_agent_actions(
     session: Session = Depends(get_session),
     _user: User = Depends(get_current_user),
 ):
-    """List all AI agent actions from the Provenance Ledger."""
-    q = select(ProvenanceLedger).order_by(ProvenanceLedger.timestamp.desc()).limit(limit)
+    """List all AI agent actions from the Provenance Ledger (scoped to the caller's org)."""
+    org_case_ids = _org_case_ids(session, _user)
+    q = (
+        select(ProvenanceLedger)
+        .where(_or(ProvenanceLedger.case_id == None, ProvenanceLedger.case_id.in_(org_case_ids)))  # noqa: E711
+        .order_by(ProvenanceLedger.timestamp.desc())
+        .limit(limit)
+    )
     if status:
         q = q.where(ProvenanceLedger.approval_status == status)
     records = session.exec(q).all()
@@ -41,8 +53,12 @@ def agent_security_stats(
     session: Session = Depends(get_session),
     _user: User = Depends(get_current_user),
 ):
-    """Counts of actions by approval status."""
-    all_records = session.exec(select(ProvenanceLedger)).all()
+    """Counts of actions by approval status (scoped to the caller's org)."""
+    org_case_ids = _org_case_ids(session, _user)
+    all_records = session.exec(
+        select(ProvenanceLedger)
+        .where(_or(ProvenanceLedger.case_id == None, ProvenanceLedger.case_id.in_(org_case_ids)))  # noqa: E711
+    ).all()
     return {
         "pending":  sum(1 for r in all_records if r.approval_status == "pending"),
         "approved": sum(1 for r in all_records if r.approval_status == "approved"),
@@ -62,6 +78,10 @@ async def approve_action(
     record = session.get(ProvenanceLedger, action_id)
     if not record:
         raise HTTPException(status_code=404, detail="Action not found")
+    if record.case_id is not None:
+        case = session.get(Case, record.case_id)
+        if not case or case.org_id != user.org_id:
+            raise HTTPException(status_code=404, detail="Action not found")
     if record.approval_status not in ("pending", "auto"):
         raise HTTPException(status_code=400, detail=f"Action is already {record.approval_status}")
 
@@ -85,7 +105,7 @@ async def approve_action(
     if record.action_type == "playbook_action":
         try:
             from routers.orchestration import execute_approved_playbook_action
-            await execute_approved_playbook_action(session, record)
+            await execute_approved_playbook_action(session, record, org_id=user.org_id)
             session.refresh(record)
         except Exception as e:
             print(f"[orchestration] approved playbook action execution failed: {e}")
@@ -104,6 +124,10 @@ def reject_action(
     record = session.get(ProvenanceLedger, action_id)
     if not record:
         raise HTTPException(status_code=404, detail="Action not found")
+    if record.case_id is not None:
+        case = session.get(Case, record.case_id)
+        if not case or case.org_id != user.org_id:
+            raise HTTPException(status_code=404, detail="Action not found")
     if record.approval_status not in ("pending", "auto"):
         raise HTTPException(status_code=400, detail=f"Action is already {record.approval_status}")
 

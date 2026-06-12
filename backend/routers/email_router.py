@@ -2,7 +2,7 @@ import re, json, os
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
-from models import EmailAnalysisRecord, AuditLog, User
+from models import EmailAnalysisRecord, AuditLog, User, Case
 from database import get_session
 from ai_router import call_ai_json
 from routers.auth import get_current_user
@@ -77,6 +77,10 @@ async def analyse_email(data: dict, session: Session = Depends(get_session),
     raw_headers = data.get("headers", "")
     raw_body = data.get("body", "")
     case_id = data.get("case_id")
+    if case_id is not None:
+        case = session.get(Case, case_id)
+        if not case or case.org_id != _user.org_id:
+            raise HTTPException(404, "Case not found")
     full_text = raw_headers + "\n\n" + raw_body
 
     sender_ip = extract_sender_ip(raw_headers)
@@ -134,6 +138,7 @@ JSON format:
         ai_verdict=ai_verdict,
         ai_analysis=ai_analysis,
         case_id=case_id,
+        org_id=_user.org_id,
     )
     session.add(record)
     log = AuditLog(action="email_analysed", entity_type="email", entity_id=sender_ip)
@@ -146,13 +151,17 @@ JSON format:
 @router.get("/history")
 def list_history(session: Session = Depends(get_session),
                  _user: User = Depends(get_current_user)):
-    return session.exec(select(EmailAnalysisRecord).order_by(EmailAnalysisRecord.created_at.desc())).all()
+    return session.exec(
+        select(EmailAnalysisRecord)
+        .where(EmailAnalysisRecord.org_id == _user.org_id)
+        .order_by(EmailAnalysisRecord.created_at.desc())
+    ).all()
 
 
 @router.get("/history/{record_id}")
 def get_history(record_id: int, session: Session = Depends(get_session),
                 _user: User = Depends(get_current_user)):
     r = session.get(EmailAnalysisRecord, record_id)
-    if not r:
+    if not r or r.org_id != _user.org_id:
         raise HTTPException(404)
     return r

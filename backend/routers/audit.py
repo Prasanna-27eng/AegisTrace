@@ -11,12 +11,23 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import StreamingResponse
 from sqlmodel import Session, select, func
+from sqlalchemy import or_ as _or
 from models import AuditLog, Case, User
 from database import get_session, engine
 from routers.auth import get_current_user, require_admin
 from models import User as UserModel
 
 router = APIRouter(prefix="/api/audit", tags=["audit"])
+
+
+def _org_user_ids(session: Session, user: UserModel) -> set:
+    """User IDs belonging to the caller's org (for scoping AuditLog rows)."""
+    return set(session.exec(select(User.id).where(User.org_id == user.org_id)).all())
+
+
+def _org_scope(query, org_user_ids: set):
+    """Restrict an AuditLog query to the caller's org's users plus system-generated entries."""
+    return query.where(_or(AuditLog.user_id.in_(org_user_ids), AuditLog.user_id == None))  # noqa: E711
 
 # Action descriptions for human-readable display
 ACTION_LABELS = {
@@ -90,10 +101,12 @@ def list_audit(
     session: Session = Depends(get_session),
 ):
     since = datetime.utcnow() - timedelta(days=days)
-    query = (
+    org_user_ids = _org_user_ids(session, _user)
+    query = _org_scope(
         select(AuditLog)
         .where(AuditLog.timestamp >= since)
-        .where(AuditLog.entity_type != "user_pw")
+        .where(AuditLog.entity_type != "user_pw"),
+        org_user_ids,
     )
     if action:
         query = query.where(AuditLog.action == action)
@@ -122,10 +135,14 @@ def audit_since(
     except Exception:
         since = datetime.utcnow() - timedelta(minutes=1)
 
+    org_user_ids = _org_user_ids(session, _user)
     logs = session.exec(
-        select(AuditLog)
-        .where(AuditLog.timestamp > since)
-        .where(AuditLog.entity_type != "user_pw")
+        _org_scope(
+            select(AuditLog)
+            .where(AuditLog.timestamp > since)
+            .where(AuditLog.entity_type != "user_pw"),
+            org_user_ids,
+        )
         .order_by(AuditLog.timestamp.asc())
         .limit(50)
     ).all()
@@ -138,18 +155,22 @@ def audit_stats(
     _user: UserModel = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    """Summary counts for the audit dashboard."""
+    """Summary counts for the audit dashboard (scoped to the caller's org)."""
     since_24h = datetime.utcnow() - timedelta(hours=24)
     since_7d  = datetime.utcnow() - timedelta(days=7)
+    org_user_ids = _org_user_ids(session, _user)
 
     def count_action(action: str, since: datetime) -> int:
         return session.exec(
-            select(func.count(AuditLog.id))
-            .where(AuditLog.action == action)
-            .where(AuditLog.timestamp >= since)
+            _org_scope(
+                select(func.count(AuditLog.id))
+                .where(AuditLog.action == action)
+                .where(AuditLog.timestamp >= since),
+                org_user_ids,
+            )
         ).one()
 
-    total_cases    = session.exec(select(func.count(Case.id))).one()
+    total_cases    = session.exec(select(func.count(Case.id)).where(Case.org_id == _user.org_id)).one()
     logins_24h     = count_action("login", since_24h)
     cases_7d       = count_action("case_created", since_7d)
     ai_calls_7d    = count_action("ai_generated", since_7d)
@@ -162,10 +183,13 @@ def audit_stats(
         day_start = (datetime.utcnow() - timedelta(days=i+1)).replace(hour=0, minute=0, second=0)
         day_end   = day_start + timedelta(days=1)
         cnt = session.exec(
-            select(func.count(AuditLog.id))
-            .where(AuditLog.timestamp >= day_start)
-            .where(AuditLog.timestamp < day_end)
-            .where(AuditLog.entity_type != "user_pw")
+            _org_scope(
+                select(func.count(AuditLog.id))
+                .where(AuditLog.timestamp >= day_start)
+                .where(AuditLog.timestamp < day_end)
+                .where(AuditLog.entity_type != "user_pw"),
+                org_user_ids,
+            )
         ).one()
         daily.append({"date": day_start.strftime("%Y-%m-%d"), "count": cnt})
     daily.reverse()
@@ -200,13 +224,13 @@ async def audit_stream(request: Request, _user: UserModel = Depends(get_current_
                 break
             try:
                 with Session(engine) as session:
-                    query = (
+                    org_user_ids = _org_user_ids(session, _user)
+                    query = _org_scope(
                         select(AuditLog)
                         .where(AuditLog.id > last_id[0])
-                        .where(AuditLog.entity_type != "user_pw")
-                        .order_by(AuditLog.timestamp.asc())
-                        .limit(20)
-                    )
+                        .where(AuditLog.entity_type != "user_pw"),
+                        org_user_ids,
+                    ).order_by(AuditLog.timestamp.asc()).limit(20)
                     new_logs = session.exec(query).all()
                     for log in new_logs:
                         last_id[0] = log.id

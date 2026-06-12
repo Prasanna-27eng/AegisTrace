@@ -121,6 +121,7 @@ async def lookup(request: Request, data: dict, session: Session = Depends(get_se
         total_engines=result.get("total_engines", 0),
         full_result=json.dumps(result.get("raw", {})),
         notes=data.get("notes", ""),
+        org_id=_user.org_id,
     )
     session.add(record)
     log = AuditLog(action="vt_lookup", entity_type="ioc", entity_id=ioc)
@@ -153,7 +154,7 @@ def list_history(
     session: Session = Depends(get_session),
     _user: User = Depends(get_current_user),
 ):
-    query = select(VTHistory).order_by(VTHistory.looked_up_at.desc())
+    query = select(VTHistory).where(VTHistory.org_id == _user.org_id).order_by(VTHistory.looked_up_at.desc())
     results = session.exec(query).all()
     if verdict:
         results = [r for r in results if r.verdict == verdict]
@@ -166,7 +167,7 @@ def list_history(
 def get_history(record_id: int, session: Session = Depends(get_session),
                 _user: User = Depends(get_current_user)):
     r = session.get(VTHistory, record_id)
-    if not r:
+    if not r or r.org_id != _user.org_id:
         raise HTTPException(404)
     return r
 
@@ -175,7 +176,7 @@ def get_history(record_id: int, session: Session = Depends(get_session),
 def delete_history(record_id: int, session: Session = Depends(get_session),
                    _user: User = Depends(get_current_user)):
     r = session.get(VTHistory, record_id)
-    if not r:
+    if not r or r.org_id != _user.org_id:
         raise HTTPException(404)
     session.delete(r)
     session.commit()
@@ -200,6 +201,7 @@ async def bulk_lookup(data: dict, session: Session = Depends(get_session),
                 malicious_count=result.get("malicious_count", 0),
                 total_engines=result.get("total_engines", 0),
                 full_result=json.dumps(result.get("raw", {})),
+                org_id=_user.org_id,
             )
             session.add(record)
             results.append({"ioc": ioc, **result})

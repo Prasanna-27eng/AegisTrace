@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Workflow, Plus, Trash2, Edit, X, Check, Loader2, RefreshCw,
   Play, ChevronDown, ChevronRight, ShieldAlert, Sparkles, History,
+  Lock, Unlock,
 } from 'lucide-react';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
@@ -9,21 +10,21 @@ import useStore from '../../store/useStore';
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 
 const TRIGGER_TYPES = [
-  { value: 'itdr_alert',    label: 'ITDR Alert' },
-  { value: 'shadow_ai',     label: 'Shadow AI Detection' },
-  { value: 'mcp_event',     label: 'MCP Event (mcp-aegis)' },
-  { value: 'defense_event', label: 'Defense Engine Event' },
-  { value: 'case_created',  label: 'Case Created' },
-  { value: 'endpoint_alert',label: 'Endpoint Alert' },
+  { value: 'itdr_alert',     label: 'ITDR Alert' },
+  { value: 'shadow_ai',      label: 'Shadow AI Detection' },
+  { value: 'mcp_event',      label: 'MCP Event (mcp-aegis)' },
+  { value: 'defense_event',  label: 'Defense Engine Event' },
+  { value: 'case_created',   label: 'Case Created' },
+  { value: 'endpoint_alert', label: 'Endpoint Alert' },
 ];
 
 const ACTION_TYPES = [
-  { value: 'create_case',      label: 'Create Case',          approval: false },
-  { value: 'isolate_endpoint',  label: 'Isolate Endpoint',     approval: true  },
-  { value: 'send_webhook',      label: 'Send Webhook',         approval: false },
-  { value: 'enrich_ioc',        label: 'Enrich IOC',           approval: false },
-  { value: 'page_oncall',       label: 'Page On-Call',         approval: false },
-  { value: 'add_case_comment',  label: 'Add Case Comment',     approval: false },
+  { value: 'create_case',      label: 'Create Case',              approval: false },
+  { value: 'isolate_endpoint',  label: 'Isolate Endpoint',         approval: true  },
+  { value: 'send_webhook',      label: 'Send Webhook',             approval: false },
+  { value: 'enrich_ioc',        label: 'Enrich IOC',               approval: false },
+  { value: 'page_oncall',       label: 'Page On-Call',             approval: false },
+  { value: 'add_case_comment',  label: 'Add Case Comment',         approval: false },
   { value: 'generate_rules',    label: 'Generate Detection Rules', approval: false },
 ];
 
@@ -45,6 +46,469 @@ function fmtTime(ts) {
 
 function actionLabel(type) {
   return ACTION_TYPES.find(a => a.value === type)?.label || type;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   PIPELINE BUILDER
+   A vertical execution-flow editor. No new npm dependencies.
+   Props: form, setForm, plus all the handler fns from PlaybookForm.
+   Layout: left rail (circles + gradient lines) + right cards.
+   Dry-run: cards glow sequentially; trigger flashes red on no-match.
+───────────────────────────────────────────────────────────────────────────── */
+function PipelineBuilder({
+  form, setForm,
+  updateCondition, addCondition, removeCondition,
+  updateAction, addAction, removeAction,
+}) {
+  const { addToast } = useStore();
+
+  // ── local UI state ─────────────────────────────────────────────────────────
+  const [expandedParams, setExpandedParams] = useState(new Set());
+  const [dragIdx, setDragIdx]   = useState(null);   // index being dragged
+  const [overIdx, setOverIdx]   = useState(null);   // index being hovered over
+
+  // dry-run animation
+  // animStep: null | 'trigger_fail' | number (action index currently lit)
+  const [animStep,      setAnimStep]      = useState(null);
+  const [dryRunResult,  setDryRunResult]  = useState(null);  // { noMatch, taken[], pending[] }
+  const [dryRunOpen,    setDryRunOpen]    = useState(false);
+  const [dryRunInput,   setDryRunInput]   = useState('{\n  "severity": "critical",\n  "confidence": 0.95\n}');
+  const [dryRunLoading, setDryRunLoading] = useState(false);
+
+  const takenTypes   = dryRunResult?.taken?.map(a => a.type)   || [];
+  const pendingTypes = dryRunResult?.pending?.map(a => a.type) || [];
+
+  // ── helpers ────────────────────────────────────────────────────────────────
+  const toggleParams = (i) =>
+    setExpandedParams(prev => {
+      const next = new Set(prev);
+      next.has(i) ? next.delete(i) : next.add(i);
+      return next;
+    });
+
+  const handleDrop = (targetIdx) => {
+    if (dragIdx === null || dragIdx === targetIdx) return;
+    setForm(p => {
+      const actions = [...p.actions];
+      const [moved] = actions.splice(dragIdx, 1);
+      actions.splice(targetIdx, 0, moved);
+      return { ...p, actions };
+    });
+    setDragIdx(null);
+    setOverIdx(null);
+  };
+
+  // ── dry-run ────────────────────────────────────────────────────────────────
+  const runDryRun = async () => {
+    let parsed;
+    try { parsed = JSON.parse(dryRunInput); }
+    catch { addToast('Event data must be valid JSON', 'error'); return; }
+
+    setDryRunLoading(true);
+    setDryRunResult(null);
+    setAnimStep(null);
+
+    try {
+      const res = await api.post('/api/orchestration/evaluate', {
+        trigger_event_type: form.trigger_event_type,
+        event_data: parsed,
+        dry_run: true,
+      });
+      const results = res.data.results || [];
+
+      if (results.length === 0) {
+        setDryRunResult({ noMatch: true, taken: [], pending: [] });
+        setAnimStep('trigger_fail');
+        setTimeout(() => setAnimStep(null), 1800);
+      } else {
+        const taken   = results[0].actions_taken   || [];
+        const pending = results[0].actions_pending || [];
+        setDryRunResult({ noMatch: false, taken, pending });
+
+        // step through each action card with a 750 ms gap
+        let step = 0;
+        const tick = () => {
+          if (step < form.actions.length) {
+            setAnimStep(step);
+            step++;
+            setTimeout(tick, 750);
+          } else {
+            setTimeout(() => setAnimStep(null), 600);
+          }
+        };
+        setTimeout(tick, 300);
+      }
+    } catch (e) {
+      addToast(e.response?.data?.detail || 'Evaluation failed', 'error');
+    }
+    setDryRunLoading(false);
+  };
+
+  // ── colour helpers ─────────────────────────────────────────────────────────
+  // Returns the circle / glow colour for each rail node.
+  const circleColor = (slot) => {
+    if (slot === 'trigger') {
+      return animStep === 'trigger_fail' ? '#EF4444' : '#4DA3FF';
+    }
+    const a = form.actions[slot];
+    if (!a) return '#9C7CFF';
+
+    // currently animating THIS step
+    if (animStep === slot) {
+      if (takenTypes.includes(a.type))   return '#22C55E';
+      if (pendingTypes.includes(a.type)) return '#EAB308';
+    }
+    // already animated PAST this step
+    if (typeof animStep === 'number' && animStep > slot && dryRunResult && !dryRunResult.noMatch) {
+      if (takenTypes.includes(a.type))   return '#22C55E';
+      if (pendingTypes.includes(a.type)) return '#EAB308';
+    }
+    return a.requires_approval ? '#F59E0B' : '#9C7CFF';
+  };
+
+  const cardBorderColor = (i, a) => {
+    if (overIdx === i && dragIdx !== null && dragIdx !== i)
+      return 'rgba(77,163,255,0.5)';
+    if (animStep === i) {
+      if (takenTypes.includes(a.type))   return '#22C55E';
+      if (pendingTypes.includes(a.type)) return '#EAB308';
+    }
+    if (typeof animStep === 'number' && animStep > i && dryRunResult && !dryRunResult.noMatch) {
+      if (takenTypes.includes(a.type))   return '#22C55E';
+      if (pendingTypes.includes(a.type)) return '#EAB308';
+    }
+    return a.requires_approval ? 'rgba(245,158,11,0.3)' : 'rgba(156,124,255,0.2)';
+  };
+
+  const cardGlow = (i, a) => {
+    if (animStep === i) {
+      if (takenTypes.includes(a.type))   return '0 0 18px rgba(34,197,94,0.22)';
+      if (pendingTypes.includes(a.type)) return '0 0 18px rgba(234,179,8,0.22)';
+    }
+    return 'none';
+  };
+
+  // ── render helpers ─────────────────────────────────────────────────────────
+  const RailCircle = ({ slot, label }) => {
+    const c = circleColor(slot);
+    return (
+      <div style={{
+        width: 28, height: 28, borderRadius: '50%',
+        border: `2px solid ${c}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: slot === 'trigger' ? '13px' : '0.62rem',
+        fontWeight: 700, color: c,
+        background: '#080808',
+        boxShadow: `0 0 10px ${c}55`,
+        flexShrink: 0,
+        transition: 'all 0.35s ease',
+        ...MONO,
+      }}>
+        {label}
+      </div>
+    );
+  };
+
+  const ConnectorLine = ({ fromSlot, toSlot }) => (
+    <div style={{ display: 'flex', paddingLeft: 12 }}>
+      <div style={{
+        width: 2, height: 18,
+        background: `linear-gradient(to bottom, ${circleColor(fromSlot)}, ${circleColor(toSlot)})`,
+        opacity: 0.35,
+        margin: '1px 1px',
+        transition: 'background 0.35s ease',
+      }} />
+    </div>
+  );
+
+  // ── render ─────────────────────────────────────────────────────────────────
+  return (
+    <div>
+
+      {/* ── TRIGGER NODE ──────────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+        <div style={{ flexShrink: 0, width: 28, paddingTop: 2 }}>
+          <RailCircle slot="trigger" label="⚡" />
+        </div>
+
+        <div style={{
+          flex: 1,
+          background: animStep === 'trigger_fail'
+            ? 'rgba(239,68,68,0.04)'
+            : 'rgba(77,163,255,0.025)',
+          border: `1px solid ${animStep === 'trigger_fail' ? '#EF4444' : 'rgba(77,163,255,0.25)'}`,
+          borderRadius: 8,
+          padding: '10px 14px',
+          transition: 'all 0.35s ease',
+          boxShadow: animStep === 'trigger_fail' ? '0 0 22px rgba(239,68,68,0.14)' : 'none',
+        }}>
+          {/* trigger header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+            <span style={{
+              fontSize: '0.58rem', color: '#4DA3FF', ...MONO,
+              fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', flexShrink: 0,
+            }}>
+              Trigger
+            </span>
+            <select
+              className="at-select"
+              value={form.trigger_event_type}
+              onChange={e => setForm(p => ({ ...p, trigger_event_type: e.target.value }))}
+              style={{ flex: 1, fontSize: '0.78rem' }}
+            >
+              {TRIGGER_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+            </select>
+          </div>
+
+          {/* conditions */}
+          <div style={{
+            fontSize: '0.58rem', color: '#4DA3FF', ...MONO,
+            textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6, opacity: 0.65,
+          }}>
+            Conditions
+          </div>
+          {form.conditions.map((c, i) => (
+            <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 5, alignItems: 'center' }}>
+              <span style={{ fontSize: '0.6rem', color: '#3D3D3D', ...MONO, width: 10, flexShrink: 0 }}>if</span>
+              <input
+                className="at-input"
+                style={{ flex: 1, ...MONO, fontSize: '0.74rem' }}
+                value={c.key}
+                onChange={e => updateCondition(i, 'key', e.target.value)}
+                placeholder="key (e.g. min_confidence)"
+              />
+              <span style={{ fontSize: '0.64rem', color: '#444', ...MONO }}>=</span>
+              <input
+                className="at-input"
+                style={{ flex: 1, ...MONO, fontSize: '0.74rem' }}
+                value={c.value}
+                onChange={e => updateCondition(i, 'value', e.target.value)}
+                placeholder="value (e.g. 0.9)"
+              />
+              <button
+                onClick={() => removeCondition(i)}
+                style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', padding: '2px 3px', opacity: 0.65, lineHeight: 1 }}
+              >
+                <X size={11} />
+              </button>
+            </div>
+          ))}
+          <button className="btn-ghost" onClick={addCondition} style={{ fontSize: '0.7rem', marginTop: 3 }}>
+            <Plus size={10} /> Add Condition
+          </button>
+        </div>
+      </div>
+
+      {/* ── ACTION NODES ──────────────────────────────────────────────────── */}
+      {form.actions.map((a, i) => (
+        <React.Fragment key={i}>
+          {/* connector line */}
+          <ConnectorLine
+            fromSlot={i === 0 ? 'trigger' : i - 1}
+            toSlot={i}
+          />
+
+          {/* action row */}
+          <div
+            style={{
+              display: 'flex', alignItems: 'flex-start', gap: 12,
+              opacity: dragIdx === i ? 0.3 : 1,
+              transition: 'opacity 0.15s',
+            }}
+            onDragOver={e => { e.preventDefault(); setOverIdx(i); }}
+            onDrop={() => handleDrop(i)}
+            onDragLeave={() => { if (overIdx === i) setOverIdx(null); }}
+          >
+            {/* rail circle */}
+            <div style={{ flexShrink: 0, width: 28, paddingTop: 2 }}>
+              <RailCircle slot={i} label={String(i + 1)} />
+            </div>
+
+            {/* action card */}
+            <div style={{
+              flex: 1,
+              background: overIdx === i && dragIdx !== null && dragIdx !== i
+                ? 'rgba(77,163,255,0.04)'
+                : 'rgba(255,255,255,0.012)',
+              border: `1px solid ${cardBorderColor(i, a)}`,
+              borderRadius: 8,
+              padding: '10px 12px',
+              boxShadow: cardGlow(i, a),
+              transition: 'all 0.35s ease',
+            }}>
+              {/* card header row */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+
+                {/* drag handle */}
+                <div
+                  draggable
+                  onDragStart={e => { e.stopPropagation(); setDragIdx(i); }}
+                  onDragEnd={() => { setDragIdx(null); setOverIdx(null); }}
+                  style={{
+                    cursor: 'grab', userSelect: 'none',
+                    color: '#333', fontSize: '15px', lineHeight: 1,
+                    padding: '2px', flexShrink: 0,
+                  }}
+                  title="Drag to reorder"
+                >
+                  ⠿
+                </div>
+
+                {/* action type select */}
+                <select
+                  className="at-select"
+                  value={a.type}
+                  onChange={e => updateAction(i, 'type', e.target.value)}
+                  style={{ flex: 1, fontSize: '0.78rem' }}
+                >
+                  {ACTION_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+
+                {/* approval toggle */}
+                <button
+                  onClick={() => updateAction(i, 'requires_approval', !a.requires_approval)}
+                  title={a.requires_approval ? 'Approval required — click to remove' : 'No approval required — click to require'}
+                  style={{
+                    background: 'none',
+                    border: `1px solid ${a.requires_approval ? 'rgba(245,158,11,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                    borderRadius: 5, padding: '3px 7px', cursor: 'pointer',
+                    color: a.requires_approval ? '#F59E0B' : '#555',
+                    display: 'flex', alignItems: 'center', gap: 4,
+                    transition: 'all 0.2s', flexShrink: 0,
+                  }}
+                >
+                  {a.requires_approval ? <Lock size={10} /> : <Unlock size={10} />}
+                </button>
+
+                {/* params toggle */}
+                <button
+                  onClick={() => toggleParams(i)}
+                  title="Toggle params editor"
+                  style={{
+                    background: 'none',
+                    border: `1px solid ${expandedParams.has(i) ? 'rgba(156,124,255,0.35)' : 'rgba(255,255,255,0.08)'}`,
+                    borderRadius: 5, padding: '3px 7px', cursor: 'pointer',
+                    color: expandedParams.has(i) ? '#9C7CFF' : '#555',
+                    fontSize: '0.62rem', ...MONO,
+                    transition: 'all 0.2s', flexShrink: 0,
+                  }}
+                >
+                  {'{ }'}
+                </button>
+
+                {/* delete */}
+                <button
+                  onClick={() => removeAction(i)}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: '#EF4444', opacity: 0.65, padding: '2px 3px',
+                    lineHeight: 1, flexShrink: 0,
+                  }}
+                >
+                  <X size={12} />
+                </button>
+              </div>
+
+              {/* collapsible params textarea */}
+              {expandedParams.has(i) && (
+                <div style={{ marginTop: 8 }}>
+                  <textarea
+                    className="at-input"
+                    style={{
+                      width: '100%', ...MONO, fontSize: '0.72rem',
+                      resize: 'vertical', minHeight: 58, boxSizing: 'border-box',
+                    }}
+                    value={a.params}
+                    onChange={e => updateAction(i, 'params', e.target.value)}
+                    placeholder='{"key": "value"}'
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </React.Fragment>
+      ))}
+
+      {/* ── ADD ACTION ────────────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', paddingLeft: 12 }}>
+        <div style={{ width: 2, height: 14, background: 'rgba(156,124,255,0.15)', margin: '1px 1px' }} />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{
+          width: 28, height: 28, borderRadius: '50%',
+          border: '2px dashed rgba(156,124,255,0.25)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0,
+        }}>
+          <Plus size={11} style={{ color: '#9C7CFF', opacity: 0.55 }} />
+        </div>
+        <button
+          className="btn-ghost"
+          onClick={addAction}
+          style={{
+            fontSize: '0.78rem', color: '#9C7CFF',
+            border: '1px solid rgba(156,124,255,0.2)',
+            borderRadius: 5, padding: '4px 12px',
+          }}
+        >
+          Add Action
+        </button>
+      </div>
+
+      {/* ── DRY-RUN SIMULATION PANEL ──────────────────────────────────────── */}
+      <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <button
+            className="btn-ghost"
+            onClick={() => setDryRunOpen(o => !o)}
+            style={{ fontSize: '0.74rem', color: '#686868', display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <Sparkles size={12} style={{ color: '#9C7CFF' }} />
+            Simulate
+            {dryRunOpen ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
+          </button>
+          {dryRunResult && !dryRunResult.noMatch && (
+            <span style={{ fontSize: '0.66rem', ...MONO, color: '#22C55E' }}>
+              ✓ {dryRunResult.taken.length} executed · {dryRunResult.pending.length} queued for approval
+            </span>
+          )}
+          {dryRunResult?.noMatch && (
+            <span style={{ fontSize: '0.66rem', ...MONO, color: '#EF4444' }}>
+              ✗ conditions did not match
+            </span>
+          )}
+        </div>
+
+        {dryRunOpen && (
+          <div style={{ marginTop: 10, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '0.62rem', color: '#444', ...MONO, marginBottom: 5 }}>
+                synthetic {form.trigger_event_type} event — evaluates saved playbooks only
+              </div>
+              <textarea
+                className="at-input"
+                style={{
+                  width: '100%', ...MONO, fontSize: '0.72rem',
+                  resize: 'vertical', minHeight: 72, boxSizing: 'border-box',
+                }}
+                value={dryRunInput}
+                onChange={e => setDryRunInput(e.target.value)}
+              />
+            </div>
+            <button
+              className="btn-accent"
+              onClick={runDryRun}
+              disabled={dryRunLoading}
+              style={{ fontSize: '0.76rem', whiteSpace: 'nowrap', marginTop: 21 }}
+            >
+              {dryRunLoading ? <Loader2 size={12} className="spinner" /> : <Play size={12} />}
+              Run
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 /* ── Playbook Form ────────────────────────────────────────────────────────── */
@@ -75,24 +539,25 @@ function PlaybookForm({ initial, onSave, onClose }) {
   });
   const [saving, setSaving] = useState(false);
 
-  const updateCondition = (i, field, val) => {
-    setForm(p => {
-      const conditions = [...p.conditions];
-      conditions[i] = { ...conditions[i], [field]: val };
-      return { ...p, conditions };
-    });
-  };
-  const addCondition = () => setForm(p => ({ ...p, conditions: [...p.conditions, { key: '', value: '' }] }));
+  // ── view toggle (hide below 900 px) ───────────────────────────────────────
+  const [viewMode, setViewMode] = useState('form');
+  const [isWide, setIsWide]     = useState(() => typeof window !== 'undefined' && window.innerWidth >= 900);
+
+  useEffect(() => {
+    const handler = () => setIsWide(window.innerWidth >= 900);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+
+  // ── form handlers (unchanged) ──────────────────────────────────────────────
+  const updateCondition = (i, field, val) =>
+    setForm(p => { const c = [...p.conditions]; c[i] = { ...c[i], [field]: val }; return { ...p, conditions: c }; });
+  const addCondition    = () => setForm(p => ({ ...p, conditions: [...p.conditions, { key: '', value: '' }] }));
   const removeCondition = (i) => setForm(p => ({ ...p, conditions: p.conditions.filter((_, idx) => idx !== i) }));
 
-  const updateAction = (i, field, val) => {
-    setForm(p => {
-      const actions = [...p.actions];
-      actions[i] = { ...actions[i], [field]: val };
-      return { ...p, actions };
-    });
-  };
-  const addAction = () => setForm(p => ({ ...p, actions: [...p.actions, { type: 'send_webhook', requires_approval: false, params: '{}' }] }));
+  const updateAction = (i, field, val) =>
+    setForm(p => { const a = [...p.actions]; a[i] = { ...a[i], [field]: val }; return { ...p, actions: a }; });
+  const addAction    = () => setForm(p => ({ ...p, actions: [...p.actions, { type: 'send_webhook', requires_approval: false, params: '{}' }] }));
   const removeAction = (i) => setForm(p => ({ ...p, actions: p.actions.filter((_, idx) => idx !== i) }));
 
   const submit = async () => {
@@ -102,14 +567,14 @@ function PlaybookForm({ initial, onSave, onClose }) {
     for (const { key, value } of form.conditions) {
       if (!key.trim()) continue;
       const num = Number(value);
-      trigger_conditions[key.trim()] = (value !== '' && !isNaN(num) && /^-?[\d.]+$/.test(value.trim())) ? num : value;
+      trigger_conditions[key.trim()] =
+        (value !== '' && !isNaN(num) && /^-?[\d.]+$/.test(value.trim())) ? num : value;
     }
 
     let actions;
     try {
       actions = form.actions.map(a => ({
-        type: a.type,
-        requires_approval: a.requires_approval,
+        type: a.type, requires_approval: a.requires_approval,
         params: JSON.parse(a.params || '{}'),
       }));
     } catch {
@@ -138,88 +603,173 @@ function PlaybookForm({ initial, onSave, onClose }) {
     setSaving(false);
   };
 
+  // ── view-mode tab style helper ────────────────────────────────────────────
+  const tabStyle = (active) => ({
+    padding: '3px 11px', fontSize: '0.72rem', borderRadius: 4,
+    border: 'none', cursor: 'pointer', transition: 'all 0.15s',
+    background: active ? 'rgba(156,124,255,0.14)' : 'transparent',
+    color: active ? '#9C7CFF' : '#686868',
+    ...MONO,
+  });
+
+  // ── shared footer ─────────────────────────────────────────────────────────
+  const Footer = () => (
+    <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+      <button className="btn-accent" onClick={submit} disabled={saving} style={{ fontSize: '0.8rem' }}>
+        {saving ? <Loader2 size={13} className="spinner" /> : <Check size={13} />}
+        {initial?.id ? 'Update Playbook' : 'Create Playbook'}
+      </button>
+      <button className="btn-ghost" onClick={onClose} style={{ fontSize: '0.8rem' }}>Cancel</button>
+    </div>
+  );
+
   return (
     <div className="at-card" style={{ padding: 20, borderColor: 'rgba(77,163,255,0.2)', marginBottom: 16 }}>
+
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{initial?.id ? 'Edit Playbook' : 'New Playbook'}</div>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={15} /></button>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
-        <div style={{ gridColumn: '1/-1' }}>
-          <label className="at-label">Name *</label>
-          <input className="at-input" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Critical MCP Block -> Contain" />
-        </div>
-        <div style={{ gridColumn: '1/-1' }}>
-          <label className="at-label">Description</label>
-          <input className="at-input" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="What this automation does" />
-        </div>
-        <div>
-          <label className="at-label">Trigger Event</label>
-          <select className="at-select" value={form.trigger_event_type} onChange={e => setForm(p => ({ ...p, trigger_event_type: e.target.value }))} style={{ width: '100%' }}>
-            {TRIGGER_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="at-label">Status</label>
-          <select className="at-select" value={form.is_active ? 'active' : 'inactive'} onChange={e => setForm(p => ({ ...p, is_active: e.target.value === 'active' }))} style={{ width: '100%' }}>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </div>
-        <div style={{ gridColumn: '1/-1', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <input type="checkbox" id="pb-requires-approval" checked={form.requires_approval} onChange={e => setForm(p => ({ ...p, requires_approval: e.target.checked }))} />
-          <label htmlFor="pb-requires-approval" style={{ fontSize: '0.78rem', color: '#A8A8A8', cursor: 'pointer' }}>
-            Global approval gate — when off, no actions in this playbook require approval (overrides per-action settings)
-          </label>
-        </div>
-      </div>
-
-      {/* Conditions */}
-      <div style={{ marginBottom: 16 }}>
-        <label className="at-label">Trigger Conditions</label>
-        <div style={{ fontSize: '0.7rem', color: '#555', marginBottom: 8 }}>
-          Use <span style={MONO}>min_*</span> / <span style={MONO}>max_*</span> prefixes for numeric thresholds (e.g. <span style={MONO}>min_confidence = 0.9</span>), exact keys for string match (e.g. <span style={MONO}>severity = critical</span>).
-        </div>
-        {form.conditions.map((c, i) => (
-          <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
-            <input className="at-input" style={{ flex: 1, ...MONO, fontSize: '0.78rem' }} value={c.key} onChange={e => updateCondition(i, 'key', e.target.value)} placeholder="key (e.g. min_confidence)" />
-            <input className="at-input" style={{ flex: 1, ...MONO, fontSize: '0.78rem' }} value={c.value} onChange={e => updateCondition(i, 'value', e.target.value)} placeholder="value (e.g. 0.9)" />
-            <button className="btn-ghost" onClick={() => removeCondition(i)} style={{ padding: '4px 8px', color: '#EF4444' }}><Trash2 size={12} /></button>
-          </div>
-        ))}
-        <button className="btn-ghost" onClick={addCondition} style={{ fontSize: '0.74rem' }}><Plus size={11} /> Add Condition</button>
-      </div>
-
-      {/* Actions */}
-      <div style={{ marginBottom: 8 }}>
-        <label className="at-label">Actions (executed in order)</label>
-        {form.actions.map((a, i) => (
-          <div key={i} className="at-card" style={{ padding: '10px 12px', marginBottom: 8 }}>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
-              <span style={{ fontSize: '0.7rem', color: '#555', ...MONO, width: 18 }}>{i + 1}.</span>
-              <select className="at-select" value={a.type} onChange={e => updateAction(i, 'type', e.target.value)} style={{ flex: 1 }}>
-                {ACTION_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: '#A8A8A8', whiteSpace: 'nowrap', cursor: 'pointer' }}>
-                <input type="checkbox" checked={a.requires_approval} onChange={e => updateAction(i, 'requires_approval', e.target.checked)} />
-                Requires approval
-              </label>
-              <button className="btn-ghost" onClick={() => removeAction(i)} style={{ padding: '4px 8px', color: '#EF4444' }}><Trash2 size={12} /></button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>
+            {initial?.id ? 'Edit Playbook' : 'New Playbook'}
+          </span>
+          {/* toggle: only shown when viewport ≥ 900 px */}
+          {isWide && (
+            <div style={{
+              display: 'flex', gap: 2,
+              background: 'rgba(255,255,255,0.04)',
+              borderRadius: 6, padding: 3,
+            }}>
+              <button style={tabStyle(viewMode === 'form')}     onClick={() => setViewMode('form')}>Form</button>
+              <button style={tabStyle(viewMode === 'pipeline')} onClick={() => setViewMode('pipeline')}>Pipeline</button>
             </div>
-            <input className="at-input" style={{ width: '100%', ...MONO, fontSize: '0.74rem' }} value={a.params} onChange={e => updateAction(i, 'params', e.target.value)} placeholder='{"severity": "critical"}' />
-          </div>
-        ))}
-        <button className="btn-ghost" onClick={addAction} style={{ fontSize: '0.74rem' }}><Plus size={11} /> Add Action</button>
+          )}
+        </div>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}>
+          <X size={15} />
+        </button>
       </div>
 
-      <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-        <button className="btn-accent" onClick={submit} disabled={saving} style={{ fontSize: '0.8rem' }}>
-          {saving ? <Loader2 size={13} className="spinner" /> : <Check size={13} />}
-          {initial?.id ? 'Update Playbook' : 'Create Playbook'}
-        </button>
-        <button className="btn-ghost" onClick={onClose} style={{ fontSize: '0.8rem' }}>Cancel</button>
-      </div>
+      {/* ═══════════════════════════════════════════════════════════════════
+          FORM VIEW  (original layout, unchanged)
+      ═══════════════════════════════════════════════════════════════════ */}
+      {viewMode === 'form' && (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+            <div style={{ gridColumn: '1/-1' }}>
+              <label className="at-label">Name *</label>
+              <input className="at-input" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Critical MCP Block -> Contain" />
+            </div>
+            <div style={{ gridColumn: '1/-1' }}>
+              <label className="at-label">Description</label>
+              <input className="at-input" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="What this automation does" />
+            </div>
+            <div>
+              <label className="at-label">Trigger Event</label>
+              <select className="at-select" value={form.trigger_event_type} onChange={e => setForm(p => ({ ...p, trigger_event_type: e.target.value }))} style={{ width: '100%' }}>
+                {TRIGGER_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="at-label">Status</label>
+              <select className="at-select" value={form.is_active ? 'active' : 'inactive'} onChange={e => setForm(p => ({ ...p, is_active: e.target.value === 'active' }))} style={{ width: '100%' }}>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            <div style={{ gridColumn: '1/-1', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input type="checkbox" id="pb-requires-approval" checked={form.requires_approval} onChange={e => setForm(p => ({ ...p, requires_approval: e.target.checked }))} />
+              <label htmlFor="pb-requires-approval" style={{ fontSize: '0.78rem', color: '#A8A8A8', cursor: 'pointer' }}>
+                Global approval gate — when off, no actions in this playbook require approval (overrides per-action settings)
+              </label>
+            </div>
+          </div>
+
+          {/* Conditions */}
+          <div style={{ marginBottom: 16 }}>
+            <label className="at-label">Trigger Conditions</label>
+            <div style={{ fontSize: '0.7rem', color: '#555', marginBottom: 8 }}>
+              Use <span style={MONO}>min_*</span> / <span style={MONO}>max_*</span> prefixes for numeric thresholds, exact keys for string match.
+            </div>
+            {form.conditions.map((c, i) => (
+              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                <input className="at-input" style={{ flex: 1, ...MONO, fontSize: '0.78rem' }} value={c.key}   onChange={e => updateCondition(i, 'key',   e.target.value)} placeholder="key (e.g. min_confidence)" />
+                <input className="at-input" style={{ flex: 1, ...MONO, fontSize: '0.78rem' }} value={c.value} onChange={e => updateCondition(i, 'value', e.target.value)} placeholder="value (e.g. 0.9)" />
+                <button className="btn-ghost" onClick={() => removeCondition(i)} style={{ padding: '4px 8px', color: '#EF4444' }}><Trash2 size={12} /></button>
+              </div>
+            ))}
+            <button className="btn-ghost" onClick={addCondition} style={{ fontSize: '0.74rem' }}><Plus size={11} /> Add Condition</button>
+          </div>
+
+          {/* Actions */}
+          <div style={{ marginBottom: 8 }}>
+            <label className="at-label">Actions (executed in order)</label>
+            {form.actions.map((a, i) => (
+              <div key={i} className="at-card" style={{ padding: '10px 12px', marginBottom: 8 }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ fontSize: '0.7rem', color: '#555', ...MONO, width: 18 }}>{i + 1}.</span>
+                  <select className="at-select" value={a.type} onChange={e => updateAction(i, 'type', e.target.value)} style={{ flex: 1 }}>
+                    {ACTION_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  </select>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: '#A8A8A8', whiteSpace: 'nowrap', cursor: 'pointer' }}>
+                    <input type="checkbox" checked={a.requires_approval} onChange={e => updateAction(i, 'requires_approval', e.target.checked)} />
+                    Requires approval
+                  </label>
+                  <button className="btn-ghost" onClick={() => removeAction(i)} style={{ padding: '4px 8px', color: '#EF4444' }}><Trash2 size={12} /></button>
+                </div>
+                <input className="at-input" style={{ width: '100%', ...MONO, fontSize: '0.74rem' }} value={a.params} onChange={e => updateAction(i, 'params', e.target.value)} placeholder='{"severity": "critical"}' />
+              </div>
+            ))}
+            <button className="btn-ghost" onClick={addAction} style={{ fontSize: '0.74rem' }}><Plus size={11} /> Add Action</button>
+          </div>
+
+          <Footer />
+        </>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          PIPELINE VIEW  (new vertical-rail layout)
+      ═══════════════════════════════════════════════════════════════════ */}
+      {viewMode === 'pipeline' && (
+        <>
+          {/* compact meta strip — name / description / status / global approval */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 18 }}>
+            <div>
+              <label className="at-label">Name *</label>
+              <input className="at-input" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="Playbook name" />
+            </div>
+            <div>
+              <label className="at-label">Description</label>
+              <input className="at-input" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="What this automation does" />
+            </div>
+            <div>
+              <label className="at-label">Status</label>
+              <select className="at-select" value={form.is_active ? 'active' : 'inactive'} onChange={e => setForm(p => ({ ...p, is_active: e.target.value === 'active' }))} style={{ width: '100%' }}>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: 3 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: '0.74rem', color: '#A8A8A8', cursor: 'pointer' }}>
+                <input type="checkbox" checked={form.requires_approval} onChange={e => setForm(p => ({ ...p, requires_approval: e.target.checked }))} />
+                Global approval gate
+              </label>
+            </div>
+          </div>
+
+          <PipelineBuilder
+            form={form}
+            setForm={setForm}
+            updateCondition={updateCondition}
+            addCondition={addCondition}
+            removeCondition={removeCondition}
+            updateAction={updateAction}
+            addAction={addAction}
+            removeAction={removeAction}
+          />
+
+          <Footer />
+        </>
+      )}
     </div>
   );
 }
@@ -421,10 +971,10 @@ function TestModal({ pb, onClose }) {
 export default function Playbooks() {
   const { addToast } = useStore();
   const [playbooks, setPlaybooks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [editing, setEditing] = useState(null);
-  const [testing, setTesting] = useState(null);
+  const [loading,   setLoading]   = useState(true);
+  const [showForm,  setShowForm]  = useState(false);
+  const [editing,   setEditing]   = useState(null);
+  const [testing,   setTesting]   = useState(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -457,11 +1007,11 @@ export default function Playbooks() {
     } catch (e) { addToast(e.response?.data?.detail || 'Seed failed', 'error'); }
   };
 
-  const handleEdit = (pb) => { setEditing(pb); setShowForm(true); };
+  const handleEdit    = (pb) => { setEditing(pb); setShowForm(true); };
   const handleNewClick = () => { setEditing(null); setShowForm(true); };
-  const handleSaved = () => { load(); setShowForm(false); setEditing(null); };
+  const handleSaved    = () => { load(); setShowForm(false); setEditing(null); };
 
-  const active = playbooks.filter(p => p.is_active).length;
+  const active    = playbooks.filter(p => p.is_active).length;
   const totalRuns = playbooks.reduce((sum, p) => sum + (p.run_count || 0), 0);
 
   return (

@@ -90,7 +90,9 @@ def list_connectors(
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    connectors = session.exec(select(IdentityConnector)).all()
+    connectors = session.exec(
+        select(IdentityConnector).where(IdentityConnector.org_id == user.org_id)
+    ).all()
     return [
         {
             "id": c.id,
@@ -127,7 +129,10 @@ async def okta_connect(
 
     # Store connector
     existing = session.exec(
-        select(IdentityConnector).where(IdentityConnector.connector_type == "okta")
+        select(IdentityConnector).where(
+            IdentityConnector.connector_type == "okta",
+            IdentityConnector.org_id == user.org_id,
+        )
     ).first()
     if existing:
         existing.encrypted_token = enc.encrypt(api_token)   # v5.4: encrypt at rest
@@ -143,6 +148,7 @@ async def okta_connect(
             domain=okta_domain,
             encrypted_token=enc.encrypt(api_token),          # v5.4: encrypt at rest
             created_by=user.id,
+            org_id=user.org_id,
         )
         session.add(connector_db)
         session.commit()
@@ -168,7 +174,11 @@ async def okta_sync(
     session: Session = Depends(get_session),
 ):
     connector_db = session.exec(
-        select(IdentityConnector).where(IdentityConnector.connector_type == "okta", IdentityConnector.is_active == True)
+        select(IdentityConnector).where(
+            IdentityConnector.connector_type == "okta",
+            IdentityConnector.is_active == True,
+            IdentityConnector.org_id == user.org_id,
+        )
     ).first()
     if not connector_db:
         raise HTTPException(404, "Okta not connected")
@@ -208,7 +218,10 @@ async def azure_connect(
         raise HTTPException(400, f"Azure AD connection failed: {test.get('error')}")
 
     existing = session.exec(
-        select(IdentityConnector).where(IdentityConnector.connector_type == "azure_ad")
+        select(IdentityConnector).where(
+            IdentityConnector.connector_type == "azure_ad",
+            IdentityConnector.org_id == user.org_id,
+        )
     ).first()
     creds_json = json.dumps({"client_id": client_id, "client_secret": client_secret, "tenant_id": tenant_id})
     if existing:
@@ -226,6 +239,7 @@ async def azure_connect(
             tenant_id=tenant_id,
             encrypted_token=creds_json,
             created_by=user.id,
+            org_id=user.org_id,
         )
         session.add(connector_db)
         session.commit()
@@ -250,7 +264,11 @@ async def azure_sync(
     session: Session = Depends(get_session),
 ):
     connector_db = session.exec(
-        select(IdentityConnector).where(IdentityConnector.connector_type == "azure_ad", IdentityConnector.is_active == True)
+        select(IdentityConnector).where(
+            IdentityConnector.connector_type == "azure_ad",
+            IdentityConnector.is_active == True,
+            IdentityConnector.org_id == user.org_id,
+        )
     ).first()
     if not connector_db:
         raise HTTPException(404, "Azure AD not connected")
@@ -301,6 +319,7 @@ async def csv_confirm(
         org_name=data.get("org_name", "CSV Import"),
         connector_type="csv",
         created_by=user.id,
+        org_id=user.org_id,
     )
     session.add(connector_db)
     session.commit()
@@ -327,7 +346,7 @@ def connector_status(
     session: Session = Depends(get_session),
 ):
     c = session.get(IdentityConnector, connector_id)
-    if not c:
+    if not c or c.org_id != user.org_id:
         raise HTTPException(404, "Connector not found")
     return {
         "id": c.id,
@@ -346,7 +365,7 @@ def delete_connector(
     session: Session = Depends(get_session),
 ):
     c = session.get(IdentityConnector, connector_id)
-    if not c:
+    if not c or c.org_id != user.org_id:
         raise HTTPException(404, "Connector not found")
     c.is_active = False
     c.encrypted_token = None
@@ -361,19 +380,26 @@ def list_approved_ai(
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    services = session.exec(select(ApprovedAIService).where(ApprovedAIService.is_approved == True)).all()
+    services = session.exec(
+        select(ApprovedAIService).where(
+            ApprovedAIService.is_approved == True,
+            ApprovedAIService.org_id == user.org_id,
+        )
+    ).all()
     return [{"id": s.id, "service_name": s.service_name, "api_domain": s.api_domain} for s in services]
 
 
 @router.post("/approved-ai")
 def save_approved_ai(
     data: dict,
-    user: User = Depends(get_current_user),
+    admin: User = Depends(require_admin),
     session: Session = Depends(get_session),
 ):
     services = data.get("services", [])
-    # Clear existing and replace
-    existing = session.exec(select(ApprovedAIService)).all()
+    # Clear existing entries for this org and replace
+    existing = session.exec(
+        select(ApprovedAIService).where(ApprovedAIService.org_id == admin.org_id)
+    ).all()
     for s in existing:
         session.delete(s)
 
@@ -395,7 +421,8 @@ def save_approved_ai(
                 service_name=name,
                 api_domain=domain,
                 is_approved=True,
-                added_by=user.id,
+                added_by=admin.id,
+                org_id=admin.org_id,
             ))
     session.commit()
     return {"ok": True, "count": len(services)}
