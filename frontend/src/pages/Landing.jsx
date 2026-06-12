@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { motion, useScroll, useTransform, useMotionValueEvent, useInView, useReducedMotion } from 'framer-motion';
+import { motion, useScroll, useSpring, useTransform, useMotionValueEvent, useInView, useReducedMotion } from 'framer-motion';
 import {
   ArrowRight, Minus, Plus,
 } from 'lucide-react';
@@ -12,6 +12,15 @@ const INK  = '#F5F0E8';
 
 /* clamp(0..1) helper for the choreography maths below */
 const M = (p, a, b) => Math.max(0, Math.min(1, (p - a) / (b - a)));
+
+/* ─── Cinematic camera ──────────────────────────────────────────────────
+   Spring-damped scroll progress. The camera eases toward the scroll
+   position instead of tracking every wheel detent — this is the single
+   biggest difference between "scrubbed" and "filmed".                    */
+function useCamera(ref) {
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
+  return useSpring(scrollYProgress, { stiffness: 110, damping: 26, mass: 0.4, restDelta: 0.0001 });
+}
 
 /* ─── Mobile breakpoint ─────────────────────────────────────────────────── */
 function useIsMobile() {
@@ -60,18 +69,84 @@ function Counter({ end, suffix = '' }) {
   return <span ref={ref}>{val}{suffix}</span>;
 }
 
+/* ─── Ambient ember field ───────────────────────────────────────────────
+   Fixed full-viewport canvas behind the content: 44 slow-drifting warm
+   particles (40% gold), twinkling via phase-offset sine. Renders a single
+   static frame under prefers-reduced-motion.                             */
+function AmbientEmbers() {
+  const canvasRef = useRef(null);
+  const reduced   = useReducedMotion();
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    let w = 0, h = 1, raf = 0, t = 0;
+    const embers = Array.from({ length: 44 }, () => ({
+      x: Math.random(), y: Math.random(),
+      r: 0.6 + Math.random() * 1.7,
+      v: 0.08 + Math.random() * 0.22,
+      ph: Math.random() * 6.28,
+      gold: Math.random() < 0.4,
+    }));
+    const size = () => {
+      w = window.innerWidth; h = window.innerHeight;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    const draw = (still) => {
+      ctx.clearRect(0, 0, w, h);
+      embers.forEach(e => {
+        if (!still) {
+          e.y -= e.v / h;
+          if (e.y < -0.01) { e.y = 1.01; e.x = Math.random(); }
+        }
+        const x = e.x * w + Math.sin(t * 0.5 + e.ph) * 14;
+        const a = still ? 0.22 : 0.1 + 0.16 * (0.5 + 0.5 * Math.sin(t * 1.2 + e.ph));
+        ctx.fillStyle = e.gold ? `rgba(245,158,11,${a * 1.25})` : `rgba(245,240,232,${a})`;
+        ctx.beginPath();
+        ctx.arc(x, e.y * h, e.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    };
+    size();
+    window.addEventListener('resize', size);
+    if (reduced) {
+      draw(true);
+    } else {
+      const loop = () => { t += 0.016; draw(false); raf = requestAnimationFrame(loop); };
+      raf = requestAnimationFrame(loop);
+    }
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', size); };
+  }, [reduced]);
+  return (
+    <canvas ref={canvasRef} aria-hidden style={{
+      position: 'fixed', inset: 0, width: '100%', height: '100%',
+      zIndex: -1, pointerEvents: 'none',
+    }}/>
+  );
+}
+
 /* ─── Pinned scene wrapper ──────────────────────────────────────────────
    Tall scroll runway with a sticky 100vh viewport — the "camera" is the
    scroll progress measured across the runway.                            */
 function PinnedScene({ vh, sceneRef, children }) {
+  /* Exit handoff: as the runway runs out the whole frame eases to black,
+     so un-pinning never hard-cuts — the next scene fades up from the same
+     void. Uses RAW progress (not the spring) so it stays locked to the
+     actual un-pin point.                                                  */
+  const { scrollYProgress } = useScroll({ target: sceneRef, offset: ['start start', 'end end'] });
+  const exitOpacity = useTransform(scrollYProgress, [0.93, 1], [1, 0], { clamp: true });
+  const exitScale   = useTransform(scrollYProgress, [0.93, 1], [1, 0.985], { clamp: true });
   return (
     <section ref={sceneRef} style={{ height: vh, position: 'relative' }}>
-      <div style={{
+      <motion.div style={{
         position: 'sticky', top: 0, height: '100vh', overflow: 'hidden',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
+        opacity: exitOpacity, scale: exitScale, willChange: 'opacity, transform',
       }}>
         {children}
-      </div>
+      </motion.div>
     </section>
   );
 }
@@ -90,16 +165,16 @@ function SceneFallback({ children, minHeight = '70vh' }) {
 ════════════════════════════════════════════════════════════════════════ */
 function HeroScene() {
   const ref = useRef(null);
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ['start start', 'end end'] });
+  const p = useCamera(ref);
 
   const line1Opacity = useTransform(p, [0.22, 0.42], [1, 0], { clamp: true });
   const line1Scale   = useTransform(p, [0, 1], [1, 2.9]);
-  const line1BlurPx  = useTransform(p, [0.2, 0.45], [0, 16], { clamp: true });
+  const line1BlurPx  = useTransform(p, [0.2, 0.45], [0, 10], { clamp: true });
   const line1Filter  = useTransform(line1BlurPx, v => `blur(${v}px)`);
 
   const line2Opacity = useTransform(p, [0.4, 0.58], [0, 1], { clamp: true });
-  const line2Scale   = useTransform(p, [0.38, 0.66], [0.5, 1], { clamp: true });
-  const line2BlurPx  = useTransform(p, [0.45, 0.62], [10, 0], { clamp: true });
+  const line2Scale   = useTransform(p, [0.38, 0.66, 1], [0.5, 1, 1.06], { clamp: true });
+  const line2BlurPx  = useTransform(p, [0.45, 0.62], [6, 0], { clamp: true });
   const line2Filter  = useTransform(line2BlurPx, v => `blur(${v}px)`);
 
   const kickerOpacity = useTransform(p, [0.7, 0.85], [0, 1], { clamp: true });
@@ -113,7 +188,7 @@ function HeroScene() {
   const bgOpacity = useTransform(p, [0.35, 0.62], [0.55, 0], { clamp: true });
 
   return (
-    <PinnedScene vh="320vh" sceneRef={ref}>
+    <PinnedScene vh="280vh" sceneRef={ref}>
       {/* Background image */}
       <motion.div style={{
         position: 'absolute', inset: '-6%',
@@ -195,7 +270,7 @@ function MobileHero() {
 ════════════════════════════════════════════════════════════════════════ */
 function StatScene() {
   const ref = useRef(null);
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ['start start', 'end end'] });
+  const p = useCamera(ref);
   const [count, setCount] = useState(0);
   useMotionValueEvent(p, 'change', v => setCount(Math.round(M(v, 0.08, 0.55) * 144)));
 
@@ -208,7 +283,7 @@ function StatScene() {
   const captionOpacity = useTransform(p, [0.45, 0.65], [0, 1], { clamp: true });
 
   return (
-    <PinnedScene vh="260vh" sceneRef={ref}>
+    <PinnedScene vh="230vh" sceneRef={ref}>
       <motion.div aria-hidden style={{
         position: 'absolute', inset: '-160px 0',
         backgroundImage: 'radial-gradient(circle, rgba(245,240,232,0.18) 1.5px, transparent 1.5px)',
@@ -262,7 +337,7 @@ const BREACH_EVENTS = [
 
 function BreachScene() {
   const ref = useRef(null);
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ['start start', 'end end'] });
+  const p = useCamera(ref);
 
   const stageScale = useTransform(p, [0, 1], [1, 1.06]);
 
@@ -278,7 +353,7 @@ function BreachScene() {
   const ev3Opacity = useTransform(p, [0.58, 0.67], [0, 1], { clamp: true });
   const ev3Y       = useTransform(ev3Opacity, o => (1 - o) * 24);
 
-  const finalOpacity = useTransform(p, [0.82, 0.93], [0, 1], { clamp: true });
+  const finalOpacity = useTransform(p, [0.70, 0.82], [0, 1], { clamp: true });
   const finalY       = useTransform(finalOpacity, o => (1 - o) * 24);
 
   const eventMotion = [
@@ -289,7 +364,7 @@ function BreachScene() {
   ];
 
   return (
-    <PinnedScene vh="340vh" sceneRef={ref}>
+    <PinnedScene vh="300vh" sceneRef={ref}>
       <motion.div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30, scale: stageScale, padding: '0 clamp(20px,5vw,60px)', width: '100%', willChange: 'transform' }}>
         <motion.h2 className="cd" style={{
           fontSize: 'clamp(36px,4.5vw,64px)', fontWeight: 600, color: INK, margin: 0, textAlign: 'center', letterSpacing: '-0.02em',
@@ -403,7 +478,7 @@ function drawGraph(ctx, w, h, p) {
 function GraphScene() {
   const ref       = useRef(null);
   const canvasRef = useRef(null);
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ['start start', 'end end'] });
+  const p = useCamera(ref);
 
   const stageOpacity = useTransform(p, [0, 0.18], [0, 1], { clamp: true });
   const stageScale   = useTransform(p, [0.05, 0.78], [0.7, 1.25], { clamp: true });
@@ -425,7 +500,7 @@ function GraphScene() {
   }, [p]);
 
   return (
-    <PinnedScene vh="300vh" sceneRef={ref}>
+    <PinnedScene vh="260vh" sceneRef={ref}>
       <motion.div style={{ position: 'absolute', top: 'clamp(60px,8vh,100px)', left: 0, right: 0, textAlign: 'center', opacity: headOpacity, padding: '0 24px' }}>
         <h2 className="cd" style={{ fontSize: 'clamp(34px,4.2vw,58px)', fontWeight: 600, color: INK, margin: 0, letterSpacing: '-0.02em' }}>
           The graph sees what logs can't.
@@ -510,7 +585,7 @@ function VerdictCard({ conf, confBarWidth, motionProps = {} }) {
 
 function VerdictScene() {
   const ref = useRef(null);
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ['start start', 'end end'] });
+  const p = useCamera(ref);
 
   const cardOpacity = useTransform(p, [0, 0.16], [0, 1], { clamp: true });
   const cardY       = useTransform(cardOpacity, o => (1 - o) * 50);
@@ -528,7 +603,7 @@ function VerdictScene() {
   useMotionValueEvent(p, 'change', v => setConf(Math.round(M(v, 0.55, 0.82) * 94)));
 
   return (
-    <PinnedScene vh="300vh" sceneRef={ref}>
+    <PinnedScene vh="260vh" sceneRef={ref}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30, padding: '0 clamp(20px,5vw,60px)', width: '100%' }}>
         <h2 className="cd" style={{ fontSize: 'clamp(34px,4.2vw,58px)', fontWeight: 600, color: INK, margin: 0, textAlign: 'center', letterSpacing: '-0.02em' }}>
           Every verdict shows its work.
@@ -592,7 +667,7 @@ function LedgerLine({ style = {} }) {
 
 function ApproveScene() {
   const ref = useRef(null);
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ['start start', 'end end'] });
+  const p = useCamera(ref);
 
   const cardOpacity = useTransform(p, [0, 0.25], [0, 1], { clamp: true });
   const cardScale   = useTransform(p, [0.05, 0.4], [0.88, 1], { clamp: true });
@@ -601,7 +676,7 @@ function ApproveScene() {
   const ledgerY       = useTransform(ledgerOpacity, o => (1 - o) * 14);
 
   return (
-    <PinnedScene vh="260vh" sceneRef={ref}>
+    <PinnedScene vh="230vh" sceneRef={ref}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 36, padding: '0 clamp(20px,5vw,60px)', width: '100%' }}>
         <h2 className="cd" style={{ fontSize: 'clamp(38px,5vw,72px)', fontWeight: 600, color: INK, margin: 0, textAlign: 'center', letterSpacing: '-0.02em', lineHeight: 1.05 }}>
           AI suggests.<br/><span style={{ color: GOLD }}>Humans confirm.</span>
@@ -703,7 +778,7 @@ function BridgeCaption({ style = {} }) {
 
 function BridgeScene() {
   const ref = useRef(null);
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ['start start', 'end end'] });
+  const p = useCamera(ref);
 
   const headOpacity = useTransform(p, v => M(v, 0, 0.15) * (1 - M(v, 0.45, 0.65)));
 
@@ -715,7 +790,7 @@ function BridgeScene() {
   const captionY       = useTransform(captionOpacity, o => (1 - o) * 16);
 
   return (
-    <PinnedScene vh="300vh" sceneRef={ref}>
+    <PinnedScene vh="260vh" sceneRef={ref}>
       <motion.div style={{ position: 'absolute', zIndex: 2, textAlign: 'center', opacity: headOpacity, padding: '0 24px' }}>
         <h2 className="cd" style={{ fontSize: 'clamp(40px,6vw,96px)', fontWeight: 600, color: INK, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.02 }}>
           One identity.<br/>Two worlds.
@@ -887,7 +962,8 @@ function PlatformGrid() {
 function MissionBreak() {
   const ref = useRef(null);
   const { scrollYProgress: progress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  const parallaxY = useTransform(progress, v => (v - 0.5) * 110);
+  const smooth    = useSpring(progress, { stiffness: 110, damping: 26, mass: 0.4 });
+  const parallaxY = useTransform(smooth, v => (v - 0.5) * 110);
 
   return (
     <section id="mission" ref={ref} style={{ position: 'relative', height: '88vh', overflow: 'hidden' }}>
@@ -1021,7 +1097,8 @@ const BUILDER_LINKS = [
 function BuilderSection() {
   const ref = useRef(null);
   const { scrollYProgress: progress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  const parallaxY = useTransform(progress, v => (v - 0.5) * 110);
+  const smooth    = useSpring(progress, { stiffness: 110, damping: 26, mass: 0.4 });
+  const parallaxY = useTransform(smooth, v => (v - 0.5) * 110);
 
   return (
     <section id="builder" ref={ref} style={{ position: 'relative', overflow: 'hidden', padding: 'clamp(72px,10vw,120px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(245,240,232,0.05)' }}>
@@ -1176,7 +1253,8 @@ export default function Landing() {
   }, [reduced]);
 
   return (
-    <div style={{ background: BG, color: '#F5F0E8', overflowX: 'hidden', minHeight: '100vh' }}>
+    <div style={{ background: BG, color: '#F5F0E8', overflowX: 'hidden', minHeight: '100vh', position: 'relative', isolation: 'isolate' }}>
+      <AmbientEmbers/>
       <style>{`
         .cd { font-family: 'Clash Display', sans-serif; }
         .cg { font-family: 'Cabinet Grotesk', sans-serif; }
