@@ -399,12 +399,13 @@ export default function Mission() {
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(100deg, rgba(5,4,5,0.72) 0%, rgba(5,4,5,0.25) 55%, transparent 100%)' }}/>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 50% 40% at 8% 92%, rgba(245,158,11,0.14) 0%, transparent 65%)' }}/>
 
-        <motion.div style={{ opacity: b1Opacity, scale: b1Scale, filter: b1Filter, willChange: 'transform, opacity, filter' }}>
-          <div style={{
-            position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
-            justifyContent: 'flex-end', zIndex: 10,
-            padding: '0 clamp(24px,5vw,72px) clamp(56px,8vh,96px)',
-          }}>
+        <motion.div style={{
+          position: 'absolute', inset: 0, zIndex: 10,
+          display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+          opacity: b1Opacity, scale: b1Scale, filter: b1Filter,
+          willChange: 'transform, opacity, filter',
+          padding: '0 clamp(24px,5vw,72px) clamp(56px,8vh,96px)',
+        }}>
             <motion.p
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
@@ -436,7 +437,6 @@ export default function Mission() {
             >
               AegisTrace was built because the identity threat surface changed faster than the tools designed to monitor it — and because working inside a SOC made the gaps impossible to ignore.
             </motion.p>
-          </div>
         </motion.div>
 
         {/* Beat 2 — zooms in from depth as beat 1 passes through */}
