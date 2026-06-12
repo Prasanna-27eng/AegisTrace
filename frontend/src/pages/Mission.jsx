@@ -6,6 +6,7 @@ import {
   Zap, Eye, Lock, GitMerge, Layers, ShieldCheck, User,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useSceneCamera, PinnedScene, useStoryScroll, ScrollProgressBar } from '../components/SceneController';
 
 /* ─── Tokens ─────────────────────────────────────────────────────────────── */
 const E    = [0.16, 1, 0.3, 1];
@@ -154,20 +155,8 @@ function PrincipleCard({ icon: Icon, title, body, delay }) {
 /* ════════════════════════════════════════════════════════════════════════════
    MISSION
 ════════════════════════════════════════════════════════════════════════════ */
-/* ─── Scroll progress hairline — gold thread across the top ───────────── */
-function ScrollProgress() {
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, { stiffness: 170, damping: 30, mass: 0.3 });
-  return (
-    <motion.div aria-hidden style={{
-      position: 'fixed', top: 0, left: 0, right: 0, height: 2,
-      background: GOLD, transformOrigin: '0 50%', scaleX, zIndex: 300,
-    }}/>
-  );
-}
-
 /* ─── Pinned 83% stat scene — scroll storytelling, Landing scene pattern ── */
-function Stat83Scene() {
+function Stat83Scene({ sceneIndex = 0 }) {
   const ref = useRef(null);
   const reduced = useReducedMotion();
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 768);
@@ -177,7 +166,7 @@ function Stat83Scene() {
     return () => window.removeEventListener('resize', fn);
   }, []);
 
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ['start start', 'end end'] });
+  const p = useSceneCamera(ref);
   const [count, setCount] = useState(0);
   useMotionValueEvent(p, 'change', v => setCount(Math.round(Math.max(0, Math.min(1, (v - 0.08) / 0.45)) * 83)));
 
@@ -202,47 +191,43 @@ function Stat83Scene() {
   }
 
   return (
-    <section ref={ref} style={{ height: '260vh', position: 'relative' }}>
-      <motion.div style={{
-        position: 'sticky', top: 0, height: '100vh', overflow: 'hidden',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <motion.div aria-hidden style={{
-          position: 'absolute', inset: '-160px 0',
-          backgroundImage: 'radial-gradient(circle, rgba(245,240,232,0.18) 1.5px, transparent 1.5px)',
-          backgroundSize: '30px 30px',
-          opacity: dotsOpacity, y: dotsY, willChange: 'transform, opacity',
-        }}/>
-        <motion.div style={{ position: 'relative', zIndex: 2, textAlign: 'center', padding: '0 24px', opacity: statOpacity, y: statY, willChange: 'transform, opacity' }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 8 }}>
-            <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 'clamp(110px,17vw,250px)', fontWeight: 700, color: GOLD, lineHeight: 1 }}>{count}</span>
-            <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 'clamp(50px,7vw,110px)', fontWeight: 700, color: 'rgba(245,240,232,0.4)', lineHeight: 1 }}>%</span>
-          </div>
-          <motion.p className="cg" style={{ fontSize: 20, fontWeight: 500, color: 'rgba(245,240,232,0.6)', maxWidth: 520, margin: '24px auto 0', opacity: captionOpacity }}>
-            of breaches involve <strong style={{ color: '#F5F0E8' }}>stolen credentials or identity abuse.</strong> The perimeter is whoever you trust.
-          </motion.p>
-        </motion.div>
+    <PinnedScene vh="260vh" sceneRef={ref} index={sceneIndex}>
+      <motion.div aria-hidden style={{
+        position: 'absolute', inset: '-160px 0',
+        backgroundImage: 'radial-gradient(circle, rgba(245,240,232,0.18) 1.5px, transparent 1.5px)',
+        backgroundSize: '30px 30px',
+        opacity: dotsOpacity, y: dotsY, willChange: 'transform, opacity',
+      }}/>
+      <motion.div style={{ position: 'relative', zIndex: 2, textAlign: 'center', padding: '0 24px', opacity: statOpacity, y: statY, willChange: 'transform, opacity' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 8 }}>
+          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 'clamp(110px,17vw,250px)', fontWeight: 700, color: GOLD, lineHeight: 1 }}>{count}</span>
+          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 'clamp(50px,7vw,110px)', fontWeight: 700, color: 'rgba(245,240,232,0.4)', lineHeight: 1 }}>%</span>
+        </div>
+        <motion.p className="cg" style={{ fontSize: 20, fontWeight: 500, color: 'rgba(245,240,232,0.6)', maxWidth: 520, margin: '24px auto 0', opacity: captionOpacity }}>
+          of breaches involve <strong style={{ color: '#F5F0E8' }}>stolen credentials or identity abuse.</strong> The perimeter is whoever you trust.
+        </motion.p>
       </motion.div>
-    </section>
+    </PinnedScene>
   );
 }
 
 export default function Mission() {
+  useStoryScroll();
   const heroRef = useRef(null);
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end end'] });
-  const heroY     = useTransform(scrollYProgress, [0, 1], ['0%', '14%']);
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1.08, 1.0]);
-  const overlayY  = useTransform(scrollYProgress, [0, 1], ['0%', '8%']);
+  const p = useSceneCamera(heroRef);
+  const heroY     = useTransform(p, [0, 1], ['0%', '14%']);
+  const heroScale = useTransform(p, [0, 1], [1.08, 1.0]);
+  const overlayY  = useTransform(p, [0, 1], ['0%', '8%']);
 
   /* Pinned two-beat dolly (Landing scene 1 pattern): beat 1 holds, then the
      camera passes through it; beat 2 zooms in from depth; kicker lands last. */
-  const b1Opacity  = useTransform(scrollYProgress, [0.28, 0.48], [1, 0], { clamp: true });
-  const b1Scale    = useTransform(scrollYProgress, [0, 1], [1, 2.3]);
-  const b1BlurPx   = useTransform(scrollYProgress, [0.26, 0.48], [0, 12], { clamp: true });
+  const b1Opacity  = useTransform(p, [0.28, 0.48], [1, 0], { clamp: true });
+  const b1Scale    = useTransform(p, [0, 1], [1, 2.3]);
+  const b1BlurPx   = useTransform(p, [0.26, 0.48], [0, 12], { clamp: true });
   const b1Filter   = useTransform(b1BlurPx, v => 'blur(' + v + 'px)');
-  const b2Opacity  = useTransform(scrollYProgress, [0.46, 0.64], [0, 1], { clamp: true });
-  const b2Scale    = useTransform(scrollYProgress, [0.44, 0.72], [0.55, 1], { clamp: true });
-  const subOpacity = useTransform(scrollYProgress, [0.72, 0.86], [0, 1], { clamp: true });
+  const b2Opacity  = useTransform(p, [0.46, 0.64], [0, 1], { clamp: true });
+  const b2Scale    = useTransform(p, [0.44, 0.72], [0.55, 1], { clamp: true });
+  const subOpacity = useTransform(p, [0.72, 0.86], [0, 1], { clamp: true });
 
   const V1 = [
     { text: 'ITDR — Identity Threat Detection (4 detectors)',          why: 'Credential stuffing, impossible travel, privilege escalation, token theft — all built in.' },
@@ -296,7 +281,7 @@ export default function Mission() {
   return (
     <div style={{ background: BG, color: '#F5F0E8', overflowX: 'hidden', position: 'relative', isolation: 'isolate' }}>
       <AmbientEmbers/>
-      <ScrollProgress/>
+      <ScrollProgressBar/>
       <style>{`
         .cd { font-family: 'Clash Display', sans-serif; }
         .cg { font-family: 'Cabinet Grotesk', sans-serif; }
@@ -387,8 +372,7 @@ export default function Mission() {
       </nav>
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section ref={heroRef} style={{ position: 'relative', height: '280vh' }}>
-        <div style={{ position: 'sticky', top: 0, height: '100vh', minHeight: 600, overflow: 'hidden' }}>
+      <PinnedScene vh="280vh" sceneRef={heroRef} index={0}>
         {/* Background — layer 1 (deepest, moves slowest) */}
         <motion.div
           aria-hidden
@@ -478,11 +462,10 @@ export default function Mission() {
           </p>
           <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, letterSpacing: '0.3em', color: 'rgba(245,240,232,0.35)' }}>SCROLL</span>
         </motion.div>
-        </div>
-      </section>
+      </PinnedScene>
 
       {/* ── ORIGIN STORY ─────────────────────────────────────────────────── */}
-      <Stat83Scene/>
+      <Stat83Scene sceneIndex={1}/>
 
       <section style={{ padding: 'clamp(72px,10vw,120px) clamp(24px,5vw,72px)', background: '#060507' }}>
         <div style={{ maxWidth: 1240, margin: '0 auto' }}>

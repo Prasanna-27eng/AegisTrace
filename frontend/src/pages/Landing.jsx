@@ -4,6 +4,12 @@ import {
   ArrowRight, Minus, Plus,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useSceneCamera, PinnedScene, useStoryScroll, ScrollProgressBar } from '../components/SceneController';
+
+/* Simple fallback wrapper for mobile/reduced-motion */
+function FallbackWrapper({ children }) {
+  return <>{children}</>;
+}
 
 const E    = [0.16, 1, 0.3, 1];
 const GOLD = '#F59E0B';
@@ -12,17 +18,6 @@ const INK  = '#F5F0E8';
 
 /* clamp(0..1) helper for the choreography maths below */
 const M = (p, a, b) => Math.max(0, Math.min(1, (p - a) / (b - a)));
-
-/* ─── Cinematic camera ──────────────────────────────────────────────────
-   Spring-damped scroll progress. The camera eases toward the scroll
-   position instead of tracking every wheel detent — this is the single
-   biggest difference between "scrubbed" and "filmed".                    */
-function useCamera(ref) {
-  /* Scroll-locked camera — 1:1 with the scrollbar, exactly like the design
-     prototype: stop scrolling and the frame freezes instantly. */
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
-  return scrollYProgress;
-}
 
 /* ─── Mobile breakpoint ─────────────────────────────────────────────────── */
 function useIsMobile() {
@@ -129,25 +124,6 @@ function AmbientEmbers() {
   );
 }
 
-/* ─── Pinned scene wrapper ──────────────────────────────────────────────
-   Tall scroll runway with a sticky 100vh viewport — the "camera" is the
-   scroll progress measured across the runway.                            */
-function PinnedScene({ vh, sceneRef, children }) {
-  /* Prototype behavior: the frame holds its final state while it scrolls
-     away — no exit fade (fading creates blank black stretches between
-     scenes), no spring (the camera must freeze the instant you stop). */
-  return (
-    <section ref={sceneRef} style={{ height: vh, position: 'relative' }}>
-      <div style={{
-        position: 'sticky', top: 0, height: '100vh', overflow: 'hidden',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        {children}
-      </div>
-    </section>
-  );
-}
-
 /* Simple stacked fallback for mobile / reduced-motion — fades up once */
 function SceneFallback({ children, minHeight = '70vh' }) {
   return (
@@ -160,9 +136,9 @@ function SceneFallback({ children, minHeight = '70vh' }) {
 /* ════════════════════════════════════════════════════════════════════════
    SCENE 1 — Hero dolly
 ════════════════════════════════════════════════════════════════════════ */
-function HeroScene() {
+function HeroScene({ sceneIndex = 0 }) {
   const ref = useRef(null);
-  const p = useCamera(ref);
+  const p = useSceneCamera(ref);
 
   const line1Opacity = useTransform(p, [0.22, 0.42], [1, 0], { clamp: true });
   const line1Scale   = useTransform(p, [0, 1], [1, 2.9]);
@@ -185,7 +161,7 @@ function HeroScene() {
   const bgOpacity = useTransform(p, [0.35, 0.62], [0.55, 0], { clamp: true });
 
   return (
-    <PinnedScene vh="320vh" sceneRef={ref}>
+    <PinnedScene vh="320vh" sceneRef={ref} index={sceneIndex}>
       {/* Background image */}
       <motion.div style={{
         position: 'absolute', inset: '-6%',
@@ -265,9 +241,9 @@ function MobileHero() {
 /* ════════════════════════════════════════════════════════════════════════
    SCENE 2 — 144:1 stat
 ════════════════════════════════════════════════════════════════════════ */
-function StatScene() {
+function StatScene({ sceneIndex = 0 }) {
   const ref = useRef(null);
-  const p = useCamera(ref);
+  const p = useSceneCamera(ref);
   const [count, setCount] = useState(0);
   useMotionValueEvent(p, 'change', v => setCount(Math.round(M(v, 0.08, 0.55) * 144)));
 
@@ -280,7 +256,7 @@ function StatScene() {
   const captionOpacity = useTransform(p, [0.45, 0.65], [0, 1], { clamp: true });
 
   return (
-    <PinnedScene vh="260vh" sceneRef={ref}>
+    <PinnedScene vh="260vh" sceneRef={ref} index={sceneIndex}>
       <motion.div aria-hidden style={{
         position: 'absolute', inset: '-160px 0',
         backgroundImage: 'radial-gradient(circle, rgba(245,240,232,0.18) 1.5px, transparent 1.5px)',
@@ -332,9 +308,9 @@ const BREACH_EVENTS = [
   { time: '08:11:09', text: 'role elevated to domain-admin · no approval ticket',          tag: 'PRIV ESCALATION',     tagColor: '#FF667C' },
 ];
 
-function BreachScene() {
+function BreachScene({ sceneIndex = 0 }) {
   const ref = useRef(null);
-  const p = useCamera(ref);
+  const p = useSceneCamera(ref);
 
   const stageScale = useTransform(p, [0, 1], [1, 1.06]);
 
@@ -361,7 +337,7 @@ function BreachScene() {
   ];
 
   return (
-    <PinnedScene vh="340vh" sceneRef={ref}>
+    <PinnedScene vh="340vh" sceneRef={ref} index={sceneIndex}>
       <motion.div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30, scale: stageScale, padding: '0 clamp(20px,5vw,60px)', width: '100%', willChange: 'transform' }}>
         <motion.h2 className="cd" style={{
           fontSize: 'clamp(36px,4.5vw,64px)', fontWeight: 600, color: INK, margin: 0, textAlign: 'center', letterSpacing: '-0.02em',
@@ -472,10 +448,10 @@ function drawGraph(ctx, w, h, p) {
   });
 }
 
-function GraphScene() {
+function GraphScene({ sceneIndex = 0 }) {
   const ref       = useRef(null);
   const canvasRef = useRef(null);
-  const p = useCamera(ref);
+  const p = useSceneCamera(ref);
 
   const stageOpacity = useTransform(p, [0, 0.18], [0, 1], { clamp: true });
   const stageScale   = useTransform(p, [0.05, 0.78], [0.7, 1.25], { clamp: true });
@@ -497,7 +473,7 @@ function GraphScene() {
   }, [p]);
 
   return (
-    <PinnedScene vh="300vh" sceneRef={ref}>
+    <PinnedScene vh="300vh" sceneRef={ref} index={sceneIndex}>
       <motion.div style={{ position: 'absolute', top: 'clamp(60px,8vh,100px)', left: 0, right: 0, textAlign: 'center', opacity: headOpacity, padding: '0 24px' }}>
         <h2 className="cd" style={{ fontSize: 'clamp(34px,4.2vw,58px)', fontWeight: 600, color: INK, margin: 0, letterSpacing: '-0.02em' }}>
           The graph sees what logs can't.
@@ -580,9 +556,9 @@ function VerdictCard({ conf, confBarWidth, motionProps = {} }) {
   );
 }
 
-function VerdictScene() {
+function VerdictScene({ sceneIndex = 0 }) {
   const ref = useRef(null);
-  const p = useCamera(ref);
+  const p = useSceneCamera(ref);
 
   const cardOpacity = useTransform(p, [0, 0.16], [0, 1], { clamp: true });
   const cardY       = useTransform(cardOpacity, o => (1 - o) * 50);
@@ -600,7 +576,7 @@ function VerdictScene() {
   useMotionValueEvent(p, 'change', v => setConf(Math.round(M(v, 0.55, 0.82) * 94)));
 
   return (
-    <PinnedScene vh="300vh" sceneRef={ref}>
+    <PinnedScene vh="300vh" sceneRef={ref} index={sceneIndex}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30, padding: '0 clamp(20px,5vw,60px)', width: '100%' }}>
         <h2 className="cd" style={{ fontSize: 'clamp(34px,4.2vw,58px)', fontWeight: 600, color: INK, margin: 0, textAlign: 'center', letterSpacing: '-0.02em' }}>
           Every verdict shows its work.
@@ -662,9 +638,9 @@ function LedgerLine({ style = {} }) {
   );
 }
 
-function ApproveScene() {
+function ApproveScene({ sceneIndex = 0 }) {
   const ref = useRef(null);
-  const p = useCamera(ref);
+  const p = useSceneCamera(ref);
 
   const cardOpacity = useTransform(p, [0, 0.25], [0, 1], { clamp: true });
   const cardScale   = useTransform(p, [0.05, 0.4], [0.88, 1], { clamp: true });
@@ -673,7 +649,7 @@ function ApproveScene() {
   const ledgerY       = useTransform(ledgerOpacity, o => (1 - o) * 14);
 
   return (
-    <PinnedScene vh="260vh" sceneRef={ref}>
+    <PinnedScene vh="260vh" sceneRef={ref} index={sceneIndex}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 36, padding: '0 clamp(20px,5vw,60px)', width: '100%' }}>
         <h2 className="cd" style={{ fontSize: 'clamp(38px,5vw,72px)', fontWeight: 600, color: INK, margin: 0, textAlign: 'center', letterSpacing: '-0.02em', lineHeight: 1.05 }}>
           AI suggests.<br/><span style={{ color: GOLD }}>Humans confirm.</span>
@@ -773,9 +749,9 @@ function BridgeCaption({ style = {} }) {
   );
 }
 
-function BridgeScene() {
+function BridgeScene({ sceneIndex = 0 }) {
   const ref = useRef(null);
-  const p = useCamera(ref);
+  const p = useSceneCamera(ref);
 
   const headOpacity = useTransform(p, v => M(v, 0, 0.15) * (1 - M(v, 0.45, 0.65)));
 
@@ -787,7 +763,7 @@ function BridgeScene() {
   const captionY       = useTransform(captionOpacity, o => (1 - o) * 16);
 
   return (
-    <PinnedScene vh="300vh" sceneRef={ref}>
+    <PinnedScene vh="300vh" sceneRef={ref} index={sceneIndex}>
       <motion.div style={{ position: 'absolute', zIndex: 2, textAlign: 'center', opacity: headOpacity, padding: '0 24px' }}>
         <h2 className="cd" style={{ fontSize: 'clamp(40px,6vw,96px)', fontWeight: 600, color: INK, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.02 }}>
           One identity.<br/>Two worlds.
@@ -822,16 +798,6 @@ function MobileBridge() {
    SPOTLIGHTS — marquee ticker + living product demos
 ════════════════════════════════════════════════════════════════════════ */
 /* ─── Scroll progress hairline — gold thread across the top ───────────── */
-function ScrollProgress() {
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, { stiffness: 170, damping: 30, mass: 0.3 });
-  return (
-    <motion.div aria-hidden style={{
-      position: 'fixed', top: 0, left: 0, right: 0, height: 2,
-      background: GOLD, transformOrigin: '0 50%', scaleX, zIndex: 300,
-    }}/>
-  );
-}
 
 const TICKER_ITEMS = ['IDENTITY-FIRST DETECTION', 'EXPLAINABLE AI', 'HUMAN-IN-THE-LOOP', 'SOAR PLAYBOOKS', 'HONEY TOKENS', 'MITRE ATT&CK', 'OPEN SOURCE'];
 
@@ -1400,6 +1366,7 @@ function FooterSection() {
    LANDING
 ════════════════════════════════════════════════════════════════════════════ */
 export default function Landing() {
+  useStoryScroll();
   const [scrolled, setScrolled] = useState(false);
   const isMobile = useIsMobile();
   const reduced  = useReducedMotion();
@@ -1423,7 +1390,7 @@ export default function Landing() {
   return (
     <div style={{ background: BG, color: '#F5F0E8', overflowX: 'hidden', minHeight: '100vh', position: 'relative', isolation: 'isolate' }}>
       <AmbientEmbers/>
-      <ScrollProgress/>
+      <ScrollProgressBar/>
       <style>{`
         .cd { font-family: 'Clash Display', sans-serif; }
         .cg { font-family: 'Cabinet Grotesk', sans-serif; }
@@ -1508,14 +1475,28 @@ export default function Landing() {
         </div>
       </motion.nav>
 
-      {/* ── 7 PINNED SCENES ── */}
-      {useFallback ? <MobileHero/>    : <HeroScene/>}
-      {useFallback ? <MobileStat/>    : <StatScene/>}
-      {useFallback ? <MobileBreach/>  : <BreachScene/>}
-      {useFallback ? <MobileGraph/>   : <GraphScene/>}
-      {useFallback ? <MobileVerdict/> : <VerdictScene/>}
-      {useFallback ? <MobileApprove/> : <ApproveScene/>}
-      {useFallback ? <MobileBridge/>  : <BridgeScene/>}
+      {/* ── 7 PINNED SCENES with gapless storytelling ── */}
+      {useFallback ? (
+        <>
+          <MobileHero/>
+          <MobileStat/>
+          <MobileBreach/>
+          <MobileGraph/>
+          <MobileVerdict/>
+          <MobileApprove/>
+          <MobileBridge/>
+        </>
+      ) : (
+        <>
+          <HeroScene     sceneIndex={0}/>
+          <StatScene     sceneIndex={1}/>
+          <BreachScene   sceneIndex={2}/>
+          <GraphScene    sceneIndex={3}/>
+          <VerdictScene  sceneIndex={4}/>
+          <ApproveScene  sceneIndex={5}/>
+          <BridgeScene   sceneIndex={6}/>
+        </>
+      )}
 
       {/* ── PLATFORM, MISSION, BUILDER, CTA, FOOTER ── */}
       <Spotlights/>

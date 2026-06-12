@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useSpring, useTransform, useInView, useReducedMotion } from 'framer-motion';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useSceneCamera, PinnedScene, useStoryScroll, ScrollProgressBar } from '../components/SceneController';
 
 const E    = [0.16, 1, 0.3, 1];
 const GOLD = '#F59E0B';
@@ -110,32 +111,12 @@ function useIsMobile() {
   return isMobile;
 }
 
-/* ─── Cinematic camera (same spring as Landing scenes) ─────────────────── */
-function useCamera(ref) {
-  /* Scroll-locked camera — 1:1 with the scrollbar, like the design
-     prototype: stop scrolling and the frame freezes instantly. */
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
-  return scrollYProgress;
-}
-
 /* ════════════════════════════════════════════════════════════════════════
    HERO — pinned dolly through the monoliths
-════════════════════════════════════════════════════════════════════════ */
-/* ─── Scroll progress hairline — gold thread across the top ───────────── */
-function ScrollProgress() {
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, { stiffness: 170, damping: 30, mass: 0.3 });
-  return (
-    <motion.div aria-hidden style={{
-      position: 'fixed', top: 0, left: 0, right: 0, height: 2,
-      background: GOLD, transformOrigin: '0 50%', scaleX, zIndex: 300,
-    }}/>
-  );
-}
-
-function HeroScene() {
+╦ ════════════════════════════════════════════════════════════════════════ */
+function HeroScene({ sceneIndex = 0 }) {
   const ref = useRef(null);
-  const p = useCamera(ref);
+  const p = useSceneCamera(ref);
 
   const bgScale = useTransform(p, [0, 1], [1.12, 1.0]);
   const bgY     = useTransform(p, v => v * 60);
@@ -154,62 +135,57 @@ function HeroScene() {
   const kickerY       = useTransform(kickerOpacity, o => (1 - o) * 20);
 
   return (
-    <section ref={ref} style={{ height: '300vh', position: 'relative' }}>
-      <motion.div style={{
-        position: 'sticky', top: 0, height: '100vh', overflow: 'hidden',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <motion.div aria-hidden style={{
-          position: 'absolute', inset: '-8%',
-          backgroundImage: "url('/assets/pages/login-bg.jpg')",
-          backgroundSize: 'cover', backgroundPosition: 'center 25%',
-          scale: bgScale, y: bgY, willChange: 'transform',
-        }}/>
-        <div aria-hidden style={{
-          position: 'absolute', inset: 0,
-          background: 'linear-gradient(180deg, rgba(5,4,5,0.75) 0%, rgba(5,4,5,0.35) 40%, rgba(5,4,5,0.95) 100%)',
-        }}/>
-        <div aria-hidden style={{
-          position: 'absolute', inset: 0,
-          background: 'radial-gradient(ellipse at 50% 110%, rgba(245,158,11,0.12) 0%, transparent 55%)',
-        }}/>
-        <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', padding: '0 clamp(20px,5vw,60px)' }}>
-          <motion.div className="mono" style={{
-            fontSize: 12, letterSpacing: '0.26em', color: GOLD, marginBottom: 26,
-            opacity: line1Opacity,
-          }}>
-            BLUE TEAM · DUBLIN, IRELAND
-          </motion.div>
-          <motion.h1 className="cd" style={{
-            fontSize: 'clamp(44px,7.5vw,116px)', fontWeight: 600, lineHeight: 1,
-            letterSpacing: '-0.02em', color: INK, margin: 0,
-            opacity: line1Opacity, scale: line1Scale, filter: line1Filter,
-            willChange: 'transform, opacity, filter',
-          }}>
-            Prasanna Kumar<br/>Surendran
-          </motion.h1>
-          <motion.h1 className="cd" style={{
-            position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 'clamp(44px,7.5vw,116px)', fontWeight: 600, lineHeight: 1,
-            letterSpacing: '-0.02em', color: INK, margin: 0,
-            opacity: line2Opacity, scale: line2Scale, filter: line2Filter,
-            willChange: 'transform, opacity, filter',
-          }}>
-            <span>One analyst.<br/><span style={{ color: GOLD }}>An entire SOC.</span></span>
-          </motion.h1>
-          <motion.div style={{
-            position: 'absolute', left: 0, right: 0, bottom: '-22vh',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14,
-            opacity: kickerOpacity, y: kickerY,
-          }}>
-            <p className="cg" style={{ fontSize: 17, fontWeight: 500, color: 'rgba(245,240,232,0.6)', maxWidth: 480, textAlign: 'center', margin: 0 }}>
-              SOC analyst who builds the tools he wishes existed — a Trust Operating System and four published security tools, solo.
-            </p>
-            <span className="mono" style={{ fontSize: 11, letterSpacing: '0.3em', color: 'rgba(245,240,232,0.35)' }}>SCROLL</span>
-          </motion.div>
-        </div>
-      </motion.div>
-    </section>
+    <PinnedScene vh="300vh" sceneRef={ref} index={sceneIndex}>
+      <motion.div aria-hidden style={{
+        position: 'absolute', inset: '-8%',
+        backgroundImage: "url('/assets/pages/login-bg.jpg')",
+        backgroundSize: 'cover', backgroundPosition: 'center 25%',
+        scale: bgScale, y: bgY, willChange: 'transform',
+      }}/>
+      <div aria-hidden style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(180deg, rgba(5,4,5,0.75) 0%, rgba(5,4,5,0.35) 40%, rgba(5,4,5,0.95) 100%)',
+      }}/>
+      <div aria-hidden style={{
+        position: 'absolute', inset: 0,
+        background: 'radial-gradient(ellipse at 50% 110%, rgba(245,158,11,0.12) 0%, transparent 55%)',
+      }}/>
+      <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', padding: '0 clamp(20px,5vw,60px)' }}>
+        <motion.div className="mono" style={{
+          fontSize: 12, letterSpacing: '0.26em', color: GOLD, marginBottom: 26,
+          opacity: line1Opacity,
+        }}>
+          BLUE TEAM · DUBLIN, IRELAND
+        </motion.div>
+        <motion.h1 className="cd" style={{
+          fontSize: 'clamp(44px,7.5vw,116px)', fontWeight: 600, lineHeight: 1,
+          letterSpacing: '-0.02em', color: INK, margin: 0,
+          opacity: line1Opacity, scale: line1Scale, filter: line1Filter,
+          willChange: 'transform, opacity, filter',
+        }}>
+          Prasanna Kumar<br/>Surendran
+        </motion.h1>
+        <motion.h1 className="cd" style={{
+          position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 'clamp(44px,7.5vw,116px)', fontWeight: 600, lineHeight: 1,
+          letterSpacing: '-0.02em', color: INK, margin: 0,
+          opacity: line2Opacity, scale: line2Scale, filter: line2Filter,
+          willChange: 'transform, opacity, filter',
+        }}>
+          <span>One analyst.<br/><span style={{ color: GOLD }}>An entire SOC.</span></span>
+        </motion.h1>
+        <motion.div style={{
+          position: 'absolute', left: 0, right: 0, bottom: '-22vh',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14,
+          opacity: kickerOpacity, y: kickerY,
+        }}>
+          <p className="cg" style={{ fontSize: 17, fontWeight: 500, color: 'rgba(245,240,232,0.6)', maxWidth: 480, textAlign: 'center', margin: 0 }}>
+            SOC analyst who builds the tools he wishes existed — a Trust Operating System and four published security tools, solo.
+          </p>
+          <span className="mono" style={{ fontSize: 11, letterSpacing: '0.3em', color: 'rgba(245,240,232,0.35)' }}>SCROLL</span>
+        </motion.div>
+      </div>
+    </PinnedScene>
   );
 }
 
@@ -285,6 +261,7 @@ function EditorialRow({ label, children }) {
    PORTFOLIO / BUILDER PAGE
 ════════════════════════════════════════════════════════════════════════ */
 export default function Portfolio() {
+  useStoryScroll();
   const isMobile = useIsMobile();
   const reduced  = useReducedMotion();
   const useFallback = isMobile || reduced;
@@ -292,7 +269,7 @@ export default function Portfolio() {
   return (
     <div style={{ background: BG, color: INK, overflowX: 'hidden', minHeight: '100vh', position: 'relative', isolation: 'isolate' }}>
       <AmbientEmbers/>
-      <ScrollProgress/>
+      <ScrollProgressBar/>
       <style>{`
         .cd { font-family: 'Clash Display', sans-serif; }
         .cg { font-family: 'Cabinet Grotesk', sans-serif; }
@@ -377,7 +354,7 @@ export default function Portfolio() {
       </nav>
 
       {/* ── HERO ── */}
-      {useFallback ? <MobileHero/> : <HeroScene/>}
+      {useFallback ? <MobileHero/> : <HeroScene sceneIndex={0}/>}
 
       {/* ── STATS STRIP ── */}
       <section style={{ padding: '0 clamp(24px,5vw,72px)' }}>
