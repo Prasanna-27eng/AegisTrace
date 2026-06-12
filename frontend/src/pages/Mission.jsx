@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import React, { useRef, useState, useEffect } from 'react';
+import { motion, useScroll, useSpring, useTransform, useMotionValueEvent, useInView, useReducedMotion } from 'framer-motion';
 import {
   ArrowRight, Shield, Brain, Fingerprint, FolderSearch,
   Mail, Monitor, Activity, CheckCircle, Clock, ArrowUpRight,
@@ -23,6 +23,64 @@ function Reveal({ children, delay = 0, y = 36, style = {} }) {
       transition={{ duration: 0.88, delay, ease: E }}
       style={style}
     >{children}</motion.div>
+  );
+}
+
+/* ─── Ambient ember field ───────────────────────────────────────────────
+   Fixed full-viewport canvas behind the content: 44 slow-drifting warm
+   particles (40% gold), twinkling via phase-offset sine. Renders a single
+   static frame under prefers-reduced-motion.                             */
+function AmbientEmbers() {
+  const canvasRef = useRef(null);
+  const reduced   = useReducedMotion();
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    let w = 0, h = 1, raf = 0, t = 0;
+    const embers = Array.from({ length: 44 }, () => ({
+      x: Math.random(), y: Math.random(),
+      r: 0.6 + Math.random() * 1.7,
+      v: 0.08 + Math.random() * 0.22,
+      ph: Math.random() * 6.28,
+      gold: Math.random() < 0.4,
+    }));
+    const size = () => {
+      w = window.innerWidth; h = window.innerHeight;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    const draw = (still) => {
+      ctx.clearRect(0, 0, w, h);
+      embers.forEach(e => {
+        if (!still) {
+          e.y -= e.v / h;
+          if (e.y < -0.01) { e.y = 1.01; e.x = Math.random(); }
+        }
+        const x = e.x * w + Math.sin(t * 0.5 + e.ph) * 14;
+        const a = still ? 0.22 : 0.1 + 0.16 * (0.5 + 0.5 * Math.sin(t * 1.2 + e.ph));
+        ctx.fillStyle = e.gold ? `rgba(245,158,11,${a * 1.25})` : `rgba(245,240,232,${a})`;
+        ctx.beginPath();
+        ctx.arc(x, e.y * h, e.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    };
+    size();
+    window.addEventListener('resize', size);
+    if (reduced) {
+      draw(true);
+    } else {
+      const loop = () => { t += 0.016; draw(false); raf = requestAnimationFrame(loop); };
+      raf = requestAnimationFrame(loop);
+    }
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', size); };
+  }, [reduced]);
+  return (
+    <canvas ref={canvasRef} aria-hidden style={{
+      position: 'fixed', inset: 0, width: '100%', height: '100%',
+      zIndex: -1, pointerEvents: 'none',
+    }}/>
   );
 }
 
@@ -96,9 +154,87 @@ function PrincipleCard({ icon: Icon, title, body, delay }) {
 /* ════════════════════════════════════════════════════════════════════════════
    MISSION
 ════════════════════════════════════════════════════════════════════════════ */
+/* ─── Scroll progress hairline — gold thread across the top ───────────── */
+function ScrollProgress() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 170, damping: 30, mass: 0.3 });
+  return (
+    <motion.div aria-hidden style={{
+      position: 'fixed', top: 0, left: 0, right: 0, height: 2,
+      background: GOLD, transformOrigin: '0 50%', scaleX, zIndex: 300,
+    }}/>
+  );
+}
+
+/* ─── Pinned 83% stat scene — scroll storytelling, Landing scene pattern ── */
+function Stat83Scene() {
+  const ref = useRef(null);
+  const reduced = useReducedMotion();
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 768);
+  useEffect(() => {
+    const fn = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, []);
+
+  const { scrollYProgress: raw } = useScroll({ target: ref, offset: ['start start', 'end end'] });
+  const p = useSpring(raw, { stiffness: 170, damping: 30, mass: 0.3, restDelta: 0.0001 });
+  const [count, setCount] = useState(0);
+  useMotionValueEvent(p, 'change', v => setCount(Math.round(Math.max(0, Math.min(1, (v - 0.08) / 0.45)) * 83)));
+
+  const exitOpacity    = useTransform(raw, [0.93, 1], [1, 0], { clamp: true });
+  const statOpacity    = useTransform(p, [0.02, 0.22], [0, 1], { clamp: true });
+  const statY          = useTransform(statOpacity, o => (1 - o) * 70);
+  const captionOpacity = useTransform(p, [0.42, 0.6], [0, 1], { clamp: true });
+  const dotsOpacity    = useTransform(p, [0.05, 0.3], [0, 0.22], { clamp: true });
+  const dotsY          = useTransform(p, v => -v * 150);
+
+  if (isMobile || reduced) {
+    return (
+      <section style={{ padding: 'clamp(56px,10vw,96px) clamp(24px,5vw,72px)', textAlign: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 6 }}>
+          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 'clamp(80px,20vw,160px)', fontWeight: 700, color: GOLD, lineHeight: 1 }}>83</span>
+          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 'clamp(40px,9vw,72px)', fontWeight: 700, color: 'rgba(245,240,232,0.4)', lineHeight: 1 }}>%</span>
+        </div>
+        <p className="cg" style={{ fontSize: 18, fontWeight: 500, color: 'rgba(245,240,232,0.6)', maxWidth: 460, margin: '24px auto 0' }}>
+          of breaches involve <strong style={{ color: '#F5F0E8' }}>stolen credentials or identity abuse.</strong> The perimeter is whoever you trust.
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section ref={ref} style={{ height: '230vh', position: 'relative' }}>
+      <motion.div style={{
+        position: 'sticky', top: 0, height: '100vh', overflow: 'hidden',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        opacity: exitOpacity, willChange: 'opacity',
+      }}>
+        <motion.div aria-hidden style={{
+          position: 'absolute', inset: '-160px 0',
+          backgroundImage: 'radial-gradient(circle, rgba(245,240,232,0.18) 1.5px, transparent 1.5px)',
+          backgroundSize: '30px 30px',
+          opacity: dotsOpacity, y: dotsY, willChange: 'transform, opacity',
+        }}/>
+        <motion.div style={{ position: 'relative', zIndex: 2, textAlign: 'center', padding: '0 24px', opacity: statOpacity, y: statY, willChange: 'transform, opacity' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 8 }}>
+            <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 'clamp(110px,17vw,250px)', fontWeight: 700, color: GOLD, lineHeight: 1 }}>{count}</span>
+            <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 'clamp(50px,7vw,110px)', fontWeight: 700, color: 'rgba(245,240,232,0.4)', lineHeight: 1 }}>%</span>
+          </div>
+          <motion.p className="cg" style={{ fontSize: 20, fontWeight: 500, color: 'rgba(245,240,232,0.6)', maxWidth: 520, margin: '24px auto 0', opacity: captionOpacity }}>
+            of breaches involve <strong style={{ color: '#F5F0E8' }}>stolen credentials or identity abuse.</strong> The perimeter is whoever you trust.
+          </motion.p>
+        </motion.div>
+      </motion.div>
+    </section>
+  );
+}
+
 export default function Mission() {
   const heroRef = useRef(null);
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
+  const { scrollYProgress: heroRaw } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
+  /* Damped camera — same spring as the landing scenes */
+  const scrollYProgress = useSpring(heroRaw, { stiffness: 170, damping: 30, mass: 0.3, restDelta: 0.0001 });
   const heroY       = useTransform(scrollYProgress, [0, 1], ['0%', '28%']);
   const heroScale   = useTransform(scrollYProgress, [0, 1], [1.06, 1.0]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
@@ -160,7 +296,9 @@ export default function Mission() {
   ];
 
   return (
-    <div style={{ background: BG, color: '#F5F0E8', overflowX: 'hidden' }}>
+    <div style={{ background: BG, color: '#F5F0E8', overflowX: 'hidden', position: 'relative', isolation: 'isolate' }}>
+      <AmbientEmbers/>
+      <ScrollProgress/>
       <style>{`
         .cd { font-family: 'Clash Display', sans-serif; }
         .cg { font-family: 'Cabinet Grotesk', sans-serif; }
@@ -193,6 +331,20 @@ export default function Mission() {
           transition: color 140ms;
         }
         .nav-link:hover { color: #F5F0E8; }
+
+        ::selection { background: rgba(245,158,11,0.35); color: #F5F0E8; }
+
+        .nav-link { position: relative; }
+        .nav-link::after {
+          content: ''; position: absolute; left: 0; right: 100%; bottom: -4px;
+          height: 1px; background: #F59E0B;
+          transition: right 260ms cubic-bezier(0.16,1,0.3,1);
+        }
+        .nav-link:hover::after { right: 0; }
+
+        .gold-btn:hover  { transform: translateY(-2px); }
+        .ghost-btn:hover { transform: translateY(-2px); }
+        .gold-btn:active, .ghost-btn:active { transform: translateY(0) scale(0.97); }
 
         @keyframes kenburns-m { from { transform: scale(1.08); } to { transform: scale(1.0); } }
 
@@ -307,6 +459,8 @@ export default function Mission() {
       </section>
 
       {/* ── ORIGIN STORY ─────────────────────────────────────────────────── */}
+      <Stat83Scene/>
+
       <section style={{ padding: 'clamp(72px,10vw,120px) clamp(24px,5vw,72px)', background: '#060507' }}>
         <div style={{ maxWidth: 1240, margin: '0 auto' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'clamp(160px,20vw,240px) 1fr', gap: 'clamp(40px,6vw,80px)', alignItems: 'start' }}>

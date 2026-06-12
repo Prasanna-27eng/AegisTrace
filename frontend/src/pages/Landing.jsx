@@ -19,7 +19,14 @@ const M = (p, a, b) => Math.max(0, Math.min(1, (p - a) / (b - a)));
    biggest difference between "scrubbed" and "filmed".                    */
 function useCamera(ref) {
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
-  return useSpring(scrollYProgress, { stiffness: 110, damping: 26, mass: 0.4, restDelta: 0.0001 });
+  const spring = useSpring(scrollYProgress, { stiffness: 170, damping: 30, mass: 0.3, restDelta: 0.0001 });
+  /* Snap to the live scroll position on mount so restored / hash-anchored
+     loads don't replay the scenes ("page moves before you scroll"). */
+  useEffect(() => {
+    if (typeof spring.jump === 'function') spring.jump(scrollYProgress.get());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return spring;
 }
 
 /* ─── Mobile breakpoint ─────────────────────────────────────────────────── */
@@ -821,6 +828,177 @@ function MobileBridge() {
 /* ════════════════════════════════════════════════════════════════════════
    PLATFORM SEAM-GRID (8 modules, click-to-expand)
 ════════════════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════════════════
+   SPOTLIGHTS — marquee ticker + living product demos
+════════════════════════════════════════════════════════════════════════ */
+/* ─── Scroll progress hairline — gold thread across the top ───────────── */
+function ScrollProgress() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 170, damping: 30, mass: 0.3 });
+  return (
+    <motion.div aria-hidden style={{
+      position: 'fixed', top: 0, left: 0, right: 0, height: 2,
+      background: GOLD, transformOrigin: '0 50%', scaleX, zIndex: 300,
+    }}/>
+  );
+}
+
+const TICKER_ITEMS = ['IDENTITY-FIRST DETECTION', 'EXPLAINABLE AI', 'HUMAN-IN-THE-LOOP', 'SOAR PLAYBOOKS', 'HONEY TOKENS', 'MITRE ATT&CK', 'OPEN SOURCE'];
+
+function TickerRow() {
+  return (
+    <div style={{ display: 'flex', gap: 52, paddingRight: 52, whiteSpace: 'nowrap', alignItems: 'baseline' }}>
+      {TICKER_ITEMS.map(item => (
+        <React.Fragment key={item}>
+          <span className="mono" style={{ fontSize: 12, letterSpacing: '0.26em', color: 'rgba(245,240,232,0.45)' }}>{item}</span>
+          <span style={{ color: GOLD }}>·</span>
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
+function Marquee() {
+  const reduced = useReducedMotion();
+  return (
+    <div style={{ overflow: 'hidden', borderTop: '1px solid rgba(245,240,232,0.1)', borderBottom: '1px solid rgba(245,240,232,0.1)', padding: '15px 0' }}>
+      <div style={{ display: 'flex', width: 'max-content', animation: reduced ? 'none' : 'ticker-marquee 38s linear infinite' }}>
+        <TickerRow/><TickerRow/>
+      </div>
+    </div>
+  );
+}
+
+const FEED_POOL = [
+  { title: 'Honeypot hit',     sub: '/api/v1/admin/export · 203.0.113.8',  tag: 'AUTO-BLOCKED',   color: '#4BE38A' },
+  { title: 'AI agent scan',    sub: '47 endpoints fingerprinted in 12s',   tag: 'PENDING REVIEW', color: '#F59E0B' },
+  { title: 'Prompt injection', sub: 'case chat · neutralised by shield',   tag: 'SHIELDED',       color: '#7AABB5' },
+  { title: 'DGA domain',       sub: 'xkqv9z[.]net · entropy 4.21',         tag: 'CRITICAL',       color: '#FF667C' },
+  { title: 'Brute force',      sub: '14 logins/min · svc-backup',          tag: 'WATCHLISTED',    color: '#F5B84B' },
+];
+
+function LiveFeed() {
+  const reduced = useReducedMotion();
+  const [tick, setTick] = useState(3);
+  useEffect(() => {
+    if (reduced) return;
+    const id = setInterval(() => setTick(t => t + 1), 3000);
+    return () => clearInterval(id);
+  }, [reduced]);
+  const rows = [0, 1, 2, 3].map(i => {
+    const n = tick - i;
+    return { n, item: FEED_POOL[((n % FEED_POOL.length) + FEED_POOL.length) % FEED_POOL.length] };
+  });
+  return (
+    <div style={{ background: '#0A0908', border: '1px solid rgba(245,240,232,0.1)', borderRadius: 14, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid rgba(245,240,232,0.08)' }}>
+        <span className="mono" style={{ fontSize: 11, letterSpacing: '0.2em', color: 'rgba(245,240,232,0.45)' }}>DEFENSE CONSOLE — LIVE FEED</span>
+        <span className="mono" style={{ fontSize: 11, color: '#4BE38A' }}>ENGINE ACTIVE</span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', padding: '10px 0', minHeight: 264 }}>
+        {rows.map(({ n, item }) => (
+          <motion.div key={n}
+            initial={reduced ? false : { opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: E }}
+            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 14, padding: '13px 20px', borderBottom: '1px solid rgba(245,240,232,0.06)' }}
+          >
+            <div style={{ minWidth: 0 }}>
+              <div className="cg" style={{ fontSize: 13.5, fontWeight: 700, color: '#EBEBEB' }}>{item.title}</div>
+              <div className="mono" style={{ fontSize: 11, color: 'rgba(245,240,232,0.4)', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.sub}</div>
+            </div>
+            <span className="mono" style={{ fontSize: 10, letterSpacing: '0.16em', color: item.color, border: '1px solid ' + item.color + '44', borderRadius: 100, padding: '5px 11px', whiteSpace: 'nowrap' }}>{item.tag}</span>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const TERM_SCRIPT = [
+  { text: '$ aegis hunt --ioc 185.220.101.4',                    color: '#F5F0E8' },
+  { text: '  → 3 cases correlated · campaign suspected',          color: '#7AABB5' },
+  { text: '$ tail -f /var/log/auth.log',                          color: '#F5F0E8' },
+  { text: '  07:41:02 sshd: failed password svc-backup (×7)',     color: 'rgba(245,240,232,0.55)' },
+  { text: '  AI ▸ credential stuffing — confidence 0.94',         color: '#F59E0B' },
+  { text: '$ aegis isolate DUB-WS-114',                           color: '#F5F0E8' },
+  { text: '  ⚠ requires approval — queued to ledger',             color: '#F5B84B' },
+];
+const termDot = { width: 9, height: 9, borderRadius: '50%', background: 'rgba(245,240,232,0.15)', display: 'inline-block' };
+
+function TerminalDemo() {
+  const reduced = useReducedMotion();
+  const [pos, setPos] = useState({ line: 0, ch: 0 });
+  useEffect(() => {
+    if (reduced) return;
+    const id = setInterval(() => {
+      setPos(p => {
+        if (p.line >= TERM_SCRIPT.length) return p;
+        const len = TERM_SCRIPT[p.line].text.length;
+        if (p.ch + 1 >= len) return { line: p.line + 1, ch: 0 };
+        return { line: p.line, ch: p.ch + 1 };
+      });
+    }, 26);
+    return () => clearInterval(id);
+  }, [reduced]);
+  useEffect(() => {
+    if (reduced || pos.line < TERM_SCRIPT.length) return;
+    const t = setTimeout(() => setPos({ line: 0, ch: 0 }), 3400);
+    return () => clearTimeout(t);
+  }, [pos, reduced]);
+  const lines = reduced
+    ? TERM_SCRIPT
+    : TERM_SCRIPT.slice(0, pos.line).concat(pos.line < TERM_SCRIPT.length ? [{ color: TERM_SCRIPT[pos.line].color, text: TERM_SCRIPT[pos.line].text.slice(0, pos.ch) }] : []);
+  return (
+    <div style={{ background: '#0A0908', border: '1px solid rgba(245,240,232,0.1)', borderRadius: 14, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '13px 18px', borderBottom: '1px solid rgba(245,240,232,0.08)' }}>
+        <span aria-hidden style={termDot}/><span aria-hidden style={termDot}/><span aria-hidden style={termDot}/>
+        <span className="mono" style={{ marginLeft: 10, fontSize: 11, color: 'rgba(245,240,232,0.4)' }}>terminal lab — session #418</span>
+      </div>
+      <div className="mono" style={{ padding: '22px 24px', minHeight: 240, fontSize: 13.5, lineHeight: 1.8 }}>
+        {lines.map((l, i) => <div key={i} style={{ color: l.color, whiteSpace: 'pre-wrap' }}>{l.text}</div>)}
+        <span aria-hidden style={{ display: 'inline-block', width: 8, height: 16, background: GOLD, verticalAlign: -2, animation: reduced ? 'none' : 'caret-blink 1s step-end infinite' }}/>
+      </div>
+    </div>
+  );
+}
+
+function Spotlights() {
+  return (
+    <section style={{ padding: 'clamp(72px,10vw,120px) clamp(24px,5vw,72px) 0' }}>
+      <div style={{ maxWidth: 1240, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 90 }}>
+        <Reveal><Marquee/></Reveal>
+        <Reveal>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px,1fr))', gap: 56, alignItems: 'center' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+                <span aria-hidden style={{ width: 8, height: 8, borderRadius: '50%', background: GOLD, display: 'inline-block', animation: 'goldPulse 2.2s infinite' }}/>
+                <span className="mono" style={{ fontSize: 11, letterSpacing: '0.26em', color: GOLD }}>LIVE</span>
+              </div>
+              <h3 className="cd" style={{ fontSize: 'clamp(28px,3vw,42px)', fontWeight: 600, letterSpacing: '-0.02em', color: INK, margin: '0 0 14px' }}>The Defense Console never sleeps.</h3>
+              <p className="cg" style={{ fontSize: 16.5, lineHeight: 1.6, color: 'rgba(245,240,232,0.6)', maxWidth: 440, margin: 0 }}>
+                Honeypots, request fingerprinting and Groq triage classify every attacker in under a second — auto-handling the obvious, queueing the rest for a human.
+              </p>
+            </div>
+            <LiveFeed/>
+          </div>
+        </Reveal>
+        <Reveal>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px,1fr))', gap: 56, alignItems: 'center' }}>
+            <TerminalDemo/>
+            <div>
+              <h3 className="cd" style={{ fontSize: 'clamp(28px,3vw,42px)', fontWeight: 600, letterSpacing: '-0.02em', color: INK, margin: '0 0 14px' }}>A lab where AI reads over your shoulder.</h3>
+              <p className="cg" style={{ fontSize: 16.5, lineHeight: 1.6, color: 'rgba(245,240,232,0.6)', maxWidth: 440, margin: 0 }}>
+                Twenty-plus simulated analyst commands. Every output parsed — IOCs extracted, MITRE techniques mapped, next steps suggested, pushed straight to your case.
+              </p>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
 const PLATFORM_MODULES = [
   {
     title: 'Case Management',
@@ -962,7 +1140,7 @@ function PlatformGrid() {
 function MissionBreak() {
   const ref = useRef(null);
   const { scrollYProgress: progress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  const smooth    = useSpring(progress, { stiffness: 110, damping: 26, mass: 0.4 });
+  const smooth    = useSpring(progress, { stiffness: 170, damping: 30, mass: 0.3 });
   const parallaxY = useTransform(smooth, v => (v - 0.5) * 110);
 
   return (
@@ -1097,7 +1275,7 @@ const BUILDER_LINKS = [
 function BuilderSection() {
   const ref = useRef(null);
   const { scrollYProgress: progress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  const smooth    = useSpring(progress, { stiffness: 110, damping: 26, mass: 0.4 });
+  const smooth    = useSpring(progress, { stiffness: 170, damping: 30, mass: 0.3 });
   const parallaxY = useTransform(smooth, v => (v - 0.5) * 110);
 
   return (
@@ -1207,7 +1385,7 @@ function FooterSection() {
           </div>
           <div>
             <div className="cg" style={{ fontSize: 11, color: 'rgba(245,240,232,0.3)', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 16, fontWeight: 600 }}>Platform</div>
-            {[{ l: 'Sign In', to: '/app/login' }, { l: 'Mission', to: '/mission' }, { l: 'Builder', to: '/#builder' }].map(({ l, to }) => (
+            {[{ l: 'Sign In', to: '/app/login' }, { l: 'Mission', to: '/mission' }, { l: 'Builder', to: '/portfolio' }].map(({ l, to }) => (
               <div key={l} style={{ marginBottom: 10 }}>
                 <Link to={to} className="cg" style={{ fontSize: 13, color: 'rgba(245,240,232,0.42)', textDecoration: 'none', transition: 'color 140ms' }}
                   onMouseEnter={e => (e.target.style.color = GOLD)} onMouseLeave={e => (e.target.style.color = 'rgba(245,240,232,0.42)')}
@@ -1248,13 +1426,16 @@ export default function Landing() {
   useEffect(() => {
     if (window.location.hash === '#builder') {
       const el = document.getElementById('builder');
-      if (el) requestAnimationFrame(() => el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' }));
+      /* Instant jump — smooth-scrolling through seven pinned runways replays
+         every scene and looks like the page scrolling itself. */
+      if (el) requestAnimationFrame(() => window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 64));
     }
-  }, [reduced]);
+  }, []);
 
   return (
     <div style={{ background: BG, color: '#F5F0E8', overflowX: 'hidden', minHeight: '100vh', position: 'relative', isolation: 'isolate' }}>
       <AmbientEmbers/>
+      <ScrollProgress/>
       <style>{`
         .cd { font-family: 'Clash Display', sans-serif; }
         .cg { font-family: 'Cabinet Grotesk', sans-serif; }
@@ -1289,6 +1470,23 @@ export default function Landing() {
         }
         .nav-link:hover { color: #F5F0E8; }
 
+        ::selection { background: rgba(245,158,11,0.35); color: #F5F0E8; }
+
+        .nav-link { position: relative; }
+        .nav-link::after {
+          content: ''; position: absolute; left: 0; right: 100%; bottom: -4px;
+          height: 1px; background: #F59E0B;
+          transition: right 260ms cubic-bezier(0.16,1,0.3,1);
+        }
+        .nav-link:hover::after { right: 0; }
+
+        .gold-btn:hover  { transform: translateY(-2px); }
+        .ghost-btn:hover { transform: translateY(-2px); }
+        .gold-btn:active, .ghost-btn:active { transform: translateY(0) scale(0.97); }
+
+        @keyframes ticker-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        @keyframes caret-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
         @media (prefers-reduced-motion: reduce) {
           *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
@@ -1315,7 +1513,7 @@ export default function Landing() {
         </Link>
         <div style={{ display: 'flex', gap: 'clamp(16px,3vw,36px)', alignItems: 'center' }}>
           <Link to="/mission"   className="nav-link">Mission</Link>
-          <Link to="/#builder"  className="nav-link">Builder</Link>
+          <Link to="/portfolio" className="nav-link">Builder</Link>
           <Link to="/app/login" className="gold-btn" style={{ padding: '9px 18px', fontSize: 12 }}>
             Sign In <ArrowRight size={13}/>
           </Link>
@@ -1332,6 +1530,7 @@ export default function Landing() {
       {useFallback ? <MobileBridge/>  : <BridgeScene/>}
 
       {/* ── PLATFORM, MISSION, BUILDER, CTA, FOOTER ── */}
+      <Spotlights/>
       <PlatformGrid/>
       <MissionBreak/>
       <MissionDetail/>
