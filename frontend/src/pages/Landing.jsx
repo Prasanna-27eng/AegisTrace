@@ -1019,9 +1019,23 @@ const BUILDER_LINKS = [
 ];
 
 function BuilderSection() {
+  const ref = useRef(null);
+  const { scrollYProgress: progress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
+  const parallaxY = useTransform(progress, v => (v - 0.5) * 110);
+
   return (
-    <section id="builder" style={{ padding: 'clamp(72px,10vw,120px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(245,240,232,0.05)' }}>
-      <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+    <section id="builder" ref={ref} style={{ position: 'relative', overflow: 'hidden', padding: 'clamp(72px,10vw,120px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(245,240,232,0.05)' }}>
+      <motion.div aria-hidden style={{
+        position: 'absolute', inset: '-14% 0',
+        backgroundImage: `url('/assets/pages/login-bg.jpg')`,
+        backgroundSize: 'cover', backgroundPosition: 'center',
+        y: parallaxY, willChange: 'transform',
+      }}/>
+      <div aria-hidden style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(180deg, rgba(5,4,5,0.94) 0%, rgba(5,4,5,0.86) 50%, rgba(5,4,5,0.94) 100%)',
+      }}/>
+      <div style={{ position: 'relative', zIndex: 2, maxWidth: 1240, margin: '0 auto' }}>
         <Reveal>
           <div className="mono" style={{ fontSize: 12, letterSpacing: '0.26em', color: GOLD, marginBottom: 20 }}>BUILT BY ONE ANALYST</div>
           <h2 className="cd" style={{ fontSize: 'clamp(40px,6.5vw,92px)', fontWeight: 600, color: INK, margin: '0 0 18px', letterSpacing: '-0.02em', lineHeight: 1.02 }}>
