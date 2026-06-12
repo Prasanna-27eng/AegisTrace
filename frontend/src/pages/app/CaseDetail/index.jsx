@@ -152,7 +152,7 @@ export default function CaseDetail() {
   const tabProps = { caseData, updateCase, reload: loadCase, caseId: id };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Case header */}
       <div style={{ background: '#111111', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '12px 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>

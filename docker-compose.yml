@@ -1,0 +1,59 @@
+version: '3.8'
+
+# ── AegisTrace — Production Compose ──────────────────────────────────────────
+# Usage:
+#   docker compose up -d --build       ← first deploy or after code change
+#   docker compose up -d               ← start without rebuild
+#   docker compose down                ← stop
+#   docker compose logs -f aegistrace  ← live logs
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  aegistrace:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aegistrace
+    restart: always
+
+    # Bind to localhost only — Nginx proxies from outside.
+    # Never expose 8000 directly to the internet.
+    ports:
+      - "127.0.0.1:8000:8000"
+
+    # Persist the SQLite database and any uploaded files across restarts/updates.
+    volumes:
+      - aegistrace-data:/var/data
+
+    # Load all secrets and config from .env (never commit this file).
+    env_file:
+      - .env
+
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Resource limits — adjust to your VPS tier.
+    # A Hetzner CX22 (2 vCPU / 4 GB) or DigitalOcean $6 droplet handles this fine.
+    deploy:
+      resources:
+        limits:
+          memory: 1536M
+        reservations:
+          memory: 256M
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+volumes:
+  aegistrace-data:
+    driver: local
+    # Actual data lives at /var/lib/docker/volumes/aegistrace_aegistrace-data/_data
+    # Back up with: docker run --rm -v aegistrace_aegistrace-data:/data -v $(pwd):/backup alpine tar czf /backup/aegistrace-backup-$(date +%Y%m%d).tar.gz -C /data .

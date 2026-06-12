@@ -104,6 +104,12 @@ export default function Mission() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
   const overlayY    = useTransform(scrollYProgress, [0, 1], ['0%', '12%']);
 
+  /* Hero dolly (Scene 1 pattern, ported from Landing) — the headline scales
+     up and blurs away as the camera "passes through" it on scroll. */
+  const heroContentScale = useTransform(scrollYProgress, [0, 0.6], [1, 1.6]);
+  const heroBlurPx       = useTransform(scrollYProgress, [0, 0.5], [0, 14], { clamp: true });
+  const heroBlur         = useTransform(heroBlurPx, v => `blur(${v}px)`);
+
   const V1 = [
     { text: 'ITDR — Identity Threat Detection (4 detectors)',          why: 'Credential stuffing, impossible travel, privilege escalation, token theft — all built in.' },
     { text: 'Identity Risk Engine with pluggable detectors',           why: 'Each detector contributes to a unified risk score. Swap or add detectors without touching the core.' },
@@ -259,7 +265,7 @@ export default function Mission() {
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(100deg, rgba(5,4,5,0.72) 0%, rgba(5,4,5,0.25) 55%, transparent 100%)' }}/>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 50% 40% at 8% 92%, rgba(245,158,11,0.14) 0%, transparent 65%)' }}/>
 
-        <motion.div style={{ opacity: heroOpacity }}>
+        <motion.div style={{ opacity: heroOpacity, scale: heroContentScale, filter: heroBlur, willChange: 'transform, opacity, filter' }}>
           <div style={{
             position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
             justifyContent: 'flex-end', zIndex: 10,

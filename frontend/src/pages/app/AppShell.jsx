@@ -114,6 +114,7 @@ export default function AppShell() {
   const [recentCases, setRecentCases] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [flashId, setFlashId] = useState(null);
   const [bellOpen, setBellOpen] = useState(false);
   const bellRef = useRef(null);
   const navigate = useNavigate();
@@ -136,6 +137,8 @@ export default function AppShell() {
       detected_at: alert.detected_at,
     }, ...prev].slice(0, 20));
     setUnreadCount(c => c + 1);
+    setFlashId(alert.id);
+    setTimeout(() => setFlashId(id => id === alert.id ? null : id), 1200);
   }, [addToast]));
 
   // Close bell on outside click
@@ -312,7 +315,7 @@ export default function AppShell() {
               )}
             </button>
             {bellOpen && (
-              <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: 340, background: '#0D0D0D', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, boxShadow: '0 16px 48px rgba(0,0,0,0.7)', zIndex: 200, overflow: 'hidden' }}>
+              <div className="dropdown-pop" style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: 340, background: '#0D0D0D', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, boxShadow: '0 16px 48px rgba(0,0,0,0.7)', zIndex: 200, overflow: 'hidden', transformOrigin: 'top right' }}>
                 <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#EBEBEB' }}>Recent Alerts</span>
                   <button onClick={() => { setNotifications([]); setBellOpen(false); }} style={{ background: 'none', border: 'none', color: '#555', cursor: 'pointer', fontSize: '0.68rem', fontFamily: 'JetBrains Mono,monospace' }}>Clear all</button>
@@ -325,7 +328,7 @@ export default function AppShell() {
                       const sevColor = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'#22C55E' }[n.severity] || '#787878';
                       const ts = n.detected_at ? new Date(n.detected_at).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}) : '';
                       return (
-                        <div key={n.id || i} style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                        <div key={n.id || i} className={n.id === flashId ? 'signal-flash' : undefined} style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                           <span style={{ width: 6, height: 6, borderRadius: '50%', background: sevColor, flexShrink: 0, marginTop: 5 }}/>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: '0.76rem', color: '#EBEBEB', fontWeight: 500, marginBottom: 2 }}>{n.label}</div>
@@ -360,7 +363,7 @@ export default function AppShell() {
             </button>
 
             {dropdownOpen && (
-              <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 8px)', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: 6, minWidth: 190, zIndex: 300, boxShadow: '0 10px 40px rgba(0,0,0,0.5)', animation: 'at-dd-in 0.12s ease' }}>
+              <div className="dropdown-pop" style={{ position: 'absolute', right: 0, top: 'calc(100% + 8px)', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: 6, minWidth: 190, zIndex: 300, boxShadow: '0 10px 40px rgba(0,0,0,0.5)', transformOrigin: 'top right' }}>
                 {[
                   { Icon: Home,     label: 'Back to Home',  action: () => { navigate('/');          setDropdownOpen(false); }, color: 'rgba(240,240,248,0.7)' },
                   { Icon: Settings, label: 'Settings',       action: () => { navigate('/app/admin'); setDropdownOpen(false); }, color: 'rgba(240,240,248,0.7)' },

@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, Shield, Mail,
   Wrench, Globe, Settings, LogOut, ChevronLeft, ChevronRight,
@@ -77,6 +77,7 @@ const NAV_GROUPS = [
 export default function Sidebar({ collapsed, setCollapsed }) {
   const { logout, user } = useStore();
   const navigate = useNavigate();
+  const location = useLocation();
 
   return (
     <aside style={{
@@ -113,10 +114,12 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
       {/* Nav groups */}
       <nav style={{ flex: 1, padding: '0 6px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto', overflowX: 'hidden' }}>
-        {NAV_GROUPS.map(group => (
+        {NAV_GROUPS.map(group => {
+          const groupActive = group.items.some(item => location.pathname === item.to || location.pathname.startsWith(item.to + '/'));
+          return (
           <div key={group.label}>
             {!collapsed && (
-              <div style={{ fontSize: '0.58rem', fontWeight: 600, color: 'rgba(136,136,136,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '10px 12px 4px', fontFamily: 'JetBrains Mono' }}>
+              <div style={{ fontSize: '0.58rem', fontWeight: 600, color: groupActive ? 'var(--accent-light)' : 'rgba(136,136,136,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '10px 12px 4px', fontFamily: 'JetBrains Mono', transition: 'color 200ms var(--emil)' }}>
                 {group.label}
               </div>
             )}
@@ -130,7 +133,8 @@ export default function Sidebar({ collapsed, setCollapsed }) {
               </NavLink>
             ))}
           </div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* User + logout */}

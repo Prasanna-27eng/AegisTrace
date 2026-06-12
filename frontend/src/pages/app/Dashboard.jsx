@@ -41,21 +41,24 @@ function ageColor(dateStr, severity) {
 function AttentionRow({ c, navigate }) {
   const age = caseAge(c.created_at);
   const color = ageColor(c.created_at, c.severity);
+  const pendingApproval = c.status === 'pending_closure';
   return (
     <div
       onClick={() => navigate(`/app/cases/${c.id}`)}
+      className={pendingApproval ? 'signal-gold' : undefined}
       style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 6, cursor: 'pointer', background: '#111111', transition: 'background 0.15s', position: 'relative', overflow: 'hidden' }}
       onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
       onMouseLeave={e => e.currentTarget.style.background = '#111111'}
     >
-      {c.severity === 'critical' && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, background: '#5A8A9F' }} />}
-      <div style={{ flex: 1, minWidth: 0, paddingLeft: c.severity === 'critical' ? 6 : 0 }}>
+      {!pendingApproval && c.severity === 'critical' && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, background: '#5A8A9F' }} />}
+      <div style={{ flex: 1, minWidth: 0, paddingLeft: (c.severity === 'critical' || pendingApproval) ? 6 : 0 }}>
         <div style={{ fontSize: '0.83rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
         <div style={{ fontSize: '0.67rem', color: '#787878', fontFamily: 'JetBrains Mono', marginTop: 1 }}>
           {c.case_number} · {c.analyst_name || 'Unassigned'}
         </div>
       </div>
       <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+        {pendingApproval && <span className="signal-dot" title="Awaiting approval" />}
         <SeverityBadge severity={c.severity} />
         <span style={{ fontSize: '0.67rem', color: color, fontFamily: 'JetBrains Mono', minWidth: 26, textAlign: 'right' }}>{age}</span>
       </div>
@@ -216,7 +219,7 @@ export default function Dashboard() {
   const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 
   return (
-    <div style={{ padding: '28px 32px', maxWidth: 1440, background: '#000000', minHeight: '100vh' }}>
+    <div className="fade-up" style={{ padding: '28px 32px', maxWidth: 1440, background: '#000000', minHeight: '100vh' }}>
 
       {/* ── Header ── */}
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 32, paddingBottom: 24, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -224,7 +227,7 @@ export default function Dashboard() {
           <div style={{ fontSize: '0.62rem', color: '#505050', letterSpacing: '0.2em', textTransform: 'uppercase', ...MONO, marginBottom: 8 }}>
             AEGISTRACE // CONTROL PLANE
           </div>
-          <h1 style={{ fontSize: '2.2rem', fontWeight: 300, letterSpacing: '-0.04em', color: '#EBEBEB', lineHeight: 1, marginBottom: 6 }}>
+          <h1 className="cd" style={{ fontSize: '2.2rem', letterSpacing: '-0.04em', color: '#EBEBEB', lineHeight: 1, marginBottom: 6 }}>
             Dashboard
           </h1>
           <div style={{ fontSize: '0.68rem', color: '#505050', ...MONO }}>

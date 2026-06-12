@@ -181,12 +181,12 @@ export default function CaseList() {
   const pending   = cases.filter(c => c.status === 'pending_closure').length;
 
   return (
-    <div style={{ padding: '20px 24px' }}>
+    <div className="fade-up" style={{ padding: '20px 24px' }}>
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
         <div>
-          <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Cases</h1>
+          <h1 className="cd" style={{ fontSize: '1.2rem' }}>Cases</h1>
           <div style={{ display: 'flex', gap: 12, marginTop: 4, fontSize: '0.7rem', fontFamily: 'JetBrains Mono' }}>
             <span style={{ color: '#787878' }}>{cases.length} total</span>
             {open > 0 && <span style={{ color: '#EF4444' }}>{open} open</span>}
@@ -311,31 +311,30 @@ export default function CaseList() {
               const limit = { critical:4, high:8, medium:48, low:168 }[c.severity] || 48;
               return c.status !== 'closed' && hrs > limit;
             })();
+            const pendingApproval = c.status === 'pending_closure';
 
             return (
               <div
                 key={c.id}
-                className="at-card"
-                style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', transition: 'border-color 0.15s', position: 'relative', overflow: 'hidden' }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(90,138,159,0.3)'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = isSlaBreached ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.07)'}
+                className={`at-card${pendingApproval ? ' signal-gold' : ''}`}
                 onClick={() => navigate(`/app/cases/${c.id}`)}
                 style={{
                   padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer',
-                  background: '#1E1E1E', border: `1px solid ${isSlaBreached ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.07)'}`,
-                  borderRadius: 8, transition: 'border-color 0.15s', position: 'relative', overflow: 'hidden'
+                  background: '#1E1E1E',
+                  ...(isSlaBreached && !pendingApproval ? { borderColor: 'rgba(239,68,68,0.2)' } : {}),
+                  borderRadius: 8, position: 'relative', overflow: 'hidden'
                 }}
               >
                 {/* Severity left bar */}
-                {c.severity === 'critical' && (
+                {!pendingApproval && c.severity === 'critical' && (
                   <div className="critical-pulse" style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '8px 0 0 8px', background: '#5A8A9F' }} />
                 )}
-                {isSlaBreached && c.severity !== 'critical' && (
+                {!pendingApproval && isSlaBreached && c.severity !== 'critical' && (
                   <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '8px 0 0 8px', background: '#EF4444', opacity: 0.6 }} />
                 )}
 
                 {/* Case info */}
-                <div style={{ flex: 1, minWidth: 0, paddingLeft: (c.severity === 'critical' || isSlaBreached) ? 6 : 0 }}>
+                <div style={{ flex: 1, minWidth: 0, paddingLeft: (c.severity === 'critical' || isSlaBreached || pendingApproval) ? 6 : 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
                     <span style={{ fontWeight: 600, fontSize: '0.84rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</span>
                     {c.is_public && <Globe size={10} style={{ color: '#22C55E', flexShrink: 0 }} title="Public" />}
@@ -359,6 +358,7 @@ export default function CaseList() {
 
                 {/* Badges */}
                 <div style={{ display: 'flex', gap: 5, alignItems: 'center', flexShrink: 0 }}>
+                  {pendingApproval && <span className="signal-dot" title="Pending approval" />}
                   {isSlaBreached && (
                     <span style={{ fontSize: '0.6rem', fontFamily: 'JetBrains Mono', fontWeight: 700, color: '#EF4444', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', padding: '1px 6px', borderRadius: 3, letterSpacing: '0.06em' }}>
                       SLA BREACH

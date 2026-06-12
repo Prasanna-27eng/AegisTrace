@@ -151,42 +151,42 @@ export default function Login() {
         .cd { font-family: 'Clash Display', sans-serif; }
         .cg { font-family: 'Cabinet Grotesk', sans-serif; }
 
-        .at-field-new { display: flex; flex-direction: column; gap: 6px; }
+        .at-field-new { display: flex; flex-direction: column; gap: 8px; }
         .at-label-new {
-          font-family: 'Cabinet Grotesk', sans-serif;
-          font-size: 11px; font-weight: 600; color: rgba(245,240,232,0.45);
-          letter-spacing: 0.08em; text-transform: uppercase;
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 11px; font-weight: 500; color: rgba(245,240,232,0.45);
+          letter-spacing: 0.22em; text-transform: uppercase;
         }
         .at-input-new {
-          background: rgba(245,240,232,0.04);
-          border: 1px solid rgba(245,240,232,0.1);
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(245,240,232,0.16);
           color: #F5F0E8;
           font-family: 'Cabinet Grotesk', sans-serif; font-size: 15px; font-weight: 500;
-          padding: 13px 16px; outline: none; width: 100%;
-          transition: border-color 200ms cubic-bezier(0.16,1,0.3,1),
-                      background 200ms cubic-bezier(0.16,1,0.3,1),
-                      box-shadow 200ms cubic-bezier(0.16,1,0.3,1);
-          border-radius: 0;
+          padding: 14px 16px; outline: none; width: 100%;
+          transition: border-color 300ms cubic-bezier(0.16,1,0.3,1),
+                      background 300ms cubic-bezier(0.16,1,0.3,1),
+                      box-shadow 300ms cubic-bezier(0.16,1,0.3,1);
+          border-radius: 10px;
           -webkit-font-smoothing: antialiased;
         }
-        .at-input-new::placeholder { color: rgba(245,240,232,0.22); }
+        .at-input-new::placeholder { color: rgba(245,240,232,0.3); }
         .at-input-new:focus {
-          border-color: ${GOLD};
+          border-color: rgba(245,158,11,0.6);
           background: rgba(245,158,11,0.05);
           box-shadow: 0 0 0 3px rgba(245,158,11,0.1), 0 0 16px rgba(245,158,11,0.12);
         }
-        .at-input-new:hover:not(:focus) { border-color: rgba(245,240,232,0.22); }
+        .at-input-new:hover:not(:focus) { border-color: rgba(245,240,232,0.28); }
 
         .submit-btn {
           width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
-          background: ${GOLD}; color: #000; font-weight: 700;
-          font-family: 'Cabinet Grotesk', sans-serif; font-size: 14px;
-          padding: 14px 24px; border: none; cursor: pointer; letter-spacing: 0.04em;
-          transition: background 140ms cubic-bezier(0.16,1,0.3,1), transform 90ms, box-shadow 140ms;
-          border-radius: 0;
+          background: ${GOLD}; color: #050405; font-weight: 800;
+          font-family: 'Cabinet Grotesk', sans-serif; font-size: 15.5px;
+          padding: 15px 24px; border: none; cursor: pointer; letter-spacing: 0.02em;
+          transition: background 350ms cubic-bezier(0.16,1,0.3,1), transform 350ms cubic-bezier(0.16,1,0.3,1), box-shadow 350ms cubic-bezier(0.16,1,0.3,1);
+          border-radius: 100px;
         }
-        .submit-btn:hover:not(:disabled)  { background: #FBBF24; box-shadow: 0 0 24px rgba(245,158,11,0.4); }
-        .submit-btn:active:not(:disabled) { transform: scale(0.97); }
+        .submit-btn:hover:not(:disabled)  { background: #FBBF24; transform: translateY(-2px); box-shadow: 0 0 24px rgba(245,158,11,0.4); }
+        .submit-btn:active:not(:disabled) { transform: translateY(0); }
         .submit-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
         @keyframes shake {
@@ -238,11 +238,10 @@ export default function Login() {
         }}
       />
 
-      {/* Dark overlays */}
-      <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'rgba(2,2,2,0.75)', zIndex: 1 }}/>
-      <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 70% 70% at 50% 50%, transparent 30%, rgba(2,2,2,0.65) 100%)', zIndex: 1 }}/>
-      {/* Amber bloom centre */}
-      <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 40% 30% at 50% 50%, rgba(245,158,11,0.07) 0%, transparent 60%)', zIndex: 1 }}/>
+      {/* Dark overlay */}
+      <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'rgba(5,4,5,0.72)', zIndex: 1 }}/>
+      {/* Gold radial from bottom */}
+      <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 110%, rgba(245,158,11,0.1) 0%, transparent 55%)', zIndex: 1 }}/>
 
       {/* Scanning grid overlay */}
       <ScanGrid/>
@@ -264,18 +263,20 @@ export default function Login() {
 
       {/* ── CARD ───────────────────────────────────────────────────────── */}
       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, zIndex: 10 }}>
+        <div style={{ width: '100%', maxWidth: 420, transform: `translate(${offset.x * 0.18}px, ${offset.y * 0.18}px)`, willChange: 'transform' }}>
         <motion.div
           initial={{ opacity: 0, scale: 0.93, y: 32 }}
           animate={{ opacity: 1, scale: 1,    y: 0  }}
           transition={{ duration: 0.75, ease: E }}
           style={{
-            width: '100%', maxWidth: 400,
+            width: '100%',
             position: 'relative',
-            background: 'rgba(8,7,8,0.84)',
-            backdropFilter: 'blur(28px) saturate(150%)',
-            WebkitBackdropFilter: 'blur(28px) saturate(150%)',
-            border: '1px solid rgba(245,240,232,0.1)',
-            padding: 'clamp(32px,5vw,48px)',
+            background: 'rgba(10,9,8,0.55)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            border: '1px solid rgba(245,240,232,0.14)',
+            borderRadius: 18,
+            padding: 'clamp(32px,5vw,42px) clamp(28px,4vw,40px) clamp(28px,4vw,36px)',
             overflow: 'hidden',
           }}
         >
@@ -457,7 +458,18 @@ export default function Login() {
               )}
             </AnimatePresence>
           </div>
+
+          {/* Footer mono notices */}
+          <div style={{ marginTop: 26, paddingTop: 22, borderTop: '1px solid rgba(245,240,232,0.1)', display: 'flex', flexDirection: 'column', gap: 8, position: 'relative', zIndex: 2 }}>
+            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11.5, color: 'rgba(245,240,232,0.4)' }}>
+              2FA enforced for admins · sessions are device-fingerprinted
+            </span>
+            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11.5, color: 'rgba(245,240,232,0.4)' }}>
+              Protected by ITDR — failed attempts are watched.
+            </span>
+          </div>
         </motion.div>
+        </div>
       </div>
 
       {/* ── BOTTOM BRAND LINE ──────────────────────────────────────────── */}

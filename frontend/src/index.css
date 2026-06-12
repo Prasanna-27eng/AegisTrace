@@ -72,6 +72,7 @@
   --fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
   --slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  --emil: cubic-bezier(0.16, 1, 0.3, 1); /* shared with public pages — animations > 200ms */
 }
 
 /* ── Reset ─────────────────────────────────────────────────────────────────── */
@@ -160,6 +161,9 @@ h1,h2,h3,h4,h5,h6 {
   to   { opacity: 1; transform: translateY(0); }
 }
 .fade-up { animation: fadeUp 0.4s ease both; }
+
+/* App page titles — Clash Display 600 bridges the public/app worlds */
+.cd { font-family: 'Clash Display', sans-serif; font-weight: 600; }
 
 /* 5. Hex Ripple — opacity pulse on hex grid cells */
 @keyframes hexRipple {
@@ -486,9 +490,47 @@ input[type="checkbox"] {
   transition: border-color var(--base), box-shadow var(--base);
 }
 .at-card:hover {
-  border-color: rgba(99, 102, 241, 0.18);
-  box-shadow: 0 0 0 1px rgba(99,102,241,0.1), 0 4px 20px rgba(0,0,0,0.4);
+  border-color: rgba(122, 171, 181, 0.18);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
+
+/* ── Signal gold — AI-pending-approval rows & critical SSE events ───────────── */
+.signal-gold {
+  border-color: rgba(245, 158, 11, 0.22) !important;
+  position: relative;
+}
+.signal-gold::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 12px; bottom: 12px;
+  width: 2px;
+  background: #F59E0B;
+  border-radius: 2px;
+}
+.signal-gold .signal-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #F59E0B; display: inline-block; flex-shrink: 0;
+  animation: goldPulse 2.2s infinite;
+}
+@keyframes goldPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.45); }
+  50%      { box-shadow: 0 0 0 6px rgba(245,158,11,0); }
+}
+
+/* ── Signal flash — new real-time event arriving (Defense Console, bell) ────── */
+@keyframes signalFlash {
+  0%   { background-color: rgba(245,158,11,0.08); }
+  100% { background-color: transparent; }
+}
+.signal-flash { animation: signalFlash 1.2s cubic-bezier(0.16,1,0.3,1) forwards; }
+
+/* ── Dropdown pop — command palette / notification dropdown ─────────────────── */
+@keyframes dropdownPop {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.dropdown-pop { animation: dropdownPop 180ms cubic-bezier(0.16,1,0.3,1) both; }
 
 /* ── Section label ─────────────────────────────────────────────────────────── */
 .section-label {
@@ -552,7 +594,7 @@ input[type="checkbox"] {
   50%       { opacity: 0.85; }
 }
 .skeleton {
-  background: rgba(255,255,255,0.07);
+  background: rgba(245,240,232,0.04);
   border-radius: var(--radius-sm);
   animation: skeleton-pulse 1.6s ease-in-out infinite;
 }

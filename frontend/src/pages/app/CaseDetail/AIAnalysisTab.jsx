@@ -65,10 +65,11 @@ export default function AIAnalysisTab({ caseData, updateCase, caseId, reload }) 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Confirmation bar */}
           {!confirmed ? (
-            <div style={{ padding: '12px 16px', background: 'rgba(234,179,8,0.06)', border: '1px solid rgba(234,179,8,0.2)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <span className="ai-badge" style={{ marginRight: 8 }}>AI SUGGESTED</span>
-                <span style={{ fontSize: '0.8rem', color: '#EAB308' }}>Review and confirm this AI analysis</span>
+            <div className="signal-gold" style={{ padding: '12px 16px', background: 'rgba(245,158,11,0.05)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span className="signal-dot" />
+                <span className="ai-badge">AI SUGGESTED</span>
+                <span style={{ fontSize: '0.8rem', color: '#F59E0B' }}>Review and confirm this AI analysis</span>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button className="btn-ghost" onClick={() => setShowExplain(!showExplain)} style={{ fontSize: '0.75rem' }}>
