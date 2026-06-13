@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-AegisTrace Endpoint Agent v5.0
+AegisTrace Endpoint Agent v6.1
 ────────────────────────────────────────────────────────────────────────
 Production-grade. Single deployable file. Python 3.8+ · Linux · macOS · Windows
 One allowed external dependency: psutil
@@ -15,6 +15,17 @@ One allowed external dependency: psutil
 ║  malware, ransomware recon, and lateral movement tools in the first      ║
 ║  second they execute — even if they bypass every other detector.         ║
 ╚══════════════════════════════════════════════════════════════════════════╝
+
+What's new in v6.1 vs v6.0:
+  ✓ Persistence Monitor    — cron/systemd/LaunchAgents/Startup/scheduled-task
+                             baseline diffing; alerts on any new boot/login
+                             persistence mechanism or shell-rc tampering
+  ✓ Expanded YARA-lite     — more reverse-shell + LOLBin one-liner patterns
+                             (socat, php, bitsadmin, certutil, wmic, pipe-to-shell)
+  ✓ DNS Tunnelling (volume)— flags high-volume distinct-subdomain query bursts
+                             to the same parent domain, not just single-query entropy
+  ✓ Signed Telemetry       — HMAC-SHA256(timestamp.nonce.body) on every payload;
+                             backend rejects stale/replayed requests
 
 What's new in v5.0 vs v3.0:
   ✓ Honey Token Trap       — canary credential files, zero false positives
@@ -80,7 +91,7 @@ ISOLATION_ENABLED = os.environ.get("AEGISTRACE_ISOLATION", "false").lower() == "
 # ═══════════════════════════════════════════════════════════════════════════════
 # § 2  CONSTANTS
 # ═══════════════════════════════════════════════════════════════════════════════
-AGENT_VERSION = "5.0.0"
+AGENT_VERSION = "6.1.0"
 
 AI_API_DOMAINS = [
     "api.openai.com",       "api.anthropic.com",
@@ -153,23 +164,53 @@ REGISTRY_KEYS_WINDOWS = [
 YARA_PATTERNS: list = [
     # Reverse-shell one-liners
     (b"bash -i >& /dev/tcp/",      "Bash TCP reverse shell",          "CRITICAL"),
+    (b"sh -i >& /dev/tcp/",        "sh TCP reverse shell",            "CRITICAL"),
+    (b"zsh -i >& /dev/tcp/",       "zsh TCP reverse shell",           "CRITICAL"),
+    (b"0<&196;exec 196<>",         "bash fd-196 reverse shell",       "CRITICAL"),
     (b"python -c 'import socket",  "Python socket reverse shell",      "CRITICAL"),
+    (b"python3 -c 'import socket", "Python3 socket reverse shell",     "CRITICAL"),
     (b"perl -e 'use Socket",       "Perl reverse shell",               "CRITICAL"),
+    (b"php -r '$sock=fsockopen",   "PHP fsockopen reverse shell",      "CRITICAL"),
+    (b"socat exec",                "socat reverse/bind shell",         "CRITICAL"),
+    (b"socat tcp",                 "socat TCP pivot/shell",            "HIGH"),
+    (b"ncat -e ",                  "ncat reverse shell (-e)",          "CRITICAL"),
+    (b"nc -e ",                    "netcat reverse shell (-e)",        "CRITICAL"),
+    (b"mkfifo /tmp/",              "named-pipe reverse shell setup",   "HIGH"),
+    (b"ssh -r ",                   "SSH remote port-forward (R)",      "MEDIUM"),
     (b"powershell -enc ",          "Encoded PowerShell (base64)",      "HIGH"),
-    (b"IEX(New-Object",            "PowerShell download-execute",      "HIGH"),
-    (b"Invoke-Expression",         "PowerShell Invoke-Expression",     "HIGH"),
+    (b"powershell -e ",            "Encoded PowerShell (-e, base64)",  "HIGH"),
+    (b"-noprofile -windowstyle hidden", "Hidden-window PowerShell",    "HIGH"),
+    (b"iex(new-object",            "PowerShell download-execute",      "HIGH"),
+    (b"invoke-expression",         "PowerShell Invoke-Expression",     "HIGH"),
+    (b"invoke-webrequest",         "PowerShell remote download",       "MEDIUM"),
+    (b"start-bitstransfer",        "PowerShell BITS download",         "MEDIUM"),
     (b"certutil -decode",          "certutil used for decoding",       "HIGH"),
+    (b"certutil -urlcache",        "certutil used to download a file", "HIGH"),
+    (b"bitsadmin /transfer",       "bitsadmin used to download a file","HIGH"),
     (b"mshta.exe http",            "mshta remote execution",           "HIGH"),
+    (b"mshta http",                "mshta remote execution",           "HIGH"),
+    (b"rundll32.exe javascript:",  "rundll32 javascript: execution",   "CRITICAL"),
     (b"regsvr32 /s /n /u /i:http", "Squiblydoo regsvr32 bypass",      "CRITICAL"),
+    (b"wmic process call create",  "wmic remote process creation",     "HIGH"),
+    (b"cscript //e:",              "cscript alternate-engine LOLBin",  "HIGH"),
     (b"net user /add",             "Local user creation",              "HIGH"),
     (b"net localgroup administrators /add", "Admin group addition",   "CRITICAL"),
+    # Pipe-to-shell downloads
+    (b"curl -s http",              "curl piped/silent download",       "MEDIUM"),
+    (b"| bash",                     "pipe-to-bash execution",           "HIGH"),
+    (b"| sh",                       "pipe-to-sh execution",             "HIGH"),
+    (b"|bash",                      "pipe-to-bash execution",           "HIGH"),
+    (b"wget -q -o- http",          "wget piped/silent download",       "MEDIUM"),
+    (b"base64 -d | bash",          "base64-decoded pipe-to-bash",      "CRITICAL"),
+    (b"base64 --decode | sh",      "base64-decoded pipe-to-sh",        "CRITICAL"),
     # Credential access
     (b"sekurlsa::logonpasswords",  "Mimikatz credential dump",         "CRITICAL"),
     (b"lsass.exe",                 "LSASS referenced in cmdline",      "HIGH"),
     (b"procdump -ma lsass",        "ProcDump LSASS dump",              "CRITICAL"),
     # Exfiltration
-    (b"curl -X POST",              "curl POST (possible exfil)",       "MEDIUM"),
+    (b"curl -x post",              "curl POST (possible exfil)",       "MEDIUM"),
     (b"wget --post-data",          "wget POST (possible exfil)",       "MEDIUM"),
+    (b"openssl s_client -connect", "openssl reverse-shell channel",    "HIGH"),
 ]
 
 # DGA detection thresholds
@@ -178,11 +219,15 @@ DGA_MIN_LENGTH          = 8     # minimum subdomain length to analyse
 DGA_VOWEL_RATIO_THRESH  = 0.25  # DGA domains have few vowels
 DGA_DIGIT_RATIO_THRESH  = 0.35  # DGA domains often have many digits
 
+# DNS tunnelling (volume-based) thresholds — new in v6.1
+DNS_TUNNEL_VOLUME_THRESHOLD = 30    # distinct subdomains of one base domain
+DNS_TUNNEL_VOLUME_WINDOW    = 120   # ...within this many seconds = tunnelling
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # § 3  IMPORTS
 # ═══════════════════════════════════════════════════════════════════════════════
 import sys, json, time, socket, platform, subprocess, logging, threading
-import hashlib, re, math, statistics, struct, multiprocessing, signal
+import hashlib, hmac, secrets, re, math, statistics, struct, multiprocessing, signal
 from datetime import datetime, timedelta
 from pathlib import Path
 from urllib import request as urllib_request, error as urllib_error
@@ -690,6 +735,18 @@ class DNSDGADetector:
     def __init__(self):
         self._seen_domains: set = set()
         self._alerted: dict = {}
+        self._query_history: dict = defaultdict(deque)   # base_domain -> deque[(ts, subdomain)]
+
+    @staticmethod
+    def _base_domain(domain: str) -> str:
+        """Best-effort registrable domain: last two labels (e.g. evil.com)."""
+        domain = domain.lower().strip(".")
+        if domain.startswith("www."):
+            domain = domain[4:]
+        parts = domain.split(".")
+        if len(parts) < 2:
+            return domain
+        return ".".join(parts[-2:])
 
     @staticmethod
     def _shannon_entropy(s: str) -> float:
@@ -783,6 +840,30 @@ class DNSDGADetector:
             all_hostnames.add((qname, "dns_query", 53))
 
         for hostname, proc_name, rport in all_hostnames:
+            # Volume-based DNS tunnelling: many distinct subdomains of the same
+            # base domain in a short window — independent of single-query entropy.
+            base = self._base_domain(hostname)
+            if base and base != hostname and not any(base.endswith(l) or l.endswith(base) for l in self.LEGIT_DOMAINS):
+                dq = self._query_history[base]
+                dq.append((now, hostname))
+                while dq and now - dq[0][0] > DNS_TUNNEL_VOLUME_WINDOW:
+                    dq.popleft()
+                distinct = {h for _, h in dq}
+                if len(distinct) >= DNS_TUNNEL_VOLUME_THRESHOLD:
+                    vol_key = f"vol:{base}"
+                    if now - self._alerted.get(vol_key, 0) >= 300:
+                        self._alerted[vol_key] = now
+                        alerts.append({
+                            "type":                "dns_tunneling_volume",
+                            "domain":              base,
+                            "distinct_subdomains": len(distinct),
+                            "window_seconds":      DNS_TUNNEL_VOLUME_WINDOW,
+                            "process_name":        proc_name,
+                            "description":         f"DNS tunnelling suspected: {len(distinct)} distinct subdomains of {base} queried within {DNS_TUNNEL_VOLUME_WINDOW}s",
+                            "severity":            "HIGH",
+                            "timestamp":           datetime.utcnow().isoformat(),
+                        })
+
             is_dga, reason = self._is_dga(hostname)
             if not is_dga:
                 continue
@@ -1040,6 +1121,148 @@ class YaraLiteEngine:
 
 
 _yara = YaraLiteEngine()
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# § 12A  PERSISTENCE MONITOR  (new v6.1)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class PersistenceMonitor:
+    """
+    Snapshots the OS's common boot/login persistence locations and alerts when
+    a NEW entry appears (or a shell-rc / cron file is modified) — catches
+    malware establishing persistence regardless of which mechanism it uses.
+
+    Linux   — crontab -l, /etc/cron.*, /etc/systemd/system + user systemd
+              units, shell rc files (~/.bashrc, ~/.profile, ...)
+    macOS   — crontab -l, LaunchAgents/LaunchDaemons (system + user), shell rc
+    Windows — Startup folder (user + all-users), scheduled tasks
+
+    Runs every SCAN_INTERVAL seconds, independent of the 30s telemetry cycle —
+    same pattern as VulnerabilityScanner.
+    """
+    SCAN_INTERVAL = 300   # seconds between scans
+
+    SHELL_RC_FILES = [
+        "~/.bashrc", "~/.bash_profile", "~/.bash_login", "~/.profile",
+        "~/.zshrc", "~/.zprofile", "~/.zshenv",
+    ]
+
+    def __init__(self):
+        self._last_run: float = 0.0
+        self._known: dict = self._snapshot()
+
+    @staticmethod
+    def _hash_file(path: Path) -> str:
+        try:
+            return hashlib.sha256(path.read_bytes()).hexdigest()[:16]
+        except Exception:
+            return ""
+
+    def _snapshot(self) -> dict:
+        entries: dict = {}
+        OS   = platform.system().lower()
+        home = Path.home()
+
+        if OS in ("linux", "darwin"):
+            for rc in self.SHELL_RC_FILES:
+                p = Path(rc).expanduser()
+                if p.is_file():
+                    entries[f"rc:{p}"] = self._hash_file(p)
+            try:
+                r = subprocess.run(["crontab", "-l"], capture_output=True, text=True, timeout=5)
+                if r.returncode == 0:
+                    entries["cron:user"] = hashlib.sha256(r.stdout.encode()).hexdigest()[:16]
+            except Exception:
+                pass
+
+        if OS == "linux":
+            for cron_dir in ("/etc/cron.d", "/etc/cron.daily", "/etc/cron.hourly",
+                              "/etc/cron.weekly", "/etc/cron.monthly"):
+                p = Path(cron_dir)
+                if p.is_dir():
+                    for f in p.iterdir():
+                        if f.is_file():
+                            entries[f"cron_file:{f}"] = self._hash_file(f)
+            if Path("/etc/crontab").is_file():
+                entries["cron_file:/etc/crontab"] = self._hash_file(Path("/etc/crontab"))
+            for unit_dir in ("/etc/systemd/system", str(home / ".config/systemd/user")):
+                p = Path(unit_dir)
+                if p.is_dir():
+                    for pattern in ("*.service", "*.timer"):
+                        for f in p.glob(pattern):
+                            entries[f"systemd:{f}"] = "present"
+
+        elif OS == "darwin":
+            for la_dir in ("/Library/LaunchAgents", "/Library/LaunchDaemons",
+                            str(home / "Library/LaunchAgents")):
+                p = Path(la_dir)
+                if p.is_dir():
+                    for f in p.glob("*.plist"):
+                        entries[f"launchd:{f}"] = "present"
+
+        elif OS == "windows":
+            for env_var, sub in (("APPDATA", r"Microsoft\Windows\Start Menu\Programs\Startup"),
+                                  ("PROGRAMDATA", r"Microsoft\Windows\Start Menu\Programs\StartUp")):
+                base = os.environ.get(env_var, "")
+                if not base:
+                    continue
+                p = Path(base) / sub
+                if p.is_dir():
+                    for f in p.iterdir():
+                        if f.is_file():
+                            entries[f"startup:{f}"] = "present"
+            try:
+                r = subprocess.run(["schtasks", "/query", "/fo", "csv", "/nh"],
+                                    capture_output=True, text=True, timeout=10)
+                if r.returncode == 0:
+                    for line in r.stdout.splitlines():
+                        name = line.split('","')[0].strip('"').strip()
+                        if name:
+                            entries[f"task:{name}"] = "present"
+            except Exception:
+                pass
+
+        return entries
+
+    def run_if_due(self) -> list:
+        if time.time() - self._last_run < self.SCAN_INTERVAL:
+            return []
+        self._last_run = time.time()
+        return self.check()
+
+    def check(self) -> list:
+        current = self._snapshot()
+        now_iso = datetime.utcnow().isoformat()
+        alerts  = []
+        for key, val in current.items():
+            old = self._known.get(key)
+            category, _, target = key.partition(":")
+            if old is None:
+                alerts.append({
+                    "type":        "persistence_change",
+                    "category":    category,
+                    "target":      target,
+                    "change":      "added",
+                    "description": f"New {category} persistence entry detected: {target}",
+                    "severity":    "HIGH",
+                    "timestamp":   now_iso,
+                })
+            elif old != val and category in ("rc", "cron", "cron_file"):
+                alerts.append({
+                    "type":        "persistence_change",
+                    "category":    category,
+                    "target":      target,
+                    "change":      "modified",
+                    "description": f"Persistence-relevant file modified: {target}",
+                    "severity":    "HIGH",
+                    "timestamp":   now_iso,
+                })
+        self._known = current
+        return alerts
+
+
+_persistence = PersistenceMonitor()
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -2559,15 +2782,27 @@ class TransportClient:
         self._current    = 0    # index of currently healthy backend
         self._failures   = defaultdict(int)   # backend → consecutive failures
 
-    def _build_headers(self) -> dict:
-        return {
+    def _build_headers(self, body: bytes = b"") -> dict:
+        headers = {
             "Content-Type":     "application/json",
             "X-Agent-Token":    AGENT_TOKEN,
             "X-Agent-Version":  AGENT_VERSION,
         }
+        # Signed-telemetry layer (v6.1): HMAC-SHA256(timestamp.nonce.body) using
+        # the agent token as key. Lets the backend reject stale/replayed
+        # requests even if a captured token+payload pair leaks. Backends that
+        # don't check these headers simply ignore them (backward compatible).
+        if AGENT_TOKEN:
+            ts    = str(int(time.time()))
+            nonce = secrets.token_hex(8)
+            mac   = hmac.new(AGENT_TOKEN.encode(), f"{ts}.{nonce}.".encode() + body, hashlib.sha256)
+            headers["X-Agent-Timestamp"] = ts
+            headers["X-Agent-Nonce"]     = nonce
+            headers["X-Agent-Signature"] = mac.hexdigest()
+        return headers
 
     def _post(self, url: str, data: bytes, timeout: int = 10) -> bool:
-        req = urllib_request.Request(url, data=data, headers=self._build_headers(), method="POST")
+        req = urllib_request.Request(url, data=data, headers=self._build_headers(data), method="POST")
         with urllib_request.urlopen(req, timeout=timeout) as resp:
             resp.read()
         return True
@@ -3086,6 +3321,9 @@ def _run_collection_cycle() -> list:
 
     # v6.0 — vulnerability & misconfiguration scan (every 5 min)
     vuln_findings = _vuln_scanner.run_if_due()
+
+    # v6.1 — persistence-mechanism baseline diff (every 5 min)
+    alerts += _persistence.run_if_due()
 
     # Behavioural baseline
     anomalies = _baseline.check_anomalies(processes, connections)

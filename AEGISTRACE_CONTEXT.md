@@ -95,7 +95,7 @@ backend/            FastAPI (Python)
       okta.py             Okta API token
       csv_import.py       CSV upload + column mapping
 
-agent/              aegistrace_agent.py (v6.0 — ~3650 lines, production-grade EDR + VulnerabilityScanner)
+agent/              aegistrace_agent.py (v6.1 — ~3700 lines, production-grade EDR + VulnerabilityScanner + PersistenceMonitor + HMAC-signed telemetry)
                     install.sh — one-command installer (v5.0)
 Dockerfile          Multi-stage: frontend build → FastAPI server
 render.yaml         Render free-tier deploy config (autoDeploy: true)
@@ -496,6 +496,27 @@ Key design decisions:
 - [x] HEAD method support on SPA catch-all route (fixed 405 from Render load balancer)
 - [x] Mission.jsx apostrophe syntax fix (wasn't in single-quoted string broke React build)
 - [x] render.yaml: ADMIN_PIN + INGEST_API_KEY set to sync:false (secrets not committed)
+
+### v6.1 Completed (June 2026 session)
+
+**Endpoint Agent v6.1** (agent/aegistrace_agent.py — hardening pass, zero new dependencies)
+- [x] **PersistenceMonitor** (§12A) — baseline-diff detector for boot/login persistence mechanisms
+  - Snapshots cron (`/etc/cron*`, `/var/spool/cron`), systemd user/system units, macOS LaunchAgents/LaunchDaemons, Windows Startup folder + Scheduled Tasks, and shell rc-file hashes (`.bashrc`, `.zshrc`, `.profile`, etc.) at agent startup
+  - Re-snapshots every 5 minutes (`run_if_due()`, same cadence as VulnerabilityScanner) and diffs against baseline
+  - New entries → `persistence_change` / `added` (HIGH); modified rc/cron file hashes → `persistence_change` / `modified` (HIGH)
+  - Wired into `_run_collection_cycle()` alongside the vuln scan
+- [x] **Expanded YARA-lite engine** — `YARA_PATTERNS` grown from ~16 to ~40 regexes, adding:
+  - Reverse shells: bash/zsh `/dev/tcp`, fd-196, python3, PHP `fsockopen`, `socat`, `ncat`/`nc -e`, `mkfifo` pipes, `ssh -R`
+  - LOLBins: `mshta`, `rundll32`, `regsvr32`, `wmic`, `cscript`, encoded/hidden PowerShell, `IEX`/`Invoke-Expression`/`Invoke-WebRequest`, BITS, `certutil`/`bitsadmin` downloaders
+  - Pipe-to-shell: `... | bash`, `... | sh`, `base64 -d | bash`, `openssl s_client -connect`
+- [x] **DNS tunnelling — volume detection** — `DNSDGADetector` now tracks distinct subdomains per base domain (last 2 labels) in a 120s sliding window (`DNS_TUNNEL_VOLUME_WINDOW`); ≥30 distinct subdomains (`DNS_TUNNEL_VOLUME_THRESHOLD`) to the same parent domain raises `dns_tunneling_volume` (HIGH) — complements the existing single-query entropy/length DGA heuristic
+- [x] **HMAC-signed telemetry** — every outbound request now carries `X-Agent-Timestamp` / `X-Agent-Nonce` / `X-Agent-Signature`, where signature = `HMAC-SHA256(agent_token, f"{timestamp}.{nonce}.".encode() + body)`
+- [x] `AGENT_VERSION` bumped `5.0.0` → `6.1.0`
+
+**Backend (June 2026)**
+- [x] `backend/routers/ingest.py` — new `_verify_agent_signature()` helper, applied to `POST /api/ingest/{agent_id}`, `GET /api/ingest/agent/commands/{agent_id}`, and `POST /api/ingest/agent/commands/{agent_id}/result`
+  - Verifies timestamp freshness (±300s), HMAC signature, and nonce-replay (in-memory cache, pruned per request)
+  - **Additive and backward-compatible**: if the signature headers are absent (pre-v6.1 agents), the existing `X-Agent-Token` check alone still authorizes the request
 
 ### v5.0 / Future Planned
 - [ ] SCIM endpoint (/api/scim/v2) — enterprise push-based identity sync

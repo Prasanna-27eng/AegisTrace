@@ -73,6 +73,50 @@ def _verify_key(x_aegistrace_key: Optional[str] = Header(None)):
         raise HTTPException(401, "Invalid ingest key")
 
 
+# ── Signed telemetry (v6.1) ─────────────────────────────────────────────────────
+# Additive replay-protection layer on top of X-Agent-Token. Agents running
+# v6.1+ send X-Agent-Timestamp / X-Agent-Nonce / X-Agent-Signature, where
+# signature = HMAC-SHA256(agent_token, f"{timestamp}.{nonce}.".encode() + body).
+# Pre-v6.1 agents omit these headers and are accepted on the token check alone.
+_SIGNATURE_WINDOW = 300  # seconds of allowed clock skew
+_seen_nonces: dict = {}  # nonce -> expiry epoch, pruned on each call
+
+
+def _verify_agent_signature(
+    raw_body: bytes,
+    key: str,
+    x_agent_timestamp: Optional[str],
+    x_agent_nonce: Optional[str],
+    x_agent_signature: Optional[str],
+) -> None:
+    if not (x_agent_timestamp and x_agent_nonce and x_agent_signature):
+        return  # pre-v6.1 agent — token check already passed
+
+    try:
+        ts = int(x_agent_timestamp)
+    except ValueError:
+        raise HTTPException(401, "Invalid signature timestamp")
+
+    now = _time_mod.time()
+    if abs(now - ts) > _SIGNATURE_WINDOW:
+        raise HTTPException(401, "Stale request signature")
+
+    expected_sig = hmac.new(
+        key.encode(),
+        f"{x_agent_timestamp}.{x_agent_nonce}.".encode() + raw_body,
+        hashlib.sha256,
+    ).hexdigest()
+    if not hmac.compare_digest(x_agent_signature, expected_sig):
+        raise HTTPException(401, "Invalid request signature")
+
+    for nonce, expiry in list(_seen_nonces.items()):
+        if expiry < now:
+            _seen_nonces.pop(nonce, None)
+    if x_agent_nonce in _seen_nonces:
+        raise HTTPException(401, "Replayed request signature")
+    _seen_nonces[x_agent_nonce] = now + _SIGNATURE_WINDOW
+
+
 # ── IOC helpers ───────────────────────────────────────────────────────────────
 import re as _re
 
@@ -712,9 +756,13 @@ def list_analyses(
 async def ingest_telemetry(
     agent_id: str,
     data: dict,
+    request: Request,
     session: Session = Depends(get_session),
     x_agent_token: Optional[str] = Header(None),
     x_agent_version: Optional[str] = Header(None),
+    x_agent_timestamp: Optional[str] = Header(None),
+    x_agent_nonce: Optional[str] = Header(None),
+    x_agent_signature: Optional[str] = Header(None),
 ):
     """
     Receive structured telemetry from the rebuilt psutil-based agent.
@@ -724,6 +772,8 @@ async def ingest_telemetry(
     expected_key = _get_ingest_key()
     if not x_agent_token or not hmac.compare_digest(x_agent_token, expected_key):
         raise HTTPException(401, "Invalid agent token")
+    _verify_agent_signature(await request.body(), expected_key,
+                             x_agent_timestamp, x_agent_nonce, x_agent_signature)
 
     hostname = data.get("system_info", {}).get("hostname", agent_id)
     ip_addr  = data.get("system_info", {}).get("ip_address", "")
@@ -1067,13 +1117,19 @@ async def ingest_telemetry(
 @router.get("/agent/commands/{agent_id}")
 async def get_commands(
     agent_id: str,
+    request: Request,
     session: Session = Depends(get_session),
     x_agent_token: Optional[str] = Header(None),
+    x_agent_timestamp: Optional[str] = Header(None),
+    x_agent_nonce: Optional[str] = Header(None),
+    x_agent_signature: Optional[str] = Header(None),
 ):
     """Agent polls this every 10 seconds for pending commands."""
     expected_key = _get_ingest_key()
     if not x_agent_token or not hmac.compare_digest(x_agent_token, expected_key):
         raise HTTPException(401, "Invalid agent token")
+    _verify_agent_signature(await request.body(), expected_key,
+                             x_agent_timestamp, x_agent_nonce, x_agent_signature)
 
     endpoint = session.exec(
         select(Endpoint).where(Endpoint.hostname == agent_id)
@@ -1104,13 +1160,19 @@ async def get_commands(
 async def command_result(
     agent_id: str,
     data: dict,
+    request: Request,
     session: Session = Depends(get_session),
     x_agent_token: Optional[str] = Header(None),
+    x_agent_timestamp: Optional[str] = Header(None),
+    x_agent_nonce: Optional[str] = Header(None),
+    x_agent_signature: Optional[str] = Header(None),
 ):
     """Agent posts command execution results here."""
     expected_key = _get_ingest_key()
     if not x_agent_token or not hmac.compare_digest(x_agent_token, expected_key):
         raise HTTPException(401, "Invalid agent token")
+    _verify_agent_signature(await request.body(), expected_key,
+                             x_agent_timestamp, x_agent_nonce, x_agent_signature)
 
     command_id = data.get("command_id")
     result     = data.get("result", {})
