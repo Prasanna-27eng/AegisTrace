@@ -7,4 +7,6 @@ __pycache__/
 /var/data/
 .DS_Store
 .claude/
+.opencode/
+opencode.jsonc
 frontend/public/incoming/
