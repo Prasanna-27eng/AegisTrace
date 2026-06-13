@@ -518,17 +518,39 @@ Key design decisions:
   - Verifies timestamp freshness (±300s), HMAC signature, and nonce-replay (in-memory cache, pruned per request)
   - **Additive and backward-compatible**: if the signature headers are absent (pre-v6.1 agents), the existing `X-Agent-Token` check alone still authorizes the request
 
+### v6.2 Completed (June 2026 session)
+
+**mcp-aegis v0.2.1 — security + bug fixes** (`~/Documents/Claude/Projects/aegistrace-mcp-gateway/`)
+- [x] **Closed `tools/call` credential-read bypass (CRITICAL)** — `block_credential_reads` and other `resource_patterns` rules previously only checked `request.resource_uri`, which is `None` for `tools/call` requests. A call like `tools/call read_file path=~/.ssh/id_rsa` therefore sailed through as `default_allow`.
+  - `src/mcp_aegis/policy.py`: new `_tool_call_resource_candidates()` extracts string values from `params.arguments` for path/URI-like keys (`path`, `file`, `filepath`, `file_path`, `filename`, `uri`, `url`, `command`, `cmd`, `source`, `destination`), expands `~` and converts absolute paths to `file://` form; `_rule_matches()` now checks these candidates against `resource_patterns` whenever `resource_uri` itself doesn't match.
+  - Verified: `tools/call read_file path=~/.ssh/id_rsa` → `BLOCK` / `block_credential_reads`; `tools/call read_file path=/tmp/notes.txt` → `default_allow` (no false positive); existing `resources/read file:///.../.ssh/id_rsa` still blocks.
+- [x] **Fixed `mcp-aegis logs` crash** — `_print_table()` called `row.get(...)` as a `getattr` default on `AuditEvent` dataclass rows (eagerly evaluated, so it crashed before `getattr` even ran) and referenced non-existent `tool`/`rule` attributes. Rewrote to read `AuditEvent` fields directly (`tool_name`/`resource_uri` → subject column, `rule_name`, `decision.value`). Verified against a real SQLite audit DB — `mcp-aegis logs --limit 5 --db <path>` now renders correctly.
+- Not yet bumped/republished to PyPI — code fixes are committed locally in the `aegistrace-mcp-gateway` repo; version bump + `git push` + PyPI release still pending a separate explicit request.
+
+**ITDR — MaxMind GeoLite2 offline geo lookups** (`backend/geoip.py`, new)
+- [x] New `backend/geoip.py`: lazy `geoip2.database.Reader` over `GeoLite2-Country.mmdb`. On first use (and at startup), downloads the DB from MaxMind via `MAXMIND_LICENSE_KEY` env var into `/var/data/GeoLite2-Country.mmdb` (already gitignored), re-downloading if the cached copy is >35 days old. Fully optional/additive — with no license key set, `lookup_country()` returns `None` and behavior is unchanged from before.
+- [x] `backend/main.py` startup — calls `geoip.init()`, logs whether GeoLite2 is ready or needs `MAXMIND_LICENSE_KEY`.
+- [x] `backend/routers/itdr.py` — `create_auth_event` and `create_bulk_events` now auto-fill `AuthEvent.country` via `lookup_country(source_ip)` whenever the caller doesn't supply a `country` (covers raw IP-only log lines from `/events/parse` or manual entry), feeding `_detect_impossible_travel` with real data instead of relying solely on AI-guessed country codes.
+- [x] `backend/requirements.txt` — added `geoip2==4.8.0`.
+- **Deployment note:** requires a free MaxMind account + license key (https://www.maxmind.com/en/geolite2/signup) set as `MAXMIND_LICENSE_KEY` on the VPS. Without it, the feature is a no-op — no breakage, just no auto-geo.
+
 ### v5.0 / Future Planned
 - [ ] SCIM endpoint (/api/scim/v2) — enterprise push-based identity sync
 - [ ] Least Agency enforcement — per-agent scope definition + auto-reject
 - [ ] MCP Security Gateway — monitor MCP server connections, flag unapproved (Python httpx proxy, not Go)
 - [ ] Agent Supervision Console — per-AI-agent kill switches + task scope enforcement
 - [ ] Attacker Path Reconstruction — visual kill-chain across human + machine actors
-- [ ] ITDR analytics: impossible travel geo-accuracy — MaxMind DB instead of IP lookup API
 - [ ] Control Plane View `/app/control-plane` — live: identity trust scores, active agent actions, policy violations, endpoint heartbeats
 - [ ] SOAR Playbooks engine — builder UI + automated execution: trigger → action → approval gate
 - [ ] Endpoint Agent Layer 3 (eBPF/Falco) — kernel-level visibility on Linux
 - [ ] Endpoint Agent Layer 4 (Memory Forensics) — Volatility 3 integration
+
+### Next Session Plan (recommended build order, June 2026)
+1. **Priority 4 — Auto-Rule Generation Trigger** (~1 day) — last item in the active v10.0 plan (see line ~748); closes the "self-improving SOC" story arc with `DetectionRule` model + nightly `check_rule_generation_triggers()` + `/api/rules/pending` approve/reject + Pending Review tab.
+2. **Identity Graph interactions** (~1 day) — click-to-open Device Details panel, risk timeline from existing `trust_score_history`/`anomaly_count_7d`, risk-threshold filter slider. All data already exists in `IdentityNode`.
+3. **Adaptive Thresholds dashboard** (~1 day) — dedicated `/app/adaptive` page surfacing the v10.0 self-tuning agent's output: threshold time-series, FP/FN trending, manual lock/override.
+4. **SQL Console saved queries + export** (~0.5 day) — `SavedHuntQuery` model (name, sql, created_by, org_id), CSV/JSON export, query templates.
+5. Deferred until there's a concrete customer/prospect driving them: **SCIM** (2d), **Playbook visual builder** (2d), **DPDPA Compliance Report** (1.5d), **Temporal Linker cross-case + STIX export** (1.5d).
 
 ---
 
@@ -783,7 +805,7 @@ Per-file fixes:
 - [x] User-agent check for token theft
 - [x] Shadow AI ITDR integration — 3+ hits in 24h → alert
 - [x] ITDR analytics page — completed v5.1: GET /api/itdr/analytics + 3-tab ITDRPage
-- [ ] Impossible travel geo-accuracy improvement — use MaxMind DB instead of IP lookup API
+- [x] Impossible travel geo-accuracy improvement — MaxMind GeoLite2 (`backend/geoip.py`, v6.2)
 
 ### Priority 3 — Trust OS Features
 - [x] Shadow AI Detection dashboard — `/app/shadow-ai` — completed v4.3

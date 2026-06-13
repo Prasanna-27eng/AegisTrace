@@ -458,6 +458,16 @@ async def startup():
     except Exception as _e:
         print(f"[qdrant] Startup skipped: {_e}")
 
+    # ── GeoIP (MaxMind GeoLite2) — offline IP→country for ITDR ────────────────
+    try:
+        import geoip as _geoip
+        if _geoip.init():
+            print("[geoip] GeoLite2 country database ready")
+        else:
+            print("[geoip] Not configured — set MAXMIND_LICENSE_KEY to enable IP→country lookups")
+    except Exception as _e:
+        print(f"[geoip] Startup skipped: {_e}")
+
     # ── Hardware platform startup ─────────────────────────────────────────────
     try:
         from sqlmodel import Session

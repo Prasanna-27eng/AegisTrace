@@ -31,6 +31,7 @@ from database import get_session
 from routers.auth import get_current_user
 from ai_router import call_ai_json
 from core.events import event_bus, Events
+from geoip import lookup_country
 import adaptive_config
 
 router = APIRouter(prefix="/api/itdr", tags=["itdr"])
@@ -403,13 +404,15 @@ def create_auth_event(
         case = session.get(Case, case_id)
         if not case or case.org_id != user.org_id:
             raise HTTPException(404, "Case not found")
+    source_ip = data.get("source_ip")
+    country   = data.get("country") or lookup_country(source_ip)
     event = AuthEvent(
         node_id=data.get("node_id"),
         identity_label=data.get("identity_label", ""),
         event_type=data.get("event_type", "login"),
         success=data.get("success", True),
-        source_ip=data.get("source_ip"),
-        country=data.get("country"),
+        source_ip=source_ip,
+        country=country,
         city=data.get("city"),
         region=data.get("region"),
         device_id=data.get("device_id"),
@@ -446,13 +449,15 @@ def create_bulk_events(
     for d in events:
         raw_ts = d.get("timestamp")
         ts = datetime.fromisoformat(raw_ts) if raw_ts else datetime.utcnow()
+        source_ip = d.get("source_ip")
+        country   = d.get("country") or lookup_country(source_ip)
         ev = AuthEvent(
             node_id=d.get("node_id"),
             identity_label=d.get("identity_label", ""),
             event_type=d.get("event_type", "login"),
             success=d.get("success", True),
-            source_ip=d.get("source_ip"),
-            country=d.get("country"),
+            source_ip=source_ip,
+            country=country,
             city=d.get("city"),
             device_id=d.get("device_id"),
             device_name=d.get("device_name"),
