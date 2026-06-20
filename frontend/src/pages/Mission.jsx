@@ -17,8 +17,8 @@ import {
 const E    = [0.16, 1, 0.3, 1];
 const EOUT = [0.23, 1, 0.32, 1];
 const GOLD = '#F59E0B';
-const BG   = '#050405';
-const INK  = '#F5F0E8';
+const BG   = '#0A1628';
+const INK  = '#F1F5F9';
 
 /* ─── Lenis smooth scroll ───────────────────────────────────────────────── */
 function useLenis() {
@@ -83,7 +83,7 @@ function AmbientEmbers() {
         if (!still) { e.y -= e.v / h; if (e.y < -0.01) { e.y = 1.01; e.x = Math.random(); } }
         const x = e.x * w + Math.sin(t * 0.5 + e.ph) * 14;
         const a = still ? 0.18 : 0.07 + 0.13 * (0.5 + 0.5 * Math.sin(t * 1.1 + e.ph));
-        ctx.fillStyle = e.gold ? `rgba(245,158,11,${a * 1.25})` : `rgba(245,240,232,${a})`;
+        ctx.fillStyle = e.gold ? `rgba(245,158,11,${a * 1.25})` : `rgba(241,245,249,${a})`;
         ctx.beginPath(); ctx.arc(x, e.y * h, e.r, 0, Math.PI * 2); ctx.fill();
       });
     };
@@ -101,22 +101,22 @@ function AmbientEmbers() {
 function RoadItem({ text, why, done = false, active = false, delay = 0 }) {
   const ref    = useRef(null);
   const inView = useInView(ref, { once: true });
-  const color  = done ? GOLD : active ? '#FBBF24' : 'rgba(245,240,232,0.22)';
+  const color  = done ? GOLD : active ? '#FBBF24' : 'rgba(241,245,249,0.22)';
   return (
     <motion.div ref={ref}
       initial={{ opacity: 0, x: -8 }} animate={inView ? { opacity: 1, x: 0 } : {}}
       transition={{ duration: 0.58, delay, ease: E }}
-      style={{ padding: '12px 0', borderBottom: '1px solid rgba(245,240,232,0.04)' }}
+      style={{ padding: '12px 0', borderBottom: '1px solid rgba(241,245,249,0.04)' }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         <div style={{ flexShrink: 0, marginTop: 3 }}>
           {done   ? <CheckCircle size={13} color={GOLD} style={{ filter: 'drop-shadow(0 0 4px rgba(245,158,11,0.4))' }}/>
           : active ? <Clock size={13} color="#FBBF24"/>
-          : <div style={{ width: 13, height: 13, borderRadius: '50%', border: '1px solid rgba(245,240,232,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(245,240,232,0.18)' }}/></div>}
+          : <div style={{ width: 13, height: 13, borderRadius: '50%', border: '1px solid rgba(241,245,249,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(241,245,249,0.18)' }}/></div>}
         </div>
         <div>
-          <span style={{ fontFamily: "'Cabinet Grotesk',sans-serif", fontSize: 13.5, color, lineHeight: 1.6, display: 'block' }}>{text}</span>
-          {why && <span style={{ fontFamily: "'Cabinet Grotesk',sans-serif", fontSize: 11.5, color: 'rgba(245,240,232,0.26)', lineHeight: 1.55, display: 'block', marginTop: 3 }}>{why}</span>}
+          <span style={{ fontFamily: "'IBM Plex Sans',sans-serif", fontSize: 13.5, color, lineHeight: 1.6, display: 'block' }}>{text}</span>
+          {why && <span style={{ fontFamily: "'IBM Plex Sans',sans-serif", fontSize: 11.5, color: 'rgba(241,245,249,0.26)', lineHeight: 1.55, display: 'block', marginTop: 3 }}>{why}</span>}
         </div>
       </div>
     </motion.div>
@@ -187,11 +187,11 @@ function HeroScene() {
       {/* Mid overlay — moves at different rate (depth) */}
       <motion.div aria-hidden style={{
         position: 'absolute', inset: 0,
-        background: 'linear-gradient(to bottom, rgba(5,4,5,0.22) 0%, rgba(5,4,5,0.06) 36%, rgba(5,4,5,0.94) 100%)',
+        background: 'linear-gradient(to bottom, rgba(10,22,40,0.22) 0%, rgba(10,22,40,0.06) 36%, rgba(10,22,40,0.94) 100%)',
         x: useTransform(bgDX, v => v * 0.35),
         y: useTransform(bgDY, v => v * 0.35),
       }}/>
-      <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, rgba(5,4,5,0.7) 0%, rgba(5,4,5,0.22) 55%, transparent 100%)' }}/>
+      <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, rgba(10,22,40,0.7) 0%, rgba(10,22,40,0.22) 55%, transparent 100%)' }}/>
       <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 50% 38% at 8% 94%, rgba(245,158,11,0.13) 0%, transparent 64%)' }}/>
 
       {/* Beat 1 */}
@@ -216,7 +216,7 @@ function HeroScene() {
         <motion.p
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.80, delay: 0.60, ease: E }}
-          className="cg" style={{ fontSize: 'clamp(14px,1.5vw,17px)', color: 'rgba(245,240,232,0.56)', lineHeight: 1.7, maxWidth: 460 }}>
+          className="cg" style={{ fontSize: 'clamp(14px,1.5vw,17px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.7, maxWidth: 460 }}>
           Built inside a SOC, where the gaps were impossible to ignore.
         </motion.p>
       </motion.div>
@@ -259,7 +259,7 @@ function HeroScene() {
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
         opacity: kickOp, y: kickY,
       }}>
-        <span className="mono" style={{ fontSize: 10, letterSpacing: '0.32em', color: 'rgba(245,240,232,0.3)' }}>SCROLL</span>
+        <span className="mono" style={{ fontSize: 10, letterSpacing: '0.32em', color: 'rgba(241,245,249,0.3)' }}>SCROLL</span>
       </motion.div>
     </PinnedScene>
   );
@@ -296,9 +296,9 @@ function Stat83Scene() {
       <section style={{ padding: 'clamp(60px,10vw,96px) clamp(24px,5vw,72px)', textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 6 }}>
           <span className="mono" style={{ fontSize: 'clamp(80px,20vw,140px)', fontWeight: 700, color: GOLD, lineHeight: 1 }}>83</span>
-          <span className="mono" style={{ fontSize: 'clamp(40px,9vw,64px)', fontWeight: 700, color: 'rgba(245,240,232,0.38)', lineHeight: 1 }}>%</span>
+          <span className="mono" style={{ fontSize: 'clamp(40px,9vw,64px)', fontWeight: 700, color: 'rgba(241,245,249,0.38)', lineHeight: 1 }}>%</span>
         </div>
-        <p className="cg" style={{ fontSize: 17, color: 'rgba(245,240,232,0.58)', maxWidth: 440, margin: '20px auto 0', lineHeight: 1.68 }}>
+        <p className="cg" style={{ fontSize: 17, color: 'rgba(241,245,249,0.58)', maxWidth: 440, margin: '20px auto 0', lineHeight: 1.68 }}>
           of breaches involve <strong style={{ color: INK }}>stolen credentials or identity abuse.</strong>
         </p>
       </section>
@@ -310,7 +310,7 @@ function Stat83Scene() {
       {/* Far layer: dot grid with 3-layer parallax */}
       <motion.div aria-hidden style={{
         position: 'absolute', inset: '-120px 0',
-        backgroundImage: 'radial-gradient(circle, rgba(245,240,232,0.16) 1.5px, transparent 1.5px)',
+        backgroundImage: 'radial-gradient(circle, rgba(241,245,249,0.16) 1.5px, transparent 1.5px)',
         backgroundSize: '30px 30px',
         y: dotsFarY, x: dotsFarX, opacity: 0.22, willChange: 'transform',
       }}/>
@@ -347,9 +347,9 @@ function Stat83Scene() {
             textShadow: fired ? '0 0 80px rgba(245,158,11,0.38)' : 'none',
             transition: 'text-shadow 600ms ease',
           }}>{count}</motion.span>
-          <span className="mono" style={{ fontSize: 'clamp(46px,7vw,106px)', fontWeight: 700, color: 'rgba(245,240,232,0.38)', lineHeight: 1 }}>%</span>
+          <span className="mono" style={{ fontSize: 'clamp(46px,7vw,106px)', fontWeight: 700, color: 'rgba(241,245,249,0.38)', lineHeight: 1 }}>%</span>
         </div>
-        <motion.p className="cg" style={{ fontSize: 19, fontWeight: 500, color: 'rgba(245,240,232,0.58)', maxWidth: 500, margin: '22px auto 0', opacity: capOp }}>
+        <motion.p className="cg" style={{ fontSize: 19, fontWeight: 500, color: 'rgba(241,245,249,0.58)', maxWidth: 500, margin: '22px auto 0', opacity: capOp }}>
           of breaches involve <strong style={{ color: INK }}>stolen credentials or identity abuse.</strong> The perimeter is whoever you trust.
         </motion.p>
       </motion.div>
@@ -383,7 +383,7 @@ function AttackTimelineScene() {
       {/* Far: subtle grid barely moves */}
       <motion.div aria-hidden style={{
         position: 'absolute', inset: 0,
-        backgroundImage: 'linear-gradient(rgba(245,240,232,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(245,240,232,0.02) 1px, transparent 1px)',
+        backgroundImage: 'linear-gradient(rgba(241,245,249,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(241,245,249,0.02) 1px, transparent 1px)',
         backgroundSize: '48px 48px',
         x: bgX, pointerEvents: 'none',
       }}/>
@@ -392,15 +392,15 @@ function AttackTimelineScene() {
       <motion.div style={{
         position: 'absolute', top: '7vh', left: 'clamp(24px,5vw,72px)', right: 0, zIndex: 4, opacity: labelOp,
       }}>
-        <div className="mono" style={{ fontSize: 10, letterSpacing: '0.26em', color: 'rgba(245,240,232,0.3)', marginBottom: 6 }}>HOW EVERY BREACH UNFOLDS</div>
+        <div className="mono" style={{ fontSize: 10, letterSpacing: '0.26em', color: 'rgba(241,245,249,0.3)', marginBottom: 6 }}>HOW EVERY BREACH UNFOLDS</div>
         <div className="cd" style={{ fontSize: 'clamp(18px,2vw,26px)', fontWeight: 600, color: INK }}>The anatomy of an identity attack.</div>
-        <div style={{ marginTop: 14, width: 160, height: 1, background: 'rgba(245,240,232,0.08)', position: 'relative' }}>
+        <div style={{ marginTop: 14, width: 160, height: 1, background: 'rgba(241,245,249,0.08)', position: 'relative' }}>
           <motion.div style={{ position: 'absolute', inset: 0, background: GOLD, width: progressW }}/>
         </div>
       </motion.div>
 
       {/* Connector line */}
-      <div style={{ position: 'absolute', top: '50%', left: 'clamp(24px,5vw,72px)', right: 0, height: 1, background: 'rgba(245,240,232,0.06)', zIndex: 1 }}>
+      <div style={{ position: 'absolute', top: '50%', left: 'clamp(24px,5vw,72px)', right: 0, height: 1, background: 'rgba(241,245,249,0.06)', zIndex: 1 }}>
         <motion.div style={{ position: 'absolute', inset: 0, background: GOLD, width: lineW, opacity: 0.35 }}/>
       </div>
 
@@ -430,7 +430,7 @@ function AttackTimelineScene() {
                 <Icon size={18} color={stage.color} style={{ filter: `drop-shadow(0 0 5px ${stage.color})` }}/>
               </div>
               <div className="cd" style={{ fontSize: 'clamp(14px,1.4vw,20px)', fontWeight: 600, color: INK, marginBottom: 10, lineHeight: 1.2 }}>{stage.event}</div>
-              <div className="cg" style={{ fontSize: 13, color: 'rgba(245,240,232,0.5)', lineHeight: 1.64 }}>{stage.detail}</div>
+              <div className="cg" style={{ fontSize: 13, color: 'rgba(241,245,249,0.5)', lineHeight: 1.64 }}>{stage.detail}</div>
               <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 3, background: stage.color, opacity: 0.38 }}/>
             </motion.div>
           );
@@ -438,7 +438,7 @@ function AttackTimelineScene() {
       </motion.div>
 
       <motion.div style={{ position: 'absolute', bottom: '6vh', left: 0, right: 0, display: 'flex', justifyContent: 'center', opacity: useTransform(p, [0, 0.06, 0.92, 1], [0, 0.4, 0.4, 0]) }}>
-        <span className="mono" style={{ fontSize: 10, letterSpacing: '0.3em', color: 'rgba(245,240,232,0.3)' }}>PAN →</span>
+        <span className="mono" style={{ fontSize: 10, letterSpacing: '0.3em', color: 'rgba(241,245,249,0.3)' }}>PAN →</span>
       </motion.div>
     </PinnedScene>
   );
@@ -480,13 +480,13 @@ function EvidenceScene() {
         {PROBLEMS.map(prob => (
           <RackFocus key={prob.n} p={p} focusAt={prob.focusAt} window={0.24} maxBlur={9} minOp={0.18}>
             <div style={{
-              background: 'rgba(245,240,232,0.025)',
-              border: '1px solid rgba(245,240,232,0.07)',
+              background: 'rgba(241,245,249,0.025)',
+              border: '1px solid rgba(241,245,249,0.07)',
               padding: 'clamp(20px,2.5vw,32px)', height: '100%',
             }}>
               <div className="mono" style={{ fontSize: 10, color: GOLD, letterSpacing: '0.14em', marginBottom: 14 }}>{prob.n}</div>
               <div className="cd" style={{ fontSize: 'clamp(14px,1.4vw,18px)', fontWeight: 600, color: INK, marginBottom: 10, lineHeight: 1.28 }}>{prob.title}</div>
-              <div className="cg" style={{ fontSize: 13.5, color: 'rgba(245,240,232,0.46)', lineHeight: 1.68 }}>{prob.body}</div>
+              <div className="cg" style={{ fontSize: 13.5, color: 'rgba(241,245,249,0.46)', lineHeight: 1.68 }}>{prob.body}</div>
             </div>
           </RackFocus>
         ))}
@@ -504,21 +504,21 @@ function OriginSection() {
   const bgY = useTransform(p, [0, 1], ['-5%', '5%']);
 
   return (
-    <section ref={ref} style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', background: '#060507', position: 'relative', overflow: 'hidden', borderTop: '1px solid rgba(245,240,232,0.05)' }}>
+    <section ref={ref} style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', background: '#0D1A2E', position: 'relative', overflow: 'hidden', borderTop: '1px solid rgba(241,245,249,0.05)' }}>
       <motion.div aria-hidden style={{ position: 'absolute', inset: '-8%', background: 'radial-gradient(ellipse 50% 60% at 30% 50%, rgba(245,158,11,0.04) 0%, transparent 70%)', y: bgY, pointerEvents: 'none' }}/>
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'clamp(140px,18vw,220px) 1fr', gap: 'clamp(32px,5vw,72px)', alignItems: 'start' }}>
           <Reveal><span className="cg" style={{ fontSize: 10, color: GOLD, letterSpacing: '0.22em', textTransform: 'uppercase', fontWeight: 600, paddingTop: 6, display: 'block' }}>Why it exists</span></Reveal>
           <div>
             <Reveal><h2 className="cd" style={{ fontSize: 'clamp(26px,3.5vw,48px)', fontWeight: 700, color: INK, margin: '0 0 22px', letterSpacing: '-0.025em', lineHeight: 1.04 }}>Built from the inside out.</h2></Reveal>
-            <Reveal delay={0.07}><p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(245,240,232,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 600 }}>Working as a security analyst with Microsoft Sentinel and real incident pipelines, the same pattern kept appearing: the tools existed, but they didn't talk to each other. SIEM gave you alerts. A separate tool gave you endpoint data. A third gave you identity events. Connecting them meant pivot tables, copy-paste, and waiting for escalations that never came with full context.</p></Reveal>
-            <Reveal delay={0.12}><p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(245,240,232,0.56)', lineHeight: 1.78, marginBottom: 28, maxWidth: 600 }}>AegisTrace is the tool that should have existed. Not a commercial platform with a 6-month procurement cycle. A focused, deployable SOC in one place — built by someone who uses this kind of tooling every day.</p></Reveal>
+            <Reveal delay={0.07}><p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 600 }}>Working as a security analyst with Microsoft Sentinel and real incident pipelines, the same pattern kept appearing: the tools existed, but they didn't talk to each other. SIEM gave you alerts. A separate tool gave you endpoint data. A third gave you identity events. Connecting them meant pivot tables, copy-paste, and waiting for escalations that never came with full context.</p></Reveal>
+            <Reveal delay={0.12}><p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 28, maxWidth: 600 }}>AegisTrace is the tool that should have existed. Not a commercial platform with a 6-month procurement cycle. A focused, deployable SOC in one place — built by someone who uses this kind of tooling every day.</p></Reveal>
             <Reveal delay={0.16}>
               <div style={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                 {[{ label: 'SC-200', sub: 'Microsoft Security Analyst' }, { label: 'Security+', sub: 'CompTIA' }, { label: 'MSc Computing', sub: 'Dublin Business School' }, { label: 'Practical ETH', sub: 'TCM Security' }].map(({ label, sub }) => (
                   <div key={label} style={{ background: 'rgba(245,158,11,0.05)', border: '1px solid rgba(245,158,11,0.12)', padding: '9px 14px' }}>
                     <div className="cd" style={{ fontSize: 12.5, fontWeight: 600, color: INK, marginBottom: 2 }}>{label}</div>
-                    <div className="cg" style={{ fontSize: 10.5, color: 'rgba(245,240,232,0.32)' }}>{sub}</div>
+                    <div className="cg" style={{ fontSize: 10.5, color: 'rgba(241,245,249,0.32)' }}>{sub}</div>
                   </div>
                 ))}
               </div>
@@ -541,7 +541,7 @@ function PrinciplesSection() {
   ];
 
   return (
-    <section style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', background: '#060507', borderTop: '1px solid rgba(245,240,232,0.05)' }}>
+    <section style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', background: '#0D1A2E', borderTop: '1px solid rgba(241,245,249,0.05)' }}>
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
         <Reveal style={{ marginBottom: 48 }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'clamp(140px,18vw,220px) 1fr', gap: 'clamp(32px,5vw,72px)', alignItems: 'baseline' }}>
@@ -554,10 +554,10 @@ function PrinciplesSection() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 2 }}>
             {PRINCIPLES.map(({ icon: Icon, title, body }, i) => (
               <Reveal key={title} delay={i * 0.05} y={20}>
-                <div style={{ padding: 'clamp(18px,2vw,26px)', background: 'rgba(245,240,232,0.02)', border: '1px solid rgba(245,240,232,0.06)', height: '100%' }}>
+                <div style={{ padding: 'clamp(18px,2vw,26px)', background: 'rgba(241,245,249,0.02)', border: '1px solid rgba(241,245,249,0.06)', height: '100%' }}>
                   <Icon size={18} color={GOLD} style={{ marginBottom: 14, opacity: 0.75 }}/>
                   <div className="cd" style={{ fontSize: 15, fontWeight: 600, color: INK, marginBottom: 8, letterSpacing: '-0.01em' }}>{title}</div>
-                  <div className="cg" style={{ fontSize: 13, color: 'rgba(245,240,232,0.44)', lineHeight: 1.68 }}>{body}</div>
+                  <div className="cg" style={{ fontSize: 13, color: 'rgba(241,245,249,0.44)', lineHeight: 1.68 }}>{body}</div>
                 </div>
               </Reveal>
             ))}
@@ -574,13 +574,13 @@ function VerBadge({ v, label, active = false, done = false }) {
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
       <div style={{
         width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: done ? 'rgba(245,158,11,0.12)' : active ? 'rgba(245,240,232,0.04)' : 'rgba(245,240,232,0.02)',
-        border: done ? '1px solid rgba(245,158,11,0.24)' : active ? '1px solid rgba(245,240,232,0.1)' : '1px solid rgba(245,240,232,0.05)',
+        background: done ? 'rgba(245,158,11,0.12)' : active ? 'rgba(241,245,249,0.04)' : 'rgba(241,245,249,0.02)',
+        border: done ? '1px solid rgba(245,158,11,0.24)' : active ? '1px solid rgba(241,245,249,0.1)' : '1px solid rgba(241,245,249,0.05)',
         boxShadow: done ? '0 0 10px rgba(245,158,11,0.14)' : 'none',
       }}>
-        <span className="mono" style={{ fontSize: 9, fontWeight: 700, color: done ? GOLD : active ? 'rgba(245,240,232,0.5)' : 'rgba(245,240,232,0.24)' }}>{v}</span>
+        <span className="mono" style={{ fontSize: 9, fontWeight: 700, color: done ? GOLD : active ? 'rgba(241,245,249,0.5)' : 'rgba(241,245,249,0.24)' }}>{v}</span>
       </div>
-      <span className="cd" style={{ fontSize: 13, fontWeight: 600, color: done ? INK : active ? INK : 'rgba(245,240,232,0.36)' }}>{label}</span>
+      <span className="cd" style={{ fontSize: 13, fontWeight: 600, color: done ? INK : active ? INK : 'rgba(241,245,249,0.36)' }}>{label}</span>
     </div>
   );
 }
@@ -620,7 +620,7 @@ function RoadmapSection() {
   ];
 
   return (
-    <section style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(245,240,232,0.05)' }}>
+    <section style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(241,245,249,0.05)' }}>
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
 
         {/* ── Header ── */}
@@ -641,7 +641,7 @@ function RoadmapSection() {
             <CheckCircle size={14} color={GOLD} style={{ filter: 'drop-shadow(0 0 4px rgba(245,158,11,0.4))' }}/>
             <span className="cd" style={{ fontSize: 15, fontWeight: 600, color: INK }}>Foundation — v1 — Shipped</span>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px,1fr))', gap: 2, background: 'rgba(245,240,232,0.04)', border: '1px solid rgba(245,240,232,0.07)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px,1fr))', gap: 2, background: 'rgba(241,245,249,0.04)', border: '1px solid rgba(241,245,249,0.07)' }}>
             {V1_CATEGORIES.map(({ cat, items }) => (
               <div key={cat} style={{ padding: 'clamp(16px,2vw,24px)', background: BG }}>
                 <div className="mono" style={{ fontSize: 9, letterSpacing: '0.2em', color: GOLD, marginBottom: 14, opacity: 0.8 }}>{cat}</div>
@@ -649,7 +649,7 @@ function RoadmapSection() {
                   {items.map(item => (
                     <div key={item} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                       <span style={{ color: GOLD, fontSize: 9, marginTop: 4, flexShrink: 0 }}>✓</span>
-                      <span className="cg" style={{ fontSize: 12.5, color: 'rgba(245,240,232,0.52)', lineHeight: 1.58 }}>{item}</span>
+                      <span className="cg" style={{ fontSize: 12.5, color: 'rgba(241,245,249,0.52)', lineHeight: 1.58 }}>{item}</span>
                     </div>
                   ))}
                 </div>
@@ -662,7 +662,7 @@ function RoadmapSection() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px,1fr))', gap: 'clamp(24px,4vw,48px)' }}>
           <div>
             <Reveal>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, paddingBottom: 14, borderBottom: '1px solid rgba(245,240,232,0.07)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, paddingBottom: 14, borderBottom: '1px solid rgba(241,245,249,0.07)' }}>
                 <Clock size={13} color="#FBBF24"/>
                 <span className="cd" style={{ fontSize: 14, fontWeight: 600, color: INK }}>Scale — v2 — In Progress</span>
               </div>
@@ -671,9 +671,9 @@ function RoadmapSection() {
           </div>
           <div>
             <Reveal>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, paddingBottom: 14, borderBottom: '1px solid rgba(245,240,232,0.07)' }}>
-                <div style={{ width: 13, height: 13, borderRadius: '50%', border: '1px solid rgba(245,240,232,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(245,240,232,0.18)' }}/></div>
-                <span className="cd" style={{ fontSize: 14, fontWeight: 600, color: 'rgba(245,240,232,0.38)' }}>Enterprise — v3 — Planned</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, paddingBottom: 14, borderBottom: '1px solid rgba(241,245,249,0.07)' }}>
+                <div style={{ width: 13, height: 13, borderRadius: '50%', border: '1px solid rgba(241,245,249,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(241,245,249,0.18)' }}/></div>
+                <span className="cd" style={{ fontSize: 14, fontWeight: 600, color: 'rgba(241,245,249,0.38)' }}>Enterprise — v3 — Planned</span>
               </div>
             </Reveal>
             {V3.map((item, i) => <RoadItem key={item.text} {...item} delay={i * 0.05}/>)}
@@ -688,7 +688,7 @@ function RoadmapSection() {
 /* ─── NAV ────────────────────────────────────────────────────────────────── */
 function Nav() {
   const { scrollY } = useScroll();
-  const navBg     = useTransform(scrollY, [0, 80], ['rgba(5,4,5,0)', 'rgba(5,4,5,0.92)']);
+  const navBg     = useTransform(scrollY, [0, 80], ['rgba(10,22,40,0)', 'rgba(10,22,40,0.96)']);
   const navBlur   = useTransform(scrollY, [0, 80], [0, 18]);
   const navFilter = useTransform(navBlur, v => `blur(${v}px)`);
 
@@ -717,7 +717,7 @@ function CTASection() {
   const ctaOp    = useTransform(p, [0.1, 0.45], [0, 1], { clamp: true });
 
   return (
-    <section ref={ref} style={{ position: 'relative', overflow: 'hidden', padding: 'clamp(100px,14vw,160px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(245,240,232,0.05)', textAlign: 'center' }}>
+    <section ref={ref} style={{ position: 'relative', overflow: 'hidden', padding: 'clamp(100px,14vw,160px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(241,245,249,0.05)', textAlign: 'center' }}>
       <div aria-hidden style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 600, height: 380, background: 'radial-gradient(ellipse, rgba(245,158,11,0.07) 0%, transparent 70%)', pointerEvents: 'none' }}/>
       {[0, 1, 2].map(i => (
         <div key={i} aria-hidden style={{ position: 'absolute', top: '50%', left: '50%', width: 480, height: 480, border: '1px solid rgba(245,158,11,0.055)', borderRadius: '50%', pointerEvents: 'none', animation: `ripple-ring ${4.2 + i * 1.6}s cubic-bezier(0,0,.8,1) ${i * 1.4}s infinite` }}/>
@@ -727,7 +727,7 @@ function CTASection() {
           <h2 className="cd" style={{ fontSize: 'clamp(30px,4.5vw,60px)', fontWeight: 700, color: INK, letterSpacing: '-0.03em', lineHeight: 0.96, marginBottom: 20 }}>
             Built by a practitioner,<br/>for practitioners.
           </h2>
-          <p className="cg" style={{ fontSize: 15, color: 'rgba(245,240,232,0.44)', lineHeight: 1.72, maxWidth: 440, margin: '0 auto 40px' }}>
+          <p className="cg" style={{ fontSize: 15, color: 'rgba(241,245,249,0.44)', lineHeight: 1.72, maxWidth: 440, margin: '0 auto 40px' }}>
             AegisTrace is not a commercial product. It is a proof of concept and a statement about what security tooling should be.
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -755,14 +755,14 @@ export default function Mission() {
       <Nav/>
 
       <style>{`
-        .cd  { font-family: 'Clash Display', sans-serif; }
-        .cg  { font-family: 'Cabinet Grotesk', sans-serif; }
-        .mono { font-family: 'JetBrains Mono', monospace; }
+        .cd  { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .cg  { font-family: 'IBM Plex Sans', sans-serif; }
+        .mono { font-family: 'IBM Plex Mono', monospace; }
 
         .gold-btn {
           display: inline-flex; align-items: center; gap: 8px;
           background: ${GOLD}; color: #000; font-weight: 700;
-          font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px;
+          font-family: 'IBM Plex Sans', sans-serif; font-size: 13px;
           padding: 12px 22px; border: none; cursor: pointer;
           text-decoration: none; letter-spacing: 0.03em;
           transition: background 140ms ease, transform 100ms, box-shadow 140ms;
@@ -772,18 +772,18 @@ export default function Mission() {
 
         .ghost-btn {
           display: inline-flex; align-items: center; gap: 8px;
-          background: transparent; color: rgba(245,240,232,0.7);
-          font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px; font-weight: 500;
-          padding: 11px 22px; border: 1px solid rgba(245,240,232,0.18);
+          background: transparent; color: rgba(241,245,249,0.7);
+          font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 500;
+          padding: 11px 22px; border: 1px solid rgba(241,245,249,0.18);
           cursor: pointer; text-decoration: none; letter-spacing: 0.02em;
           transition: border-color 140ms, color 140ms, transform 100ms;
         }
-        .ghost-btn:hover  { border-color: rgba(245,240,232,0.4); color: ${INK}; transform: translateY(-2px); }
+        .ghost-btn:hover  { border-color: rgba(241,245,249,0.4); color: ${INK}; transform: translateY(-2px); }
         .ghost-btn:active { transform: scale(0.97); }
 
         .nav-link {
-          font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px; font-weight: 500;
-          color: rgba(245,240,232,0.58); text-decoration: none;
+          font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 500;
+          color: rgba(241,245,249,0.58); text-decoration: none;
           position: relative; transition: color 140ms;
         }
         .nav-link:hover { color: ${INK}; }
@@ -809,12 +809,12 @@ export default function Mission() {
       {(isMobile || reduced) ? (
         <section style={{ minHeight: '70vh', display: 'flex', alignItems: 'flex-end', position: 'relative', overflow: 'hidden', paddingTop: 64 }}>
           <div aria-hidden style={{ position: 'absolute', inset: '-6%', backgroundImage: "url('/assets/pages/mission-bg.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.42 }}/>
-          <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(5,4,5,0.7) 0%, rgba(5,4,5,0.95) 100%)' }}/>
+          <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(10,22,40,0.7) 0%, rgba(10,22,40,0.95) 100%)' }}/>
           <Reveal style={{ position: 'relative', zIndex: 2, padding: '0 24px 60px' }}>
             <h1 className="cd" style={{ fontSize: 'clamp(38px,10vw,56px)', fontWeight: 700, lineHeight: 1.0, letterSpacing: '-0.02em', color: INK, margin: '0 0 16px' }}>
               Attackers no longer break in —<br/><span style={{ color: GOLD }}>they sign in.</span>
             </h1>
-            <p className="cg" style={{ fontSize: 15.5, color: 'rgba(245,240,232,0.54)', lineHeight: 1.68, maxWidth: 440, margin: 0 }}>
+            <p className="cg" style={{ fontSize: 15.5, color: 'rgba(241,245,249,0.54)', lineHeight: 1.68, maxWidth: 440, margin: 0 }}>
               Built inside a SOC, where the gaps were impossible to ignore.
             </p>
           </Reveal>
@@ -833,15 +833,15 @@ export default function Mission() {
       <RoadmapSection/>
       <CTASection/>
 
-      <footer style={{ borderTop: '1px solid rgba(245,240,232,0.05)', padding: '28px clamp(24px,5vw,72px)' }}>
+      <footer style={{ borderTop: '1px solid rgba(241,245,249,0.05)', padding: '28px clamp(24px,5vw,72px)' }}>
         <div style={{ maxWidth: 1240, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
-          <span className="cd" style={{ color: 'rgba(245,240,232,0.2)', fontSize: 12, letterSpacing: '0.08em' }}>AEGISTRACE</span>
+          <span className="cd" style={{ color: 'rgba(241,245,249,0.2)', fontSize: 12, letterSpacing: '0.08em' }}>AEGISTRACE</span>
           <div style={{ display: 'flex', gap: 24 }}>
-            <Link to="/" className="cg" style={{ color: 'rgba(245,240,232,0.25)', fontSize: 12, textDecoration: 'none' }}>Home</Link>
-            <Link to="/portfolio" className="cg" style={{ color: 'rgba(245,240,232,0.25)', fontSize: 12, textDecoration: 'none' }}>Portfolio</Link>
-            <Link to="/app/login" className="cg" style={{ color: 'rgba(245,240,232,0.25)', fontSize: 12, textDecoration: 'none' }}>Platform</Link>
+            <Link to="/" className="cg" style={{ color: 'rgba(241,245,249,0.25)', fontSize: 12, textDecoration: 'none' }}>Home</Link>
+            <Link to="/portfolio" className="cg" style={{ color: 'rgba(241,245,249,0.25)', fontSize: 12, textDecoration: 'none' }}>Portfolio</Link>
+            <Link to="/app/login" className="cg" style={{ color: 'rgba(241,245,249,0.25)', fontSize: 12, textDecoration: 'none' }}>Platform</Link>
           </div>
-          <span className="cg" style={{ color: 'rgba(245,240,232,0.15)', fontSize: 11 }}>© 2026 Prasanna Kumar</span>
+          <span className="cg" style={{ color: 'rgba(241,245,249,0.15)', fontSize: 11 }}>© 2026 Prasanna Kumar</span>
         </div>
       </footer>
     </div>

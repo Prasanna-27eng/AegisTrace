@@ -1,23 +1,25 @@
 import React, { useRef, useState, useEffect } from 'react';
 import {
-  motion, useScroll, useSpring, useTransform,
-  useMotionValueEvent, useInView, useReducedMotion, AnimatePresence,
+  motion, useTransform,
+  useInView, useReducedMotion, AnimatePresence,
 } from 'framer-motion';
-import * as THREE from 'three';
 import { Link } from 'react-router-dom';
 import Lenis from '@studio-freight/lenis';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ChevronDown } from 'lucide-react';
 import { useSceneCamera, PinnedScene, ScrollProgressBar } from '../components/SceneController';
 import LoadingScreen, { useLoading } from '../components/LoadingScreen';
 
 /* ─── Constants ─────────────────────────────────────────────────────────────── */
-const GOLD = '#F59E0B';
-const BG   = '#050405';
-const INK  = '#F5F0E8';
-const E    = [0.23, 1, 0.32, 1];
-
-/* clamp progress 0..1 between two scroll positions */
-const M = (p, a, b) => Math.max(0, Math.min(1, (p - a) / (b - a)));
+const GOLD    = '#F59E0B';
+const NAVY    = '#0A1628';
+const BLUE    = '#2563EB';
+const BLUE_L  = '#60A5FA';
+const INK     = '#F1F5F9';
+const MUTED   = '#94A3B8';
+const WS_BG   = '#F0F4F9';
+const WS_TEXT = '#0F172A';
+const WS_BODY = '#334155';
+const E       = [0.23, 1, 0.32, 1];
 
 /* ─── Hooks ─────────────────────────────────────────────────────────────────── */
 function useIsMobile() {
@@ -35,7 +37,7 @@ function useIsMobile() {
 /* ─── Scroll reveal ─────────────────────────────────────────────────────────── */
 function Reveal({ children, delay = 0, y = 32, style = {} }) {
   const ref    = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-60px' });
+  const inView = useInView(ref, { once: true, margin: '-80px' });
   return (
     <motion.div ref={ref}
       initial={{ opacity: 0, y }}
@@ -56,7 +58,7 @@ function Counter({ end, suffix = '' }) {
   useEffect(() => {
     if (!inView) return;
     let raf;
-    const dur   = 2000;
+    const dur   = 1800;
     const start = performance.now();
     const tick  = now => {
       const t    = Math.min((now - start) / dur, 1);
@@ -70,113 +72,146 @@ function Counter({ end, suffix = '' }) {
   return <span ref={ref}>{val}{suffix}</span>;
 }
 
-/* ─── Simple stacked mobile fallback ───────────────────────────────────────── */
-function SceneFallback({ children, minHeight = '70vh' }) {
-  return (
-    <section style={{
-      minHeight,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: 'clamp(56px,10vw,96px) clamp(24px,5vw,72px)',
-    }}>
-      <Reveal style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-        {children}
-      </Reveal>
-    </section>
-  );
-}
-
 /* ════════════════════════════════════════════════════════════════════════════
-   THREE.JS PARTICLE FIELD — Beat 3 hero
+   ANIMATED DASHBOARD MOCKUP — replaces Three.js particle field
 ════════════════════════════════════════════════════════════════════════════ */
-function ThreeHero({ opacity }) {
-  const mountRef = useRef(null);
-  const reduced  = useReducedMotion();
+function DashboardMockup() {
+  const [alertCount, setAlertCount] = useState(2847);
+  const [pulse, setPulse] = useState(false);
 
   useEffect(() => {
-    const el = mountRef.current;
-    if (!el) return;
-
-    const scene  = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, el.clientWidth / el.clientHeight, 0.1, 1000);
-    camera.position.z = 5;
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(el.clientWidth, el.clientHeight);
-    renderer.setClearColor(0x000000, 0);
-    el.appendChild(renderer.domElement);
-
-    const count = 400;
-    const positions = new Float32Array(count * 3);
-    const colors    = new Float32Array(count * 3);
-    const goldC  = new THREE.Color(GOLD);
-    const inkC   = new THREE.Color('#aaaaaa');
-
-    for (let i = 0; i < count; i++) {
-      const theta = Math.random() * Math.PI * 2;
-      const phi   = Math.acos(2 * Math.random() - 1);
-      const r     = 2 + Math.random() * 1.5;
-      positions[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
-      positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-      positions[i * 3 + 2] = r * Math.cos(phi);
-      const c = Math.random() < 0.35 ? goldC : inkC;
-      colors[i * 3]     = c.r;
-      colors[i * 3 + 1] = c.g;
-      colors[i * 3 + 2] = c.b;
-    }
-
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geo.setAttribute('color',    new THREE.BufferAttribute(colors, 3));
-    const mat = new THREE.PointsMaterial({ size: 0.028, vertexColors: true, transparent: true, opacity: 0.85 });
-    const points = new THREE.Points(geo, mat);
-    scene.add(points);
-
-    let raf;
-    let t = 0;
-    const animate = () => {
-      raf = requestAnimationFrame(animate);
-      if (!reduced) {
-        t += 0.004;
-        points.rotation.y = t * 0.22;
-        points.rotation.x = Math.sin(t * 0.18) * 0.15;
-      }
-      renderer.render(scene, camera);
-    };
-    animate();
-
-    const onResize = () => {
-      if (!el) return;
-      camera.aspect = el.clientWidth / el.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(el.clientWidth, el.clientHeight);
-    };
-    window.addEventListener('resize', onResize);
-
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener('resize', onResize);
-      renderer.dispose();
-      geo.dispose();
-      mat.dispose();
-      if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
-    };
-  }, [reduced]);
+    const interval = setInterval(() => {
+      setAlertCount(prev => prev + 1);
+      setPulse(true);
+      setTimeout(() => setPulse(false), 600);
+    }, 4200);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <motion.div
-      ref={mountRef}
-      style={{
-        position: 'absolute', inset: 0,
-        opacity,
-        willChange: 'opacity',
-      }}
-    />
+    <div style={{
+      background: '#111827',
+      border: '1px solid rgba(255,255,255,0.1)',
+      borderRadius: 12,
+      overflow: 'hidden',
+      boxShadow: '0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(37,99,235,0.2)',
+      width: '100%',
+      maxWidth: 460,
+    }}>
+      {/* Terminal chrome */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '12px 16px',
+        background: 'rgba(255,255,255,0.04)',
+        borderBottom: '1px solid rgba(255,255,255,0.07)',
+      }}>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {['#F87171', '#FBBF24', '#34D399'].map(c => (
+            <div key={c} style={{ width: 10, height: 10, borderRadius: '50%', background: c, opacity: 0.6 }}/>
+          ))}
+        </div>
+        <span style={{
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: 11, color: 'rgba(241,245,249,0.35)',
+          letterSpacing: '0.1em',
+        }}>
+          AEGISTRACE · SOC CONSOLE
+        </span>
+        <div style={{ width: 32 }}/>
+      </div>
+
+      {/* Case header */}
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <span style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11, color: BLUE_L, letterSpacing: '0.1em',
+          }}>
+            CASE AT-{alertCount}
+          </span>
+          <span style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 10, color: '#EF4444',
+            background: 'rgba(239,68,68,0.12)',
+            border: '1px solid rgba(239,68,68,0.3)',
+            padding: '3px 8px', letterSpacing: '0.1em',
+            animation: pulse ? 'critical-pulse 0.6s ease-out' : 'none',
+          }}>
+            CRITICAL
+          </span>
+        </div>
+        <div style={{
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontSize: 15, fontWeight: 600, color: INK, lineHeight: 1.3,
+        }}>
+          Impossible Travel + Privilege Escalation
+        </div>
+      </div>
+
+      {/* Severity badges grid */}
+      <div style={{ padding: '14px 20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        {[
+          { label: 'Impossible Travel', color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.25)' },
+          { label: 'Privilege Escalation', color: '#F97316', bg: 'rgba(249,115,22,0.1)', border: 'rgba(249,115,22,0.25)' },
+          { label: 'MFA Fatigue', color: '#FBBF24', bg: 'rgba(251,191,36,0.1)', border: 'rgba(251,191,36,0.25)' },
+          { label: 'Session Anomaly', color: '#60A5FA', bg: 'rgba(96,165,250,0.1)', border: 'rgba(96,165,250,0.25)' },
+        ].map(item => (
+          <div key={item.label} style={{
+            background: item.bg, border: `1px solid ${item.border}`,
+            borderRadius: 6, padding: '8px 10px',
+          }}>
+            <div style={{
+              fontFamily: "'IBM Plex Sans', sans-serif",
+              fontSize: 11, color: item.color, fontWeight: 500,
+            }}>{item.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Mini chart */}
+      <div style={{ padding: '0 20px 14px' }}>
+        <div style={{
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: 10, color: MUTED, letterSpacing: '0.1em', marginBottom: 6,
+        }}>RISK SCORE TREND · 24H</div>
+        <svg width="100%" height="48" viewBox="0 0 420 48" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#2563EB" stopOpacity="0.3"/>
+              <stop offset="100%" stopColor="#2563EB" stopOpacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M0,38 L40,36 L80,34 L120,30 L160,28 L200,22 L240,18 L280,12 L320,8 L360,6 L400,4 L420,2" stroke="#2563EB" strokeWidth="2" fill="none" opacity="0.9"/>
+          <path d="M0,38 L40,36 L80,34 L120,30 L160,28 L200,22 L240,18 L280,12 L320,8 L360,6 L400,4 L420,2 L420,48 L0,48 Z" fill="url(#chart-grad)"/>
+          <circle cx="420" cy="2" r="3" fill="#EF4444">
+            <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+      </div>
+
+      {/* Status bar */}
+      <div style={{
+        padding: '10px 20px',
+        background: 'rgba(37,99,235,0.08)',
+        borderTop: '1px solid rgba(37,99,235,0.15)',
+        display: 'flex', alignItems: 'center', gap: 8,
+      }}>
+        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#34D399' }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#34D399', animation: 'live-pulse 2s ease-out infinite' }}/>
+        </div>
+        <span style={{
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: 10, color: '#34D399', letterSpacing: '0.1em',
+        }}>
+          LIVE · AI TRIAGE ACTIVE · 6 DETECTORS RUNNING
+        </span>
+      </div>
+    </div>
   );
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   SCENE 1 — Hero (340vh, 4 beats)
+   SCENE 1 — Hero (340vh, 4 beats) — Keep existing dolly zoom pattern
 ════════════════════════════════════════════════════════════════════════════ */
 function HeroScene() {
   const ref = useRef(null);
@@ -194,40 +229,30 @@ function HeroScene() {
   const b2BlurPx  = useTransform(p, [0.28, 0.42], [6, 0], { clamp: true });
   const b2Filter  = useTransform(b2BlurPx, v => `blur(${v}px)`);
   const b2ExitOp  = useTransform(p, [0.50, 0.58], [1, 0], { clamp: true });
-  /* combined: enter * exit — both are 0..1 motion values */
   const b2FinalOp = useTransform([b2Opacity, b2ExitOp], ([enter, exit]) => enter * exit);
-
-  /* Beat 3 — Three.js opacity p 0.52→0.78 */
-  const b3Opacity = useTransform(p, [0.52, 0.62, 0.72, 0.78], [0, 1, 1, 0], { clamp: true });
 
   /* Beat 4 — p 0.72→0.90 */
   const b4Opacity = useTransform(p, [0.72, 0.82], [0, 1], { clamp: true });
   const b4Y       = useTransform(b4Opacity, o => (1 - o) * 28);
 
-  /* BG photo opacity */
-  const bgScale   = useTransform(p, [0, 0.6], [1.12, 1.04], { clamp: true });
-  const bgOpacity = useTransform(p, [0, 0.48, 0.58], [0.65, 0.65, 0], { clamp: true });
-
+  /* Right column mockup fade in */
+  const mockupOp  = useTransform(p, [0.68, 0.80], [0, 1], { clamp: true });
+  const mockupY   = useTransform(mockupOp, o => (1 - o) * 40);
 
   return (
     <PinnedScene vh="340vh" sceneRef={ref}>
-      {/* Background photo — Ken Burns */}
-      <motion.div style={{
-        position: 'absolute', inset: '-6%',
-        backgroundImage: `url('/assets/pages/hero-bg.jpg')`,
-        backgroundSize: 'cover', backgroundPosition: 'center 35%',
-        scale: bgScale, opacity: bgOpacity,
-        willChange: 'transform, opacity',
-      }}/>
-
-      {/* Dark scrim */}
+      {/* Hero gradient background */}
       <div aria-hidden style={{
         position: 'absolute', inset: 0,
-        background: 'radial-gradient(ellipse at center, rgba(5,4,5,0.15) 0%, rgba(5,4,5,0.78) 70%), linear-gradient(180deg, rgba(5,4,5,0.5) 0%, rgba(5,4,5,0.1) 40%, rgba(5,4,5,0.9) 100%)',
+        background: 'linear-gradient(135deg, #0A1628 0%, #0D2240 35%, #0F3470 65%, #1048A0 85%, #2563EB 100%)',
       }}/>
 
-      {/* Three.js particle field */}
-      <ThreeHero opacity={b3Opacity}/>
+      {/* Subtle dot grid overlay */}
+      <div aria-hidden style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)',
+        backgroundSize: '40px 40px',
+      }}/>
 
       {/* Beat 1 */}
       <motion.div style={{
@@ -238,12 +263,13 @@ function HeroScene() {
         willChange: 'transform, opacity, filter',
         pointerEvents: 'none',
       }}>
-        <h1 className="cd" style={{
-          fontSize: 'clamp(46px,7.5vw,88px)', fontWeight: 600,
+        <h1 style={{
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontSize: 'clamp(46px,7.5vw,88px)', fontWeight: 800,
           lineHeight: 1.02, letterSpacing: '-0.03em',
           color: INK, margin: 0, textAlign: 'center',
         }}>
-          Attackers no longer break in.
+          Stop identity threats<br/>before they become breaches.
         </h1>
       </motion.div>
 
@@ -256,43 +282,118 @@ function HeroScene() {
         willChange: 'transform, opacity, filter',
         pointerEvents: 'none',
       }}>
-        <h1 className="cd" style={{
-          fontSize: 'clamp(46px,7.5vw,88px)', fontWeight: 600,
+        <h1 style={{
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontSize: 'clamp(46px,7.5vw,88px)', fontWeight: 800,
           lineHeight: 1.02, letterSpacing: '-0.03em',
           color: INK, margin: 0, textAlign: 'center',
         }}>
-          They <span style={{ color: GOLD }}>sign in.</span>
+          Attackers no longer break in.<br/>They <span style={{ color: GOLD }}>sign in.</span>
         </h1>
       </motion.div>
 
-      {/* Beat 4 — CTAs + subtitle */}
+      {/* Beat 4 — Full hero layout with 60/40 split */}
       <motion.div style={{
         position: 'absolute', inset: 0,
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        gap: 20, padding: '0 clamp(20px,5vw,60px)',
+        display: 'flex', alignItems: 'center',
+        padding: '80px clamp(24px,5vw,72px) 0',
         opacity: b4Opacity, y: b4Y,
         willChange: 'transform, opacity',
       }}>
-        <p className="cg" style={{
-          fontSize: 'clamp(15px,1.8vw,20px)', fontWeight: 500,
-          color: 'rgba(245,240,232,0.6)', maxWidth: 540,
-          textAlign: 'center', margin: 0, lineHeight: 1.55,
+        <div style={{
+          maxWidth: 1240, margin: '0 auto', width: '100%',
+          display: 'grid', gridTemplateColumns: '60% 40%',
+          gap: 48, alignItems: 'center',
         }}>
-          The Trust Operating System for the AI-agent era.
-        </p>
-        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', marginTop: 8 }}>
-          <a href="https://aegistrace-7qvn.onrender.com" target="_blank" rel="noopener noreferrer"
-            className="gold-btn" style={{ fontSize: 13, padding: '13px 28px' }}>
-            Access Platform <ArrowRight size={14}/>
-          </a>
-          <Link to="/mission" className="ghost-btn" style={{ fontSize: 13, padding: '12px 22px' }}>
-            Read the mission
-          </Link>
+          {/* Left column */}
+          <div>
+            <div style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 11, color: BLUE_L,
+              letterSpacing: '0.14em', marginBottom: 20,
+              textTransform: 'uppercase',
+            }}>
+              Identity Threat Detection &amp; Response
+            </div>
+            <h1 style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 'clamp(32px,4vw,54px)', fontWeight: 800,
+              lineHeight: 1.1, letterSpacing: '-0.02em',
+              color: INK, margin: '0 0 20px',
+            }}>
+              Stop identity threats before they become breaches.
+            </h1>
+            <p style={{
+              fontFamily: "'IBM Plex Sans', sans-serif",
+              fontSize: 16, color: MUTED,
+              lineHeight: 1.7, margin: '0 0 32px', maxWidth: 520,
+            }}>
+              AegisTrace monitors every identity across your environment — human accounts, machine identities, AI agents — and fires when something doesn&apos;t add up.
+            </p>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
+              <a href="https://aegistrace-7qvn.onrender.com" target="_blank" rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  background: BLUE, color: '#fff',
+                  fontFamily: "'IBM Plex Sans', sans-serif",
+                  fontSize: 14, fontWeight: 600,
+                  padding: '13px 24px', border: 'none', cursor: 'pointer',
+                  textDecoration: 'none', letterSpacing: '0.01em', borderRadius: 4,
+                  transition: 'background 140ms, transform 100ms',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#1D4ED8'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = BLUE; e.currentTarget.style.transform = 'translateY(0)'; }}
+              >
+                Access Platform <ArrowRight size={14}/>
+              </a>
+              <Link to="/mission"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  background: 'transparent', color: 'rgba(241,245,249,0.8)',
+                  fontFamily: "'IBM Plex Sans', sans-serif",
+                  fontSize: 14, fontWeight: 500,
+                  padding: '12px 22px', border: '1px solid rgba(241,245,249,0.25)',
+                  cursor: 'pointer', textDecoration: 'none', letterSpacing: '0.01em', borderRadius: 4,
+                  transition: 'border-color 140ms, color 140ms',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(241,245,249,0.5)'; e.currentTarget.style.color = INK; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(241,245,249,0.25)'; e.currentTarget.style.color = 'rgba(241,245,249,0.8)'; }}
+              >
+                Watch Demo
+              </Link>
+            </div>
+            <div style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 11, color: 'rgba(148,163,184,0.7)',
+              letterSpacing: '0.08em',
+            }}>
+              SC-200 Certified · 4 Published Tools · Free &amp; Open Source
+            </div>
+          </div>
+
+          {/* Right column — animated dashboard mockup */}
+          <motion.div style={{ opacity: mockupOp, y: mockupY }}>
+            <DashboardMockup/>
+          </motion.div>
         </div>
-        <span className="mono" style={{
-          fontSize: 10, letterSpacing: '0.3em', color: 'rgba(245,240,232,0.3)', marginTop: 12,
+      </motion.div>
+
+      {/* Scroll indicator */}
+      <motion.div style={{
+        position: 'absolute', bottom: '5vh', left: 0, right: 0,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+        opacity: b4Opacity,
+      }}>
+        <span style={{
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: 10, letterSpacing: '0.3em', color: 'rgba(241,245,249,0.3)',
         }}>SCROLL TO EXPLORE</span>
+        <motion.div
+          animate={{ y: [0, 5, 0] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          <ChevronDown size={16} color="rgba(241,245,249,0.3)"/>
+        </motion.div>
       </motion.div>
     </PinnedScene>
   );
@@ -301,44 +402,645 @@ function HeroScene() {
 function MobileHero() {
   return (
     <section style={{
-      position: 'relative', minHeight: '92vh',
+      position: 'relative', minHeight: '100vh',
       display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+      background: 'linear-gradient(135deg, #0A1628 0%, #0D2240 35%, #0F3470 65%, #1048A0 85%, #2563EB 100%)',
     }}>
       <div aria-hidden style={{
-        position: 'absolute', inset: '-6%',
-        backgroundImage: `url('/assets/pages/hero-bg.jpg')`,
-        backgroundSize: 'cover', backgroundPosition: 'center 35%', opacity: 0.35,
-      }}/>
-      <div aria-hidden style={{
         position: 'absolute', inset: 0,
-        background: 'linear-gradient(180deg, rgba(5,4,5,0.5) 0%, rgba(5,4,5,0.1) 40%, rgba(5,4,5,0.95) 100%)',
+        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)',
+        backgroundSize: '40px 40px',
       }}/>
-      <Reveal style={{
+      <div style={{
         position: 'relative', zIndex: 2, textAlign: 'center',
-        padding: '0 24px', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', gap: 18,
+        padding: '80px 24px 48px', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', gap: 20,
       }}>
-        <h1 className="cd" style={{
-          fontSize: 'clamp(38px,11vw,60px)', fontWeight: 600,
-          lineHeight: 1.04, letterSpacing: '-0.03em', color: INK, margin: 0,
+        <div style={{
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: 10, color: BLUE_L,
+          letterSpacing: '0.14em', textTransform: 'uppercase',
         }}>
-          Attackers no longer break in. They <span style={{ color: GOLD }}>sign in.</span>
+          Identity Threat Detection &amp; Response
+        </div>
+        <h1 style={{
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontSize: 'clamp(32px,9vw,48px)', fontWeight: 800,
+          lineHeight: 1.1, letterSpacing: '-0.02em', color: INK, margin: 0,
+        }}>
+          Stop identity threats before they become breaches.
         </h1>
-        <p className="cg" style={{
-          fontSize: 16, fontWeight: 500, color: 'rgba(245,240,232,0.55)', maxWidth: 420, margin: 0,
+        <p style={{
+          fontFamily: "'IBM Plex Sans', sans-serif",
+          fontSize: 16, color: MUTED, maxWidth: 420, margin: 0, lineHeight: 1.65,
         }}>
-          The Trust Operating System for the AI-agent era.
+          AegisTrace monitors every identity across your environment and fires when something doesn&apos;t add up.
         </p>
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', marginTop: 8 }}>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', marginTop: 4 }}>
           <a href="https://aegistrace-7qvn.onrender.com" target="_blank" rel="noopener noreferrer"
-            className="gold-btn" style={{ fontSize: 13, padding: '12px 24px' }}>
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              background: BLUE, color: '#fff',
+              fontFamily: "'IBM Plex Sans', sans-serif",
+              fontSize: 14, fontWeight: 600, padding: '12px 22px',
+              textDecoration: 'none', borderRadius: 4,
+            }}>
             Access Platform <ArrowRight size={14}/>
           </a>
-          <Link to="/mission" className="ghost-btn" style={{ fontSize: 13, padding: '11px 20px' }}>
+          <Link to="/mission"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              background: 'transparent', color: 'rgba(241,245,249,0.8)',
+              fontFamily: "'IBM Plex Sans', sans-serif",
+              fontSize: 14, fontWeight: 500, padding: '11px 20px',
+              border: '1px solid rgba(241,245,249,0.25)', textDecoration: 'none', borderRadius: 4,
+            }}>
             Mission
           </Link>
         </div>
-      </Reveal>
+        <div style={{ marginTop: 8, width: '100%', maxWidth: 420 }}>
+          <DashboardMockup/>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   SECTION 3 — STAT STRIP (light bg)
+════════════════════════════════════════════════════════════════════════════ */
+const STATS = [
+  { value: 1,  suffix: '',   label: 'platform' },
+  { value: 30, suffix: '+',  label: 'pages' },
+  { value: 35, suffix: '',   label: 'API routes' },
+  { value: 4,  suffix: '',   label: 'PyPI tools' },
+  { value: 6,  suffix: '',   label: 'ITDR detectors' },
+];
+
+function StatStrip() {
+  return (
+    <section style={{
+      background: WS_BG,
+      borderTop: 'rgba(15,23,42,0.1) 1px solid',
+      borderBottom: 'rgba(15,23,42,0.1) 1px solid',
+      padding: '0 clamp(24px,5vw,72px)',
+    }}>
+      <div style={{
+        maxWidth: 1240, margin: '0 auto',
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+        gap: 0,
+      }}>
+        {STATS.map((stat, i) => (
+          <div key={stat.label} style={{
+            padding: 'clamp(24px,4vw,40px) clamp(16px,2vw,24px)',
+            borderRight: i < STATS.length - 1 ? 'rgba(15,23,42,0.1) 1px solid' : 'none',
+            textAlign: 'center',
+          }}>
+            <div style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 'clamp(26px,3.5vw,40px)', fontWeight: 700,
+              color: BLUE, lineHeight: 1, marginBottom: 6,
+            }}>
+              <Counter end={stat.value} suffix={stat.suffix}/>
+            </div>
+            <div style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 11, color: WS_BODY,
+              letterSpacing: '0.1em', textTransform: 'uppercase',
+            }}>
+              {stat.label}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   SECTION 4 — PLATFORM FEATURE BENTO (light bg, alternating rows)
+════════════════════════════════════════════════════════════════════════════ */
+
+/* Feature 1 — terminal animation mockup */
+function TerminalMockup() {
+  const ref    = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-100px' });
+  const LINES = [
+    { t: 0.0, prompt: '$', text: 'aegistrace detect --live', gold: false },
+    { t: 0.4, prompt: null, text: '' },
+    { t: 0.7, prompt: '[!]', text: 'Impossible travel · berlin.de → dublin.ie · 3:41 AM', gold: true },
+    { t: 1.2, prompt: '[!]', text: 'Off-hours login · User asleep in Dublin timezone', gold: true },
+    { t: 1.6, prompt: '[!]', text: 'Privilege escalation: role Admin granted · svc-backup', gold: true },
+    { t: 2.1, prompt: '[✓]', text: 'Case AT-2847 opened · CRITICAL · AI triage active', gold: true },
+  ];
+
+  return (
+    <div ref={ref} style={{
+      background: '#111827', border: '1px solid rgba(255,255,255,0.08)',
+      borderRadius: 10, overflow: 'hidden', maxWidth: 520,
+    }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 6,
+        padding: '12px 16px',
+        background: 'rgba(255,255,255,0.04)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+      }}>
+        {['#F87171', '#FBBF24', '#34D399'].map(c => (
+          <div key={c} style={{ width: 10, height: 10, borderRadius: '50%', background: c, opacity: 0.55 }}/>
+        ))}
+        <span style={{ marginLeft: 8, fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: 'rgba(241,245,249,0.3)' }}>
+          soc-console — live detection
+        </span>
+      </div>
+      <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {LINES.map((line, i) => (
+          <motion.div key={i}
+            initial={{ opacity: 0, x: -8 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.4, delay: line.t, ease: E }}
+            style={{ display: 'flex', gap: 12, alignItems: 'baseline' }}
+          >
+            {line.prompt !== null && (
+              <span style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 12,
+                color: line.prompt === '$' ? BLUE_L
+                      : line.prompt === '[✓]' ? '#34D399'
+                      : GOLD,
+                flexShrink: 0, minWidth: 24,
+              }}>{line.prompt}</span>
+            )}
+            <span style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 12, lineHeight: 1.5,
+              color: line.gold ? 'rgba(241,245,249,0.85)' : 'rgba(241,245,249,0.55)',
+            }}>{line.text}</span>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* Feature 2 — AI verdict card */
+function AIVerdictCard() {
+  return (
+    <div style={{
+      background: '#111827', border: '1px solid rgba(255,255,255,0.08)',
+      borderRadius: 10, overflow: 'hidden', maxWidth: 460,
+    }}>
+      <div style={{
+        padding: '16px 20px',
+        background: 'rgba(37,99,235,0.12)',
+        borderBottom: '1px solid rgba(37,99,235,0.2)',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: BLUE_L, letterSpacing: '0.1em' }}>
+          AI TRIAGE VERDICT
+        </span>
+        <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#34D399' }}>
+          CONFIDENCE 96%
+        </span>
+      </div>
+      <div style={{ padding: '16px 20px' }}>
+        <div style={{
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontSize: 14, fontWeight: 700, color: INK, marginBottom: 10,
+        }}>
+          Account Takeover via Credential Theft
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {[
+            { step: '01', text: 'Enriched svc-backup@corp IP · Berlin · AbuseIPDB score: 87/100' },
+            { step: '02', text: 'Correlated 7 failed logins across 10-min window → stuffing pattern' },
+            { step: '03', text: 'Geographic impossibility confirmed · 3,200km in 2h window' },
+            { step: '04', text: 'MITRE T1078 · Valid Accounts · Initial Access · HIGH confidence' },
+          ].map(item => (
+            <div key={item.step} style={{ display: 'flex', gap: 10 }}>
+              <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: BLUE_L, flexShrink: 0, marginTop: 2 }}>{item.step}</span>
+              <span style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 12, color: MUTED, lineHeight: 1.5 }}>{item.text}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{
+          marginTop: 14, padding: '8px 12px',
+          background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)',
+          borderRadius: 4,
+        }}>
+          <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#F87171' }}>
+            ESCALATE · Contain account · Block IP · Page on-call
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Feature 3 — Attack graph SVG */
+function AttackGraphMockup() {
+  const ref    = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-80px' });
+
+  const NODES = [
+    { id: 'attacker', x: 60, y: 140, label: 'Attacker IP', color: '#EF4444' },
+    { id: 'creds', x: 180, y: 60, label: 'Stolen Creds', color: '#F97316' },
+    { id: 'login', x: 300, y: 140, label: 'Login Event', color: GOLD },
+    { id: 'priv', x: 300, y: 240, label: 'Priv Escalation', color: GOLD },
+    { id: 'data', x: 420, y: 80, label: 'Data Access', color: '#F87171' },
+    { id: 'detect', x: 420, y: 200, label: 'AT-2847 Detected', color: '#34D399' },
+  ];
+  const EDGES = [
+    { x1: 100, y1: 140, x2: 168, y2: 80 },
+    { x1: 210, y1: 70, x2: 275, y2: 130 },
+    { x1: 320, y1: 150, x2: 396, y2: 95 },
+    { x1: 320, y1: 145, x2: 320, y2: 225 },
+    { x1: 340, y1: 240, x2: 400, y2: 210 },
+  ];
+
+  return (
+    <div ref={ref} style={{
+      background: '#111827', border: '1px solid rgba(255,255,255,0.08)',
+      borderRadius: 10, padding: '20px', maxWidth: 520,
+    }}>
+      <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: MUTED, letterSpacing: '0.1em', marginBottom: 12 }}>
+        ATTACK GRAPH · CASE AT-2847
+      </div>
+      <svg width="100%" viewBox="0 0 480 300" style={{ display: 'block' }}>
+        {EDGES.map((e, i) => (
+          <line key={i}
+            x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
+            stroke="rgba(96,165,250,0.4)" strokeWidth="1.5"
+            opacity={inView ? 1 : 0}
+            style={{ transition: `opacity 0.6s ${0.3 + i * 0.2}s` }}
+          />
+        ))}
+        {NODES.map((node, i) => (
+          <g key={node.id}
+            style={{
+              opacity: inView ? 1 : 0,
+              transition: `opacity 0.4s ${i * 0.15}s`,
+            }}
+          >
+            <circle cx={node.x} cy={node.y} r={18} fill={node.color} fillOpacity="0.15" stroke={node.color} strokeWidth="1.5"/>
+            <text x={node.x} y={node.y + 30} textAnchor="middle" style={{
+              fontFamily: "'IBM Plex Mono', monospace", fontSize: 9,
+              fill: 'rgba(241,245,249,0.6)',
+            }}>{node.label}</text>
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+function FeatureSection() {
+  const features = [
+    {
+      n: '01',
+      title: 'Identity Risk Engine',
+      desc1: 'Six real-time ITDR detectors fire simultaneously across every identity event in your environment — human accounts, machine identities, AI agents.',
+      desc2: 'Credential stuffing, impossible travel, privilege escalation, token theft, shadow AI, and MFA fatigue. All correlated, all scored, all explained.',
+      visual: <TerminalMockup/>,
+      flip: false,
+    },
+    {
+      n: '02',
+      title: 'Explainable AI Triage',
+      desc1: 'Every AI verdict surfaces its evidence, reasoning chain, confidence score, and MITRE ATT&CK mapping — no black boxes.',
+      desc2: 'Backed by Groq Llama 3 and NVIDIA Nemotron-70B. Every recommendation carries a full chain of custody an analyst can verify and a regulator can audit.',
+      visual: <AIVerdictCard/>,
+      flip: true,
+    },
+    {
+      n: '03',
+      title: 'Attack Graph Reconstruction',
+      desc1: 'The Temporal Linker correlates six event sources across ±5s windows and produces the full kill-chain narrative.',
+      desc2: 'Visual traversal of entity relationships across users, devices, IPs, and services — with MITRE mapping and confidence scores on every edge.',
+      visual: <AttackGraphMockup/>,
+      flip: false,
+    },
+  ];
+
+  return (
+    <section style={{ background: WS_BG, padding: 'clamp(80px,10vw,120px) clamp(24px,5vw,72px)' }}>
+      <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+        <Reveal style={{ marginBottom: 72 }}>
+          <div style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11, color: BLUE, letterSpacing: '0.18em',
+            textTransform: 'uppercase', marginBottom: 12,
+          }}>Platform</div>
+          <h2 style={{
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: 'clamp(32px,4.5vw,52px)', fontWeight: 800,
+            color: WS_TEXT, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.05,
+          }}>
+            One platform. Every layer of trust.
+          </h2>
+        </Reveal>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(72px,10vw,120px)' }}>
+          {features.map((feature) => (
+            <Reveal key={feature.n} delay={0.05}>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: 'clamp(40px,6vw,80px)',
+                alignItems: 'center',
+              }}>
+                {/* Text */}
+                <div style={{ order: feature.flip ? 2 : 1 }}>
+                  <div style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 10, color: BLUE, letterSpacing: '0.14em',
+                    marginBottom: 12, textTransform: 'uppercase',
+                  }}>{feature.n}</div>
+                  <h3 style={{
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontSize: 'clamp(22px,3vw,36px)', fontWeight: 800,
+                    color: WS_TEXT, margin: '0 0 16px', letterSpacing: '-0.02em', lineHeight: 1.15,
+                  }}>{feature.title}</h3>
+                  <p style={{
+                    fontFamily: "'IBM Plex Sans', sans-serif",
+                    fontSize: 16, color: WS_BODY, lineHeight: 1.7, margin: '0 0 14px',
+                  }}>{feature.desc1}</p>
+                  <p style={{
+                    fontFamily: "'IBM Plex Sans', sans-serif",
+                    fontSize: 15, color: '#64748B', lineHeight: 1.7, margin: 0,
+                  }}>{feature.desc2}</p>
+                </div>
+                {/* Visual */}
+                <div style={{ order: feature.flip ? 1 : 2, display: 'flex', justifyContent: feature.flip ? 'flex-end' : 'flex-start' }}>
+                  {feature.visual}
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   SECTION 5 — TOOLS STRIP (dark section)
+════════════════════════════════════════════════════════════════════════════ */
+const PYPI_TOOLS = [
+  { name: 'aegis-ioc-scanner',    desc: 'Multi-source IOC lookup: VirusTotal, AbuseIPDB, Shodan, OTX',   cmd: 'pip install aegis-ioc-scanner' },
+  { name: 'aegis-pcap-analyzer',  desc: 'PCAP dissection with AI-generated threat narrative',              cmd: 'pip install aegis-pcap-analyzer' },
+  { name: 'aegis-log-parser',     desc: 'Structured parser for auth, DNS and HTTP access logs',            cmd: 'pip install aegis-log-parser' },
+  { name: 'aegis-yara-runner',    desc: 'YARA scanning engine with MITRE ATT&CK mapping',                  cmd: 'pip install aegis-yara-runner' },
+];
+
+function ToolsSection() {
+  const [copiedIdx, setCopiedIdx] = useState(null);
+
+  const copy = (idx, text) => {
+    navigator.clipboard?.writeText(text);
+    setCopiedIdx(idx);
+    setTimeout(() => setCopiedIdx(null), 1800);
+  };
+
+  return (
+    <section style={{ background: NAVY, padding: 'clamp(80px,10vw,120px) clamp(24px,5vw,72px)' }}>
+      <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+        <Reveal style={{ marginBottom: 56 }}>
+          <div style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11, color: BLUE_L, letterSpacing: '0.18em',
+            textTransform: 'uppercase', marginBottom: 12,
+          }}>PyPI</div>
+          <h2 style={{
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: 'clamp(32px,4.5vw,48px)', fontWeight: 800,
+            color: INK, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.05,
+          }}>
+            The offensive toolkit.
+          </h2>
+          <p style={{
+            fontFamily: "'IBM Plex Sans', sans-serif",
+            fontSize: 16, color: MUTED, margin: '16px 0 0', maxWidth: 520,
+          }}>
+            Four tools published on PyPI. Install and run in seconds. No accounts, no keys.
+          </p>
+        </Reveal>
+
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: 16,
+        }}>
+          {PYPI_TOOLS.map((tool, i) => (
+            <Reveal key={tool.name} delay={i * 0.07}>
+              <div style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 8, padding: '24px',
+                height: '100%', boxSizing: 'border-box',
+                display: 'flex', flexDirection: 'column', gap: 12,
+              }}>
+                <div style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 14, fontWeight: 600, color: GOLD,
+                }}>{tool.name}</div>
+                <p style={{
+                  fontFamily: "'IBM Plex Sans', sans-serif",
+                  fontSize: 13.5, color: MUTED, lineHeight: 1.6, margin: 0, flex: 1,
+                }}>{tool.desc}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <code style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 11.5, color: BLUE_L,
+                    background: 'rgba(37,99,235,0.12)',
+                    padding: '5px 10px', flex: 1,
+                    borderRadius: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }}>{tool.cmd}</code>
+                  <button onClick={() => copy(i, tool.cmd)} style={{
+                    background: 'none', border: '1px solid rgba(255,255,255,0.15)',
+                    color: copiedIdx === i ? GOLD : MUTED,
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 11, padding: '5px 10px', cursor: 'pointer', borderRadius: 4,
+                    transition: 'color 140ms, border-color 140ms',
+                  }}>{copiedIdx === i ? '✓' : 'copy'}</button>
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   SECTION 6 — WHO IT'S FOR (light section)
+════════════════════════════════════════════════════════════════════════════ */
+const AUDIENCES = [
+  {
+    title: 'SOC Analysts',
+    icon: '🔍',
+    desc: 'Stop pivoting between five tools. AegisTrace gives you identity telemetry, IOC enrichment, and AI triage in one timeline.',
+    points: [
+      'Unified case timeline across all event sources',
+      'AI verdict with evidence chain — no black boxes',
+      '15-tab investigation workbench',
+      'One-click DORA compliance reports',
+    ],
+  },
+  {
+    title: 'Security Engineers',
+    icon: '⚙️',
+    desc: 'Deploy in minutes. Hook up your identity providers. Get real-time ITDR without a six-month procurement cycle.',
+    points: [
+      'Okta + Azure AD + Auth0 connectors built-in',
+      'SOAR playbooks with human approval gates',
+      'Endpoint agent in one command',
+      'Full API — 35 routes, OpenAPI documented',
+    ],
+  },
+  {
+    title: 'Researchers',
+    icon: '🧪',
+    desc: 'Four published PyPI tools for offensive security research. Attack MCP servers, fuzz LLMs, hunt NHI privilege paths.',
+    points: [
+      'mcp-sploit — MCP server attack framework',
+      'prompt-fuzz — async LLM jailbreak fuzzer',
+      'nhi-hunter — AWS IAM privilege path finder',
+      'shadow-sniffer — offline shadow AI detector',
+    ],
+  },
+];
+
+function AudienceSection() {
+  return (
+    <section style={{ background: WS_BG, padding: 'clamp(80px,10vw,120px) clamp(24px,5vw,72px)' }}>
+      <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+        <Reveal style={{ marginBottom: 56 }}>
+          <div style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11, color: BLUE, letterSpacing: '0.18em',
+            textTransform: 'uppercase', marginBottom: 12,
+          }}>Built for</div>
+          <h2 style={{
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: 'clamp(32px,4.5vw,52px)', fontWeight: 800,
+            color: WS_TEXT, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.05,
+          }}>
+            Who uses AegisTrace.
+          </h2>
+        </Reveal>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 2, background: 'rgba(15,23,42,0.1)' }}>
+          {AUDIENCES.map((aud, i) => (
+            <Reveal key={aud.title} delay={i * 0.08}>
+              <div
+                style={{
+                  background: '#FFFFFF', padding: 'clamp(28px,4vw,40px) clamp(24px,3vw,32px)',
+                  height: '100%', boxSizing: 'border-box',
+                  transition: 'transform 160ms ease-out, box-shadow 160ms ease-out',
+                  cursor: 'default',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(37,99,235,0.12)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+              >
+                <div style={{ fontSize: 32, marginBottom: 16 }}>{aud.icon}</div>
+                <h3 style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 22, fontWeight: 800, color: WS_TEXT,
+                  margin: '0 0 12px', letterSpacing: '-0.01em',
+                }}>{aud.title}</h3>
+                <p style={{
+                  fontFamily: "'IBM Plex Sans', sans-serif",
+                  fontSize: 15, color: WS_BODY, lineHeight: 1.7, margin: '0 0 20px',
+                }}>{aud.desc}</p>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {aud.points.map(pt => (
+                    <li key={pt} style={{
+                      fontFamily: "'IBM Plex Sans', sans-serif",
+                      fontSize: 13.5, color: '#475569', lineHeight: 1.5,
+                      display: 'flex', gap: 10,
+                    }}>
+                      <span style={{ color: BLUE, flexShrink: 0 }}>→</span>
+                      <span>{pt}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   SECTION 7 — CTA BAND (gradient dark)
+════════════════════════════════════════════════════════════════════════════ */
+function CTABand() {
+  return (
+    <section style={{
+      background: 'linear-gradient(135deg, #0A1628, #0F3470)',
+      padding: 'clamp(80px,10vw,120px) clamp(24px,5vw,72px)',
+      textAlign: 'center',
+    }}>
+      <div style={{ maxWidth: 720, margin: '0 auto' }}>
+        <Reveal>
+          <h2 style={{
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: 'clamp(32px,5vw,56px)', fontWeight: 800,
+            color: INK, letterSpacing: '-0.02em', lineHeight: 1.1,
+            margin: '0 0 20px',
+          }}>
+            The complete SOC, without the procurement cycle.
+          </h2>
+          <p style={{
+            fontFamily: "'IBM Plex Sans', sans-serif",
+            fontSize: 17, color: MUTED, margin: '0 0 36px', lineHeight: 1.6,
+          }}>
+            Free, open, deployable. No sales process. No trial gate. No $100k invoice.
+          </p>
+        </Reveal>
+        <Reveal delay={0.1}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 14, flexWrap: 'wrap', marginBottom: 24 }}>
+            <a href="https://aegistrace-7qvn.onrender.com" target="_blank" rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                background: BLUE, color: '#fff',
+                fontFamily: "'IBM Plex Sans', sans-serif",
+                fontSize: 15, fontWeight: 600, padding: '14px 28px',
+                borderRadius: 4, textDecoration: 'none',
+                transition: 'background 140ms, transform 100ms',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#1D4ED8'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = BLUE; e.currentTarget.style.transform = 'translateY(0)'; }}
+            >
+              Launch Platform <ArrowRight size={16}/>
+            </a>
+            <a href="https://github.com/Prasanna-27eng/AegisTrace" target="_blank" rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                background: 'transparent', color: 'rgba(241,245,249,0.75)',
+                fontFamily: "'IBM Plex Sans', sans-serif",
+                fontSize: 15, fontWeight: 500, padding: '13px 26px',
+                border: '1px solid rgba(241,245,249,0.2)',
+                borderRadius: 4, textDecoration: 'none',
+                transition: 'border-color 140ms, color 140ms',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(241,245,249,0.4)'; e.currentTarget.style.color = INK; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(241,245,249,0.2)'; e.currentTarget.style.color = 'rgba(241,245,249,0.75)'; }}
+            >
+              View on GitHub
+            </a>
+          </div>
+          <div style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11, color: 'rgba(148,163,184,0.55)',
+            letterSpacing: '0.08em',
+          }}>
+            SC-200 Certified · 4 Published Tools · Free &amp; Open Source
+          </div>
+        </Reveal>
+      </div>
     </section>
   );
 }
@@ -356,7 +1058,7 @@ function TickerRow() {
     <div style={{ display: 'flex', gap: 44, paddingRight: 44, whiteSpace: 'nowrap', alignItems: 'center' }}>
       {TICKER_ITEMS.map(item => (
         <React.Fragment key={item}>
-          <span className="mono" style={{ fontSize: 11, letterSpacing: '0.24em', color: GOLD }}>
+          <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: '0.24em', color: GOLD }}>
             {item}
           </span>
           <span aria-hidden style={{ color: 'rgba(245,158,11,0.35)', fontSize: 14 }}>·</span>
@@ -373,7 +1075,7 @@ function Ticker() {
       overflow: 'hidden',
       borderTop: '1px solid rgba(245,158,11,0.15)',
       borderBottom: '1px solid rgba(245,158,11,0.15)',
-      background: 'rgba(245,158,11,0.025)',
+      background: NAVY,
       padding: '14px 0',
     }}>
       <div style={{
@@ -388,489 +1090,81 @@ function Ticker() {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   SCENE 2 — 144:1 stat (260vh)
-════════════════════════════════════════════════════════════════════════════ */
-function StatScene() {
-  const ref = useRef(null);
-  const p   = useSceneCamera(ref);
-  const [count, setCount] = useState(0);
-
-  useMotionValueEvent(p, 'change', v => setCount(Math.round(M(v, 0.08, 0.55) * 144)));
-
-  const dotsOpacity = useTransform(p, [0.05, 0.3], [0, 0.22], { clamp: true });
-  const dotsY       = useTransform(p, v => -v * 140);
-  const statOpacity = useTransform(p, [0.02, 0.25], [0, 1], { clamp: true });
-  const statY       = useTransform(statOpacity, o => (1 - o) * 60);
-  const capOpacity  = useTransform(p, [0.45, 0.65], [0, 1], { clamp: true });
-
-  return (
-    <PinnedScene vh="260vh" sceneRef={ref}>
-      <motion.div aria-hidden style={{
-        position: 'absolute', inset: '-160px 0',
-        backgroundImage: 'radial-gradient(circle, rgba(245,240,232,0.14) 1.5px, transparent 1.5px)',
-        backgroundSize: '32px 32px',
-        opacity: dotsOpacity, y: dotsY, willChange: 'transform, opacity',
-      }}/>
-      <motion.div style={{
-        position: 'relative', zIndex: 2, textAlign: 'center',
-        padding: '0 clamp(20px,5vw,60px)',
-        opacity: statOpacity, y: statY, willChange: 'transform, opacity',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 8 }}>
-          <span className="mono" style={{
-            fontSize: 'clamp(100px,16vw,240px)', fontWeight: 700,
-            color: GOLD, lineHeight: 1,
-          }}>{count}</span>
-          <span className="mono" style={{
-            fontSize: 'clamp(44px,6.5vw,100px)', fontWeight: 700,
-            color: 'rgba(245,240,232,0.35)', lineHeight: 1,
-          }}>:1</span>
-        </div>
-        <motion.p className="cg" style={{
-          fontSize: 'clamp(16px,1.6vw,20px)', fontWeight: 500,
-          color: 'rgba(245,240,232,0.6)', maxWidth: 520, margin: '24px auto 0',
-          opacity: capOpacity, lineHeight: 1.6,
-        }}>
-          The average enterprise runs <strong style={{ color: INK }}>144 machine identities per human.</strong> Most are unmonitored.
-        </motion.p>
-      </motion.div>
-    </PinnedScene>
-  );
-}
-
-function MobileStat() {
-  return (
-    <SceneFallback minHeight="60vh">
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 8 }}>
-          <span className="mono" style={{ fontSize: 'clamp(80px,22vw,130px)', fontWeight: 700, color: GOLD, lineHeight: 1 }}>144</span>
-          <span className="mono" style={{ fontSize: 'clamp(32px,9vw,56px)', fontWeight: 700, color: 'rgba(245,240,232,0.35)', lineHeight: 1 }}>:1</span>
-        </div>
-        <p className="cg" style={{ fontSize: 17, fontWeight: 500, color: 'rgba(245,240,232,0.6)', maxWidth: 400, margin: '20px auto 0', lineHeight: 1.6 }}>
-          The average enterprise runs <strong style={{ color: INK }}>144 machine identities per human.</strong> Most are unmonitored.
-        </p>
-      </div>
-    </SceneFallback>
-  );
-}
-
-/* ════════════════════════════════════════════════════════════════════════════
-   SCENE 3 — Breach timeline (280vh)
-════════════════════════════════════════════════════════════════════════════ */
-const BREACH_LOG = [
-  { time: '07:41:02', text: '7 failed logins · svc-backup@corp · 10-min window',   tag: 'CREDENTIAL STUFFING',  gold: false },
-  { time: '07:41:44', text: 'Login succeeded · Berlin, DE · 3:41 AM local',         tag: 'IMPOSSIBLE TRAVEL',    gold: false },
-  { time: '07:43:12', text: 'Role: Admin granted · svc-backup@corp',                tag: 'PRIVILEGE ESCALATION', gold: false },
-  { time: '07:43:14', text: '⚡ AegisTrace detected · Case #AT-2847 opened',    tag: 'CONTAINED',            gold: true  },
-];
-
-function BreachScene() {
-  const ref = useRef(null);
-  const p   = useSceneCamera(ref);
-
-  const headOpacity = useTransform(p, [0, 0.14], [0, 1], { clamp: true });
-  const headY       = useTransform(headOpacity, o => (1 - o) * 24);
-
-  const ev0Op = useTransform(p, [0.18, 0.28], [0, 1], { clamp: true });
-  const ev0Y  = useTransform(ev0Op, o => (1 - o) * 20);
-  const ev1Op = useTransform(p, [0.32, 0.42], [0, 1], { clamp: true });
-  const ev1Y  = useTransform(ev1Op, o => (1 - o) * 20);
-  const ev2Op = useTransform(p, [0.47, 0.57], [0, 1], { clamp: true });
-  const ev2Y  = useTransform(ev2Op, o => (1 - o) * 20);
-  const ev3Op = useTransform(p, [0.62, 0.72], [0, 1], { clamp: true });
-  const ev3Y  = useTransform(ev3Op, o => (1 - o) * 20);
-
-  const evMotion = [
-    { opacity: ev0Op, y: ev0Y },
-    { opacity: ev1Op, y: ev1Y },
-    { opacity: ev2Op, y: ev2Y },
-    { opacity: ev3Op, y: ev3Y },
-  ];
-
-  return (
-    <PinnedScene vh="280vh" sceneRef={ref}>
-      <div style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        gap: 28, padding: '0 clamp(20px,5vw,60px)', width: '100%',
-      }}>
-        <motion.h2 className="cd" style={{
-          fontSize: 'clamp(32px,4vw,58px)', fontWeight: 600, color: INK,
-          margin: 0, textAlign: 'center', letterSpacing: '-0.02em',
-          opacity: headOpacity, y: headY,
-        }}>
-          It starts quietly.
-        </motion.h2>
-
-        <div style={{
-          width: 'min(680px,96vw)',
-          background: '#06050A',
-          border: '1px solid rgba(245,240,232,0.08)',
-          padding: '28px 32px',
-          display: 'flex', flexDirection: 'column', gap: 20,
-        }}>
-          {/* Terminal chrome */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 7,
-            borderBottom: '1px solid rgba(245,240,232,0.06)', paddingBottom: 16, marginBottom: 4,
-          }}>
-            {['rgba(255,96,88,0.7)', 'rgba(255,189,68,0.7)', 'rgba(40,200,64,0.7)'].map((c, i) => (
-              <span key={i} aria-hidden style={{ width: 10, height: 10, borderRadius: '50%', background: c, display: 'inline-block' }}/>
-            ))}
-            <span className="mono" style={{ marginLeft: 8, fontSize: 11, color: 'rgba(245,240,232,0.3)' }}>
-              soc-console — incident #AT-2847
-            </span>
-          </div>
-
-          {BREACH_LOG.map((ev, i) => (
-            <motion.div key={ev.time} style={{
-              fontSize: 'clamp(11px,1.1vw,13.5px)', lineHeight: 1.65,
-              display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: '0 14px',
-              alignItems: 'baseline',
-              opacity: evMotion[i].opacity, y: evMotion[i].y,
-            }}>
-              <span className="mono" style={{ color: 'rgba(245,240,232,0.28)', whiteSpace: 'nowrap' }}>{ev.time}</span>
-              <span className="mono" style={{ color: ev.gold ? GOLD : 'rgba(245,240,232,0.75)' }}>{ev.text}</span>
-              <span className="mono" style={{
-                fontSize: 10, letterSpacing: '0.12em',
-                color: ev.gold ? GOLD : 'rgba(245,240,232,0.38)',
-                border: `1px solid ${ev.gold ? 'rgba(245,158,11,0.5)' : 'rgba(245,240,232,0.12)'}`,
-                padding: '3px 9px', whiteSpace: 'nowrap',
-              }}>{ev.tag}</span>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </PinnedScene>
-  );
-}
-
-function MobileBreach() {
-  return (
-    <SceneFallback minHeight="auto">
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, width: '100%', maxWidth: 680 }}>
-        <h2 className="cd" style={{ fontSize: 'clamp(30px,8vw,46px)', fontWeight: 600, color: INK, margin: 0, textAlign: 'center', letterSpacing: '-0.02em' }}>
-          It starts quietly.
-        </h2>
-        <div style={{ width: '100%', background: '#06050A', border: '1px solid rgba(245,240,232,0.08)', padding: '22px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {BREACH_LOG.map(ev => (
-            <div key={ev.time} style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              <span className="mono" style={{ fontSize: 11, color: 'rgba(245,240,232,0.28)' }}>{ev.time}</span>
-              <span className="mono" style={{ fontSize: 11, color: ev.gold ? GOLD : 'rgba(245,240,232,0.75)', flex: 1 }}>{ev.text}</span>
-              <span className="mono" style={{ fontSize: 9, letterSpacing: '0.1em', color: ev.gold ? GOLD : 'rgba(245,240,232,0.4)', border: `1px solid ${ev.gold ? 'rgba(245,158,11,0.4)' : 'rgba(245,240,232,0.1)'}`, padding: '2px 8px' }}>{ev.tag}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </SceneFallback>
-  );
-}
-
-/* ════════════════════════════════════════════════════════════════════════════
-   PLATFORM CAPABILITIES — 9-tile grid
-════════════════════════════════════════════════════════════════════════════ */
-const CAPABILITIES = [
-  { n: '01', title: 'Identity Risk Engine',         body: 'Six real-time detectors scoring every credential, session and service account: credential stuffing, impossible travel, privilege escalation, token theft, shadow AI, MFA fatigue.' },
-  { n: '02', title: 'Attack Graph Reconstruction',  body: 'The Temporal Linker correlates six event sources across ±5s windows and produces the full kill-chain narrative with MITRE mapping and confidence scores.' },
-  { n: '03', title: 'Explainable AI Triage',        body: 'Every verdict surfaces its evidence, reasoning steps and confidence. Backed by Groq Llama 3 and NVIDIA Nemotron-70B with Llama Guard 3 safety screening.' },
-  { n: '04', title: 'SOAR Playbooks',               body: 'Trigger-action-approval pipelines. Seven actions including isolate, webhook, page on-call and rule generation. Every action routes through the Provenance Ledger.' },
-  { n: '05', title: 'IOC Intelligence',             body: 'Seven source feeds: VirusTotal, AbuseIPDB, Shodan, MISP, OTX, URLScan, YARA — unified into a single enrichment API with automatic case binding.' },
-  { n: '06', title: 'Email Forensics',              body: 'Header parsing, DKIM/SPF/DMARC verification, link detonation, attachment hash scoring and AI narrative for every suspicious message.' },
-  { n: '07', title: 'Endpoint Agent v5',            body: 'Honey token canaries, DGA/DNS-tunnel detection, auto-block via iptables/pfctl/netsh, YARA-lite scanning and a guardian process that restarts itself on kill.' },
-  { n: '08', title: 'Shadow AI Detection',          body: 'Monitors for unsanctioned model endpoints, prompt-injection attempts via the Shield API and non-human identity sprawl across your AI-agent mesh.' },
-  { n: '09', title: 'DORA Compliance Reports',      body: 'Article 19 ICT incident reports auto-drafted from case data. PDF/DOCX export, SLA breach tracking and audit ledger for every analyst action.' },
-];
-
-function CapabilityTile({ n, title, body, delay = 0 }) {
-  const ref    = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-50px' });
-  const [hovered, setHovered] = useState(false);
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 24 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.7, delay, ease: E }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: BG,
-        border: '1px solid rgba(245,240,232,0.07)',
-        borderTop: `1px solid ${hovered ? GOLD : 'rgba(245,240,232,0.07)'}`,
-        padding: 'clamp(22px,2.8vw,32px)',
-        cursor: 'default',
-        transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
-        transition: 'border-color 160ms ease-out, transform 160ms ease-out',
-      }}
-    >
-      <div className="mono" style={{ fontSize: 11, color: GOLD, marginBottom: 14, letterSpacing: '0.08em' }}>{n}</div>
-      <div className="cd" style={{
-        fontSize: 'clamp(16px,1.5vw,20px)', fontWeight: 600, color: INK,
-        marginBottom: 10, letterSpacing: '-0.01em', lineHeight: 1.2,
-      }}>
-        {title}
-      </div>
-      <div className="cg" style={{ fontSize: 13.5, color: 'rgba(245,240,232,0.5)', lineHeight: 1.65 }}>{body}</div>
-    </motion.div>
-  );
-}
-
-function PlatformCapabilities() {
-  return (
-    <section id="platform" style={{ padding: 'clamp(80px,10vw,140px) clamp(24px,5vw,72px)' }}>
-      <div style={{ maxWidth: 1240, margin: '0 auto' }}>
-        <Reveal style={{ marginBottom: 56 }}>
-          <h2 className="cd" style={{
-            fontSize: 'clamp(34px,4.5vw,68px)', fontWeight: 600, color: INK,
-            margin: 0, letterSpacing: '-0.02em', lineHeight: 1.05,
-          }}>
-            One platform. Every layer of trust.
-          </h2>
-        </Reveal>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px,1fr))',
-          gap: 1,
-          background: 'rgba(245,240,232,0.07)',
-        }}>
-          {CAPABILITIES.map((cap, i) => (
-            <CapabilityTile key={cap.n} {...cap} delay={Math.min(i * 0.04, 0.22)}/>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ════════════════════════════════════════════════════════════════════════════
-   TECH STACK
-════════════════════════════════════════════════════════════════════════════ */
-const STACK_ITEMS = [
-  'React 18', 'FastAPI', 'SQLite', 'Groq', 'NVIDIA NIM',
-  'Three.js', 'Docker', 'YARA', 'MITRE ATT&CK', 'MaxMind GeoLite2',
-];
-
-function StackSection() {
-  return (
-    <section style={{ padding: '0 clamp(24px,5vw,72px) clamp(80px,10vw,140px)' }}>
-      <div style={{
-        maxWidth: 1240, margin: '0 auto',
-        borderTop: '1px solid rgba(245,240,232,0.07)',
-        paddingTop: 'clamp(48px,6vw,80px)',
-      }}>
-        <Reveal>
-          <p className="mono" style={{ fontSize: 11, letterSpacing: '0.22em', color: 'rgba(245,240,232,0.35)', marginBottom: 24 }}>
-            BUILT WITH
-          </p>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            {STACK_ITEMS.map(s => (
-              <span key={s} className="mono" style={{
-                fontSize: 12, letterSpacing: '0.04em',
-                color: 'rgba(245,240,232,0.6)',
-                background: 'rgba(245,240,232,0.04)',
-                border: '1px solid rgba(245,240,232,0.1)',
-                padding: '8px 16px', whiteSpace: 'nowrap',
-                transition: 'color 160ms ease-out, border-color 160ms ease-out',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.color = INK; e.currentTarget.style.borderColor = 'rgba(245,240,232,0.25)'; }}
-              onMouseLeave={e => { e.currentTarget.style.color = 'rgba(245,240,232,0.6)'; e.currentTarget.style.borderColor = 'rgba(245,240,232,0.1)'; }}
-              >
-                {s}
-              </span>
-            ))}
-          </div>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
-/* ════════════════════════════════════════════════════════════════════════════
-   CREDIBILITY
-════════════════════════════════════════════════════════════════════════════ */
-const PYPI_TOOLS = [
-  { name: 'aegis-ioc-scanner',    desc: 'Multi-source IOC lookup with VirusTotal and AbuseIPDB' },
-  { name: 'aegis-pcap-analyzer',  desc: 'PCAP dissection with AI-generated threat narrative' },
-  { name: 'aegis-log-parser',     desc: 'Structured parser for auth, DNS and HTTP access logs' },
-  { name: 'aegis-yara-runner',    desc: 'YARA scanning engine with MITRE ATT&CK mapping' },
-];
-
-const CERTS = ['SC-200', 'Security+', 'MSc Computing', 'TCM PEH'];
-
-function CredibilitySection() {
-  return (
-    <section style={{ padding: 'clamp(80px,10vw,140px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(245,240,232,0.05)' }}>
-      <div style={{ maxWidth: 1240, margin: '0 auto' }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px,1fr))',
-          gap: 'clamp(48px,6vw,96px)',
-          alignItems: 'start',
-        }}>
-
-          <Reveal>
-            <div>
-              <h2 className="cd" style={{
-                fontSize: 'clamp(28px,3.2vw,48px)', fontWeight: 600, color: INK,
-                margin: '0 0 20px', letterSpacing: '-0.02em', lineHeight: 1.08,
-              }}>
-                Built by a practitioner, for practitioners.
-              </h2>
-              <p className="cg" style={{
-                fontSize: 15.5, color: 'rgba(245,240,232,0.55)',
-                lineHeight: 1.7, margin: '0 0 32px', maxWidth: 460,
-              }}>
-                Prasanna Kumar Surendran built AegisTrace after running real incident pipelines on Microsoft Sentinel and finding every gap that SIEM vendors won't acknowledge.
-              </p>
-              <p className="cg" style={{ fontSize: 14, color: 'rgba(245,240,232,0.38)', lineHeight: 1.65, margin: 0 }}>
-                MSc Information Systems &amp; Computing, Dublin Business School 2025. Blue Team SOC engineer. Dublin, Ireland.
-              </p>
-            </div>
-          </Reveal>
-
-          <Reveal delay={0.08}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
-              <div>
-                <p className="mono" style={{ fontSize: 10, letterSpacing: '0.22em', color: 'rgba(245,240,232,0.3)', marginBottom: 14 }}>CREDENTIALS</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {CERTS.map(c => (
-                    <span key={c} className="mono" style={{
-                      fontSize: 11.5, padding: '7px 15px',
-                      border: '1px solid rgba(245,158,11,0.35)',
-                      color: INK, letterSpacing: '0.04em',
-                    }}>{c}</span>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <p className="mono" style={{ fontSize: 10, letterSpacing: '0.22em', color: 'rgba(245,240,232,0.3)', marginBottom: 14 }}>PUBLISHED ON PYPI</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {PYPI_TOOLS.map(tool => (
-                    <div key={tool.name} style={{ borderTop: '1px solid rgba(245,240,232,0.06)', paddingTop: 12 }}>
-                      <div className="mono" style={{ fontSize: 12, color: GOLD, marginBottom: 4 }}>{tool.name}</div>
-                      <div className="cg" style={{ fontSize: 12.5, color: 'rgba(245,240,232,0.45)', lineHeight: 1.5 }}>{tool.desc}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ════════════════════════════════════════════════════════════════════════════
-   FINAL CTA — ripple rings
-════════════════════════════════════════════════════════════════════════════ */
-function RippleRings() {
-  const reduced = useReducedMotion();
-  return (
-    <div aria-hidden style={{
-      position: 'absolute', inset: 0,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      overflow: 'hidden', pointerEvents: 'none',
-    }}>
-      {[0, 1, 2, 3].map(i => (
-        <div key={i} style={{
-          position: 'absolute',
-          width: `${220 + i * 140}px`,
-          height: `${220 + i * 140}px`,
-          borderRadius: '50%',
-          border: `1px solid rgba(245,158,11,${0.14 - i * 0.03})`,
-          animation: reduced ? 'none' : `ripple-expand 3.5s ${i * 0.7}s ease-out infinite`,
-        }}/>
-      ))}
-    </div>
-  );
-}
-
-function FinalCTA() {
-  return (
-    <section style={{
-      position: 'relative',
-      padding: 'clamp(100px,13vw,180px) clamp(24px,5vw,72px)',
-      borderTop: '1px solid rgba(245,240,232,0.05)',
-      overflow: 'hidden',
-    }}>
-      <RippleRings/>
-      <div style={{ position: 'relative', zIndex: 2, maxWidth: 740, margin: '0 auto', textAlign: 'center' }}>
-        <Reveal>
-          <h2 className="cd" style={{
-            fontSize: 'clamp(40px,6.5vw,88px)', fontWeight: 600, color: INK,
-            letterSpacing: '-0.02em', lineHeight: 1.02, margin: '0 0 20px',
-          }}>
-            Access the platform.
-          </h2>
-          <p className="cg" style={{ fontSize: 17, color: 'rgba(245,240,232,0.55)', margin: '0 0 40px', lineHeight: 1.6 }}>
-            Free, open, deployable. No sales process. No trial gate.
-          </p>
-        </Reveal>
-        <Reveal delay={0.1}>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 14, flexWrap: 'wrap' }}>
-            <a href="https://aegistrace-7qvn.onrender.com" target="_blank" rel="noopener noreferrer"
-              className="gold-btn" style={{ fontSize: 14, padding: '15px 34px' }}>
-              Launch Platform <ArrowRight size={16}/>
-            </a>
-            <a href="https://github.com/Prasanna-27eng/AegisTrace" target="_blank" rel="noopener noreferrer"
-              className="ghost-btn" style={{ fontSize: 14, padding: '14px 28px' }}>
-              View on GitHub
-            </a>
-          </div>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
-/* ════════════════════════════════════════════════════════════════════════════
    FOOTER
 ════════════════════════════════════════════════════════════════════════════ */
 function Footer() {
   return (
-    <footer style={{ borderTop: '1px solid rgba(245,240,232,0.05)', padding: '40px clamp(24px,5vw,72px)' }}>
+    <footer style={{ background: '#070D1A', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '40px clamp(24px,5vw,72px)' }}>
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px,1fr))', gap: 40, marginBottom: 48 }}>
           <div>
-            <div className="cd" style={{ fontSize: 14, fontWeight: 700, color: INK, letterSpacing: '0.1em', marginBottom: 12 }}>AEGISTRACE</div>
-            <p className="cg" style={{ fontSize: 13, color: 'rgba(245,240,232,0.35)', lineHeight: 1.65, margin: 0, maxWidth: 220 }}>
+            <div style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 14, fontWeight: 800, color: INK, letterSpacing: '0.1em', marginBottom: 12,
+            }}>AEGISTRACE</div>
+            <p style={{
+              fontFamily: "'IBM Plex Sans', sans-serif",
+              fontSize: 13, color: MUTED, lineHeight: 1.65, margin: 0, maxWidth: 220,
+            }}>
               The Trust Operating System for the AI-agent era.
             </p>
           </div>
           <div>
-            <div className="cg" style={{ fontSize: 11, color: 'rgba(245,240,232,0.28)', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 16, fontWeight: 600 }}>Platform</div>
+            <div style={{
+              fontFamily: "'IBM Plex Sans', sans-serif",
+              fontSize: 11, color: 'rgba(148,163,184,0.5)', letterSpacing: '0.14em',
+              textTransform: 'uppercase', marginBottom: 16, fontWeight: 600,
+            }}>Platform</div>
             {[
               { l: 'Sign In',   to: '/app/login' },
               { l: 'Mission',   to: '/mission' },
               { l: 'Portfolio', to: '/portfolio' },
+              { l: 'Platform',  to: '/platform' },
             ].map(({ l, to }) => (
               <div key={l} style={{ marginBottom: 10 }}>
-                <Link to={to} className="cg" style={{ fontSize: 13, color: 'rgba(245,240,232,0.42)', textDecoration: 'none', transition: 'color 140ms' }}
-                  onMouseEnter={e => (e.target.style.color = GOLD)}
-                  onMouseLeave={e => (e.target.style.color = 'rgba(245,240,232,0.42)')}>
+                <Link to={to} style={{
+                  fontFamily: "'IBM Plex Sans', sans-serif",
+                  fontSize: 13, color: MUTED, textDecoration: 'none', transition: 'color 140ms',
+                }}
+                  onMouseEnter={e => (e.target.style.color = INK)}
+                  onMouseLeave={e => (e.target.style.color = MUTED)}>
                   {l}
                 </Link>
               </div>
             ))}
           </div>
           <div>
-            <div className="cg" style={{ fontSize: 11, color: 'rgba(245,240,232,0.28)', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 16, fontWeight: 600 }}>Contact</div>
-            <a href="mailto:prasanna80564@gmail.com" className="cg" style={{ fontSize: 13, color: 'rgba(245,240,232,0.42)', textDecoration: 'none', display: 'block', marginBottom: 10 }}>
+            <div style={{
+              fontFamily: "'IBM Plex Sans', sans-serif",
+              fontSize: 11, color: 'rgba(148,163,184,0.5)', letterSpacing: '0.14em',
+              textTransform: 'uppercase', marginBottom: 16, fontWeight: 600,
+            }}>Contact</div>
+            <a href="mailto:prasanna80564@gmail.com" style={{
+              fontFamily: "'IBM Plex Sans', sans-serif",
+              fontSize: 13, color: MUTED, textDecoration: 'none', display: 'block', marginBottom: 10,
+            }}>
               prasanna80564@gmail.com
             </a>
-            <a href="https://github.com/Prasanna-27eng" target="_blank" rel="noopener noreferrer" className="cg"
-              style={{ fontSize: 13, color: 'rgba(245,240,232,0.42)', textDecoration: 'none' }}>
+            <a href="https://github.com/Prasanna-27eng" target="_blank" rel="noopener noreferrer" style={{
+              fontFamily: "'IBM Plex Sans', sans-serif",
+              fontSize: 13, color: MUTED, textDecoration: 'none',
+            }}>
               github.com/Prasanna-27eng
             </a>
           </div>
         </div>
         <div style={{
-          borderTop: '1px solid rgba(245,240,232,0.05)', paddingTop: 24,
+          borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 24,
           display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12,
         }}>
-          <span className="mono" style={{ color: 'rgba(245,240,232,0.3)', fontSize: 11, letterSpacing: '0.18em' }}>AEGISTRACE</span>
-          <span className="cg" style={{ color: 'rgba(245,240,232,0.3)', fontSize: 12 }}>Built in Dublin. Open source. Free forever.</span>
+          <span style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            color: 'rgba(148,163,184,0.4)', fontSize: 11, letterSpacing: '0.18em',
+          }}>AEGISTRACE</span>
+          <span style={{
+            fontFamily: "'IBM Plex Sans', sans-serif",
+            color: 'rgba(148,163,184,0.4)', fontSize: 12,
+          }}>Built in Dublin. Open source. Free forever.</span>
         </div>
       </div>
     </footer>
@@ -878,9 +1172,9 @@ function Footer() {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   NAV
+   NAV — always dark, fixed 56px
 ════════════════════════════════════════════════════════════════════════════ */
-function Nav({ scrolled }) {
+function Nav() {
   return (
     <motion.nav
       initial={{ opacity: 0, y: -14 }}
@@ -889,27 +1183,49 @@ function Nav({ scrolled }) {
       style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 clamp(20px,4vw,56px)', height: 64,
-        background: scrolled ? 'rgba(5,4,5,0.88)' : 'transparent',
-        backdropFilter: scrolled ? 'blur(20px) saturate(160%)' : 'none',
-        WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(160%)' : 'none',
-        borderBottom: scrolled ? '1px solid rgba(245,158,11,0.13)' : '1px solid transparent',
-        transition: 'background 300ms cubic-bezier(0.23,1,0.32,1), border-color 300ms',
+        padding: '0 clamp(20px,4vw,56px)', height: 56,
+        background: NAVY,
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
       }}
     >
-      <Link to="/" className="cd" style={{
+      <Link to="/" style={{
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
         color: INK, textDecoration: 'none',
-        fontSize: 15, fontWeight: 700, letterSpacing: '0.12em',
+        fontSize: 15, fontWeight: 800, letterSpacing: '0.1em',
       }}>
         AEGISTRACE
       </Link>
       <div style={{ display: 'flex', gap: 'clamp(16px,2.5vw,32px)', alignItems: 'center' }}>
-        <a href="#platform" className="nav-link">Platform</a>
-        <Link to="/mission"   className="nav-link">Mission</Link>
-        <Link to="/portfolio" className="nav-link">Portfolio</Link>
+        {[
+          { label: 'Platform', to: '/platform' },
+          { label: 'Mission',  to: '/mission' },
+          { label: 'Portfolio',to: '/portfolio' },
+        ].map(({ label, to }) => (
+          <Link key={label} to={to} style={{
+            fontFamily: "'IBM Plex Sans', sans-serif",
+            fontSize: 13, fontWeight: 500,
+            color: 'rgba(241,245,249,0.7)', textDecoration: 'none', letterSpacing: '0.02em',
+            transition: 'color 140ms',
+          }}
+            onMouseEnter={e => (e.target.style.color = INK)}
+            onMouseLeave={e => (e.target.style.color = 'rgba(241,245,249,0.7)')}>
+            {label}
+          </Link>
+        ))}
         <a href="https://aegistrace-7qvn.onrender.com" target="_blank" rel="noopener noreferrer"
-          className="gold-btn" style={{ padding: '9px 20px', fontSize: 12 }}>
-          Access Platform <ArrowRight size={12}/>
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            background: BLUE, color: '#fff',
+            fontFamily: "'IBM Plex Sans', sans-serif",
+            fontSize: 12, fontWeight: 600,
+            padding: '8px 18px', borderRadius: 4, border: 'none', cursor: 'pointer',
+            textDecoration: 'none', letterSpacing: '0.02em',
+            transition: 'background 140ms',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.background = '#1D4ED8')}
+          onMouseLeave={e => (e.currentTarget.style.background = BLUE)}
+        >
+          Get Started <ArrowRight size={12}/>
         </a>
       </div>
     </motion.nav>
@@ -920,7 +1236,6 @@ function Nav({ scrolled }) {
    ROOT
 ════════════════════════════════════════════════════════════════════════════ */
 export default function Landing() {
-  const [scrolled, setScrolled] = useState(false);
   const isMobile = useIsMobile();
   const reduced  = useReducedMotion();
   const useFallback = isMobile || reduced;
@@ -935,99 +1250,51 @@ export default function Landing() {
     return () => lenis.destroy();
   }, [reduced, useFallback]);
 
-  /* Nav blur threshold */
-  useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 80);
-    window.addEventListener('scroll', fn, { passive: true });
-    return () => window.removeEventListener('scroll', fn);
-  }, []);
-
   return (
     <>
       <AnimatePresence>{!done && <LoadingScreen/>}</AnimatePresence>
 
       <div style={{
-        background: BG, color: INK, overflowX: 'clip',
+        background: NAVY, color: INK, overflowX: 'clip',
         minHeight: '100vh', position: 'relative', isolation: 'isolate',
       }}>
         <ScrollProgressBar/>
-        <Nav scrolled={scrolled}/>
+        <Nav/>
 
         <style>{`
-          .cd   { font-family: 'Clash Display', sans-serif; }
-          .cg   { font-family: 'Cabinet Grotesk', sans-serif; }
-          .mono { font-family: 'JetBrains Mono', monospace; }
-
-          .gold-btn {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: ${GOLD}; color: #000; font-weight: 700;
-            font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px;
-            padding: 12px 24px; border: none; cursor: pointer;
-            text-decoration: none; letter-spacing: 0.02em;
-            transition: background 140ms cubic-bezier(0.23,1,0.32,1), transform 100ms, box-shadow 140ms;
-          }
-          .gold-btn:hover  { background: #FBBF24; transform: translateY(-2px); box-shadow: 0 0 24px rgba(245,158,11,0.28); }
-          .gold-btn:active { transform: scale(0.97); }
-
-          .ghost-btn {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: transparent; color: rgba(245,240,232,0.72);
-            font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px; font-weight: 500;
-            padding: 11px 22px; border: 1px solid rgba(245,240,232,0.18);
-            cursor: pointer; text-decoration: none; letter-spacing: 0.02em;
-            transition: border-color 140ms, color 140ms, transform 100ms;
-          }
-          .ghost-btn:hover  { border-color: rgba(245,240,232,0.42); color: ${INK}; transform: translateY(-2px); }
-          .ghost-btn:active { transform: scale(0.97); }
-
-          .nav-link {
-            font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px; font-weight: 500;
-            color: rgba(245,240,232,0.58); text-decoration: none; letter-spacing: 0.02em;
-            transition: color 140ms; position: relative;
-          }
-          .nav-link::after {
-            content: ''; position: absolute; left: 0; right: 100%; bottom: -4px;
-            height: 1px; background: ${GOLD};
-            transition: right 240ms cubic-bezier(0.23,1,0.32,1);
-          }
-          .nav-link:hover        { color: ${INK}; }
-          .nav-link:hover::after { right: 0; }
-
           @keyframes ticker-march  { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-          @keyframes ripple-expand {
-            0%   { transform: scale(0.7); opacity: 0.7; }
-            100% { transform: scale(1.3); opacity: 0; }
-          }
+          @keyframes critical-pulse { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.6); } 100% { box-shadow: 0 0 0 8px rgba(239,68,68,0); } }
+          @keyframes live-pulse    { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
 
           @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
           }
 
-          ::selection { background: rgba(245,158,11,0.35); color: ${INK}; }
+          ::selection { background: rgba(37,99,235,0.3); color: #F1F5F9; }
         `}</style>
 
-        {/* ── SCENES ── */}
-        {useFallback ? (
-          <>
-            <MobileHero/>
-            <Ticker/>
-            <MobileStat/>
-            <MobileBreach/>
-          </>
-        ) : (
-          <>
-            <HeroScene/>
-            <Ticker/>
-            <StatScene/>
-            <BreachScene/>
-          </>
-        )}
+        {/* ── HERO ── */}
+        {useFallback ? <MobileHero/> : <HeroScene/>}
 
-        {/* ── CONTENT SECTIONS ── */}
-        <PlatformCapabilities/>
-        <StackSection/>
-        <CredibilitySection/>
-        <FinalCTA/>
+        {/* ── TICKER ── */}
+        <Ticker/>
+
+        {/* ── STAT STRIP ── */}
+        <StatStrip/>
+
+        {/* ── FEATURE BENTO ── */}
+        <FeatureSection/>
+
+        {/* ── TOOLS STRIP ── */}
+        <ToolsSection/>
+
+        {/* ── WHO IT'S FOR ── */}
+        <AudienceSection/>
+
+        {/* ── CTA BAND ── */}
+        <CTABand/>
+
+        {/* ── FOOTER ── */}
         <Footer/>
       </div>
     </>

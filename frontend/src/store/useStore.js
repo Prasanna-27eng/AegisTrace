@@ -34,18 +34,22 @@ const useStore = create((set, get) => ({
 
   // ── Toasts ──────────────────────────────────────────────────────────────────
   toasts: [],
-  addToast: (message, type = 'success') => {
-    const id = Date.now();
+  addToast: (message, type = 'info', opts = {}) => {
     // Deduplicate — if the same message+type already visible, skip
     const existing = get().toasts;
     if (existing.some(t => t.message === message && t.type === type)) return;
     // Cap at 5 visible toasts
     const trimmed = existing.length >= 5 ? existing.slice(1) : existing;
-    set({ toasts: [...trimmed, { id, message, type }] });
-    // Only success and info auto-dismiss — error/warning stay until manually closed
-    if (type === 'success' || type === 'info') {
-      setTimeout(() => set(s => ({ toasts: s.toasts.filter(t => t.id !== id) })), 5000);
-    }
+    const id = Date.now() + Math.random();
+    set({
+      toasts: [...trimmed, {
+        id,
+        message,
+        type,
+        title: opts.title,
+        duration: opts.duration !== undefined ? opts.duration : undefined,
+      }],
+    });
   },
   removeToast: (id) => set(s => ({ toasts: s.toasts.filter(t => t.id !== id) })),
 

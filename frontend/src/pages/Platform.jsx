@@ -6,8 +6,8 @@ import { ArrowRight, Copy, Check, Github } from 'lucide-react';
 /* ─── Tokens ─────────────────────────────────────────────────────────────── */
 const E    = [0.16, 1, 0.3, 1];
 const GOLD = '#F59E0B';
-const BG   = '#050405';
-const INK  = '#F5F0E8';
+const BG   = '#0A1628';
+const INK  = '#F1F5F9';
 
 /* ─── Scroll state for nav ───────────────────────────────────────────────── */
 function useScrolled(threshold = 40) {
@@ -93,15 +93,15 @@ function CopyBtn({ text }) {
       onClick={copy}
       aria-label="Copy command"
       style={{
-        background: 'none', border: '1px solid rgba(245,240,232,0.15)',
+        background: 'none', border: '1px solid rgba(241,245,249,0.15)',
         cursor: 'pointer', padding: '6px 10px', borderRadius: 4,
-        color: copied ? GOLD : 'rgba(245,240,232,0.4)',
+        color: copied ? GOLD : 'rgba(241,245,249,0.4)',
         display: 'flex', alignItems: 'center', gap: 5,
-        fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
+        fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
         transition: 'color 200ms, border-color 200ms',
       }}
-      onMouseEnter={e => { if (!copied) e.currentTarget.style.color = 'rgba(245,240,232,0.8)'; }}
-      onMouseLeave={e => { if (!copied) e.currentTarget.style.color = 'rgba(245,240,232,0.4)'; }}
+      onMouseEnter={e => { if (!copied) e.currentTarget.style.color = 'rgba(241,245,249,0.8)'; }}
+      onMouseLeave={e => { if (!copied) e.currentTarget.style.color = 'rgba(241,245,249,0.4)'; }}
     >
       {copied ? <Check size={12}/> : <Copy size={12}/>}
       {copied ? 'Copied' : 'Copy'}
@@ -231,7 +231,7 @@ function HeroSection() {
       <CharStagger
         text="The complete SOC, without the procurement cycle."
         style={{
-          fontFamily: "'Clash Display', sans-serif",
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
           fontSize: 'clamp(42px,6vw,72px)',
           fontWeight: 600,
           color: INK,
@@ -245,9 +245,9 @@ function HeroSection() {
 
       <Reveal delay={0.3}>
         <p style={{
-          fontFamily: "'Cabinet Grotesk', sans-serif",
+          fontFamily: "'IBM Plex Sans', sans-serif",
           fontSize: 'clamp(16px,1.8vw,20px)',
-          color: 'rgba(245,240,232,0.55)',
+          color: 'rgba(241,245,249,0.55)',
           maxWidth: '58ch',
           lineHeight: 1.6,
           margin: '0 0 40px',
@@ -259,8 +259,8 @@ function HeroSection() {
       <Reveal delay={0.45} style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
         <Link to="/app/login" style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
-          background: GOLD, color: '#050405',
-          fontFamily: "'Cabinet Grotesk', sans-serif",
+          background: GOLD, color: '#0F172A',
+          fontFamily: "'IBM Plex Sans', sans-serif",
           fontSize: 14, fontWeight: 700,
           padding: '12px 22px', borderRadius: 5,
           textDecoration: 'none', letterSpacing: '0.01em',
@@ -274,16 +274,16 @@ function HeroSection() {
         <a href="https://github.com/prasannakumar-s/aegistrace" target="_blank" rel="noopener noreferrer" style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
           background: 'transparent',
-          border: '1px solid rgba(245,240,232,0.2)',
-          color: 'rgba(245,240,232,0.75)',
-          fontFamily: "'Cabinet Grotesk', sans-serif",
+          border: '1px solid rgba(241,245,249,0.2)',
+          color: 'rgba(241,245,249,0.75)',
+          fontFamily: "'IBM Plex Sans', sans-serif",
           fontSize: 14, fontWeight: 500,
           padding: '12px 22px', borderRadius: 5,
           textDecoration: 'none', letterSpacing: '0.01em',
           transition: 'border-color 200ms, color 200ms, transform 120ms',
         }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(245,240,232,0.4)'; e.currentTarget.style.color = INK; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(245,240,232,0.2)'; e.currentTarget.style.color = 'rgba(245,240,232,0.75)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(241,245,249,0.4)'; e.currentTarget.style.color = INK; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(241,245,249,0.2)'; e.currentTarget.style.color = 'rgba(241,245,249,0.75)'; e.currentTarget.style.transform = 'translateY(0)'; }}
         >
           <Github size={14}/> View on GitHub
         </a>
@@ -332,7 +332,7 @@ function CapabilityMatrix() {
     }}>
       <Reveal>
         <h2 style={{
-          fontFamily: "'Clash Display', sans-serif",
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
           fontSize: 'clamp(28px,3.5vw,42px)',
           fontWeight: 600, color: INK,
           letterSpacing: '-0.025em',
@@ -344,7 +344,7 @@ function CapabilityMatrix() {
       </Reveal>
 
       <div style={{
-        border: '1px solid rgba(245,240,232,0.08)',
+        border: '1px solid rgba(241,245,249,0.08)',
         borderRadius: 8, overflow: 'hidden',
       }}>
         {CAT_ORDER.flatMap(cat =>
@@ -363,7 +363,7 @@ function CapabilityMatrix() {
                       display: 'grid',
                       gridTemplateColumns: '130px 1fr',
                       gap: 0,
-                      borderBottom: isLast ? 'none' : '1px solid rgba(245,240,232,0.055)',
+                      borderBottom: isLast ? 'none' : '1px solid rgba(241,245,249,0.055)',
                       background: isHovered ? 'rgba(245,158,11,0.035)' : 'transparent',
                       transition: 'background 140ms ease',
                       cursor: 'default',
@@ -373,14 +373,14 @@ function CapabilityMatrix() {
                     <div style={{
                       padding: '16px 20px',
                       display: 'flex', alignItems: 'center',
-                      borderRight: '1px solid rgba(245,240,232,0.055)',
+                      borderRight: '1px solid rgba(241,245,249,0.055)',
                     }}>
                       {i === 0 && (
                         <span style={{
-                          fontFamily: "'JetBrains Mono', monospace",
+                          fontFamily: "'IBM Plex Mono', monospace",
                           fontSize: 9.5, fontWeight: 600,
                           letterSpacing: '0.14em',
-                          color: CAT_COLORS[cat] || 'rgba(245,240,232,0.4)',
+                          color: CAT_COLORS[cat] || 'rgba(241,245,249,0.4)',
                           textTransform: 'uppercase',
                         }}>
                           {cat}
@@ -405,16 +405,16 @@ function CapabilityMatrix() {
                       }}/>
                       <div>
                         <div style={{
-                          fontFamily: "'Cabinet Grotesk', sans-serif",
+                          fontFamily: "'IBM Plex Sans', sans-serif",
                           fontSize: 14, fontWeight: 600,
                           color: INK, marginBottom: 3,
                         }}>
                           {cap.name}
                         </div>
                         <div style={{
-                          fontFamily: "'Cabinet Grotesk', sans-serif",
+                          fontFamily: "'IBM Plex Sans', sans-serif",
                           fontSize: 12.5,
-                          color: 'rgba(245,240,232,0.45)',
+                          color: 'rgba(241,245,249,0.45)',
                           lineHeight: 1.5,
                           maxWidth: '70ch',
                         }}>
@@ -447,7 +447,7 @@ function ArchitectureSection() {
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <Reveal>
           <h2 style={{
-            fontFamily: "'Clash Display', sans-serif",
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
             fontSize: 'clamp(28px,3.5vw,42px)',
             fontWeight: 600, color: INK,
             letterSpacing: '-0.025em',
@@ -464,7 +464,7 @@ function ArchitectureSection() {
           transition={{ duration: 0.72, ease: E }}
           style={{
             position: 'relative',
-            background: '#070608',
+            background: '#111827',
             border: '1px solid rgba(245,158,11,0.18)',
             borderRadius: 8,
             padding: 'clamp(24px,4vw,40px) clamp(20px,3vw,36px)',
@@ -478,9 +478,9 @@ function ArchitectureSection() {
           }}/>
 
           <pre style={{
-            fontFamily: "'JetBrains Mono', monospace",
+            fontFamily: "'IBM Plex Mono', monospace",
             fontSize: 'clamp(10px,1.2vw,13px)',
-            color: 'rgba(245,240,232,0.75)',
+            color: 'rgba(241,245,249,0.75)',
             lineHeight: 1.7,
             margin: 0,
             overflowX: 'auto',
@@ -513,7 +513,7 @@ function AIModelsSection() {
     }}>
       <Reveal>
         <h2 style={{
-          fontFamily: "'Clash Display', sans-serif",
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
           fontSize: 'clamp(28px,3.5vw,42px)',
           fontWeight: 600, color: INK,
           letterSpacing: '-0.025em',
@@ -522,8 +522,8 @@ function AIModelsSection() {
           Four AI models, four distinct roles.
         </h2>
         <p style={{
-          fontFamily: "'Cabinet Grotesk', sans-serif",
-          fontSize: 16, color: 'rgba(245,240,232,0.45)',
+          fontFamily: "'IBM Plex Sans', sans-serif",
+          fontSize: 16, color: 'rgba(241,245,249,0.45)',
           margin: '0 0 48px', lineHeight: 1.6, maxWidth: '52ch',
         }}>
           Not one general-purpose model doing everything poorly. Four specialists, each chosen for its specific task.
@@ -539,8 +539,8 @@ function AIModelsSection() {
           <Reveal key={model.name} delay={i * 0.07}>
             <TiltCard style={{ height: '100%' }}>
               <div style={{
-                background: '#08070A',
-                border: '1px solid rgba(245,240,232,0.09)',
+                background: '#111827',
+                border: '1px solid rgba(241,245,249,0.09)',
                 borderRadius: 8,
                 padding: '24px 22px',
                 height: '100%',
@@ -551,7 +551,7 @@ function AIModelsSection() {
               }}>
                 {/* Model name */}
                 <div style={{
-                  fontFamily: "'JetBrains Mono', monospace",
+                  fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 13, fontWeight: 600,
                   color: GOLD, letterSpacing: '0.04em',
                 }}>
@@ -560,7 +560,7 @@ function AIModelsSection() {
 
                 {/* Role */}
                 <div style={{
-                  fontFamily: "'Cabinet Grotesk', sans-serif",
+                  fontFamily: "'IBM Plex Sans', sans-serif",
                   fontSize: 15, fontWeight: 700,
                   color: INK, lineHeight: 1.3,
                 }}>
@@ -569,8 +569,8 @@ function AIModelsSection() {
 
                 {/* Description */}
                 <p style={{
-                  fontFamily: "'Cabinet Grotesk', sans-serif",
-                  fontSize: 13, color: 'rgba(245,240,232,0.48)',
+                  fontFamily: "'IBM Plex Sans', sans-serif",
+                  fontSize: 13, color: 'rgba(241,245,249,0.48)',
                   lineHeight: 1.6, margin: 0, flex: 1,
                 }}>
                   {model.desc}
@@ -582,7 +582,7 @@ function AIModelsSection() {
                   background: 'rgba(245,158,11,0.08)',
                   border: '1px solid rgba(245,158,11,0.2)',
                   borderRadius: 4, padding: '4px 10px',
-                  fontFamily: "'JetBrains Mono', monospace",
+                  fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 10, letterSpacing: '0.1em',
                   color: 'rgba(245,158,11,0.7)',
                   alignSelf: 'flex-start', marginTop: 4,
@@ -613,7 +613,7 @@ function EndpointSection() {
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <Reveal>
           <h2 style={{
-            fontFamily: "'Clash Display', sans-serif",
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
             fontSize: 'clamp(28px,3.5vw,42px)',
             fontWeight: 600, color: INK,
             letterSpacing: '-0.025em',
@@ -622,8 +622,8 @@ function EndpointSection() {
             One command. Your endpoint is monitored.
           </h2>
           <p style={{
-            fontFamily: "'Cabinet Grotesk', sans-serif",
-            fontSize: 16, color: 'rgba(245,240,232,0.45)',
+            fontFamily: "'IBM Plex Sans', sans-serif",
+            fontSize: 16, color: 'rgba(241,245,249,0.45)',
             margin: '0 0 40px', lineHeight: 1.6, maxWidth: '48ch',
           }}>
             The endpoint agent installs in under 10 seconds on any Linux or macOS host. No configuration files. No vendor accounts.
@@ -637,8 +637,8 @@ function EndpointSection() {
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.65, ease: E }}
           style={{
-            background: '#070608',
-            border: '1px solid rgba(245,240,232,0.1)',
+            background: '#111827',
+            border: '1px solid rgba(241,245,249,0.1)',
             borderRadius: 10,
             overflow: 'hidden',
             maxWidth: 680,
@@ -649,7 +649,7 @@ function EndpointSection() {
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '12px 16px',
             background: 'rgba(255,255,255,0.04)',
-            borderBottom: '1px solid rgba(245,240,232,0.07)',
+            borderBottom: '1px solid rgba(241,245,249,0.07)',
           }}>
             <div style={{ display: 'flex', gap: 6 }}>
               {['#F87171', '#FBBF24', '#34D399'].map(c => (
@@ -657,8 +657,8 @@ function EndpointSection() {
               ))}
             </div>
             <span style={{
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 11, color: 'rgba(245,240,232,0.25)',
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 11, color: 'rgba(241,245,249,0.25)',
             }}>
               bash
             </span>
@@ -681,10 +681,10 @@ function EndpointSection() {
               >
                 {line.prompt !== null && (
                   <span style={{
-                    fontFamily: "'JetBrains Mono', monospace",
+                    fontFamily: "'IBM Plex Mono', monospace",
                     fontSize: 12,
                     color: line.prompt === '$' ? GOLD
-                          : line.prompt === '#' ? 'rgba(245,240,232,0.28)'
+                          : line.prompt === '#' ? 'rgba(241,245,249,0.28)'
                           : '#34D399',
                     flexShrink: 0, marginTop: 1,
                     minWidth: line.gold ? 24 : undefined,
@@ -693,11 +693,11 @@ function EndpointSection() {
                   </span>
                 )}
                 <span style={{
-                  fontFamily: "'JetBrains Mono', monospace",
+                  fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 12,
-                  color: line.gold ? 'rgba(245,240,232,0.75)'
-                        : line.prompt === '#' ? 'rgba(245,240,232,0.35)'
-                        : 'rgba(245,240,232,0.65)',
+                  color: line.gold ? 'rgba(241,245,249,0.75)'
+                        : line.prompt === '#' ? 'rgba(241,245,249,0.35)'
+                        : 'rgba(241,245,249,0.65)',
                   lineHeight: 1.6,
                   wordBreak: 'break-all',
                 }}>
@@ -725,7 +725,7 @@ function ComparisonSection() {
     }}>
       <Reveal>
         <h2 style={{
-          fontFamily: "'Clash Display', sans-serif",
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
           fontSize: 'clamp(28px,3.5vw,42px)',
           fontWeight: 600, color: INK,
           letterSpacing: '-0.025em',
@@ -739,26 +739,26 @@ function ComparisonSection() {
         <div style={{ overflowX: 'auto' }}>
           <table style={{
             width: '100%', borderCollapse: 'collapse',
-            fontFamily: "'Cabinet Grotesk', sans-serif",
+            fontFamily: "'IBM Plex Sans', sans-serif",
           }}>
             <thead>
               <tr>
                 <th style={{
                   textAlign: 'left', padding: '14px 20px',
-                  fontFamily: "'JetBrains Mono', monospace",
+                  fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 10.5, fontWeight: 500,
-                  color: 'rgba(245,240,232,0.35)', letterSpacing: '0.14em',
+                  color: 'rgba(241,245,249,0.35)', letterSpacing: '0.14em',
                   textTransform: 'uppercase',
-                  borderBottom: '1px solid rgba(245,240,232,0.08)',
+                  borderBottom: '1px solid rgba(241,245,249,0.08)',
                 }}>Feature</th>
                 {COLS.map((col, ci) => (
                   <th key={col} style={{
                     textAlign: 'center', padding: '14px 20px',
-                    fontFamily: "'JetBrains Mono', monospace",
+                    fontFamily: "'IBM Plex Mono', monospace",
                     fontSize: 10.5, fontWeight: ci === 0 ? 700 : 500,
-                    color: ci === 0 ? GOLD : 'rgba(245,240,232,0.35)',
+                    color: ci === 0 ? GOLD : 'rgba(241,245,249,0.35)',
                     letterSpacing: '0.1em', textTransform: 'uppercase',
-                    borderBottom: '1px solid rgba(245,240,232,0.08)',
+                    borderBottom: '1px solid rgba(241,245,249,0.08)',
                     background: ci === 0 ? 'rgba(245,158,11,0.05)' : 'transparent',
                   }}>{col}</th>
                 ))}
@@ -767,12 +767,12 @@ function ComparisonSection() {
             <tbody>
               {COMPARISON.map((row, ri) => (
                 <tr key={row.feature} style={{
-                  borderBottom: ri < COMPARISON.length - 1 ? '1px solid rgba(245,240,232,0.045)' : 'none',
+                  borderBottom: ri < COMPARISON.length - 1 ? '1px solid rgba(241,245,249,0.045)' : 'none',
                 }}>
                   <td style={{
                     padding: '14px 20px',
                     fontSize: 14, fontWeight: 500,
-                    color: 'rgba(245,240,232,0.7)',
+                    color: 'rgba(241,245,249,0.7)',
                   }}>{row.feature}</td>
                   {[row.aegis, row.siem, row.soar].map((val, ci) => (
                     <td key={ci} style={{
@@ -780,9 +780,9 @@ function ComparisonSection() {
                       background: ci === 0 ? 'rgba(245,158,11,0.04)' : 'transparent',
                       fontSize: 14,
                       color: ci === 0 ? GOLD
-                            : val === false ? 'rgba(245,240,232,0.22)'
-                            : val === 'Partial' ? 'rgba(245,240,232,0.45)'
-                            : 'rgba(245,240,232,0.6)',
+                            : val === false ? 'rgba(241,245,249,0.22)'
+                            : val === 'Partial' ? 'rgba(241,245,249,0.45)'
+                            : 'rgba(241,245,249,0.6)',
                       fontWeight: ci === 0 ? 700 : 400,
                     }}>
                       {val === true  ? '✓'
@@ -813,7 +813,7 @@ function CTASection() {
       <div style={{ maxWidth: 700, margin: '0 auto', textAlign: 'center' }}>
         <Reveal>
           <h2 style={{
-            fontFamily: "'Clash Display', sans-serif",
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
             fontSize: 'clamp(32px,4vw,52px)',
             fontWeight: 600, color: INK,
             letterSpacing: '-0.025em',
@@ -823,8 +823,8 @@ function CTASection() {
             One command. Your entire SOC.
           </h2>
           <p style={{
-            fontFamily: "'Cabinet Grotesk', sans-serif",
-            fontSize: 16, color: 'rgba(245,240,232,0.45)',
+            fontFamily: "'IBM Plex Sans', sans-serif",
+            fontSize: 16, color: 'rgba(241,245,249,0.45)',
             margin: '0 0 32px', lineHeight: 1.6,
           }}>
             No vendor negotiations. No 90-day implementations. No $100k invoices.
@@ -833,8 +833,8 @@ function CTASection() {
 
         <Reveal delay={0.1}>
           <div style={{
-            background: '#070608',
-            border: '1px solid rgba(245,240,232,0.1)',
+            background: '#111827',
+            border: '1px solid rgba(241,245,249,0.1)',
             borderRadius: 6,
             padding: '14px 20px',
             marginBottom: 28,
@@ -842,7 +842,7 @@ function CTASection() {
             gap: 12,
           }}>
             <code style={{
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: "'IBM Plex Mono', monospace",
               fontSize: 13, color: GOLD,
               wordBreak: 'break-all', textAlign: 'left',
             }}>
@@ -855,8 +855,8 @@ function CTASection() {
         <Reveal delay={0.2}>
           <Link to="/app/login" style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
-            background: GOLD, color: '#050405',
-            fontFamily: "'Cabinet Grotesk', sans-serif",
+            background: GOLD, color: '#0F172A',
+            fontFamily: "'IBM Plex Sans', sans-serif",
             fontSize: 15, fontWeight: 700,
             padding: '14px 28px', borderRadius: 5,
             textDecoration: 'none', letterSpacing: '0.01em',
@@ -892,8 +892,8 @@ export default function Platform() {
       <style>{`
         ::selection { background: rgba(245,158,11,0.3); color: ${INK}; }
         .plat-nav-link {
-          font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px; font-weight: 500;
-          color: rgba(245,240,232,0.6); text-decoration: none; letter-spacing: 0.03em;
+          font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 500;
+          color: rgba(241,245,249,0.7); text-decoration: none; letter-spacing: 0.03em;
           transition: color 140ms; position: relative;
         }
         .plat-nav-link:hover { color: ${INK}; }
@@ -920,15 +920,15 @@ export default function Platform() {
           position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '0 clamp(20px,4vw,56px)', height: 64,
-          background: scrolled ? 'rgba(5,4,5,0.92)' : 'transparent',
+          background: scrolled ? 'rgba(10,22,40,0.96)' : 'rgba(10,22,40,1)',
           backdropFilter: scrolled ? 'blur(20px) saturate(160%)' : 'none',
           WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(160%)' : 'none',
-          borderBottom: scrolled ? '1px solid rgba(245,240,232,0.06)' : 'none',
+          borderBottom: scrolled ? '1px solid rgba(241,245,249,0.06)' : 'none',
           transition: 'background 300ms, backdrop-filter 300ms, border-color 300ms',
         }}
       >
         <Link to="/" style={{
-          fontFamily: "'Clash Display', sans-serif",
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
           color: INK, textDecoration: 'none',
           fontSize: 17, fontWeight: 700, letterSpacing: '0.1em',
         }}>
@@ -940,8 +940,8 @@ export default function Platform() {
           <Link to="/portfolio" className="plat-nav-link">Builder</Link>
           <Link to="/app/login" style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
-            background: GOLD, color: '#050405',
-            fontFamily: "'Cabinet Grotesk', sans-serif",
+            background: GOLD, color: '#0F172A',
+            fontFamily: "'IBM Plex Sans', sans-serif",
             fontSize: 12, fontWeight: 700,
             padding: '9px 18px', borderRadius: 5,
             textDecoration: 'none', letterSpacing: '0.02em',
@@ -967,24 +967,24 @@ export default function Platform() {
       {/* Footer */}
       <footer style={{
         padding: '28px clamp(24px,6vw,80px)',
-        borderTop: '1px solid rgba(245,240,232,0.06)',
+        borderTop: '1px solid rgba(241,245,249,0.06)',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         flexWrap: 'wrap', gap: 12,
       }}>
         <span style={{
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 11, color: 'rgba(245,240,232,0.2)',
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: 11, color: 'rgba(241,245,249,0.2)',
           letterSpacing: '0.08em',
         }}>
           AegisTrace · v10.1 · 2026
         </span>
         <Link to="/" style={{
-          fontFamily: "'Cabinet Grotesk', sans-serif",
-          fontSize: 12, color: 'rgba(245,240,232,0.28)',
+          fontFamily: "'IBM Plex Sans', sans-serif",
+          fontSize: 12, color: 'rgba(241,245,249,0.28)',
           textDecoration: 'none', transition: 'color 140ms',
         }}
-          onMouseEnter={e => (e.currentTarget.style.color = 'rgba(245,240,232,0.6)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(245,240,232,0.28)')}
+          onMouseEnter={e => (e.currentTarget.style.color = 'rgba(241,245,249,0.6)')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(241,245,249,0.28)')}
         >
           Back to site
         </Link>

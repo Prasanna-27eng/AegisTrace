@@ -35,7 +35,15 @@ const SHORTCUTS = [
 
 function KBD({ children }) {
   return (
-    <kbd style={{ fontSize: '0.65rem', color: '#EBEBEB', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 4, padding: '2px 7px', fontFamily: 'JetBrains Mono' }}>
+    <kbd style={{
+      fontSize: 11,
+      color: 'var(--text-primary)',
+      background: 'rgba(255,255,255,0.07)',
+      border: '1px solid rgba(255,255,255,0.14)',
+      borderRadius: 4,
+      padding: '2px 7px',
+      fontFamily: 'var(--font-mono)',
+    }}>
       {children}
     </kbd>
   );
@@ -52,36 +60,54 @@ function ShortcutsPanel({ onClose }) {
   return (
     <div
       onClick={onClose}
-      style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 9998,
+        background: 'rgba(0,0,0,0.65)',
+        backdropFilter: 'blur(4px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}
     >
       <div
         onClick={e => e.stopPropagation()}
-        style={{ background: '#0E0E0E', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '24px 28px', maxWidth: 460, width: '90%', boxShadow: '0 24px 64px rgba(0,0,0,0.8)', animation: 'at-dd-in 0.15s ease' }}
+        style={{
+          background: 'var(--elevated)',
+          border: '1px solid var(--border-medium)',
+          borderRadius: 12,
+          padding: '24px 28px',
+          maxWidth: 460, width: '90%',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.8)',
+          animation: 'at-dd-in 0.15s ease',
+        }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Keyboard size={15} style={{ color: '#5A8A9F' }} />
-            <h2 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#EBEBEB', margin: 0 }}>Keyboard Shortcuts</h2>
+            <Keyboard size={15} style={{ color: 'var(--accent-light)' }} />
+            <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0, fontFamily: 'var(--font-ui)' }}>
+              Keyboard Shortcuts
+            </h2>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#686868', cursor: 'pointer', padding: 4, borderRadius: 6, display: 'flex', transition: 'color 0.15s' }}
-            onMouseEnter={e => e.currentTarget.style.color = '#EBEBEB'}
-            onMouseLeave={e => e.currentTarget.style.color = '#686868'}>
+          <button
+            onClick={onClose}
+            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4, borderRadius: 6, display: 'flex', transition: 'color 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
+          >
             <X size={15} />
           </button>
         </div>
 
         {sections.map(section => (
           <div key={section} style={{ marginBottom: 18 }}>
-            <div style={{ fontSize: '0.58rem', color: '#505050', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'JetBrains Mono', marginBottom: 8 }}>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'var(--font-mono)', marginBottom: 8 }}>
               {section}
             </div>
             {SHORTCUTS.filter(s => s.section === section).map(s => (
-              <div key={s.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                <span style={{ fontSize: '0.8rem', color: '#A8A8A8' }}>{s.label}</span>
+              <div key={s.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font-ui)' }}>{s.label}</span>
                 <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                   {s.keys.map((k, i) => (
                     <React.Fragment key={k}>
-                      {i > 0 && <span style={{ fontSize: '0.6rem', color: '#505050', fontFamily: 'JetBrains Mono' }}>then</span>}
+                      {i > 0 && <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>then</span>}
                       <KBD>{k}</KBD>
                     </React.Fragment>
                   ))}
@@ -91,7 +117,7 @@ function ShortcutsPanel({ onClose }) {
           </div>
         ))}
 
-        <div style={{ marginTop: 4, fontSize: '0.68rem', color: '#505050', fontFamily: 'JetBrains Mono', textAlign: 'center' }}>
+        <div style={{ marginTop: 4, fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', textAlign: 'center' }}>
           Shortcuts are disabled when typing in an input field.
         </div>
       </div>
@@ -123,6 +149,8 @@ export default function AppShell() {
   const gTimeoutRef = useRef(null);
 
   if (!token) return <Navigate to="/app/login" replace />;
+
+  const sidebarW = collapsed ? 56 : 240;
 
   // Global incident stream — toast + notification bell
   useSSE('/api/ingest/stream/global-alerts', useCallback((alert) => {
@@ -168,7 +196,6 @@ export default function AppShell() {
   // Global keyboard shortcuts
   useEffect(() => {
     const onKey = (e) => {
-      // Always handle Cmd/Ctrl+K
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         setPaletteOpen(o => !o);
@@ -177,14 +204,12 @@ export default function AppShell() {
 
       if (isTyping()) return;
 
-      // ? → show shortcuts panel
       if (e.key === '?') {
         e.preventDefault();
         setShortcutsOpen(o => !o);
         return;
       }
 
-      // N → new case
       if (e.key === 'n' || e.key === 'N') {
         e.preventDefault();
         api.post('/api/cases', { title: 'New Investigation', severity: 'medium', analyst_name: user?.name || 'Analyst' })
@@ -193,7 +218,6 @@ export default function AppShell() {
         return;
       }
 
-      // G sequence — go-to shortcuts (G then D/C/H/A)
       if (e.key === 'g' || e.key === 'G') {
         gKeyRef.current = true;
         clearTimeout(gTimeoutRef.current);
@@ -223,118 +247,177 @@ export default function AppShell() {
   };
 
   const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform);
-  const canGoBack = window.history.length > 1;
+  const userInitials = user?.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'A';
 
   return (
-    <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--bg)', overflow: 'hidden' }}>
 
-      <CommandPalette
-        open={paletteOpen}
-        onClose={() => setPaletteOpen(false)}
-        recentCases={recentCases}
-        onOpenShortcuts={() => setShortcutsOpen(true)}
-      />
+      {/* ── TOPBAR — Sentinel blue gradient ── */}
+      <header style={{
+        position: 'fixed',
+        top: 0, left: 0, right: 0,
+        height: 52,
+        background: 'linear-gradient(135deg, #0A1628 0%, #0E2044 50%, #0A4DA6 100%)',
+        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        padding: '0 16px',
+        zIndex: 201,
+        flexShrink: 0,
+      }}>
 
-      {shortcutsOpen && <ShortcutsPanel onClose={() => setShortcutsOpen(false)} />}
+        {/* Mobile menu button */}
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="mobile-only"
+          style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', padding: 4, display: 'none', alignItems: 'center' }}
+        >
+          <Menu size={18} />
+        </button>
 
-      <div style={{ display: 'flex' }} className="hidden-mobile">
-        <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
-      </div>
-
-      {mobileOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex' }}>
-          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0 }}>
-            <Sidebar collapsed={false} setCollapsed={() => {}} />
-          </div>
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: -1 }}
-            onClick={() => setMobileOpen(false)} />
+        {/* Logo text — left aligned */}
+        <div style={{
+          fontFamily: 'var(--font-display)',
+          fontWeight: 700,
+          fontSize: 15,
+          color: '#FFFFFF',
+          letterSpacing: '0.04em',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          flexShrink: 0,
+          width: sidebarW - 16,
+          transition: 'width 220ms cubic-bezier(0.23,1,0.32,1)',
+        }}>
+          <span style={{ fontSize: 16 }}>🛡️</span>
+          {!collapsed && <span>AegisTrace</span>}
         </div>
-      )}
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
-
-        <header style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', flexShrink: 0 }}>
-          <button onClick={() => setMobileOpen(true)} className="mobile-only"
-            style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', padding: 4, display: 'none' }}>
-            <Menu size={18} />
-          </button>
-
-          {/* Back button */}
-          {canGoBack && (
-            <button onClick={() => navigate(-1)}
-              title="Go back"
-              style={{ background: 'none', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 7, padding: '5px 9px', cursor: 'pointer', color: '#787878', display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.75rem', transition: 'all 0.15s', flexShrink: 0 }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#EBEBEB'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
-              onMouseLeave={e => { e.currentTarget.style.color = '#787878'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}>
-              <ArrowLeft size={14} />
-            </button>
-          )}
-
-          {/* Search bar with Cmd+K hint */}
-          <div style={{ flex: 1, maxWidth: 400, position: 'relative' }}>
-            <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#787878' }} />
-            <input className="at-input"
-              placeholder="Search cases…"
+        {/* Search — centered */}
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+          <div style={{ position: 'relative', width: '100%', maxWidth: 480 }}>
+            <Search
+              size={13}
+              style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.5)' }}
+            />
+            <input
+              placeholder="Search cases, indicators, rules..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               onKeyDown={handleSearch}
-              style={{ paddingLeft: 30, paddingRight: 58, fontSize: '0.8rem' }} />
+              style={{
+                width: '100%',
+                background: 'rgba(255,255,255,0.1)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                borderRadius: 6,
+                padding: '7px 12px 7px 32px',
+                color: '#FFFFFF',
+                fontSize: 13,
+                fontFamily: 'var(--font-ui)',
+                outline: 'none',
+                transition: 'background 140ms ease-out, border-color 140ms ease-out',
+              }}
+              onFocus={e => {
+                e.target.style.background = 'rgba(255,255,255,0.15)';
+                e.target.style.borderColor = 'rgba(255,255,255,0.3)';
+              }}
+              onBlur={e => {
+                e.target.style.background = 'rgba(255,255,255,0.1)';
+                e.target.style.borderColor = 'rgba(255,255,255,0.15)';
+              }}
+            />
             <button
               onClick={() => setPaletteOpen(true)}
               title={`Command palette (${isMac ? '⌘' : 'Ctrl'}+K)`}
-              style={{ position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4, padding: '2px 7px', cursor: 'pointer', fontSize: '0.58rem', color: '#787878', fontFamily: 'JetBrains Mono', letterSpacing: 0, lineHeight: 1.8 }}>
-              {isMac ? '⌘K' : 'Ctrl K'}
+              style={{
+                position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)',
+                background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
+                borderRadius: 4, padding: '2px 7px', cursor: 'pointer',
+                fontSize: 10, color: 'rgba(255,255,255,0.6)',
+                fontFamily: 'var(--font-mono)', lineHeight: 1.8,
+              }}
+            >
+              {isMac ? '⌘K' : 'Ctrl+K'}
             </button>
           </div>
+        </div>
 
-          {/* Shortcuts hint button */}
+        {/* Right side: shortcuts, bell, user */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+
+          {/* Shortcuts */}
           <button
             onClick={() => setShortcutsOpen(true)}
             title="Keyboard shortcuts (?)"
-            style={{ background: 'none', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, padding: '5px 8px', cursor: 'pointer', color: '#686868', display: 'flex', alignItems: 'center', transition: 'all 0.15s', flexShrink: 0 }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#EBEBEB'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = '#686868'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
+            style={{
+              background: 'none', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6,
+              padding: '5px 8px', cursor: 'pointer', color: 'rgba(255,255,255,0.6)',
+              display: 'flex', alignItems: 'center', transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}
           >
             <Keyboard size={14} />
           </button>
 
           {/* Notification bell */}
-          <div ref={bellRef} style={{ position: 'relative', flexShrink: 0 }}>
+          <div ref={bellRef} style={{ position: 'relative' }}>
             <button
               onClick={() => { setBellOpen(o => !o); if (!bellOpen) setUnreadCount(0); }}
               title="Alerts"
-              style={{ background: unreadCount > 0 ? 'rgba(239,68,68,0.08)' : 'none', border: `1px solid ${unreadCount > 0 ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.08)'}`, borderRadius: 6, padding: '5px 8px', cursor: 'pointer', color: unreadCount > 0 ? '#EF4444' : '#686868', display: 'flex', alignItems: 'center', transition: 'all 0.15s', position: 'relative' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = unreadCount > 0 ? 'rgba(239,68,68,0.5)' : 'rgba(255,255,255,0.2)'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = unreadCount > 0 ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.08)'; }}
+              style={{
+                background: unreadCount > 0 ? 'rgba(239,68,68,0.15)' : 'none',
+                border: `1px solid ${unreadCount > 0 ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.15)'}`,
+                borderRadius: 6, padding: '5px 8px', cursor: 'pointer',
+                color: unreadCount > 0 ? '#EF4444' : 'rgba(255,255,255,0.6)',
+                display: 'flex', alignItems: 'center', transition: 'all 0.15s', position: 'relative',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = unreadCount > 0 ? 'rgba(239,68,68,0.6)' : 'rgba(255,255,255,0.3)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = unreadCount > 0 ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.15)'; }}
             >
               <Bell size={14} />
               {unreadCount > 0 && (
-                <span style={{ position: 'absolute', top: -4, right: -4, background: '#EF4444', color: '#fff', borderRadius: '50%', fontSize: '0.55rem', fontWeight: 700, minWidth: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'JetBrains Mono,monospace', padding: '0 3px', lineHeight: 1 }}>
+                <span style={{
+                  position: 'absolute', top: -4, right: -4,
+                  background: '#EF4444', color: '#fff', borderRadius: '50%',
+                  fontSize: 9, fontWeight: 700, minWidth: 16, height: 16,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontFamily: 'var(--font-mono)', padding: '0 3px', lineHeight: 1,
+                }}>
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
             </button>
             {bellOpen && (
-              <div className="dropdown-pop" style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: 340, background: '#0D0D0D', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, boxShadow: '0 16px 48px rgba(0,0,0,0.7)', zIndex: 200, overflow: 'hidden', transformOrigin: 'top right' }}>
-                <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#EBEBEB' }}>Recent Alerts</span>
-                  <button onClick={() => { setNotifications([]); setBellOpen(false); }} style={{ background: 'none', border: 'none', color: '#555', cursor: 'pointer', fontSize: '0.68rem', fontFamily: 'JetBrains Mono,monospace' }}>Clear all</button>
+              <div className="dropdown-pop" style={{
+                position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: 340,
+                background: 'var(--elevated)', border: '1px solid var(--border-medium)',
+                borderRadius: 10, boxShadow: '0 16px 48px rgba(0,0,0,0.7)',
+                zIndex: 300, overflow: 'hidden', transformOrigin: 'top right',
+              }}>
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-ui)' }}>Recent Alerts</span>
+                  <button
+                    onClick={() => { setNotifications([]); setBellOpen(false); }}
+                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 11, fontFamily: 'var(--font-mono)' }}
+                  >Clear all</button>
                 </div>
                 {notifications.length === 0 ? (
-                  <div style={{ padding: '24px 16px', textAlign: 'center', color: '#555', fontSize: '0.78rem' }}>No recent alerts</div>
+                  <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13, fontFamily: 'var(--font-ui)' }}>No recent alerts</div>
                 ) : (
                   <div style={{ maxHeight: 360, overflowY: 'auto' }}>
                     {notifications.map((n, i) => {
-                      const sevColor = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'#22C55E' }[n.severity] || '#787878';
+                      const sevColor = { critical:'#EF4444', high:'#F97316', medium:'#F59E0B', low:'#10B981' }[n.severity] || 'var(--text-muted)';
                       const ts = n.detected_at ? new Date(n.detected_at).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}) : '';
                       return (
-                        <div key={n.id || i} className={n.id === flashId ? 'signal-flash' : undefined} style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                        <div key={n.id || i} className={n.id === flashId ? 'signal-flash' : undefined} style={{ padding: '10px 16px', borderBottom: '1px solid var(--border)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                           <span style={{ width: 6, height: 6, borderRadius: '50%', background: sevColor, flexShrink: 0, marginTop: 5 }}/>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: '0.76rem', color: '#EBEBEB', fontWeight: 500, marginBottom: 2 }}>{n.label}</div>
-                            <div style={{ fontSize: '0.65rem', color: '#787878', fontFamily: 'JetBrains Mono,monospace' }}>{n.hostname} · {ts}</div>
+                            <div style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500, marginBottom: 2, fontFamily: 'var(--font-ui)' }}>{n.label}</div>
+                            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{n.hostname} · {ts}</div>
                           </div>
-                          <span style={{ fontSize: '0.58rem', color: sevColor, background: `${sevColor}14`, padding: '1px 6px', borderRadius: 3, fontFamily: 'JetBrains Mono,monospace', textTransform: 'uppercase', flexShrink: 0 }}>{n.severity}</span>
+                          <span style={{ fontSize: 10, color: sevColor, background: `${sevColor}20`, padding: '1px 6px', borderRadius: 3, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', flexShrink: 0 }}>{n.severity}</span>
                         </div>
                       );
                     })}
@@ -345,55 +428,136 @@ export default function AppShell() {
           </div>
 
           {/* User dropdown */}
-          <div ref={dropdownRef} style={{ marginLeft: 'auto', position: 'relative' }}>
+          <div ref={dropdownRef} style={{ position: 'relative' }}>
             <button
               onClick={() => setDropdownOpen(o => !o)}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, background: dropdownOpen ? 'rgba(90,138,159,0.08)' : 'none', border: '1px solid ' + (dropdownOpen ? 'rgba(90,138,159,0.2)' : 'transparent'), borderRadius: 8, padding: '4px 8px 4px 10px', cursor: 'pointer', transition: 'all 0.15s' }}
-              onMouseEnter={e => { if (!dropdownOpen) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
-              onMouseLeave={e => { if (!dropdownOpen) e.currentTarget.style.background = 'none'; }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                background: dropdownOpen ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                borderRadius: 8, padding: '4px 10px 4px 8px', cursor: 'pointer', transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { if (!dropdownOpen) e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
+              onMouseLeave={e => { if (!dropdownOpen) e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
             >
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: 500, color: '#EBEBEB' }}>{user?.name}</div>
-                <div style={{ fontSize: '0.62rem', color: '#787878', fontFamily: 'JetBrains Mono' }}>{user?.role}</div>
+              <div style={{
+                width: 28, height: 28, borderRadius: '50%',
+                background: 'rgba(37,99,235,0.4)', border: '1px solid rgba(96,165,250,0.4)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 11, fontWeight: 700, color: '#fff', flexShrink: 0,
+                fontFamily: 'var(--font-mono)',
+              }}>
+                {userInitials}
               </div>
-              <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(90,138,159,0.15)', border: '1px solid rgba(90,138,159,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 600, color: '#60A5FA', flexShrink: 0 }}>
-                {user?.name?.[0] || 'A'}
-              </div>
-              <ChevronDown size={12} style={{ color: '#787878', transition: 'transform 0.2s', transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+              {!collapsed && (
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: '#FFFFFF', fontFamily: 'var(--font-ui)', lineHeight: 1.2 }}>{user?.name}</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', fontFamily: 'var(--font-mono)' }}>{user?.role}</div>
+                </div>
+              )}
+              <ChevronDown size={12} style={{ color: 'rgba(255,255,255,0.5)', transition: 'transform 0.2s', transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
             </button>
 
             {dropdownOpen && (
-              <div className="dropdown-pop" style={{ position: 'absolute', right: 0, top: 'calc(100% + 8px)', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: 6, minWidth: 190, zIndex: 300, boxShadow: '0 10px 40px rgba(0,0,0,0.5)', transformOrigin: 'top right' }}>
+              <div className="dropdown-pop" style={{
+                position: 'absolute', right: 0, top: 'calc(100% + 8px)',
+                background: 'var(--elevated)', border: '1px solid var(--border-medium)',
+                borderRadius: 10, padding: 6, minWidth: 190, zIndex: 400,
+                boxShadow: '0 10px 40px rgba(0,0,0,0.5)', transformOrigin: 'top right',
+              }}>
                 {[
-                  { Icon: Home,     label: 'Back to Home',  action: () => { navigate('/');          setDropdownOpen(false); }, color: 'rgba(240,240,248,0.7)' },
-                  { Icon: Settings, label: 'Settings',       action: () => { navigate('/app/admin'); setDropdownOpen(false); }, color: 'rgba(240,240,248,0.7)' },
-                  { Icon: Keyboard, label: 'Keyboard Shortcuts', action: () => { setShortcutsOpen(true); setDropdownOpen(false); }, color: 'rgba(240,240,248,0.7)' },
-                ].map(({ Icon, label, action, color }) => (
-                  <button key={label} onClick={action} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', background: 'none', border: 'none', borderRadius: 7, padding: '9px 12px', fontSize: '0.8rem', color, cursor: 'pointer', transition: 'background 0.12s', textAlign: 'left', fontFamily: 'inherit' }}
+                  { Icon: Home,     label: 'Back to Home',       action: () => { navigate('/');          setDropdownOpen(false); } },
+                  { Icon: Settings, label: 'Settings',            action: () => { navigate('/app/admin'); setDropdownOpen(false); } },
+                  { Icon: Keyboard, label: 'Keyboard Shortcuts',  action: () => { setShortcutsOpen(true); setDropdownOpen(false); } },
+                ].map(({ Icon, label, action }) => (
+                  <button
+                    key={label}
+                    onClick={action}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', background: 'none', border: 'none', borderRadius: 7, padding: '9px 12px', fontSize: 13, color: 'var(--text-secondary)', cursor: 'pointer', transition: 'background 0.12s', textAlign: 'left', fontFamily: 'var(--font-ui)' }}
                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                    onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                  >
                     <Icon size={14} style={{ flexShrink: 0, opacity: 0.7 }} />{label}
                   </button>
                 ))}
                 <div style={{ height: 1, background: 'var(--border)', margin: '4px 6px' }} />
-                <button onClick={() => { logout(); navigate('/'); }} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', background: 'none', border: 'none', borderRadius: 7, padding: '9px 12px', fontSize: '0.8rem', color: '#EF4444', cursor: 'pointer', transition: 'background 0.12s', textAlign: 'left', fontFamily: 'inherit' }}
+                <button
+                  onClick={() => { logout(); navigate('/'); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', background: 'none', border: 'none', borderRadius: 7, padding: '9px 12px', fontSize: 13, color: '#EF4444', cursor: 'pointer', transition: 'background 0.12s', textAlign: 'left', fontFamily: 'var(--font-ui)' }}
                   onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                >
                   <LogOut size={14} style={{ flexShrink: 0 }} /> Sign Out
                 </button>
               </div>
             )}
           </div>
-        </header>
+        </div>
+      </header>
 
-        <main style={{ flex: 1, overflow: 'auto', background: 'var(--bg)', paddingBottom: 60 }}>
+      {/* ── BODY: sidebar + content ── */}
+      <div style={{ display: 'flex', flex: 1, marginTop: 52, overflow: 'hidden' }}>
+
+        <CommandPalette
+          open={paletteOpen}
+          onClose={() => setPaletteOpen(false)}
+          recentCases={recentCases}
+          onOpenShortcuts={() => setShortcutsOpen(true)}
+        />
+
+        {shortcutsOpen && <ShortcutsPanel onClose={() => setShortcutsOpen(false)} />}
+
+        {/* Desktop sidebar */}
+        <div className="hidden-mobile">
+          <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+        </div>
+
+        {/* Mobile sidebar overlay */}
+        {mobileOpen && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 300, display: 'flex' }}>
+            <div style={{ position: 'absolute', left: 0, top: 52, bottom: 0 }}>
+              <Sidebar collapsed={false} setCollapsed={() => {}} />
+            </div>
+            <div
+              style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: -1 }}
+              onClick={() => setMobileOpen(false)}
+            />
+          </div>
+        )}
+
+        {/* Main content */}
+        <main style={{
+          flex: 1,
+          overflow: 'auto',
+          background: 'var(--bg)',
+          paddingBottom: 60,
+          minWidth: 0,
+        }}>
           <Outlet />
         </main>
 
-        <nav style={{ display: 'none', position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100, background: 'var(--surface)', borderTop: '1px solid var(--border)', padding: '8px 0 max(8px, env(safe-area-inset-bottom))' }} className="mobile-bottom-nav">
+        {/* Mobile bottom nav */}
+        <nav
+          style={{ display: 'none', position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100, background: 'var(--surface)', borderTop: '1px solid var(--border)', padding: '8px 0 max(8px, env(safe-area-inset-bottom))' }}
+          className="mobile-bottom-nav"
+        >
           {MOBILE_NAV.map(({ to, Icon, label }) => (
-            <NavLink key={to} to={to} style={({ isActive }) => ({ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '4px 0', flex: 1, textDecoration: 'none', color: isActive ? '#60A5FA' : 'var(--text-muted)', fontSize: '0.6rem', fontFamily: 'JetBrains Mono' })}>
-              {({ isActive }) => (<><Icon size={20} style={{ color: isActive ? '#60A5FA' : 'var(--text-muted)' }} /><span>{label}</span></>)}
+            <NavLink
+              key={to}
+              to={to}
+              style={({ isActive }) => ({
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                padding: '4px 0', flex: 1, textDecoration: 'none',
+                color: isActive ? 'var(--accent-light)' : 'var(--text-muted)',
+                fontSize: 10, fontFamily: 'var(--font-mono)',
+              })}
+            >
+              {({ isActive }) => (
+                <>
+                  <Icon size={20} style={{ color: isActive ? 'var(--accent-light)' : 'var(--text-muted)' }} />
+                  <span>{label}</span>
+                </>
+              )}
             </NavLink>
           ))}
         </nav>

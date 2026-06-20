@@ -15,7 +15,11 @@ You are working on AegisTrace, a security product built by Prasanna. Here is exa
 4. Never re-read the full codebase — this file is sufficient. If you need a specific file, read only that file.
 
 **Rules for every session:**
-- Theme is now **pure black** (v5.1): backgrounds #000000/#080808/#101010, text #EBEBEB/#A8A8A8/#686868, accent #4DA3FF/#4A8EDB/#9C7CFF. Never revert to blue-navy.
+- Theme is now **Enterprise v5.0** (June 2026): App uses QRadar-dark navy (#0B0F1A/#111827/#1A2235), Website uses IBM QRadar marketing style (deep navy gradient hero + light #F0F4F9 sections). NEVER revert to pure black (#000000).
+- Fonts: **Plus Jakarta Sans** (display headings) + **IBM Plex Sans** (UI/body) + **IBM Plex Mono** (data/code). Clash Display + Cabinet Grotesk kept for public pages only.
+- Design tokens live in `frontend/src/styles/tokens.css` — always import this first. Never re-declare `:root` color vars in other files.
+- New components: `ApprovalQueue.jsx` (swipe cards), `FocusRing.css` (enterprise focus rings), rebuilt `Toast.jsx` (bottom-right, auto-dismiss progress bar)
+- App accent: `#2563EB` (Microsoft blue) + `#7C3AED` (QRadar purple). Gold (#F59E0B) is the brand signature for dark website sections only.
 - Use inline styles only — this codebase does NOT use Tailwind CSS
 - Do NOT add `@tanstack/react-query`, `recharts`, `alembic`, or any new npm packages without explicit approval
 - All models go in `backend/models.py` — never create separate model files
@@ -48,9 +52,9 @@ AegisTrace is a **free, open-source Trust Operating System for the AI-agent era*
 **Core conviction:** Attackers no longer break in. They become trusted. AegisTrace is how you defend the trust surface.
 
 **Built by:** Prasanna Kumar Surendran, Blue Team analyst, Dublin, Ireland  
-**Live at:** https://aegistrace-7qvn.onrender.com  
+**Live at:** https://aegistrace.uk  
 **GitHub:** https://github.com/Prasanna-27eng/AegisTrace  
-**Stack:** React 18 · FastAPI · SQLite/SQLModel · Groq API · NVIDIA NIM · Docker · Render free tier (VPS migration guide written for DigitalOcean/Hetzner/UpCloud)
+**Stack:** React 18 · FastAPI · SQLite/SQLModel · Groq API · NVIDIA NIM · Docker · Hostinger KVM 2 VPS (Ubuntu)
 
 **Companion project:** `mcp-aegis` — MCP security gateway (`~/Documents/Claude/Projects/aegistrace-mcp-gateway/`)
 
@@ -556,19 +560,21 @@ Key design decisions:
 
 ## DEPLOYMENT
 
-**Live URL:** https://aegistrace-7qvn.onrender.com  
-**Deploy:** `git push origin main` → Render auto-deploys (autoDeploy: true in render.yaml)  
-**DB:** SQLite at `/var/data/aegistrace.db` (persistent disk on Render)  
+**Live URL:** https://aegistrace.uk  
+**Server:** Hostinger KVM 2 VPS — Ubuntu Linux  
+**Deploy:** `git push origin main` → SSH into VPS → `git pull` → `docker compose up -d --build`  
+**DB:** SQLite at `/var/data/aegistrace.db` (persistent volume on VPS)  
 **New tables:** Created automatically by `create_db_and_tables()` on startup — no migrations needed  
-**Free tier limits:** Render spins down after 15min inactivity (first request ~30s cold start)
+**Uptime:** Always-on — no cold starts (was Render free tier, now VPS)  
+**Docker:** Full Docker available — Docker-in-Docker possible, enables ATPU Parallel Universe feature  
 
-### Required environment variables (set in Render dashboard)
+### Required environment variables (set in .env on VPS)
 ```
 GROQ_API_KEY          # Free at console.groq.com
 VIRUSTOTAL_API_KEY    # Free at virustotal.com
 ADMIN_PIN             # Set on first deploy
 JWT_SECRET            # Auto-generated
-PUBLIC_URL            # https://aegistrace-7qvn.onrender.com
+PUBLIC_URL            # https://aegistrace.uk
 NVIDIA_API_KEY        # Free at build.nvidia.com — enables all 5 NVIDIA phases
 NVIDIA_GUARDRAILS     # true (default) — enables Llama Guard safety layer
 ```
@@ -718,6 +724,89 @@ Per-file fixes:
 - [x] **`analytics.py`** — `GET /api/analytics/ioc-types` now filters `IOCCorrelation.org_id == user.org_id` (new column + `ingest.py`'s `_correlate()` now takes/stamps `org_id`, default 1 for the shared-key telemetry pipeline).
 
 **Net effect:** with the current single-org deployment (`org_id=1` for everyone) none of this changes runtime behavior. The value is structural — when a second tenant is provisioned, none of the above endpoints leak or allow cross-tenant tampering. All edited files re-verified with `ast.parse()`; no test suite exists yet for this backend (manual/agent-driven verification only).
+
+---
+
+## SECURITY AUDIT v10.2 (June 2026) — Pentest / SOC Hardening Pass
+
+A second full pass (senior-pentester / senior-architect / SOC-engineer lens) over
+both the `aegistrace` backend and the `aegistrace-mcp-gateway` repo (the gateway
+was fully remediated in a prior session). This pass focused on SSRF via outbound
+connectors, authorization gaps on agent-command dispatch, the NVIDIA NIM prompt
+path bypassing the existing Groq prompt-injection shield, provenance/trust-ledger
+input validation, and dependency CVEs. Everything below is committed but **not
+yet deployed** — see `HOW TO RESUME BUILDING` for the deploy step.
+
+**(a) Okta connector SSRF — new shared `backend/core/ssrf_guard.py` module:**
+- [x] New module `backend/core/ssrf_guard.py` — `validate_external_host(host)` (strips scheme, rejects hosts containing `/ @ space \`, blocks `localhost/127./10./172.16-31./192.168./169.254./::1/fc00:/fe80:/0.0.0.0` + `metadata.google.internal` + known cloud-metadata IPs via regex `_SSRF_BLOCK` + `_BLOCKED_HOSTS`), `is_blocked_ip(ip_str)` (ipaddress-based: private/loopback/link-local/reserved/multicast/unspecified, incl. IPv4-mapped IPv6), `resolve_and_check(host)` (DNS-rebind recheck via `socket.getaddrinfo` at send time), and `SSRFBlockedError`.
+- [x] `backend/routers/connectors.py` — `okta_connect()` now calls `validate_external_host(okta_domain)` immediately after extracting the field from the request body, before the connector is even constructed; raises `400` on a blocked host.
+- [x] `backend/core/connectors/okta.py` — `_get()` now validates the stored `okta_domain` on **every outbound call** (`validate_external_host` + `resolve_and_check`), not just at save time — closes the DNS-rebinding gap where a domain resolves to a public IP at connector-setup time but to `169.254.169.254`/`127.0.0.1`/internal RFC1918 space later. `httpx.AsyncClient` already used `follow_redirects` default (False); explicit `timeout=30` retained.
+- This is the same defense-in-depth pattern (`_validate_webhook_url` + `_resolve_and_check`) already applied to `webhooks.py` in v10.1 — `ssrf_guard.py` now factors that logic into one shared module so future connectors (AWS IAM, etc. — see backlog) get it for free.
+
+**(b) Webhook outbound redirect hardening (`backend/routers/webhooks.py`):**
+- [x] `_send_webhook()`: `httpx.Client(timeout=8)` → `httpx.Client(timeout=8, follow_redirects=False)`. Previously a webhook URL that passed `_validate_webhook_url()` + `_resolve_and_check()` at send time could still issue a request that gets **redirected** (3xx) to an internal address — `httpx` follows redirects by default, which would silently bypass both SSRF checks. Now any redirect response is returned as-is (not followed), so the destination the checks validated is the only one ever contacted.
+
+**(c) Agent-command dispatch authorization + allowlist (`backend/routers/ingest.py`):**
+- [x] `POST /agent/command/dispatch` previously allowed **any authenticated user** (including `role="viewer"`, the default) to send `kill_process`, `isolate_device`, `unisolate_device`, `block_ip`/`unblock_ip`, `uninstall_agent`, `stop_agent`, etc. to any real endpoint agent — full remote control of production hosts with zero authorization check, same severity class as the `edr.py` issue fixed in v10.1.
+- [x] Fixed: added `_VALID_AGENT_COMMANDS` allowlist (17 commands, mirrors the `command_type` elif-chain in `agent/aegistrace_agent.py`) and a role check (`user.role not in ("admin","analyst")` → `403`), matching the `_require_responder()` bar already established for EDR isolate/kill-process/run-command in v10.1. Unknown/typo'd `command_type` values are now rejected with `400` at dispatch time instead of silently queuing a command the agent will reject anyway.
+- **Known residual gap (deferred — see SOC backlog item 1 below):** the `Endpoint` model (`backend/models.py:30-51`) has **no `org_id` column at all** — `dispatch_command`'s endpoint lookup (`session.get(Endpoint, ...)` / hostname match) is global across every org. An admin/analyst in org B can currently target org A's endpoint by ID/hostname. Role-gating closes the "any viewer" hole immediately; the cross-org gap needs the broader `Endpoint.org_id` migration tracked below.
+
+**(d) PromptShield coverage for the NVIDIA NIM path (the largest item this session):**
+
+Background: `ai_router.call_ai()` (Groq path) automatically runs every prompt
+through `PromptShield.sanitise()` and appends a "SECURITY:" system-prompt
+hardening suffix. `nvidia_chat()` (NVIDIA NIM — the *primary* path for
+Hermes-3 triage, Nemotron-70B coordinator synthesis, and Llama-70B specialist
+agents) is a **raw wrapper with neither protection**. Any case field
+(title/description/findings/affected_systems), endpoint vision-context, or IOC
+list that flows into an NVIDIA prompt was reaching the model unsanitised — a
+classic second-order prompt-injection path (e.g. a phishing-email body or a
+log line crafted with "ignore previous instructions / you are now..." that
+gets pulled into a case's `findings` field and then handed verbatim to
+Hermes-3/Nemotron).
+
+- [x] `backend/core/prompt_shield.py` — added exported `AI_HARDENING_SUFFIX`, a system-prompt-hardening string (mirrors the suffix `ai_router.call_ai` already appends) for any agent system prompt that will see user-controlled text via `nvidia_chat()`.
+- [x] `backend/agents/triage_agent.py` — `_TRIAGE_SYSTEM` now ends with `+ AI_HARDENING_SUFFIX`; `run_triage_agent()` sanitises `case.title` (`case_title`), `case.affected_systems` (`generic`), `case.description[:800]` (`case_description`), `case.findings[:600]` (`case_findings`) before building the Hermes-3 `user_message`.
+- [x] `backend/agents/specialist.py` — `_nvidia_or_groq_json()` (shared by the email/IOC/identity/report agents and the endpoint agent's Groq fallback) sanitises `prompt` with `max_len=4000` before any NVIDIA/Groq call; `_ENDPOINT_SYSTEM` gets `+ AI_HARDENING_SUFFIX`; `_run_endpoint_agent_loop()` sanitises `case.title`/`affected_systems`/`description`/`findings`/`vision_context` before building its `user_message`; `_generate_endpoint_sigma()` sanitises `case.title` and `top_threat` before Codestral rule-gen.
+- [x] `backend/agents/coordinator.py` — `_COORDINATOR_SYSTEM` gets `+ AI_HARDENING_SUFFIX`; `run_coordinator()`'s `synthesis_prompt` (specialist JSON results, which themselves embed case/log-derived text) is sanitised with `max_len=8000` before the Nemotron-70B call — `max_len` raised above the `case_findings` default (3000) specifically so the JSON-schema instructions appended after `specialist_context[:4000]` are never truncated mid-schema (would have broken the coordinator's JSON output parsing).
+- [x] Assessed `backend/adaptive_agent.py` — **no change needed**. Its prompt is built entirely from internal numeric telemetry (FP/FN rates, confidence averages, threshold bounds); there is no free-text user/case input in its context, so there's no injection surface to sanitise.
+- All five edited files re-verified with `ast.parse()` (no project venv with `groq`/`nvidia` deps available to import-test live — same pre-existing environment limitation noted in v10.1).
+
+**(e) Provenance / Trust-ledger enum validation (`backend/routers/provenance.py`):**
+- [x] `ProvenanceLedger.approval_status` and `TrustEvent.actor_type`/`trust_level` are documented enum-like fields that drive approval-workflow logic and DORA Article-19 compliance reporting, but `log_provenance()` / `create_trust_event()` previously accepted **any string** from the request body verbatim.
+- [x] Added `_VALID_APPROVAL_STATUSES = {"auto","pending","approved","rejected"}`, `_VALID_ACTOR_TYPES = {"human","ai","agent","system"}`, `_VALID_TRUST_LEVELS = {"verified","unverified","suspicious","revoked"}`; both endpoints now `400` on an unrecognized value instead of persisting it (which would silently break compliance-report filters and the `agent_security.py` approval-queue logic that branches on `approval_status`).
+
+**(f) Dependency CVE remediation (frontend):**
+- [x] `npm audit fix` (non-`--force`) bumped `form-data` 4.0.5 → 4.0.6 in `frontend/package-lock.json` (axios's transitive dependency) — fixes GHSA-hmw2-7cc7-3qxx (CRLF injection in multipart form boundary generation, CVSS 7.5). Lockfile-only change; `package.json` untouched, no version-range changes.
+
+**Items investigated and intentionally left unchanged:**
+- [x] **`backend/routers/enrichment.py`** — reviewed for the same class of IOC-driven SSRF as the Okta connector. Ruled **not an issue**: IOC inputs are gated by existing type-detection regexes (IP/domain/hash/URL) before any outbound call, and the enrichment targets are fixed third-party TI APIs (VirusTotal etc.), not user-supplied hostnames reachable via path/query substitution — no code change made.
+- [x] **`backend/adaptive_agent.py`** — see (d) above; no user-text injection surface, no change made.
+
+---
+
+## SOC MITIGATION PLAN — Deferred Items (from v10.2 audit)
+
+Items below were identified during the v10.2 pass but are **architectural,
+require coordination (secret rotation / VPS changes), or need a larger
+regression-tested dependency bump** — too risky to push as part of a same-day
+patch set. Ordered by priority for the next dedicated session.
+
+1. **`Endpoint.org_id` multi-tenancy gap (HIGH — architectural).** `backend/models.py:30-51`'s `Endpoint` model has no `org_id` at all, unlike the 17+ other tables that default to `org_id=1`. This affects every endpoint/agent-targeting query across the codebase (`ingest.py` dispatch + telemetry, `edr.py`, `itdr.py`'s `_detect_shadow_ai_usage`, `hunt.py`'s `endpoints` view, the Control Plane endpoint-heartbeat panel, etc. — roughly 17 call sites by the v10.1 sweep's count). **Remediation:** add `org_id: int = Field(default=1)` via the same zero-downtime startup-migration pattern used for the 11 tables in v10.1, then thread `org_id` through every `Endpoint` query and the agent-enrollment flow (agents must be told which org they belong to at install-token time — ties into the install-token work from v10.1). Until fixed, (c) above (`dispatch_command` role-gating) is the only mitigation — any admin/analyst can still target another org's endpoints by ID/hostname.
+
+2. **Default-secret hardening: `JWT_SECRET` / `ADMIN_PIN` / `FERNET_KEY` (HIGH — needs rotation coordination).** If these env vars are unset, the app currently falls back to a hardcoded default (verify exact fallback values in `backend/main.py` / `backend/core/encryption.py` / `backend/routers/auth.py` before the next session — not re-verified in v10.2). **Remediation plan:**
+   - Make all three **hard-fail at startup** if unset in production (`ENV=production` check), rather than silently using an insecure default.
+   - **`JWT_SECRET` rotation impact:** rotating it logs out every active session (same blast radius as the v10.1 JWT-library swap — acceptable, just needs a maintenance-window heads-up).
+   - **`FERNET_KEY` rotation impact:** rotating it breaks decryption of every `IdentityConnector`/`ApprovedAIService` token currently encrypted at rest (`core/encryption.py`, added v5.5). Needs a one-time re-encryption migration (decrypt with old key, re-encrypt with new key) run *before* the env var is swapped, or all connector credentials must be re-entered manually post-rotation.
+   - **`ADMIN_PIN`** — lower risk, can rotate immediately; just needs the admin to be told the new value out-of-band.
+
+3. **Dockerfile non-root user + `.dockerignore` (MEDIUM — needs VPS volume-permission coordination).** Backend/frontend containers currently run as root (verify in `backend/Dockerfile` / `frontend/Dockerfile`). **Remediation:** add a non-root `USER` directive + matching `UID`/`GID` that align with the bind-mounted volume ownership on the Hostinger VPS (2.24.131.243) — needs a `chown` pass on existing volume data during a maintenance window so the new non-root UID can still read/write the SQLite DB and uploaded evidence files. Also add a `.dockerignore` (currently missing) to keep `.env`, `node_modules`, `__pycache__`, and `.git` out of build contexts.
+
+4. **`starlette`/`fastapi` CVE PYSEC-2026-161 (MEDIUM — needs regression-tested bump).** Current pins: `fastapi==0.121.0`, `starlette>=0.49.1,<0.50.0`. The CVE is a Host-header → `request.url.path` mismatch enabling path-based-middleware evasion. **Concrete impact in this codebase:** `backend/main.py`'s `SecurityHeadersMiddleware` (gates on `request.url.path.startswith("/api/")`) and `DefenseFingerprintMiddleware` (reads `request.url.path` for fingerprinting) could both be evaded with a malformed `Host` header — NOT a full auth bypass (route dispatch itself uses the real ASGI scope path, so authorization checks on routes are unaffected), but defense-fingerprinting/security-header application could be skipped for crafted requests. **Remediation:** bump to `fastapi>=0.133.0` (which requires `starlette>=1.0.1`) — this is a large jump from 0.121.0 and needs full regression testing (no test suite currently exists for this backend — writing at least smoke tests for auth/cases/ingest should precede this bump).
+
+5. **`react-scripts`/CRA toolchain — 41 remaining `npm audit` findings (LOW/MEDIUM, long-term).** The form-data fix in (f) above was the only safely-fixable item without `--force`. The remaining findings are all in the Create React App build toolchain (webpack-dev-server, svgo, postcss, etc. — dev-only, not shipped to production bundles) and require breaking version bumps that CRA itself doesn't support. **Remediation:** CRA → Vite migration (tracked as a separate long-term project; not a security-urgent item since these are build-time-only dependencies, but blocks ever clearing `npm audit` cleanly).
+
+6. **AWS IAM connector SSRF coverage (LOW — forward-looking).** When `backend/core/connectors/aws_iam.py` is built (tracked in `FULL FUTURE WORK BACKLOG` → NHI Guard), it should use `core/ssrf_guard.py` (`validate_external_host` + `resolve_and_check`) from day one — the module was factored out in (a) specifically so new connectors get this for free.
 
 ---
 

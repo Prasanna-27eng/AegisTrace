@@ -1,0 +1,79 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   AegisTrace — Enterprise Focus Ring System
+   Microsoft-style keyboard navigation focus rings.
+   Applied globally; only activates on keyboard navigation (:focus-visible).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Remove default browser focus ring — we supply our own */
+*:focus {
+  outline: none;
+}
+
+/* ── Keyboard navigation focus ring ─────────────────────────────────────── */
+/* Only shows when navigating with keyboard (Tab, arrow keys), not mouse.   */
+:focus-visible {
+  outline: 2px solid #2563EB;
+  outline-offset: 2px;
+  border-radius: inherit;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+  transition: outline 100ms ease, box-shadow 100ms ease;
+}
+
+/* ── Buttons — inset ring (fits inside the button bounds) ───────────────── */
+button:focus-visible {
+  outline-offset: 0;
+  box-shadow: 0 0 0 2px var(--bg, #0B0F1A), 0 0 0 4px #2563EB;
+}
+
+/* ── Inputs, textareas, selects — single ring, no offset ───────────────── */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 1px solid #2563EB;
+  outline-offset: 0;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+/* ── Links — tight ring following text shape ────────────────────────────── */
+a:focus-visible {
+  outline: 2px solid #2563EB;
+  outline-offset: 3px;
+  border-radius: 2px;
+  box-shadow: none;
+}
+
+/* ── Animated pulse ring — for sidebar nav items ────────────────────────── */
+@keyframes focus-ring-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(37, 99, 235, 0.4); }
+  100% { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0);   }
+}
+
+.focus-ring-animate:focus-visible {
+  animation: focus-ring-pulse 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+/* ── Utility ring classes (JS-triggered, e.g. after async action) ────────── */
+/* Usage: element.classList.add('ring-blue'); setTimeout(() => el.classList.remove('ring-blue'), 600) */
+.ring-blue {
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3), 0 0 0 1px #2563EB;
+}
+
+.ring-green {
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3), 0 0 0 1px #10B981;
+}
+
+.ring-red {
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3), 0 0 0 1px #EF4444;
+}
+
+.ring-amber {
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3), 0 0 0 1px #F59E0B;
+}
+
+/* ── Reduced motion — disable the pulse animation ───────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .focus-ring-animate:focus-visible {
+    animation: none;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.3);
+  }
+}

@@ -1,0 +1,168 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   AegisTrace Design Tokens — Enterprise Edition v2.0
+   Inspired by: Microsoft Sentinel (app chrome) · IBM QRadar (dark surfaces)
+                IBM QRadar website (gradient sections)
+   Fonts: Plus Jakarta Sans (display) · IBM Plex Sans (UI) · IBM Plex Mono (data)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Font Faces ──────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+/* ── App tokens (QRadar-dark + Sentinel chrome) ─────────────────────────── */
+:root {
+  /* ── Fonts ─────────────────────────────────────────────────────────────── */
+  --font-display: 'Plus Jakarta Sans', 'IBM Plex Sans', system-ui, sans-serif;
+  --font-ui:      'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono:    'IBM Plex Mono', 'JetBrains Mono', ui-monospace, monospace;
+
+  /* ── App Background hierarchy (QRadar-inspired deep navy) ──────────────── */
+  --bg:            #0B0F1A;   /* Page background — deep navy                  */
+  --surface:       #111827;   /* Primary card surface                         */
+  --card:          #1A2235;   /* Raised cards                                 */
+  --card-hover:    #1F2940;   /* Card hover state                             */
+  --elevated:      #242E45;   /* Modals, dropdowns                            */
+  --surface-2:     #2A3550;   /* Highest elevation                            */
+  --inset:         #090D16;   /* Insets, code wells                           */
+  --sidebar-bg:    #070B14;   /* Sidebar — darkest layer                      */
+
+  /* ── Sentinel topbar (Microsoft blue gradient) ──────────────────────────── */
+  --topbar-bg:     linear-gradient(135deg, #0A1628 0%, #0E2044 50%, #0A4DA6 100%);
+  --topbar-solid:  #0A1628;
+
+  /* ── Blue accent (Microsoft blue) ──────────────────────────────────────── */
+  --accent:        #2563EB;   /* Primary action blue                          */
+  --accent-hover:  #1D4ED8;   /* Hover deeper                                 */
+  --accent-light:  #60A5FA;   /* Labels on dark                               */
+  --accent-soft:   rgba(37, 99, 235, 0.12);
+  --accent-border: rgba(37, 99, 235, 0.25);
+  --accent-glow:   0 0 20px rgba(37, 99, 235, 0.25);
+
+  /* ── Purple accent (QRadar charts) ─────────────────────────────────────── */
+  --accent2:        #7C3AED;
+  --accent2-light:  #A78BFA;
+  --accent2-soft:   rgba(124, 58, 237, 0.12);
+  --accent2-border: rgba(124, 58, 237, 0.25);
+
+  /* ── Teal accent (QRadar secondary) ─────────────────────────────────────── */
+  --teal:           #0891B2;
+  --teal-light:     #22D3EE;
+  --teal-soft:      rgba(8, 145, 178, 0.12);
+
+  /* ── Status ─────────────────────────────────────────────────────────────── */
+  --success:        #10B981;
+  --success-soft:   rgba(16, 185, 129, 0.12);
+  --success-border: rgba(16, 185, 129, 0.25);
+
+  --warning:        #F59E0B;
+  --warning-soft:   rgba(245, 158, 11, 0.12);
+  --warning-border: rgba(245, 158, 11, 0.25);
+
+  --error:          #EF4444;
+  --error-soft:     rgba(239, 68, 68, 0.12);
+  --error-border:   rgba(239, 68, 68, 0.25);
+
+  --info:           #3B82F6;
+  --info-soft:      rgba(59, 130, 246, 0.12);
+
+  /* ── Severity palette (QRadar-style) ───────────────────────────────────── */
+  --sev-critical:   #EF4444;
+  --sev-high:       #F97316;
+  --sev-medium:     #F59E0B;
+  --sev-low:        #10B981;
+  --sev-info:       #6B7280;
+
+  /* ── Text ───────────────────────────────────────────────────────────────── */
+  --text-primary:   #F1F5F9;   /* Headings — bright                          */
+  --text-secondary: #94A3B8;   /* Body — cool slate                          */
+  --text-muted:     #475569;   /* Labels — dim                               */
+  --text-disabled:  #334155;   /* Disabled                                   */
+  --text-inverse:   #0F172A;   /* Text on light surfaces                     */
+
+  /* ── Borders ────────────────────────────────────────────────────────────── */
+  --border:         rgba(148, 163, 184, 0.1);
+  --border-light:   rgba(148, 163, 184, 0.15);
+  --border-medium:  rgba(148, 163, 184, 0.22);
+  --border-strong:  rgba(148, 163, 184, 0.35);
+
+  /* ── Shadows ────────────────────────────────────────────────────────────── */
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md:   0 4px 16px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3);
+  --shadow-lg:   0 10px 40px rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4);
+  --shadow-card: 0 0 0 1px rgba(148,163,184,0.08), 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-blue: 0 4px 20px rgba(37,99,235,0.25);
+  --shadow-xl:   0 20px 60px rgba(0,0,0,0.7);
+
+  /* ── Radius ─────────────────────────────────────────────────────────────── */
+  --radius-sm:  4px;
+  --radius-md:  8px;
+  --radius-lg:  12px;
+  --radius-xl:  16px;
+  --radius-2xl: 24px;
+
+  /* ── Spacing scale ──────────────────────────────────────────────────────── */
+  --space-1: 4px;   --space-2: 8px;   --space-3: 12px;  --space-4: 16px;
+  --space-5: 20px;  --space-6: 24px;  --space-8: 32px;  --space-10: 40px;
+  --space-12: 48px; --space-16: 64px; --space-20: 80px;
+
+  /* ── Z-index scale ──────────────────────────────────────────────────────── */
+  --z-below:   -1;
+  --z-base:     0;
+  --z-raised:  10;
+  --z-dropdown: 100;
+  --z-sticky:   200;
+  --z-overlay:  300;
+  --z-modal:    400;
+  --z-toast:    500;
+  --z-tooltip:  600;
+
+  /* ── Motion ─────────────────────────────────────────────────────────────── */
+  --ease-out:      cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out:   cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-back:     cubic-bezier(0.36, 0, 0.66, -0.56);
+
+  --dur-fast:   120ms;
+  --dur-normal: 200ms;
+  --dur-slow:   350ms;
+  --dur-slower: 600ms;
+
+  /* ── Sidebar dimensions ─────────────────────────────────────────────────── */
+  --sidebar-w:        240px;
+  --sidebar-w-collapsed: 56px;
+  --topbar-h:         52px;
+}
+
+/* ── Website tokens (override on public pages) ──────────────────────────── */
+.website-theme {
+  /* Light enterprise surface like IBM QRadar marketing site */
+  --bg:             #F0F4F9;
+  --surface:        #FFFFFF;
+  --card:           #FFFFFF;
+  --card-hover:     #F8FAFC;
+  --elevated:       #FFFFFF;
+  --surface-2:      #F1F5FB;
+  --border:         rgba(15, 23, 42, 0.1);
+  --border-light:   rgba(15, 23, 42, 0.07);
+  --border-medium:  rgba(15, 23, 42, 0.14);
+
+  --text-primary:   #0F172A;
+  --text-secondary: #334155;
+  --text-muted:     #64748B;
+
+  --shadow-sm:   0 1px 3px rgba(15,23,42,0.08), 0 1px 2px rgba(15,23,42,0.04);
+  --shadow-md:   0 4px 16px rgba(15,23,42,0.1), 0 2px 4px rgba(15,23,42,0.06);
+  --shadow-lg:   0 10px 40px rgba(15,23,42,0.12), 0 4px 8px rgba(15,23,42,0.06);
+  --shadow-card: 0 0 0 1px rgba(15,23,42,0.08), 0 4px 16px rgba(15,23,42,0.06);
+}
+
+/* ── Sentinel sidebar override (for app sidebar specifically) ───────────── */
+.sentinel-sidebar {
+  --sidebar-text:        #1E293B;
+  --sidebar-text-muted:  #64748B;
+  --sidebar-bg:          #FFFFFF;
+  --sidebar-border:      rgba(15, 23, 42, 0.08);
+  --sidebar-hover:       rgba(37, 99, 235, 0.06);
+  --sidebar-active-bg:   rgba(37, 99, 235, 0.08);
+  --sidebar-active-text: #1D4ED8;
+  --sidebar-group-text:  #94A3B8;
+}

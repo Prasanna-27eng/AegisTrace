@@ -32,7 +32,7 @@ export default function PageCurtain() {
         }
         style={{
           position: 'fixed', inset: 0,
-          background: '#050405',
+          background: '#0A1628',
           zIndex: 9997,
           pointerEvents: 'none',
         }}
