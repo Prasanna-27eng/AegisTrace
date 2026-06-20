@@ -148,16 +148,28 @@ function Nav() {
       padding: '0 clamp(20px,4vw,48px)', height: 52,
       background: navBg, backdropFilter: navFilter, WebkitBackdropFilter: navFilter,
     }}>
-      <Link to="/" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: INK, textDecoration: 'none', fontSize: 15, fontWeight: 700, letterSpacing: '0.1em' }}>AEGISTRACE</Link>
+      <Link to="/" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: INK, textDecoration: 'none', fontSize: 16, fontWeight: 700, letterSpacing: '0.08em' }}>AEGISTRACE</Link>
       <div style={{ display: 'flex', gap: 'clamp(16px,2.5vw,32px)', alignItems: 'center' }}>
-        <Link to="/mission" style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 13, fontWeight: 500, color: 'rgba(241,245,249,0.58)', textDecoration: 'none' }}>Mission</Link>
-        <Link to="/platform" style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 13, fontWeight: 500, color: 'rgba(241,245,249,0.58)', textDecoration: 'none' }}>Platform</Link>
+        {[
+          { label: 'Mission',  to: '/mission'  },
+          { label: 'Platform', to: '/platform' },
+          { label: 'Tools',    to: '/tools'    },
+        ].map(({ label, to }) => (
+          <Link key={to} to={to} style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 13, fontWeight: 500, color: 'rgba(241,245,249,0.58)', textDecoration: 'none', transition: 'color 140ms' }}
+            onMouseEnter={e => e.currentTarget.style.color = INK}
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(241,245,249,0.58)'}
+          >{label}</Link>
+        ))}
         <Link to="/app/login" style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
-          background: GOLD, color: '#000', fontWeight: 700,
+          background: '#2563EB', color: '#fff', fontWeight: 700,
           fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 12,
-          padding: '8px 16px', textDecoration: 'none',
-        }}>Platform <ArrowRight size={11}/></Link>
+          padding: '8px 18px', textDecoration: 'none', borderRadius: 4,
+          transition: 'background 140ms',
+        }}
+          onMouseEnter={e => e.currentTarget.style.background = '#1D4ED8'}
+          onMouseLeave={e => e.currentTarget.style.background = '#2563EB'}
+        >Book a Demo <ArrowRight size={11}/></Link>
       </div>
     </motion.nav>
   );
@@ -584,10 +596,9 @@ export default function Features() {
         <div style={{ maxWidth: 1240, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
           <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: 'rgba(241,245,249,0.2)', fontSize: 12, letterSpacing: '0.08em' }}>AEGISTRACE</span>
           <div style={{ display: 'flex', gap: 24 }}>
-            <Link to="/" style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: 'rgba(241,245,249,0.25)', fontSize: 12, textDecoration: 'none' }}>Home</Link>
-            <Link to="/mission" style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: 'rgba(241,245,249,0.25)', fontSize: 12, textDecoration: 'none' }}>Mission</Link>
-            <Link to="/platform" style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: 'rgba(241,245,249,0.25)', fontSize: 12, textDecoration: 'none' }}>Platform</Link>
-            <Link to="/app/login" style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: 'rgba(241,245,249,0.25)', fontSize: 12, textDecoration: 'none' }}>Platform Login</Link>
+            {[['/', 'Home'], ['/mission', 'Mission'], ['/features', 'Features'], ['/platform', 'Platform'], ['/tools', 'Tools']].map(([to, label]) => (
+              <Link key={to} to={to} style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: 'rgba(241,245,249,0.25)', fontSize: 12, textDecoration: 'none' }}>{label}</Link>
+            ))}
           </div>
           <span style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: 'rgba(241,245,249,0.15)', fontSize: 11 }}>© 2026 Prasanna Kumar</span>
         </div>

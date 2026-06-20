@@ -6,8 +6,8 @@ import { ScrollProgressBar } from '../components/SceneController';
 
 const E    = [0.16, 1, 0.3, 1];
 const GOLD = '#F59E0B';
-const BG   = '#050405';
-const INK  = '#F5F0E8';
+const BG   = '#0A1628';
+const INK  = '#F1F5F9';
 
 /* ─── Smooth wheel scroll ─────────────────────────────────────────────────── */
 function useSmoothScroll() {
@@ -61,9 +61,9 @@ function CopyButton({ text, style = {} }) {
       onClick={copy}
       data-cursor="link"
       style={{
-        background: copied ? 'rgba(245,158,11,0.15)' : 'rgba(245,240,232,0.06)',
-        border: `1px solid ${copied ? 'rgba(245,158,11,0.4)' : 'rgba(245,240,232,0.12)'}`,
-        color: copied ? GOLD : 'rgba(245,240,232,0.55)',
+        background: copied ? 'rgba(245,158,11,0.15)' : 'rgba(241,245,249,0.06)',
+        border: `1px solid ${copied ? 'rgba(245,158,11,0.4)' : 'rgba(241,245,249,0.12)'}`,
+        color: copied ? GOLD : 'rgba(241,245,249,0.55)',
         padding: '6px 12px', cursor: 'pointer',
         display: 'inline-flex', alignItems: 'center', gap: 6,
         fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
@@ -92,11 +92,11 @@ function CopyAllButton({ text }) {
       data-cursor="link"
       style={{
         background: copied ? 'rgba(245,158,11,0.12)' : 'transparent',
-        border: `1px solid ${copied ? GOLD : 'rgba(245,240,232,0.18)'}`,
-        color: copied ? GOLD : 'rgba(245,240,232,0.7)',
+        border: `1px solid ${copied ? GOLD : 'rgba(241,245,249,0.18)'}`,
+        color: copied ? GOLD : 'rgba(241,245,249,0.7)',
         padding: '10px 20px', cursor: 'pointer',
         display: 'inline-flex', alignItems: 'center', gap: 8,
-        fontFamily: "'Cabinet Grotesk', monospace", fontSize: 13, fontWeight: 600,
+        fontFamily: "'IBM Plex Mono', monospace", fontSize: 13, fontWeight: 600,
         transition: 'all 160ms ease',
       }}
     >
@@ -110,9 +110,9 @@ function CopyAllButton({ text }) {
 function lineColor(text) {
   if (text.startsWith('[+]')) return '#4ade80';   // green — success
   if (text.startsWith('[!]')) return '#f87171';   // red — critical
-  if (text.startsWith('[*]')) return 'rgba(245,240,232,0.42)'; // dim — info
+  if (text.startsWith('[*]')) return 'rgba(241,245,249,0.42)'; // dim — info
   if (text.startsWith('$'))   return GOLD;        // prompt
-  if (text.startsWith('  ')) return 'rgba(245,240,232,0.55)'; // indented output
+  if (text.startsWith('  ')) return 'rgba(241,245,249,0.55)'; // indented output
   return INK;
 }
 
@@ -132,7 +132,7 @@ function Terminal({ lines, delay = 0, title = 'terminal' }) {
   return (
     <div ref={ref} style={{
       background: '#0A0908',
-      border: '1px solid rgba(245,240,232,0.1)',
+      border: '1px solid rgba(241,245,249,0.1)',
       fontFamily: "'JetBrains Mono', monospace",
       fontSize: 12.5,
       lineHeight: 1.7,
@@ -143,14 +143,14 @@ function Terminal({ lines, delay = 0, title = 'terminal' }) {
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '10px 16px',
-        borderBottom: '1px solid rgba(245,240,232,0.07)',
-        background: 'rgba(245,240,232,0.03)',
+        borderBottom: '1px solid rgba(241,245,249,0.07)',
+        background: 'rgba(241,245,249,0.03)',
       }}>
         <div style={{ display: 'flex', gap: 7 }}>
           {['#f87171','#fbbf24','#4ade80'].map((c, i) => (
             <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: c, opacity: 0.7 }}/>
           ))}
-          <span style={{ marginLeft: 8, color: 'rgba(245,240,232,0.3)', fontSize: 11 }}>{title}</span>
+          <span style={{ marginLeft: 8, color: 'rgba(241,245,249,0.3)', fontSize: 11 }}>{title}</span>
         </div>
         <CopyButton text={fullText}/>
       </div>
@@ -187,7 +187,7 @@ function InstallBox({ cmd, pypiUrl, githubUrl }) {
   return (
     <div style={{
       background: '#0A0908',
-      border: '1px solid rgba(245,240,232,0.1)',
+      border: '1px solid rgba(241,245,249,0.1)',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       flexWrap: 'wrap', gap: 12,
       padding: '14px 20px',
@@ -200,9 +200,9 @@ function InstallBox({ cmd, pypiUrl, githubUrl }) {
         {pypiUrl && (
           <a href={pypiUrl} target="_blank" rel="noopener noreferrer"
             data-cursor="link"
-            style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: 'rgba(245,240,232,0.45)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'color 140ms' }}
+            style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: 'rgba(241,245,249,0.45)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'color 140ms' }}
             onMouseEnter={e => e.currentTarget.style.color = GOLD}
-            onMouseLeave={e => e.currentTarget.style.color = 'rgba(245,240,232,0.45)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(241,245,249,0.45)'}
           >
             PyPI <ArrowUpRight size={11}/>
           </a>
@@ -210,9 +210,9 @@ function InstallBox({ cmd, pypiUrl, githubUrl }) {
         {githubUrl && (
           <a href={githubUrl} target="_blank" rel="noopener noreferrer"
             data-cursor="link"
-            style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: 'rgba(245,240,232,0.45)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'color 140ms' }}
+            style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: 'rgba(241,245,249,0.45)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'color 140ms' }}
             onMouseEnter={e => e.currentTarget.style.color = INK}
-            onMouseLeave={e => e.currentTarget.style.color = 'rgba(245,240,232,0.45)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(241,245,249,0.45)'}
           >
             GitHub <ArrowUpRight size={11}/>
           </a>
@@ -227,8 +227,8 @@ function ModulePill({ label }) {
   return (
     <span style={{
       fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
-      color: 'rgba(245,240,232,0.65)',
-      border: '1px solid rgba(245,240,232,0.14)',
+      color: 'rgba(241,245,249,0.65)',
+      border: '1px solid rgba(241,245,249,0.14)',
       padding: '5px 12px',
       letterSpacing: '0.05em',
     }}>{label}</span>
@@ -243,8 +243,8 @@ function ToolSection({ tool, flip = false, idx }) {
   return (
     <section ref={ref} style={{
       padding: 'clamp(72px,10vw,120px) clamp(24px,5vw,72px)',
-      borderTop: '1px solid rgba(245,240,232,0.06)',
-      background: idx % 2 === 0 ? BG : '#060507',
+      borderTop: '1px solid rgba(241,245,249,0.06)',
+      background: idx % 2 === 0 ? BG : '#0D1A2E',
     }}>
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
 
@@ -256,7 +256,7 @@ function ToolSection({ tool, flip = false, idx }) {
           style={{
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: 10, letterSpacing: '0.28em',
-            color: 'rgba(245,240,232,0.28)',
+            color: 'rgba(241,245,249,0.28)',
             marginBottom: 14,
           }}
         >{tool.layer}</motion.div>
@@ -292,7 +292,7 @@ function ToolSection({ tool, flip = false, idx }) {
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.16, ease: E }}
               style={{
-                fontFamily: "'Clash Display', sans-serif",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
                 fontSize: 'clamp(17px,1.8vw,21px)',
                 fontWeight: 600,
                 color: INK,
@@ -309,9 +309,9 @@ function ToolSection({ tool, flip = false, idx }) {
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.6, delay: 0.22 + i * 0.06, ease: E }}
                 style={{
-                  fontFamily: "'Cabinet Grotesk', sans-serif",
+                  fontFamily: "'IBM Plex Sans', sans-serif",
                   fontSize: 'clamp(14px,1.3vw,15.5px)',
-                  color: 'rgba(245,240,232,0.52)',
+                  color: 'rgba(241,245,249,0.52)',
                   lineHeight: 1.72,
                   marginBottom: 16,
                 }}
@@ -469,12 +469,12 @@ function PurpleTeamSection() {
   return (
     <section style={{
       padding: 'clamp(72px,10vw,120px) clamp(24px,5vw,72px)',
-      background: '#060507',
-      borderTop: '1px solid rgba(245,240,232,0.06)',
+      background: '#0D1A2E',
+      borderTop: '1px solid rgba(241,245,249,0.06)',
     }}>
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
         <Reveal>
-          <div className="mono" style={{ fontSize: 10, letterSpacing: '0.28em', color: 'rgba(245,240,232,0.28)', marginBottom: 14 }}>
+          <div className="mono" style={{ fontSize: 10, letterSpacing: '0.28em', color: 'rgba(241,245,249,0.28)', marginBottom: 14 }}>
             PURPLE TEAM
           </div>
           <h2 className="cd" style={{
@@ -486,7 +486,7 @@ function PurpleTeamSection() {
           </h2>
           <p className="cg" style={{
             fontSize: 'clamp(15px,1.4vw,17px)',
-            color: 'rgba(245,240,232,0.5)',
+            color: 'rgba(241,245,249,0.5)',
             lineHeight: 1.7, maxWidth: 600, margin: '0 0 56px',
           }}>
             The offensive toolkit and the defensive platform are designed to test each other. That's what purple team means — the same person built both sides of the engagement.
@@ -515,7 +515,7 @@ function PurpleTeamSection() {
                 ].map(t => (
                   <div key={t.name} style={{ display: 'flex', gap: 12, alignItems: 'baseline' }}>
                     <span className="mono" style={{ fontSize: 13, fontWeight: 700, color: INK, minWidth: 130 }}>{t.name}</span>
-                    <span className="cg" style={{ fontSize: 13, color: 'rgba(245,240,232,0.38)' }}>→ {t.target}</span>
+                    <span className="cg" style={{ fontSize: 13, color: 'rgba(241,245,249,0.38)' }}>→ {t.target}</span>
                   </div>
                 ))}
               </div>
@@ -551,7 +551,7 @@ function PurpleTeamSection() {
                 ].map(t => (
                   <div key={t.name} style={{ display: 'flex', gap: 12, alignItems: 'baseline' }}>
                     <span className="mono" style={{ fontSize: 13, fontWeight: 700, color: GOLD, minWidth: 130 }}>{t.name}</span>
-                    <span className="cg" style={{ fontSize: 13, color: 'rgba(245,240,232,0.38)' }}>{t.cap}</span>
+                    <span className="cg" style={{ fontSize: 13, color: 'rgba(241,245,249,0.38)' }}>{t.cap}</span>
                   </div>
                 ))}
               </div>
@@ -568,7 +568,7 @@ function PurpleTeamSection() {
             display: 'flex', gap: 16, alignItems: 'flex-start',
           }}>
             <span className="mono" style={{ color: GOLD, fontSize: 12, flexShrink: 0, marginTop: 2 }}>[NOTE]</span>
-            <p className="cg" style={{ fontSize: 14, color: 'rgba(245,240,232,0.5)', lineHeight: 1.65, margin: 0 }}>
+            <p className="cg" style={{ fontSize: 14, color: 'rgba(241,245,249,0.5)', lineHeight: 1.65, margin: 0 }}>
               <strong style={{ color: INK, fontWeight: 600 }}>mcp-aegis</strong> — the defensive MCP gateway these tools are tested against — is the final piece. Every vulnerability mcp-sploit finds, mcp-aegis is hardened against. Purple team in a box.
             </p>
           </div>
@@ -588,11 +588,11 @@ function InstallAllSection() {
   return (
     <section style={{
       padding: 'clamp(72px,10vw,120px) clamp(24px,5vw,72px)',
-      borderTop: '1px solid rgba(245,240,232,0.06)',
+      borderTop: '1px solid rgba(241,245,249,0.06)',
     }}>
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
         <Reveal>
-          <div className="mono" style={{ fontSize: 10, letterSpacing: '0.28em', color: 'rgba(245,240,232,0.28)', marginBottom: 14 }}>
+          <div className="mono" style={{ fontSize: 10, letterSpacing: '0.28em', color: 'rgba(241,245,249,0.28)', marginBottom: 14 }}>
             INSTALL ALL FOUR
           </div>
           <h2 className="cd" style={{
@@ -601,7 +601,7 @@ function InstallAllSection() {
             letterSpacing: '-0.03em',
           }}>The full offensive stack.</h2>
           <p className="cg" style={{
-            fontSize: 15, color: 'rgba(245,240,232,0.46)',
+            fontSize: 15, color: 'rgba(241,245,249,0.46)',
             lineHeight: 1.65, marginBottom: 32, maxWidth: 520,
           }}>
             Four tools, one pip command each. No dependency conflicts — each tool is self-contained.
@@ -611,21 +611,21 @@ function InstallAllSection() {
         <Reveal delay={0.1}>
           <div style={{
             background: '#0A0908',
-            border: '1px solid rgba(245,240,232,0.1)',
+            border: '1px solid rgba(241,245,249,0.1)',
             overflow: 'hidden',
           }}>
             {/* Terminal header */}
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '10px 16px',
-              borderBottom: '1px solid rgba(245,240,232,0.07)',
-              background: 'rgba(245,240,232,0.03)',
+              borderBottom: '1px solid rgba(241,245,249,0.07)',
+              background: 'rgba(241,245,249,0.03)',
             }}>
               <div style={{ display: 'flex', gap: 7 }}>
                 {['#f87171','#fbbf24','#4ade80'].map((c, i) => (
                   <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: c, opacity: 0.7 }}/>
                 ))}
-                <span style={{ marginLeft: 8, fontFamily: "'JetBrains Mono', monospace", color: 'rgba(245,240,232,0.3)', fontSize: 11 }}>install-all.sh</span>
+                <span style={{ marginLeft: 8, fontFamily: "'JetBrains Mono', monospace", color: 'rgba(241,245,249,0.3)', fontSize: 11 }}>install-all.sh</span>
               </div>
               <CopyAllButton text={ALL_INSTALLS}/>
             </div>
@@ -652,11 +652,11 @@ function InstallAllSection() {
             ].map(tag => (
               <span key={tag.label} style={{
                 fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
-                color: 'rgba(245,240,232,0.45)',
-                border: '1px solid rgba(245,240,232,0.1)',
+                color: 'rgba(241,245,249,0.45)',
+                border: '1px solid rgba(241,245,249,0.1)',
                 padding: '5px 12px',
               }}>
-                {tag.label} — <span style={{ color: 'rgba(245,240,232,0.28)' }}>{tag.note}</span>
+                {tag.label} — <span style={{ color: 'rgba(241,245,249,0.28)' }}>{tag.note}</span>
               </span>
             ))}
           </div>
@@ -677,14 +677,14 @@ export default function Tools() {
       <ScrollProgressBar/>
 
       <style>{`
-        .cd   { font-family: 'Clash Display', sans-serif; }
-        .cg   { font-family: 'Cabinet Grotesk', sans-serif; }
+        .cd   { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .cg   { font-family: 'IBM Plex Sans', sans-serif; }
         .mono { font-family: 'JetBrains Mono', monospace; }
 
         .gold-btn {
           display: inline-flex; align-items: center; gap: 9px;
           background: ${GOLD}; color: #000; font-weight: 700;
-          font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px;
+          font-family: 'IBM Plex Sans', sans-serif; font-size: 13px;
           padding: 13px 26px; border: none; cursor: pointer;
           text-decoration: none; letter-spacing: 0.03em;
           transition: background 140ms, transform 90ms, box-shadow 140ms;
@@ -694,21 +694,21 @@ export default function Tools() {
 
         .ghost-btn {
           display: inline-flex; align-items: center; gap: 8px;
-          background: transparent; color: rgba(245,240,232,0.75);
-          font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px; font-weight: 500;
-          padding: 12px 24px; border: 1px solid rgba(245,240,232,0.18);
+          background: transparent; color: rgba(241,245,249,0.75);
+          font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 500;
+          padding: 12px 24px; border: 1px solid rgba(241,245,249,0.18);
           cursor: pointer; text-decoration: none; letter-spacing: 0.03em;
           transition: border-color 140ms, color 140ms, transform 90ms;
         }
-        .ghost-btn:hover  { border-color: rgba(245,240,232,0.42); color: #F5F0E8; transform: translateY(-2px); }
+        .ghost-btn:hover  { border-color: rgba(241,245,249,0.42); color: #F1F5F9; transform: translateY(-2px); }
         .ghost-btn:active { transform: scale(0.97); }
 
         .nav-link {
-          font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px; font-weight: 500;
-          color: rgba(245,240,232,0.6); text-decoration: none; position: relative;
+          font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 500;
+          color: rgba(241,245,249,0.6); text-decoration: none; position: relative;
           transition: color 140ms;
         }
-        .nav-link:hover { color: #F5F0E8; }
+        .nav-link:hover { color: #F1F5F9; }
         .nav-link::after {
           content: ''; position: absolute; left: 0; right: 100%; bottom: -4px;
           height: 1px; background: #F59E0B;
@@ -716,7 +716,7 @@ export default function Tools() {
         }
         .nav-link:hover::after { right: 0; }
 
-        ::selection { background: rgba(245,158,11,0.35); color: #F5F0E8; }
+        ::selection { background: rgba(245,158,11,0.35); color: #F1F5F9; }
 
         @media (prefers-reduced-motion: reduce) {
           *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
@@ -728,16 +728,17 @@ export default function Tools() {
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 clamp(20px,4vw,48px)', height: 64,
-        background: 'rgba(5,4,5,0.92)',
+        background: 'rgba(10,22,40,0.96)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgba(245,240,232,0.05)',
+        borderBottom: '1px solid rgba(241,245,249,0.06)',
       }}>
-        <Link to="/" className="cd" style={{ color: INK, textDecoration: 'none', fontSize: 17, fontWeight: 700, letterSpacing: '0.1em' }}>AEGISTRACE</Link>
+        <Link to="/" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: INK, textDecoration: 'none', fontSize: 16, fontWeight: 700, letterSpacing: '0.08em' }}>AEGISTRACE</Link>
         <div style={{ display: 'flex', gap: 'clamp(16px,3vw,32px)', alignItems: 'center' }}>
-          <Link to="/mission" className="nav-link">Mission</Link>
-          <Link to="/portfolio" className="nav-link">Portfolio</Link>
-          <Link to="/app/login" className="gold-btn" style={{ padding: '9px 18px', fontSize: 12 }}>Platform <ArrowRight size={13}/></Link>
+          <Link to="/mission"   className="nav-link">Mission</Link>
+          <Link to="/features"  className="nav-link">Features</Link>
+          <Link to="/platform"  className="nav-link">Platform</Link>
+          <Link to="/app/login" className="gold-btn" style={{ padding: '8px 18px', fontSize: 12 }}>Book a Demo <ArrowRight size={12}/></Link>
         </div>
       </nav>
 
@@ -750,8 +751,8 @@ export default function Tools() {
         <div aria-hidden style={{
           position: 'absolute', inset: 0,
           backgroundImage: `
-            linear-gradient(rgba(245,240,232,0.025) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(245,240,232,0.025) 1px, transparent 1px)
+            linear-gradient(rgba(241,245,249,0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(241,245,249,0.03) 1px, transparent 1px)
           `,
           backgroundSize: '60px 60px',
           pointerEvents: 'none',
@@ -797,7 +798,7 @@ export default function Tools() {
             className="cg"
             style={{
               fontSize: 'clamp(16px,1.6vw,19px)',
-              color: 'rgba(245,240,232,0.52)',
+              color: 'rgba(241,245,249,0.52)',
               lineHeight: 1.65, maxWidth: 540, margin: '0 0 40px',
             }}
           >
@@ -819,7 +820,7 @@ export default function Tools() {
             ].map(s => (
               <div key={s.label}>
                 <div className="mono" style={{ fontSize: 'clamp(22px,3vw,32px)', fontWeight: 700, color: GOLD, lineHeight: 1 }}>{s.val}</div>
-                <div className="cg" style={{ fontSize: 12, color: 'rgba(245,240,232,0.38)', marginTop: 4 }}>{s.label}</div>
+                <div className="cg" style={{ fontSize: 12, color: 'rgba(241,245,249,0.38)', marginTop: 4 }}>{s.label}</div>
               </div>
             ))}
           </motion.div>
@@ -840,8 +841,8 @@ export default function Tools() {
       {/* ── CTA ── */}
       <section style={{
         padding: 'clamp(96px,12vw,160px) clamp(24px,5vw,72px)',
-        borderTop: '1px solid rgba(245,240,232,0.06)',
-        background: '#060507',
+        borderTop: '1px solid rgba(241,245,249,0.06)',
+        background: '#0D1A2E',
         position: 'relative', overflow: 'hidden',
         textAlign: 'center',
       }}>
@@ -865,7 +866,7 @@ export default function Tools() {
           </Reveal>
           <Reveal delay={0.1}>
             <p className="cg" style={{
-              fontSize: 15, color: 'rgba(245,240,232,0.44)',
+              fontSize: 15, color: 'rgba(241,245,249,0.44)',
               lineHeight: 1.7, maxWidth: 460, margin: '0 auto 40px',
             }}>
               AegisTrace is where these tools report their findings. One platform defending every layer these tools attack.
@@ -874,10 +875,10 @@ export default function Tools() {
           <Reveal delay={0.18}>
             <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
               <Link to="/app/login" className="gold-btn" style={{ fontSize: 14, padding: '15px 34px' }}>
-                Access Platform <ArrowRight size={16}/>
+                Book a Demo <ArrowRight size={16}/>
               </Link>
-              <Link to="/portfolio" className="ghost-btn" style={{ fontSize: 14, padding: '14px 26px' }}>
-                About the Builder
+              <Link to="/mission" className="ghost-btn" style={{ fontSize: 14, padding: '14px 26px' }}>
+                Our Mission
               </Link>
             </div>
           </Reveal>
@@ -885,16 +886,15 @@ export default function Tools() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer style={{ borderTop: '1px solid rgba(245,240,232,0.05)', padding: '32px clamp(24px,5vw,72px)' }}>
+      <footer style={{ borderTop: '1px solid rgba(241,245,249,0.06)', padding: '32px clamp(24px,5vw,72px)' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-          <span className="cd" style={{ color: 'rgba(245,240,232,0.22)', fontSize: 13, letterSpacing: '0.08em' }}>AEGISTRACE</span>
-          <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap' }}>
-            <Link to="/" className="cg" style={{ color: 'rgba(245,240,232,0.28)', fontSize: 12, textDecoration: 'none' }}>Home</Link>
-            <Link to="/mission" className="cg" style={{ color: 'rgba(245,240,232,0.28)', fontSize: 12, textDecoration: 'none' }}>Mission</Link>
-            <Link to="/portfolio" className="cg" style={{ color: 'rgba(245,240,232,0.28)', fontSize: 12, textDecoration: 'none' }}>Portfolio</Link>
-            <Link to="/app/login" className="cg" style={{ color: 'rgba(245,240,232,0.28)', fontSize: 12, textDecoration: 'none' }}>Platform</Link>
+          <span style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", color: 'rgba(241,245,249,0.22)', fontSize: 12, letterSpacing: '0.08em' }}>AEGISTRACE</span>
+          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+            {[['/', 'Home'], ['/mission', 'Mission'], ['/features', 'Features'], ['/platform', 'Platform']].map(([to, label]) => (
+              <Link key={to} to={to} style={{ fontFamily: "'IBM Plex Sans',sans-serif", color: 'rgba(241,245,249,0.26)', fontSize: 12, textDecoration: 'none' }}>{label}</Link>
+            ))}
           </div>
-          <span className="cg" style={{ color: 'rgba(245,240,232,0.16)', fontSize: 11 }}>© 2026 Prasanna Kumar</span>
+          <span style={{ fontFamily: "'IBM Plex Sans',sans-serif", color: 'rgba(241,245,249,0.15)', fontSize: 11 }}>© 2026 Prasanna Kumar</span>
         </div>
       </footer>
     </div>
