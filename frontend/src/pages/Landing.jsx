@@ -331,7 +331,7 @@ function HeroScene() {
               AegisTrace monitors every identity across your environment — human accounts, machine identities, AI agents — and fires when something doesn&apos;t add up.
             </p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
-              <a href="https://aegistrace-7qvn.onrender.com" target="_blank" rel="noopener noreferrer"
+              <Link to="/app/login"
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 8,
                   background: BLUE, color: '#fff',
@@ -345,7 +345,7 @@ function HeroScene() {
                 onMouseLeave={e => { e.currentTarget.style.background = BLUE; e.currentTarget.style.transform = 'translateY(0)'; }}
               >
                 Access Platform <ArrowRight size={14}/>
-              </a>
+              </Link>
               <Link to="/mission"
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 8,
@@ -437,7 +437,7 @@ function MobileHero() {
           AegisTrace monitors every identity across your environment and fires when something doesn&apos;t add up.
         </p>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', marginTop: 4 }}>
-          <a href="https://aegistrace-7qvn.onrender.com" target="_blank" rel="noopener noreferrer"
+          <Link to="/app/login"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
               background: BLUE, color: '#fff',
@@ -446,7 +446,7 @@ function MobileHero() {
               textDecoration: 'none', borderRadius: 4,
             }}>
             Access Platform <ArrowRight size={14}/>
-          </a>
+          </Link>
           <Link to="/mission"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,

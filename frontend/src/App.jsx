@@ -1,7 +1,6 @@
 import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Toasts from './components/Toast';
-import CustomCursor from './components/CustomCursor';
 import PageCurtain from './components/PageTransition';
 
 /* ─── Branded Suspense fallback ─────────────────────────────────────────────
@@ -95,7 +94,6 @@ export default function App() {
   return (
     <BrowserRouter>
       <PageCurtain />
-      <CustomCursor />
       <Toasts />
       <Suspense fallback={<PageLoader />}>
         <ScrollReset />

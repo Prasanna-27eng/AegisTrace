@@ -155,21 +155,20 @@ function HeroScene() {
 
   return (
     <PinnedScene vh="360vh" sceneRef={ref}>
-      {/* Background — 3-layer parallax + dolly zoom */}
+      {/* Background — CSS gradient dolly (no image) */}
       <motion.div aria-hidden style={{
         position: 'absolute', inset: '-14%',
-        backgroundImage: "url('/assets/pages/login-bg.jpg')",
-        backgroundSize: 'cover', backgroundPosition: 'center 25%',
+        background: 'linear-gradient(135deg, #060E1C 0%, #0A1628 25%, #0D2240 55%, #0F3470 80%, #1048A0 100%)',
         scale: bgDollyScale,
         x: bgDriftX, y: bgDriftY,
         filter: bgDollyFilter,
         opacity: bgDollyOp,
         willChange: 'transform, opacity, filter',
       }}/>
-      {/* Mid overlay */}
+      {/* Mid depth layer — slightly different rate for parallax */}
       <motion.div aria-hidden style={{
         position: 'absolute', inset: 0,
-        background: 'linear-gradient(180deg, rgba(10,22,40,0.82) 0%, rgba(10,22,40,0.28) 38%, rgba(10,22,40,0.96) 100%)',
+        background: 'radial-gradient(ellipse 80% 60% at 50% 100%, rgba(37,99,235,0.15) 0%, transparent 70%)',
         x: useTransform(bgDriftX, v => v * 0.4),
         y: useTransform(bgDriftY, v => v * 0.4),
       }}/>
@@ -739,8 +738,7 @@ export default function Portfolio() {
         /* ── Mobile / reduced-motion fallback ── */
         <div style={{ paddingTop: 64 }}>
           <section style={{ minHeight: '80vh', display: 'flex', alignItems: 'flex-end', position: 'relative', overflow: 'hidden' }}>
-            <div aria-hidden style={{ position: 'absolute', inset: '-6%', backgroundImage: "url('/assets/pages/login-bg.jpg')", backgroundSize: 'cover', backgroundPosition: 'center 25%', opacity: 0.45 }}/>
-            <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(10,22,40,0.7) 0%, rgba(10,22,40,0.96) 100%)' }}/>
+            <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, #060E1C 0%, #0A1628 30%, #0D2240 65%, #1048A0 100%)' }}/>
             <Reveal style={{ position: 'relative', zIndex: 2, padding: '0 24px 60px' }}>
               <div className="mono" style={{ fontSize: 11, letterSpacing: '0.26em', color: GOLD, marginBottom: 16 }}>BLUE TEAM · DUBLIN, IRELAND</div>
               <h1 className="cd" style={{ fontSize: 'clamp(36px,10vw,56px)', fontWeight: 600, lineHeight: 1.04, letterSpacing: '-0.02em', color: INK, margin: '0 0 16px' }}>Prasanna Kumar Surendran</h1>

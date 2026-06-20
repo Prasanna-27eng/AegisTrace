@@ -175,11 +175,10 @@ function HeroScene() {
 
   return (
     <PinnedScene vh="320vh" sceneRef={ref}>
-      {/* Far background — dolly zooms fast + mouse drift */}
+      {/* Far background — CSS gradient dolly (no image) */}
       <motion.div aria-hidden style={{
         position: 'absolute', inset: '-16%',
-        backgroundImage: "url('/assets/pages/mission-bg.jpg')",
-        backgroundSize: 'cover', backgroundPosition: 'center',
+        background: 'linear-gradient(135deg, #060E1C 0%, #0A1628 30%, #0D2240 55%, #0F3470 80%, #1048A0 100%)',
         scale: bgDollyScale, x: bgDX, y: bgDY,
         filter: bgDollyFilt, opacity: bgDollyOp,
         willChange: 'transform, opacity, filter',
@@ -808,8 +807,7 @@ export default function Mission() {
 
       {(isMobile || reduced) ? (
         <section style={{ minHeight: '70vh', display: 'flex', alignItems: 'flex-end', position: 'relative', overflow: 'hidden', paddingTop: 64 }}>
-          <div aria-hidden style={{ position: 'absolute', inset: '-6%', backgroundImage: "url('/assets/pages/mission-bg.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.42 }}/>
-          <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(10,22,40,0.7) 0%, rgba(10,22,40,0.95) 100%)' }}/>
+          <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, #060E1C 0%, #0A1628 40%, #0D2240 70%, #1048A0 100%)' }}/>
           <Reveal style={{ position: 'relative', zIndex: 2, padding: '0 24px 60px' }}>
             <h1 className="cd" style={{ fontSize: 'clamp(38px,10vw,56px)', fontWeight: 700, lineHeight: 1.0, letterSpacing: '-0.02em', color: INK, margin: '0 0 16px' }}>
               Attackers no longer break in —<br/><span style={{ color: GOLD }}>they sign in.</span>
