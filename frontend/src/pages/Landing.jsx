@@ -269,7 +269,7 @@ function HeroScene() {
           lineHeight: 1.02, letterSpacing: '-0.03em',
           color: INK, margin: 0, textAlign: 'center',
         }}>
-          Stop identity threats<br/>before they become breaches.
+          Your AI agents operate autonomously.
         </h1>
       </motion.div>
 
@@ -288,7 +288,7 @@ function HeroScene() {
           lineHeight: 1.02, letterSpacing: '-0.03em',
           color: INK, margin: 0, textAlign: 'center',
         }}>
-          Attackers no longer break in.<br/>They <span style={{ color: GOLD }}>sign in.</span>
+          Your security should too —<br/>with <span style={{ color: GOLD }}>accountability.</span>
         </h1>
       </motion.div>
 
@@ -313,7 +313,7 @@ function HeroScene() {
               letterSpacing: '0.14em', marginBottom: 20,
               textTransform: 'uppercase',
             }}>
-              Identity Threat Detection &amp; Response
+              Autonomous AI Security Platform · v10.2
             </div>
             <h1 style={{
               fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -321,14 +321,14 @@ function HeroScene() {
               lineHeight: 1.1, letterSpacing: '-0.02em',
               color: INK, margin: '0 0 20px',
             }}>
-              Stop identity threats before they become breaches.
+              AegisTrace is the accountability infrastructure for the AI-agent era.
             </h1>
             <p style={{
               fontFamily: "'IBM Plex Sans', sans-serif",
               fontSize: 16, color: MUTED,
               lineHeight: 1.7, margin: '0 0 32px', maxWidth: 520,
             }}>
-              AegisTrace monitors every identity across your environment — human accounts, machine identities, AI agents — and fires when something doesn&apos;t add up.
+              Every identity scored. Every decision explained. Every action reversible.
             </p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
               <Link to="/app/login"
@@ -344,7 +344,7 @@ function HeroScene() {
                 onMouseEnter={e => { e.currentTarget.style.background = '#1D4ED8'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = BLUE; e.currentTarget.style.transform = 'translateY(0)'; }}
               >
-                Access Platform <ArrowRight size={14}/>
+                Book a Private Demo <ArrowRight size={14}/>
               </Link>
               <Link to="/mission"
                 style={{
@@ -359,7 +359,7 @@ function HeroScene() {
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(241,245,249,0.5)'; e.currentTarget.style.color = INK; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(241,245,249,0.25)'; e.currentTarget.style.color = 'rgba(241,245,249,0.8)'; }}
               >
-                Watch Demo
+                Our Mission
               </Link>
             </div>
             <div style={{
@@ -367,7 +367,7 @@ function HeroScene() {
               fontSize: 11, color: 'rgba(148,163,184,0.7)',
               letterSpacing: '0.08em',
             }}>
-              SC-200 Certified · 4 Published Tools · Free &amp; Open Source
+              Self-Hosted · Multi-Tenant · Built in Dublin, Ireland
             </div>
           </div>
 
@@ -421,20 +421,20 @@ function MobileHero() {
           fontSize: 10, color: BLUE_L,
           letterSpacing: '0.14em', textTransform: 'uppercase',
         }}>
-          Identity Threat Detection &amp; Response
+          Autonomous AI Security Platform · v10.2
         </div>
         <h1 style={{
           fontFamily: "'Plus Jakarta Sans', sans-serif",
           fontSize: 'clamp(32px,9vw,48px)', fontWeight: 800,
           lineHeight: 1.1, letterSpacing: '-0.02em', color: INK, margin: 0,
         }}>
-          Stop identity threats before they become breaches.
+          AegisTrace is the accountability infrastructure for the AI-agent era.
         </h1>
         <p style={{
           fontFamily: "'IBM Plex Sans', sans-serif",
           fontSize: 16, color: MUTED, maxWidth: 420, margin: 0, lineHeight: 1.65,
         }}>
-          AegisTrace monitors every identity across your environment and fires when something doesn&apos;t add up.
+          Every identity scored. Every decision explained. Every action reversible.
         </p>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', marginTop: 4 }}>
           <Link to="/app/login"
@@ -445,7 +445,7 @@ function MobileHero() {
               fontSize: 14, fontWeight: 600, padding: '12px 22px',
               textDecoration: 'none', borderRadius: 4,
             }}>
-            Access Platform <ArrowRight size={14}/>
+            Book a Private Demo <ArrowRight size={14}/>
           </Link>
           <Link to="/mission"
             style={{
@@ -455,7 +455,7 @@ function MobileHero() {
               fontSize: 14, fontWeight: 500, padding: '11px 20px',
               border: '1px solid rgba(241,245,249,0.25)', textDecoration: 'none', borderRadius: 4,
             }}>
-            Mission
+            Our Mission
           </Link>
         </div>
         <div style={{ marginTop: 8, width: '100%', maxWidth: 420 }}>
@@ -471,9 +471,9 @@ function MobileHero() {
 ════════════════════════════════════════════════════════════════════════════ */
 const STATS = [
   { value: 1,  suffix: '',   label: 'platform' },
-  { value: 30, suffix: '+',  label: 'pages' },
+  { value: 12, suffix: '',   label: 'modules' },
   { value: 35, suffix: '',   label: 'API routes' },
-  { value: 4,  suffix: '',   label: 'PyPI tools' },
+  { value: 5,  suffix: '',   label: 'PyPI tools' },
   { value: 6,  suffix: '',   label: 'ITDR detectors' },
 ];
 
@@ -518,260 +518,129 @@ function StatStrip() {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   SECTION 4 — PLATFORM FEATURE BENTO (light bg, alternating rows)
+   TRUST BAR — horizontal scrolling badges (dark bg)
 ════════════════════════════════════════════════════════════════════════════ */
+const TRUST_BADGES = [
+  'Multi-Tenant Architecture',
+  'Explainable Verdicts',
+  'Human Approval Gates',
+  'MITRE ATT&CK Mapped',
+  'DORA · DPDPA · RBI Aligned',
+];
 
-/* Feature 1 — terminal animation mockup */
-function TerminalMockup() {
-  const ref    = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-100px' });
-  const LINES = [
-    { t: 0.0, prompt: '$', text: 'aegistrace detect --live', gold: false },
-    { t: 0.4, prompt: null, text: '' },
-    { t: 0.7, prompt: '[!]', text: 'Impossible travel · berlin.de → dublin.ie · 3:41 AM', gold: true },
-    { t: 1.2, prompt: '[!]', text: 'Off-hours login · User asleep in Dublin timezone', gold: true },
-    { t: 1.6, prompt: '[!]', text: 'Privilege escalation: role Admin granted · svc-backup', gold: true },
-    { t: 2.1, prompt: '[✓]', text: 'Case AT-2847 opened · CRITICAL · AI triage active', gold: true },
-  ];
-
-  return (
-    <div ref={ref} style={{
-      background: '#111827', border: '1px solid rgba(255,255,255,0.08)',
-      borderRadius: 10, overflow: 'hidden', maxWidth: 520,
-    }}>
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 6,
-        padding: '12px 16px',
-        background: 'rgba(255,255,255,0.04)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-      }}>
-        {['#F87171', '#FBBF24', '#34D399'].map(c => (
-          <div key={c} style={{ width: 10, height: 10, borderRadius: '50%', background: c, opacity: 0.55 }}/>
-        ))}
-        <span style={{ marginLeft: 8, fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: 'rgba(241,245,249,0.3)' }}>
-          soc-console — live detection
-        </span>
-      </div>
-      <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {LINES.map((line, i) => (
-          <motion.div key={i}
-            initial={{ opacity: 0, x: -8 }}
-            animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.4, delay: line.t, ease: E }}
-            style={{ display: 'flex', gap: 12, alignItems: 'baseline' }}
-          >
-            {line.prompt !== null && (
-              <span style={{
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 12,
-                color: line.prompt === '$' ? BLUE_L
-                      : line.prompt === '[✓]' ? '#34D399'
-                      : GOLD,
-                flexShrink: 0, minWidth: 24,
-              }}>{line.prompt}</span>
-            )}
-            <span style={{
-              fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: 12, lineHeight: 1.5,
-              color: line.gold ? 'rgba(241,245,249,0.85)' : 'rgba(241,245,249,0.55)',
-            }}>{line.text}</span>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* Feature 2 — AI verdict card */
-function AIVerdictCard() {
+function TrustBar() {
   return (
     <div style={{
-      background: '#111827', border: '1px solid rgba(255,255,255,0.08)',
-      borderRadius: 10, overflow: 'hidden', maxWidth: 460,
+      background: NAVY,
+      borderTop: '1px solid rgba(255,255,255,0.06)',
+      borderBottom: '1px solid rgba(255,255,255,0.06)',
+      padding: '14px clamp(24px,5vw,72px)',
+      overflowX: 'auto',
     }}>
       <div style={{
-        padding: '16px 20px',
-        background: 'rgba(37,99,235,0.12)',
-        borderBottom: '1px solid rgba(37,99,235,0.2)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        display: 'flex', gap: 32, alignItems: 'center',
+        justifyContent: 'center', flexWrap: 'wrap',
+        maxWidth: 1240, margin: '0 auto',
       }}>
-        <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: BLUE_L, letterSpacing: '0.1em' }}>
-          AI TRIAGE VERDICT
-        </span>
-        <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#34D399' }}>
-          CONFIDENCE 96%
-        </span>
-      </div>
-      <div style={{ padding: '16px 20px' }}>
-        <div style={{
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
-          fontSize: 14, fontWeight: 700, color: INK, marginBottom: 10,
-        }}>
-          Account Takeover via Credential Theft
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {[
-            { step: '01', text: 'Enriched svc-backup@corp IP · Berlin · AbuseIPDB score: 87/100' },
-            { step: '02', text: 'Correlated 7 failed logins across 10-min window → stuffing pattern' },
-            { step: '03', text: 'Geographic impossibility confirmed · 3,200km in 2h window' },
-            { step: '04', text: 'MITRE T1078 · Valid Accounts · Initial Access · HIGH confidence' },
-          ].map(item => (
-            <div key={item.step} style={{ display: 'flex', gap: 10 }}>
-              <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: BLUE_L, flexShrink: 0, marginTop: 2 }}>{item.step}</span>
-              <span style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 12, color: MUTED, lineHeight: 1.5 }}>{item.text}</span>
-            </div>
-          ))}
-        </div>
-        <div style={{
-          marginTop: 14, padding: '8px 12px',
-          background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)',
-          borderRadius: 4,
-        }}>
-          <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: '#F87171' }}>
-            ESCALATE · Contain account · Block IP · Page on-call
+        {TRUST_BADGES.map(badge => (
+          <span key={badge} style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11, color: MUTED,
+            letterSpacing: '0.08em', whiteSpace: 'nowrap',
+          }}>
+            <span style={{ color: GOLD, marginRight: 6 }}>&#10003;</span>{badge}
           </span>
-        </div>
+        ))}
       </div>
     </div>
   );
 }
 
-/* Feature 3 — Attack graph SVG */
-function AttackGraphMockup() {
-  const ref    = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-80px' });
+/* ════════════════════════════════════════════════════════════════════════════
+   PROBLEM SECTION — "The Accountability Gap" (light bg)
+════════════════════════════════════════════════════════════════════════════ */
+const PROBLEM_STATS = [
+  { value: '78%',   label: "of organisations cannot explain an AI agent's decision after the fact" },
+  { value: '144:1', label: 'machine identities per human employee in the average enterprise' },
+  { value: '<3%',   label: 'of AI-agent incidents detected by existing SIEM/EDR stacks' },
+  { value: '€2.4M', label: 'average cost of an AI-related breach in 2025 (Ponemon Institute)' },
+];
 
-  const NODES = [
-    { id: 'attacker', x: 60, y: 140, label: 'Attacker IP', color: '#EF4444' },
-    { id: 'creds', x: 180, y: 60, label: 'Stolen Creds', color: '#F97316' },
-    { id: 'login', x: 300, y: 140, label: 'Login Event', color: GOLD },
-    { id: 'priv', x: 300, y: 240, label: 'Priv Escalation', color: GOLD },
-    { id: 'data', x: 420, y: 80, label: 'Data Access', color: '#F87171' },
-    { id: 'detect', x: 420, y: 200, label: 'AT-2847 Detected', color: '#34D399' },
-  ];
-  const EDGES = [
-    { x1: 100, y1: 140, x2: 168, y2: 80 },
-    { x1: 210, y1: 70, x2: 275, y2: 130 },
-    { x1: 320, y1: 150, x2: 396, y2: 95 },
-    { x1: 320, y1: 145, x2: 320, y2: 225 },
-    { x1: 340, y1: 240, x2: 400, y2: 210 },
-  ];
-
-  return (
-    <div ref={ref} style={{
-      background: '#111827', border: '1px solid rgba(255,255,255,0.08)',
-      borderRadius: 10, padding: '20px', maxWidth: 520,
-    }}>
-      <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: MUTED, letterSpacing: '0.1em', marginBottom: 12 }}>
-        ATTACK GRAPH · CASE AT-2847
-      </div>
-      <svg width="100%" viewBox="0 0 480 300" style={{ display: 'block' }}>
-        {EDGES.map((e, i) => (
-          <line key={i}
-            x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
-            stroke="rgba(96,165,250,0.4)" strokeWidth="1.5"
-            opacity={inView ? 1 : 0}
-            style={{ transition: `opacity 0.6s ${0.3 + i * 0.2}s` }}
-          />
-        ))}
-        {NODES.map((node, i) => (
-          <g key={node.id}
-            style={{
-              opacity: inView ? 1 : 0,
-              transition: `opacity 0.4s ${i * 0.15}s`,
-            }}
-          >
-            <circle cx={node.x} cy={node.y} r={18} fill={node.color} fillOpacity="0.15" stroke={node.color} strokeWidth="1.5"/>
-            <text x={node.x} y={node.y + 30} textAnchor="middle" style={{
-              fontFamily: "'IBM Plex Mono', monospace", fontSize: 9,
-              fill: 'rgba(241,245,249,0.6)',
-            }}>{node.label}</text>
-          </g>
-        ))}
-      </svg>
-    </div>
-  );
-}
-
-function FeatureSection() {
-  const features = [
-    {
-      n: '01',
-      title: 'Identity Risk Engine',
-      desc1: 'Six real-time ITDR detectors fire simultaneously across every identity event in your environment — human accounts, machine identities, AI agents.',
-      desc2: 'Credential stuffing, impossible travel, privilege escalation, token theft, shadow AI, and MFA fatigue. All correlated, all scored, all explained.',
-      visual: <TerminalMockup/>,
-      flip: false,
-    },
-    {
-      n: '02',
-      title: 'Explainable AI Triage',
-      desc1: 'Every AI verdict surfaces its evidence, reasoning chain, confidence score, and MITRE ATT&CK mapping — no black boxes.',
-      desc2: 'Backed by Groq Llama 3 and NVIDIA Nemotron-70B. Every recommendation carries a full chain of custody an analyst can verify and a regulator can audit.',
-      visual: <AIVerdictCard/>,
-      flip: true,
-    },
-    {
-      n: '03',
-      title: 'Attack Graph Reconstruction',
-      desc1: 'The Temporal Linker correlates six event sources across ±5s windows and produces the full kill-chain narrative.',
-      desc2: 'Visual traversal of entity relationships across users, devices, IPs, and services — with MITRE mapping and confidence scores on every edge.',
-      visual: <AttackGraphMockup/>,
-      flip: false,
-    },
-  ];
-
+function ProblemSection() {
   return (
     <section style={{ background: WS_BG, padding: 'clamp(80px,10vw,120px) clamp(24px,5vw,72px)' }}>
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
-        <Reveal style={{ marginBottom: 72 }}>
+        <Reveal style={{ marginBottom: 56 }}>
           <div style={{
             fontFamily: "'IBM Plex Mono', monospace",
             fontSize: 11, color: BLUE, letterSpacing: '0.18em',
             textTransform: 'uppercase', marginBottom: 12,
-          }}>Platform</div>
+          }}>The Accountability Gap</div>
           <h2 style={{
             fontFamily: "'Plus Jakarta Sans', sans-serif",
             fontSize: 'clamp(32px,4.5vw,52px)', fontWeight: 800,
-            color: WS_TEXT, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.05,
+            color: WS_TEXT, margin: '0 0 40px', letterSpacing: '-0.02em', lineHeight: 1.05,
           }}>
-            One platform. Every layer of trust.
+            Autonomous AI Has No Audit Trail. Until Now.
           </h2>
+          <div style={{ maxWidth: 760, display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <p style={{
+              fontFamily: "'IBM Plex Sans', sans-serif",
+              fontSize: 17, color: WS_BODY, lineHeight: 1.75, margin: 0,
+            }}>
+              Your organisation has deployed AI agents that triage tickets, approve transactions,
+              write code, query databases, and interact with customers. These agents make thousands
+              of decisions every hour. Most of those decisions leave no trace anyone can inspect.
+            </p>
+            <p style={{
+              fontFamily: "'IBM Plex Sans', sans-serif",
+              fontSize: 17, color: WS_BODY, lineHeight: 1.75, margin: 0,
+            }}>
+              When an AI agent approves a fraudulent transaction, when it leaks customer data to an
+              unauthorised tool, when it escalates privileges it shouldn&apos;t have &mdash; your security team
+              gets a single question from the board: &ldquo;Why did the system allow this?&rdquo;
+            </p>
+            <p style={{
+              fontFamily: "'IBM Plex Sans', sans-serif",
+              fontSize: 17, color: WS_BODY, lineHeight: 1.75, margin: 0,
+            }}>
+              Today, most organisations cannot answer that question. Not because the data doesn&apos;t
+              exist &mdash; but because no platform was built to capture it. SIEMs log events. EDRs protect
+              endpoints. Neither was designed for a world where non-human identities outnumber humans
+              144-to-1.
+            </p>
+          </div>
         </Reveal>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(72px,10vw,120px)' }}>
-          {features.map((feature) => (
-            <Reveal key={feature.n} delay={0.05}>
+        {/* Stat cards 2x2 grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+          gap: 20,
+          marginTop: 16,
+        }}>
+          {PROBLEM_STATS.map((stat, i) => (
+            <Reveal key={stat.value} delay={i * 0.08}>
               <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                gap: 'clamp(40px,6vw,80px)',
-                alignItems: 'center',
+                background: '#fff',
+                border: '1px solid rgba(15,23,42,0.08)',
+                borderRadius: 10,
+                padding: 'clamp(24px,3vw,36px)',
+                boxShadow: '0 1px 4px rgba(15,23,42,0.06)',
               }}>
-                {/* Text */}
-                <div style={{ order: feature.flip ? 2 : 1 }}>
-                  <div style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: 10, color: BLUE, letterSpacing: '0.14em',
-                    marginBottom: 12, textTransform: 'uppercase',
-                  }}>{feature.n}</div>
-                  <h3 style={{
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    fontSize: 'clamp(22px,3vw,36px)', fontWeight: 800,
-                    color: WS_TEXT, margin: '0 0 16px', letterSpacing: '-0.02em', lineHeight: 1.15,
-                  }}>{feature.title}</h3>
-                  <p style={{
-                    fontFamily: "'IBM Plex Sans', sans-serif",
-                    fontSize: 16, color: WS_BODY, lineHeight: 1.7, margin: '0 0 14px',
-                  }}>{feature.desc1}</p>
-                  <p style={{
-                    fontFamily: "'IBM Plex Sans', sans-serif",
-                    fontSize: 15, color: '#64748B', lineHeight: 1.7, margin: 0,
-                  }}>{feature.desc2}</p>
+                <div style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 48, fontWeight: 800,
+                  color: BLUE, lineHeight: 1, marginBottom: 12,
+                  letterSpacing: '-0.03em',
+                }}>
+                  {stat.value}
                 </div>
-                {/* Visual */}
-                <div style={{ order: feature.flip ? 1 : 2, display: 'flex', justifyContent: feature.flip ? 'flex-end' : 'flex-start' }}>
-                  {feature.visual}
+                <div style={{
+                  fontFamily: "'IBM Plex Sans', sans-serif",
+                  fontSize: 14, color: WS_BODY, lineHeight: 1.6,
+                }}>
+                  {stat.label}
                 </div>
               </div>
             </Reveal>
@@ -783,16 +652,215 @@ function FeatureSection() {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   SECTION 5 — TOOLS STRIP (dark section)
+   SOLUTION SECTION — "Accountability Infrastructure" (dark bg)
 ════════════════════════════════════════════════════════════════════════════ */
-const PYPI_TOOLS = [
-  { name: 'aegis-ioc-scanner',    desc: 'Multi-source IOC lookup: VirusTotal, AbuseIPDB, Shodan, OTX',   cmd: 'pip install aegis-ioc-scanner' },
-  { name: 'aegis-pcap-analyzer',  desc: 'PCAP dissection with AI-generated threat narrative',              cmd: 'pip install aegis-pcap-analyzer' },
-  { name: 'aegis-log-parser',     desc: 'Structured parser for auth, DNS and HTTP access logs',            cmd: 'pip install aegis-log-parser' },
-  { name: 'aegis-yara-runner',    desc: 'YARA scanning engine with MITRE ATT&CK mapping',                  cmd: 'pip install aegis-yara-runner' },
+const SOLUTION_PILLARS = [
+  {
+    title: 'Identity Threat Detection & Response',
+    body: 'Six specialised detectors monitor every human, service account, API key, AI agent, and token in real time. Multi-window analytics (10min / 1h / 24h).',
+    tag: 'ITDR · 6 Detectors · Multi-Window',
+  },
+  {
+    title: 'Explainable Verdicts',
+    body: 'Every AI output ships with its evidence, reasoning chain, confidence score, and a plain-language "what could be wrong" section. No black boxes.',
+    tag: 'Transparent · Auditable · Multi-Model',
+  },
+  {
+    title: 'Human Approval Queue',
+    body: 'Every automated action passes through an approval layer. Every decision logged to the Provenance Ledger with full reversibility.',
+    tag: 'Human Confirmation · Provenance Ledger',
+  },
+  {
+    title: 'Autonomous Response Engine',
+    body: 'Visual playbook builder with approval gates, audit trails, and rollback capability.',
+    tag: 'SOAR · Visual Builder · Approval Gates',
+  },
+  {
+    title: 'Self-Tuning Detection',
+    body: 'Adaptive agent reviews false-positive/negative rates every 4 hours, proposes threshold adjustments within hardcoded safety bounds.',
+    tag: 'Adaptive · Self-Tuning · Bounded',
+  },
+  {
+    title: 'Attack Reconstruction',
+    body: 'Temporal linker correlates events across six sources, narrative AI builds plain-language attack story with MITRE chain mapping.',
+    tag: 'Temporal Correlation · Narrative AI',
+  },
 ];
 
-function ToolsSection() {
+function SolutionSection() {
+  return (
+    <section style={{ background: NAVY, padding: 'clamp(80px,10vw,120px) clamp(24px,5vw,72px)' }}>
+      <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+        <Reveal style={{ marginBottom: 64 }}>
+          <div style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11, color: BLUE_L, letterSpacing: '0.18em',
+            textTransform: 'uppercase', marginBottom: 12,
+          }}>Accountability Infrastructure</div>
+          <h2 style={{
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: 'clamp(28px,4vw,48px)', fontWeight: 800,
+            color: INK, margin: '0 0 16px', letterSpacing: '-0.02em', lineHeight: 1.1,
+          }}>
+            Every Identity Scored. Every Decision Explained. Every Action Reversible.
+          </h2>
+          <p style={{
+            fontFamily: "'IBM Plex Sans', sans-serif",
+            fontSize: 17, color: MUTED, margin: 0, maxWidth: 640, lineHeight: 1.65,
+          }}>
+            AegisTrace replaces reactive logging with proactive accountability.
+          </p>
+        </Reveal>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: 16,
+        }}>
+          {SOLUTION_PILLARS.map((pillar, i) => (
+            <Reveal key={pillar.title} delay={i * 0.07}>
+              <div
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: 10,
+                  padding: 'clamp(24px,3vw,32px)',
+                  height: '100%', boxSizing: 'border-box',
+                  transition: 'border-color 160ms ease-out',
+                  cursor: 'default',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(37,99,235,0.4)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+              >
+                <h3 style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 16, fontWeight: 600, color: INK,
+                  margin: '0 0 12px', lineHeight: 1.3,
+                }}>{pillar.title}</h3>
+                <p style={{
+                  fontFamily: "'IBM Plex Sans', sans-serif",
+                  fontSize: 13, color: MUTED, lineHeight: 1.65,
+                  margin: '0 0 16px',
+                }}>{pillar.body}</p>
+                <div style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 10, color: GOLD,
+                  letterSpacing: '0.08em',
+                }}>{pillar.tag}</div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   MODULES SECTION — "12 Modules. One Unified Platform." (light bg)
+════════════════════════════════════════════════════════════════════════════ */
+const MODULES = [
+  { n: '01', name: 'Case Management',     desc: '15-tab investigation workspace with autosave, SLA tracking, MITRE mapping' },
+  { n: '02', name: 'Identity Graph',      desc: 'Force-directed canvas tracking users, service accounts, API keys, AI agents' },
+  { n: '03', name: 'ITDR Engine',         desc: 'Six real-time identity threat detectors with multi-window analytics' },
+  { n: '04', name: 'Attack Graph',        desc: 'Temporal linker + AI-generated attack narratives from correlated events' },
+  { n: '05', name: 'SOAR Playbooks',      desc: 'Visual builder with automated execution, approval gates, and rollback' },
+  { n: '06', name: 'Adaptive Agent',      desc: 'Self-tuning detection thresholds based on live FP/FN performance' },
+  { n: '07', name: 'Endpoint Agent',      desc: 'v6.1 — honey tokens, YARA-lite, DNS/DGA, auto-block, HMAC-signed telemetry' },
+  { n: '08', name: 'AI Defense Console',  desc: 'Live attack feed with human-in-the-loop approve/block/escalate/dismiss' },
+  { n: '09', name: 'Threat Hunt',         desc: 'Cross-case IOC correlation + DuckDB SQL console over live telemetry' },
+  { n: '10', name: 'Hardware Forensics',  desc: '18 parsers for WiFi, RF, USB/HID, RFID/NFC, and network attack tools' },
+  { n: '11', name: 'Terminal Lab',        desc: 'Full Linux-style analyst environment with AI-powered output parsing' },
+  { n: '12', name: '7-Source Enrichment', desc: 'VirusTotal, Shodan, GreyNoise, IPInfo, URLhaus, ThreatFox, MalwareBazaar' },
+];
+
+function ModulesSection() {
+  return (
+    <section style={{ background: WS_BG, padding: 'clamp(80px,10vw,120px) clamp(24px,5vw,72px)' }}>
+      <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+        <Reveal style={{ marginBottom: 56 }}>
+          <div style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11, color: BLUE, letterSpacing: '0.18em',
+            textTransform: 'uppercase', marginBottom: 12,
+          }}>Platform</div>
+          <h2 style={{
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: 'clamp(32px,4.5vw,52px)', fontWeight: 800,
+            color: WS_TEXT, margin: '0 0 16px', letterSpacing: '-0.02em', lineHeight: 1.05,
+          }}>
+            12 Modules. One Unified Platform.
+          </h2>
+          <p style={{
+            fontFamily: "'IBM Plex Sans', sans-serif",
+            fontSize: 17, color: WS_BODY, margin: 0, maxWidth: 640, lineHeight: 1.65,
+          }}>
+            Every capability a modern SOC needs &mdash; integrated at the data layer, not bolted on at the UI layer.
+          </p>
+        </Reveal>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+          gap: 12,
+        }}>
+          {MODULES.map((mod, i) => (
+            <Reveal key={mod.n} delay={i * 0.04}>
+              <div
+                style={{
+                  background: '#fff',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: 10,
+                  padding: '20px 22px',
+                  height: '100%', boxSizing: 'border-box',
+                  transition: 'transform 140ms ease-out, border-color 140ms ease-out, box-shadow 140ms ease-out',
+                  cursor: 'default',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.borderColor = BLUE;
+                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(37,99,235,0.1)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.borderColor = '#E2E8F0';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <div style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 11, color: GOLD, marginBottom: 8,
+                }}>{mod.n}</div>
+                <div style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 14, fontWeight: 600, color: WS_TEXT,
+                  marginBottom: 6, lineHeight: 1.3,
+                }}>{mod.name}</div>
+                <div style={{
+                  fontFamily: "'IBM Plex Sans', sans-serif",
+                  fontSize: 12, color: '#64748B', lineHeight: 1.55,
+                }}>{mod.desc}</div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   GRASSROOTS TOOLKIT SECTION (dark section)
+════════════════════════════════════════════════════════════════════════════ */
+const GRASSROOTS_TOOLS = [
+  { name: 'mcp-aegis',      desc: 'MCP Security Gateway. Sits between AI agents and MCP servers. Blocks by default, logs every decision.',   cmd: 'pip install mcp-aegis' },
+  { name: 'mcp-sploit',     desc: 'MCP Exploitation Framework. 6 modules with MITRE ATT&CK mapping. Purple-teams your MCP gateway.',         cmd: 'pip install mcp-sploit' },
+  { name: 'prompt-fuzz',    desc: 'Prompt Injection Fuzzer. 51 payloads, 10 categories, CI-gate ready.',                                     cmd: 'pip install prompt-fuzz' },
+  { name: 'nhi-hunter',     desc: 'NHI Privilege Escalation Pathfinder. Finds multi-hop IAM chains. Maps to T1078.004.',                     cmd: 'pip install nhi-hunter' },
+  { name: 'shadow-sniffer', desc: 'Shadow AI Detector. 39-domain catalog, 8 categories, T1567 mapping.',                                     cmd: 'pip install shadow-sniffer' },
+];
+
+function GrassrootsSection() {
   const [copiedIdx, setCopiedIdx] = useState(null);
 
   const copy = (idx, text) => {
@@ -813,15 +881,15 @@ function ToolsSection() {
           <h2 style={{
             fontFamily: "'Plus Jakarta Sans', sans-serif",
             fontSize: 'clamp(32px,4.5vw,48px)', fontWeight: 800,
-            color: INK, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.05,
+            color: INK, margin: '0 0 12px', letterSpacing: '-0.02em', lineHeight: 1.05,
           }}>
-            The offensive toolkit.
+            The Grassroots Security Toolkit
           </h2>
           <p style={{
             fontFamily: "'IBM Plex Sans', sans-serif",
-            fontSize: 16, color: MUTED, margin: '16px 0 0', maxWidth: 520,
+            fontSize: 16, color: MUTED, margin: 0, maxWidth: 600, lineHeight: 1.65,
           }}>
-            Four tools published on PyPI. Install and run in seconds. No accounts, no keys.
+            Four enterprise-grade PyPI packages. Each attacks a different layer of the AI stack. All feed the central dashboard.
           </p>
         </Reveal>
 
@@ -829,7 +897,7 @@ function ToolsSection() {
           display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: 16,
         }}>
-          {PYPI_TOOLS.map((tool, i) => (
+          {GRASSROOTS_TOOLS.map((tool, i) => (
             <Reveal key={tool.name} delay={i * 0.07}>
               <div style={{
                 background: 'rgba(255,255,255,0.05)',
@@ -866,51 +934,84 @@ function ToolsSection() {
             </Reveal>
           ))}
         </div>
+
+        {/* Callout box */}
+        <Reveal delay={0.2} style={{ marginTop: 40 }}>
+          <div style={{
+            background: 'rgba(37,99,235,0.08)',
+            border: '1px solid rgba(37,99,235,0.25)',
+            borderRadius: 10,
+            padding: 'clamp(20px,3vw,32px)',
+          }}>
+            <p style={{
+              fontFamily: "'IBM Plex Sans', sans-serif",
+              fontSize: 15, color: INK, lineHeight: 1.7, margin: 0, textAlign: 'center',
+            }}>
+              Every finding from every tool flows into AegisTrace&apos;s{' '}
+              <span style={{ fontFamily: "'IBM Plex Mono', monospace", color: BLUE_L, fontSize: 13 }}>/app/agent-security</span>
+              {' '}dashboard.{' '}
+              <span style={{ color: MUTED }}>Offensive tools. Defensive platform. One unified accountability surface.</span>
+            </p>
+          </div>
+        </Reveal>
       </div>
     </section>
   );
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   SECTION 6 — WHO IT'S FOR (light section)
+   COMPARISON TABLE SECTION (light bg)
 ════════════════════════════════════════════════════════════════════════════ */
-const AUDIENCES = [
+const COMPARISON_ROWS = [
+  { cap: 'Identity-first threat detection',  at: true,  cs: true,      sen: true,      lak: false,    spl: false },
+  { cap: 'AI-agent observability',           at: true,  cs: false,     sen: 'Partial', lak: true,     spl: false },
+  { cap: 'Explainable AI verdicts',          at: true,  cs: false,     sen: false,     lak: 'Partial', spl: false },
+  { cap: 'Human approval queue',             at: true,  cs: false,     sen: false,     lak: false,    spl: true  },
+  { cap: 'Self-tuning detection',            at: true,  cs: false,     sen: false,     lak: false,    spl: false },
+  { cap: 'MCP server security',              at: true,  cs: false,     sen: false,     lak: false,    spl: false },
+  { cap: 'Hardware attack forensics',        at: true,  cs: false,     sen: false,     lak: false,    spl: false },
+  { cap: 'Self-hostable',                    at: true,  cs: false,     sen: false,     lak: false,    spl: false },
+];
+
+function renderCell(val) {
+  if (val === true)      return <span style={{ color: '#16A34A', fontSize: 16 }}>&#10003;</span>;
+  if (val === false)     return <span style={{ color: '#94A3B8', fontSize: 14 }}>&#10007;</span>;
+  if (val === 'Partial') return <span style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 12, color: '#F59E0B' }}>Partial</span>;
+  return null;
+}
+
+const DIFF_CARDS = [
   {
-    title: 'SOC Analysts',
-    icon: '🔍',
-    desc: 'Stop pivoting between five tools. AegisTrace gives you identity telemetry, IOC enrichment, and AI triage in one timeline.',
-    points: [
-      'Unified case timeline across all event sources',
-      'AI verdict with evidence chain — no black boxes',
-      '15-tab investigation workbench',
-      'One-click DORA compliance reports',
-    ],
+    vs: 'vs Enterprise SIEMs',
+    body: 'They log everything but explain nothing. AegisTrace shows the full reasoning chain behind every alert — with evidence, confidence, and MITRE mapping attached to every verdict.',
   },
   {
-    title: 'Security Engineers',
-    icon: '⚙️',
-    desc: 'Deploy in minutes. Hook up your identity providers. Get real-time ITDR without a six-month procurement cycle.',
-    points: [
-      'Okta + Azure AD + Auth0 connectors built-in',
-      'SOAR playbooks with human approval gates',
-      'Endpoint agent in one command',
-      'Full API — 35 routes, OpenAPI documented',
-    ],
+    vs: 'vs AI Security Startups',
+    body: 'They focus on one layer — prompt injection, or model output scanning. AegisTrace covers the full stack: identity, agents, MCP servers, endpoints, hardware, and SOAR.',
   },
   {
-    title: 'Researchers',
-    icon: '🧪',
-    desc: 'Four published PyPI tools for offensive security research. Attack MCP servers, fuzz LLMs, hunt NHI privilege paths.',
-    points: [
-      'mcp-sploit — MCP server attack framework',
-      'prompt-fuzz — async LLM jailbreak fuzzer',
-      'nhi-hunter — AWS IAM privilege path finder',
-      'shadow-sniffer — offline shadow AI detector',
-    ],
+    vs: 'vs EDR Platforms',
+    body: 'They protect endpoints. We protect the trust surface — the humans, machines, AI agents, and tokens that make decisions inside your environment every second of every day.',
   },
 ];
 
-function AudienceSection() {
+function ComparisonSection() {
+  const headerStyle = {
+    fontFamily: "'IBM Plex Sans', sans-serif",
+    fontSize: 12, fontWeight: 600,
+    padding: '10px 16px', textAlign: 'center',
+    background: 'rgba(15,23,42,0.04)',
+    borderBottom: '1px solid rgba(15,23,42,0.08)',
+    color: WS_TEXT,
+  };
+
+  const cellStyle = {
+    padding: '12px 16px', textAlign: 'center',
+    borderBottom: '1px solid rgba(15,23,42,0.06)',
+    fontFamily: "'IBM Plex Sans', sans-serif",
+    fontSize: 13,
+  };
+
   return (
     <section style={{ background: WS_BG, padding: 'clamp(80px,10vw,120px) clamp(24px,5vw,72px)' }}>
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
@@ -919,51 +1020,76 @@ function AudienceSection() {
             fontFamily: "'IBM Plex Mono', monospace",
             fontSize: 11, color: BLUE, letterSpacing: '0.18em',
             textTransform: 'uppercase', marginBottom: 12,
-          }}>Built for</div>
+          }}>Stack Fit</div>
           <h2 style={{
             fontFamily: "'Plus Jakarta Sans', sans-serif",
             fontSize: 'clamp(32px,4.5vw,52px)', fontWeight: 800,
-            color: WS_TEXT, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.05,
+            color: WS_TEXT, margin: '0 0 16px', letterSpacing: '-0.02em', lineHeight: 1.05,
           }}>
-            Who uses AegisTrace.
+            Where AegisTrace Fits in Your Stack
           </h2>
+          <p style={{
+            fontFamily: "'IBM Plex Sans', sans-serif",
+            fontSize: 17, color: WS_BODY, margin: 0, maxWidth: 600, lineHeight: 1.65,
+          }}>
+            We don&apos;t replace your SIEM or EDR. We complete them &mdash; at the layer they weren&apos;t built for.
+          </p>
         </Reveal>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 2, background: 'rgba(15,23,42,0.1)' }}>
-          {AUDIENCES.map((aud, i) => (
-            <Reveal key={aud.title} delay={i * 0.08}>
-              <div
-                style={{
-                  background: '#FFFFFF', padding: 'clamp(28px,4vw,40px) clamp(24px,3vw,32px)',
-                  height: '100%', boxSizing: 'border-box',
-                  transition: 'transform 160ms ease-out, box-shadow 160ms ease-out',
-                  cursor: 'default',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(37,99,235,0.12)'; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-              >
-                <div style={{ fontSize: 32, marginBottom: 16 }}>{aud.icon}</div>
-                <h3 style={{
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontSize: 22, fontWeight: 800, color: WS_TEXT,
-                  margin: '0 0 12px', letterSpacing: '-0.01em',
-                }}>{aud.title}</h3>
+        {/* Comparison table */}
+        <Reveal delay={0.1} style={{ marginBottom: 48, overflowX: 'auto' }}>
+          <table style={{
+            width: '100%', borderCollapse: 'collapse',
+            background: '#fff', borderRadius: 10, overflow: 'hidden',
+            border: '1px solid rgba(15,23,42,0.08)',
+            boxShadow: '0 1px 4px rgba(15,23,42,0.06)',
+            minWidth: 640,
+          }}>
+            <thead>
+              <tr>
+                <th style={{ ...headerStyle, textAlign: 'left', minWidth: 220 }}>Capability</th>
+                <th style={{ ...headerStyle, background: 'rgba(37,99,235,0.08)', color: BLUE }}>AegisTrace</th>
+                <th style={headerStyle}>CrowdStrike</th>
+                <th style={headerStyle}>Sentinel</th>
+                <th style={headerStyle}>Lakera</th>
+                <th style={headerStyle}>Splunk SOAR</th>
+              </tr>
+            </thead>
+            <tbody>
+              {COMPARISON_ROWS.map((row, i) => (
+                <tr key={row.cap} style={{ background: i % 2 === 0 ? '#fff' : 'rgba(240,244,249,0.5)' }}>
+                  <td style={{ ...cellStyle, textAlign: 'left', color: WS_BODY, fontWeight: 500 }}>{row.cap}</td>
+                  <td style={{ ...cellStyle, background: 'rgba(37,99,235,0.06)' }}>{renderCell(row.at)}</td>
+                  <td style={cellStyle}>{renderCell(row.cs)}</td>
+                  <td style={cellStyle}>{renderCell(row.sen)}</td>
+                  <td style={cellStyle}>{renderCell(row.lak)}</td>
+                  <td style={cellStyle}>{renderCell(row.spl)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Reveal>
+
+        {/* Differentiator cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
+          {DIFF_CARDS.map((card, i) => (
+            <Reveal key={card.vs} delay={i * 0.08}>
+              <div style={{
+                background: '#fff',
+                border: '1px solid #E2E8F0',
+                borderRadius: 10,
+                padding: 'clamp(20px,3vw,28px)',
+                boxShadow: '0 1px 4px rgba(15,23,42,0.05)',
+              }}>
+                <div style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 11, color: BLUE, letterSpacing: '0.1em',
+                  marginBottom: 12, textTransform: 'uppercase',
+                }}>{card.vs}</div>
                 <p style={{
                   fontFamily: "'IBM Plex Sans', sans-serif",
-                  fontSize: 15, color: WS_BODY, lineHeight: 1.7, margin: '0 0 20px',
-                }}>{aud.desc}</p>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {aud.points.map(pt => (
-                    <li key={pt} style={{
-                      fontFamily: "'IBM Plex Sans', sans-serif",
-                      fontSize: 13.5, color: '#475569', lineHeight: 1.5,
-                      display: 'flex', gap: 10,
-                    }}>
-                      <span style={{ color: BLUE, flexShrink: 0 }}>→</span>
-                      <span>{pt}</span>
-                    </li>
-                  ))}
-                </ul>
+                  fontSize: 14, color: WS_BODY, lineHeight: 1.7, margin: 0,
+                }}>{card.body}</p>
               </div>
             </Reveal>
           ))}
@@ -974,7 +1100,101 @@ function AudienceSection() {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   SECTION 7 — CTA BAND (gradient dark)
+   TRUST SECTION — "Hardened by Audit." (dark bg)
+════════════════════════════════════════════════════════════════════════════ */
+const TRUST_PILLARS = [
+  {
+    title: 'v10.1 Security Audit',
+    body: 'CVE remediation, IDOR sweep across 17+ tables, CORS/CSP lockdown, DNS-rebinding defenses.',
+  },
+  {
+    title: 'v10.2 SOC Hardening',
+    body: 'SSRF guard module, agent-command authorization, prompt injection shield, non-root Docker.',
+  },
+  {
+    title: 'Multi-Tenant Ready',
+    body: 'Every query org-scoped. Cross-tenant leakage eliminated. MSP/MSSP ready.',
+  },
+  {
+    title: 'Explainable AI',
+    body: 'Every verdict shows evidence, reasoning, confidence. No black boxes. Regulators can audit.',
+  },
+  {
+    title: 'Human Control',
+    body: 'Every automated action has approval layer. Provenance Ledger with full reversibility.',
+  },
+  {
+    title: 'Self-Hostable',
+    body: 'Your data never leaves your network. Built for regulated industries.',
+  },
+];
+
+function TrustSection() {
+  return (
+    <section style={{ background: NAVY, padding: 'clamp(80px,10vw,120px) clamp(24px,5vw,72px)' }}>
+      <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+        <Reveal style={{ marginBottom: 64 }}>
+          <div style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11, color: BLUE_L, letterSpacing: '0.18em',
+            textTransform: 'uppercase', marginBottom: 12,
+          }}>Security</div>
+          <h2 style={{
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: 'clamp(32px,4.5vw,52px)', fontWeight: 800,
+            color: INK, margin: '0 0 16px', letterSpacing: '-0.02em', lineHeight: 1.05,
+          }}>
+            Hardened by Audit. Built for Production.
+          </h2>
+          <p style={{
+            fontFamily: "'IBM Plex Sans', sans-serif",
+            fontSize: 17, color: MUTED, margin: 0, maxWidth: 540, lineHeight: 1.65,
+          }}>
+            Every line of code has been through two independent security audits.
+          </p>
+        </Reveal>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: 16,
+        }}>
+          {TRUST_PILLARS.map((pillar, i) => (
+            <Reveal key={pillar.title} delay={i * 0.07}>
+              <div
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: 10,
+                  padding: 'clamp(22px,3vw,32px)',
+                  height: '100%', boxSizing: 'border-box',
+                  transition: 'border-color 160ms',
+                  cursor: 'default',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(37,99,235,0.4)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+              >
+                <h3 style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 15, fontWeight: 700, color: INK,
+                  margin: '0 0 10px', lineHeight: 1.3,
+                }}>{pillar.title}</h3>
+                <p style={{
+                  fontFamily: "'IBM Plex Sans', sans-serif",
+                  fontSize: 13, color: MUTED, lineHeight: 1.65,
+                  margin: 0,
+                }}>{pillar.body}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   CTA BAND (gradient dark)
 ════════════════════════════════════════════════════════════════════════════ */
 function CTABand() {
   return (
@@ -991,13 +1211,13 @@ function CTABand() {
             color: INK, letterSpacing: '-0.02em', lineHeight: 1.1,
             margin: '0 0 20px',
           }}>
-            The complete SOC, without the procurement cycle.
+            Autonomous AI needs accountable security.
           </h2>
           <p style={{
             fontFamily: "'IBM Plex Sans', sans-serif",
             fontSize: 17, color: MUTED, margin: '0 0 36px', lineHeight: 1.6,
           }}>
-            Free, open, deployable. No sales process. No trial gate. No $100k invoice.
+            Join the security teams, SOC analysts, and AI builders already using AegisTrace.
           </p>
         </Reveal>
         <Reveal delay={0.1}>
@@ -1014,9 +1234,9 @@ function CTABand() {
               onMouseEnter={e => { e.currentTarget.style.background = '#1D4ED8'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = BLUE; e.currentTarget.style.transform = 'translateY(0)'; }}
             >
-              Launch Platform <ArrowRight size={16}/>
+              Book a Private Demo <ArrowRight size={16}/>
             </Link>
-            <a href="https://github.com/Prasanna-27eng/AegisTrace" target="_blank" rel="noopener noreferrer"
+            <a href="mailto:Prasanna80564@gmail.com"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
                 background: 'transparent', color: 'rgba(241,245,249,0.75)',
@@ -1029,7 +1249,7 @@ function CTABand() {
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(241,245,249,0.4)'; e.currentTarget.style.color = INK; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(241,245,249,0.2)'; e.currentTarget.style.color = 'rgba(241,245,249,0.75)'; }}
             >
-              View on GitHub
+              Talk to the Founder &rarr;
             </a>
           </div>
           <div style={{
@@ -1037,7 +1257,7 @@ function CTABand() {
             fontSize: 11, color: 'rgba(148,163,184,0.55)',
             letterSpacing: '0.08em',
           }}>
-            SC-200 Certified · 4 Published Tools · Free &amp; Open Source
+            Self-hosted &middot; Multi-tenant &middot; Built in Dublin, Ireland &middot; No data leaves your network
           </div>
         </Reveal>
       </div>
@@ -1061,7 +1281,7 @@ function TickerRow() {
           <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: '0.24em', color: GOLD }}>
             {item}
           </span>
-          <span aria-hidden style={{ color: 'rgba(245,158,11,0.35)', fontSize: 14 }}>·</span>
+          <span aria-hidden style={{ color: 'rgba(245,158,11,0.35)', fontSize: 14 }}>&middot;</span>
         </React.Fragment>
       ))}
     </div>
@@ -1106,7 +1326,7 @@ function Footer() {
               fontFamily: "'IBM Plex Sans', sans-serif",
               fontSize: 13, color: MUTED, lineHeight: 1.65, margin: 0, maxWidth: 220,
             }}>
-              The Trust Operating System for the AI-agent era.
+              The Accountability Infrastructure for the AI-agent era.
             </p>
           </div>
           <div>
@@ -1118,7 +1338,7 @@ function Footer() {
             {[
               { l: 'Sign In',   to: '/app/login' },
               { l: 'Mission',   to: '/mission' },
-              { l: 'Portfolio', to: '/portfolio' },
+              { l: 'Features',  to: '/features' },
               { l: 'Platform',  to: '/platform' },
             ].map(({ l, to }) => (
               <div key={l} style={{ marginBottom: 10 }}>
@@ -1164,7 +1384,7 @@ function Footer() {
           <span style={{
             fontFamily: "'IBM Plex Sans', sans-serif",
             color: 'rgba(148,163,184,0.4)', fontSize: 12,
-          }}>Built in Dublin. Open source. Free forever.</span>
+          }}>Built in Dublin, Ireland &middot; Self-hosted &middot; No data leaves your network</span>
         </div>
       </div>
     </footer>
@@ -1199,7 +1419,8 @@ function Nav() {
         {[
           { label: 'Platform', to: '/platform' },
           { label: 'Mission',  to: '/mission' },
-          { label: 'Portfolio',to: '/portfolio' },
+          { label: 'Features', to: '/features' },
+          { label: 'Tools',    to: '/tools' },
         ].map(({ label, to }) => (
           <Link key={label} to={to} style={{
             fontFamily: "'IBM Plex Sans', sans-serif",
@@ -1225,7 +1446,7 @@ function Nav() {
           onMouseEnter={e => (e.currentTarget.style.background = '#1D4ED8')}
           onMouseLeave={e => (e.currentTarget.style.background = BLUE)}
         >
-          Get Started <ArrowRight size={12}/>
+          Book a Demo <ArrowRight size={12}/>
         </Link>
       </div>
     </motion.nav>
@@ -1273,28 +1494,40 @@ export default function Landing() {
           ::selection { background: rgba(37,99,235,0.3); color: #F1F5F9; }
         `}</style>
 
-        {/* ── HERO ── */}
+        {/* HERO */}
         {useFallback ? <MobileHero/> : <HeroScene/>}
 
-        {/* ── TICKER ── */}
+        {/* TICKER */}
         <Ticker/>
 
-        {/* ── STAT STRIP ── */}
+        {/* STAT STRIP */}
         <StatStrip/>
 
-        {/* ── FEATURE BENTO ── */}
-        <FeatureSection/>
+        {/* TRUST BAR */}
+        <TrustBar/>
 
-        {/* ── TOOLS STRIP ── */}
-        <ToolsSection/>
+        {/* PROBLEM SECTION */}
+        <ProblemSection/>
 
-        {/* ── WHO IT'S FOR ── */}
-        <AudienceSection/>
+        {/* SOLUTION SECTION */}
+        <SolutionSection/>
 
-        {/* ── CTA BAND ── */}
+        {/* MODULES SECTION */}
+        <ModulesSection/>
+
+        {/* GRASSROOTS TOOLKIT */}
+        <GrassrootsSection/>
+
+        {/* COMPARISON TABLE */}
+        <ComparisonSection/>
+
+        {/* TRUST SECTION */}
+        <TrustSection/>
+
+        {/* CTA BAND */}
         <CTABand/>
 
-        {/* ── FOOTER ── */}
+        {/* FOOTER */}
         <Footer/>
       </div>
     </>
