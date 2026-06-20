@@ -1,42 +1,65 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { Suspense, lazy, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Toasts from './components/Toast';
+import CustomCursor from './components/CustomCursor';
 
-// ── Loading screen for code splitting ────────────────────────────────────────
-function LoadingScreen() {
+/* ─── Branded Suspense fallback ─────────────────────────────────────────────
+   Shown during lazy-chunk loading. Matches the site's #050405 dark theme.   */
+function PageLoader() {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      minHeight: '100vh', background: '#0A0A0A',
+      minHeight: '100vh', background: '#050405',
     }}>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{
-          width: 40, height: 40, borderRadius: '50%',
-          border: '3px solid #5A8A9F', borderTopColor: 'transparent',
-          animation: 'spin 0.8s linear infinite', margin: '0 auto 16px',
-        }} />
-        <div style={{ color: '#5A8A9F', fontSize: 13, opacity: 0.7 }}>AegisTrace</div>
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
+        {/* Gold progress bar */}
+        <div style={{ width: 120, height: 1, background: 'rgba(245,240,232,0.08)', position: 'relative', overflow: 'hidden' }}>
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: '#F59E0B',
+            animation: 'pageload-bar 1.4s cubic-bezier(0.4,0,0.2,1) infinite',
+          }}/>
+        </div>
+        <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: 'rgba(245,240,232,0.3)', letterSpacing: '0.22em' }}>
+          AEGISTRACE
+        </span>
       </div>
+      <style>{`
+        @keyframes pageload-bar {
+          0%   { transform: translateX(-100%); }
+          50%  { transform: translateX(0%); }
+          100% { transform: translateX(100%); }
+        }
+      `}</style>
     </div>
   );
 }
 
-// ── Public pages (small — load eagerly) ──────────────────────────────────────
-import Landing          from './pages/Landing';
-import Login            from './pages/Login';
+/* ─── Scroll-to-top on every route change ──────────────────────────────────
+   UX: navigating to a new page should start at the top, not mid-scroll.    */
+function ScrollReset() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [pathname]);
+  return null;
+}
 
-// ── Public pages (lazy loaded) ───────────────────────────────────────────────
+/* ─── Public pages (all lazy — biggest UX/perf win) ────────────────────────
+   Landing and Login are the most-visited so they get their own chunks but
+   still lazy — Suspense fallback is fast enough to not matter.              */
+const Landing          = lazy(() => import('./pages/Landing'));
+const Login            = lazy(() => import('./pages/Login'));
+const Platform         = lazy(() => import('./pages/Platform'));
+const Tools            = lazy(() => import('./pages/Tools'));
 const Mission          = lazy(() => import('./pages/Mission'));
 const Portfolio        = lazy(() => import('./pages/Portfolio'));
 const PublicGallery    = lazy(() => import('./pages/PublicGallery'));
 const PublicCaseDetail = lazy(() => import('./pages/PublicCaseDetail'));
 const AgentSetup       = lazy(() => import('./pages/AgentSetup'));
 
-// ── App shell (lazy loaded) ───────────────────────────────────────────────────
+/* ─── App shell ─────────────────────────────────────────────────────────── */
 const AppShell         = lazy(() => import('./pages/app/AppShell'));
 
-// ── App pages (all lazy) ─────────────────────────────────────────────────────
+/* ─── App pages ─────────────────────────────────────────────────────────── */
 const Dashboard        = lazy(() => import('./pages/app/Dashboard'));
 const CaseList         = lazy(() => import('./pages/app/CaseList'));
 const CaseDetail       = lazy(() => import('./pages/app/CaseDetail/index'));
@@ -63,15 +86,22 @@ const ControlPlane     = lazy(() => import('./pages/app/ControlPlane'));
 const SimulationHub    = lazy(() => import('./pages/app/SimulationHub'));
 const DefenseConsole   = lazy(() => import('./pages/app/DefenseConsole'));
 const Playbooks        = lazy(() => import('./pages/app/Playbooks'));
+const LogInvestigation = lazy(() => import('./pages/app/LogInvestigation'));
+const EDRPage          = lazy(() => import('./pages/app/EDRPage'));
+const MalwareTools     = lazy(() => import('./pages/app/MalwareTools'));
 
 export default function App() {
   return (
     <BrowserRouter>
+      <CustomCursor />
       <Toasts />
-      <Suspense fallback={<LoadingScreen />}>
+      <Suspense fallback={<PageLoader />}>
+        <ScrollReset />
         <Routes>
-          {/* Public */}
+          {/* ── Public ── */}
           <Route path="/"              element={<Landing />} />
+          <Route path="/platform"      element={<Platform />} />
+          <Route path="/tools"         element={<Tools />} />
           <Route path="/mission"       element={<Mission />} />
           <Route path="/portfolio"     element={<Portfolio />} />
           <Route path="/public"        element={<PublicGallery />} />
@@ -79,7 +109,7 @@ export default function App() {
           <Route path="/agent-setup"   element={<AgentSetup />} />
           <Route path="/app/login"     element={<Login />} />
 
-          {/* Protected app */}
+          {/* ── Protected app ── */}
           <Route path="/app" element={<AppShell />}>
             <Route index                    element={<Navigate to="/app/dashboard" replace />} />
             <Route path="dashboard"         element={<Dashboard />} />
@@ -87,11 +117,11 @@ export default function App() {
             <Route path="cases/:id"         element={<CaseDetail />} />
             <Route path="hunt"              element={<ThreatHunt />} />
             <Route path="endpoints"         element={<Endpoints />} />
-            <Route path="logs"              element={<Navigate to="/app/terminal-lab" replace />} />
+            <Route path="logs"              element={<LogInvestigation />} />
             <Route path="audit"             element={<AuditLog />} />
             <Route path="vt-lookup"         element={<VTLookup />} />
             <Route path="email"             element={<EmailAnalysis />} />
-            <Route path="malware"           element={<Navigate to="/app/terminal-lab" replace />} />
+            <Route path="malware"           element={<MalwareTools />} />
             <Route path="tools"             element={<ToolsHub />} />
             <Route path="public"            element={<Navigate to="/public" replace />} />
             <Route path="admin"             element={<Admin />} />
@@ -101,6 +131,7 @@ export default function App() {
             <Route path="terminal-lab"      element={<TerminalLab />} />
             <Route path="identity-graph"    element={<IdentityGraph />} />
             <Route path="itdr"              element={<ITDRPage />} />
+            <Route path="edr"               element={<EDRPage />} />
             <Route path="analytics"         element={<Analytics />} />
             <Route path="policies"          element={<Policies />} />
             <Route path="agent-security"    element={<AgentSecurity />} />

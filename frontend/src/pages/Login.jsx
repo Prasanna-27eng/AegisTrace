@@ -1,121 +1,36 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, ArrowRight, ArrowLeft, Shield } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, ArrowLeft } from 'lucide-react';
 import api from '../api/client';
 import useStore from '../store/useStore';
 
 /* ─── Tokens ─────────────────────────────────────────────────────────────── */
-const E    = [0.16, 1, 0.3, 1];
+const E    = [0.23, 1, 0.32, 1];
 const GOLD = '#F59E0B';
-
-/* ─── Scanning grid canvas ───────────────────────────────────────────────── */
-function ScanGrid() {
-  const canvasRef = useRef(null);
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let raf;
-    let scanY = 0;
-    const GRID = 56;
-
-    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
-    resize();
-    window.addEventListener('resize', resize);
-
-    const draw = () => {
-      const W = canvas.width, H = canvas.height;
-      ctx.clearRect(0, 0, W, H);
-
-      // Static grid
-      ctx.strokeStyle = 'rgba(245,158,11,0.035)';
-      ctx.lineWidth = 0.5;
-      for (let x = 0; x < W; x += GRID) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
-      for (let y = 0; y < H; y += GRID) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
-
-      // Dot intersections near scanner
-      for (let x = GRID; x < W; x += GRID) {
-        for (let y = GRID; y < H; y += GRID) {
-          const dist = Math.abs(y - scanY);
-          if (dist < 80) {
-            const a = (1 - dist / 80) * 0.3;
-            ctx.beginPath(); ctx.arc(x, y, 1.5, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(245,158,11,${a})`; ctx.fill();
-          }
-        }
-      }
-
-      // Glow band around scanner
-      const grad = ctx.createLinearGradient(0, scanY - 80, 0, scanY + 80);
-      grad.addColorStop(0, 'transparent');
-      grad.addColorStop(0.45, 'rgba(245,158,11,0.06)');
-      grad.addColorStop(0.5, 'rgba(245,158,11,0.1)');
-      grad.addColorStop(0.55, 'rgba(245,158,11,0.06)');
-      grad.addColorStop(1, 'transparent');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, scanY - 80, W, 160);
-
-      // Scanner line
-      ctx.strokeStyle = 'rgba(245,158,11,0.22)';
-      ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(0, scanY); ctx.lineTo(W, scanY); ctx.stroke();
-
-      scanY = (scanY + 0.7) % H;
-      raf = requestAnimationFrame(draw);
-    };
-    draw();
-    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); };
-  }, []);
-  return <canvas ref={canvasRef} aria-hidden style={{ position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none' }}/>;
-}
+const BG   = '#050405';
+const INK  = '#F5F0E8';
 
 /* ════════════════════════════════════════════════════════════════════════════
-   LOGIN  —  "Event Horizon"
+   LOGIN  —  Premium split-screen
 ════════════════════════════════════════════════════════════════════════════ */
 export default function Login() {
-  const navigate  = useNavigate();
-  const setAuth   = useStore(s => s.setAuth);
+  const navigate = useNavigate();
+  const setAuth  = useStore(s => s.setAuth);
 
-  const [email,    setEmail]    = useState('');
-  const [password, setPassword] = useState('');
-  const [showPw,   setShowPw]   = useState(false);
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState('');
+  const [email,        setEmail]        = useState('');
+  const [password,     setPassword]     = useState('');
+  const [showPw,       setShowPw]       = useState(false);
+  const [loading,      setLoading]      = useState(false);
+  const [error,        setError]        = useState('');
   const [mfa,          setMfa]          = useState(false);
   const [mfaCode,      setMfaCode]      = useState('');
   const [pendingToken, setPendingToken] = useState('');
-
-  /* Parallax on mouse move */
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const rafRef = useRef(null);
-  const targetRef = useRef({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const onMove = e => {
-      targetRef.current = {
-        x: (e.clientX / window.innerWidth  - 0.5) * 22,
-        y: (e.clientY / window.innerHeight - 0.5) * 16,
-      };
-    };
-    const loop = () => {
-      setOffset(prev => ({
-        x: prev.x + (targetRef.current.x - prev.x) * 0.06,
-        y: prev.y + (targetRef.current.y - prev.y) * 0.06,
-      }));
-      rafRef.current = requestAnimationFrame(loop);
-    };
-    window.addEventListener('mousemove', onMove);
-    rafRef.current = requestAnimationFrame(loop);
-    return () => {
-      window.removeEventListener('mousemove', onMove);
-      cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
+  const [shakeKey,     setShakeKey]     = useState(0);
 
   const handleLogin = async e => {
     e.preventDefault();
-    if (!email || !password) { setError('Enter your email and password.'); return; }
+    if (!email || !password) { setError('Enter your username and password.'); setShakeKey(k => k + 1); return; }
     setLoading(true); setError('');
     try {
       const res = await api.post('/api/auth/login', { email, password });
@@ -127,6 +42,7 @@ export default function Login() {
       navigate('/app/dashboard');
     } catch (err) {
       setError(err?.response?.data?.detail || 'Invalid credentials.');
+      setShakeKey(k => k + 1);
       setLoading(false);
     }
   };
@@ -141,358 +57,472 @@ export default function Login() {
       navigate('/app/dashboard');
     } catch (err) {
       setError(err?.response?.data?.detail || 'Invalid code.');
+      setShakeKey(k => k + 1);
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', background: '#020202' }}>
+    <div style={{
+      position: 'fixed', inset: 0, display: 'flex',
+      background: BG, overflow: 'hidden',
+    }}>
       <style>{`
-        .cd { font-family: 'Clash Display', sans-serif; }
-        .cg { font-family: 'Cabinet Grotesk', sans-serif; }
-
-        .at-field-new { display: flex; flex-direction: column; gap: 8px; }
-        .at-label-new {
+        .login-label {
           font-family: 'JetBrains Mono', monospace;
-          font-size: 11px; font-weight: 500; color: rgba(245,240,232,0.45);
-          letter-spacing: 0.22em; text-transform: uppercase;
+          font-size: 10.5px; font-weight: 500;
+          color: rgba(245,240,232,0.38);
+          letter-spacing: 0.2em; text-transform: uppercase;
+          display: block; margin-bottom: 9px;
         }
-        .at-input-new {
-          background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(245,240,232,0.16);
-          color: #F5F0E8;
-          font-family: 'Cabinet Grotesk', sans-serif; font-size: 15px; font-weight: 500;
-          padding: 14px 16px; outline: none; width: 100%;
-          transition: border-color 300ms cubic-bezier(0.16,1,0.3,1),
-                      background 300ms cubic-bezier(0.16,1,0.3,1),
-                      box-shadow 300ms cubic-bezier(0.16,1,0.3,1);
-          border-radius: 10px;
+        .login-input {
+          display: block; width: 100%; box-sizing: border-box;
+          background: #0A0908;
+          border: 1px solid rgba(245,240,232,0.12);
+          color: ${INK};
+          font-family: 'Cabinet Grotesk', sans-serif;
+          font-size: 15px; font-weight: 500;
+          padding: 13px 16px; outline: none;
+          border-radius: 6px;
+          -webkit-font-smoothing: antialiased;
+          transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+        }
+        .login-input::placeholder { color: rgba(245,240,232,0.22); }
+        .login-input:focus {
+          border-color: rgba(245,158,11,0.5);
+          background: rgba(245,158,11,0.03);
+          box-shadow: 0 0 0 1px ${GOLD};
+        }
+        .login-input:hover:not(:focus) {
+          border-color: rgba(245,240,232,0.22);
+        }
+        .login-input.has-error {
+          border-color: rgba(248,113,113,0.45);
+          box-shadow: 0 0 0 1px rgba(248,113,113,0.3);
+        }
+
+        .sign-btn {
+          width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+          background: ${GOLD}; color: #050405;
+          font-family: 'Cabinet Grotesk', sans-serif;
+          font-size: 15px; font-weight: 700;
+          padding: 14px 24px; border: none; cursor: pointer;
+          border-radius: 6px; letter-spacing: 0.01em;
+          transition: background 200ms ease, transform 120ms ease, box-shadow 200ms ease;
           -webkit-font-smoothing: antialiased;
         }
-        .at-input-new::placeholder { color: rgba(245,240,232,0.3); }
-        .at-input-new:focus {
-          border-color: rgba(245,158,11,0.6);
-          background: rgba(245,158,11,0.05);
-          box-shadow: 0 0 0 3px rgba(245,158,11,0.1), 0 0 16px rgba(245,158,11,0.12);
+        .sign-btn:hover:not(:disabled) {
+          background: #FBBF24;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 24px rgba(245,158,11,0.28);
         }
-        .at-input-new:hover:not(:focus) { border-color: rgba(245,240,232,0.28); }
+        .sign-btn:active:not(:disabled) { transform: scale(0.98); }
+        .sign-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .submit-btn {
-          width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
-          background: ${GOLD}; color: #050405; font-weight: 800;
-          font-family: 'Cabinet Grotesk', sans-serif; font-size: 15.5px;
-          padding: 15px 24px; border: none; cursor: pointer; letter-spacing: 0.02em;
-          transition: background 350ms cubic-bezier(0.16,1,0.3,1), transform 350ms cubic-bezier(0.16,1,0.3,1), box-shadow 350ms cubic-bezier(0.16,1,0.3,1);
-          border-radius: 100px;
+        @keyframes ken-burns {
+          0%   { transform: scale(1.05); }
+          100% { transform: scale(1.0); }
         }
-        .submit-btn:hover:not(:disabled)  { background: #FBBF24; transform: translateY(-2px); box-shadow: 0 0 24px rgba(245,158,11,0.4); }
-        .submit-btn:active:not(:disabled) { transform: translateY(0); }
-        .submit-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+        @keyframes spin-ring { to { transform: rotate(360deg); } }
 
-        @keyframes shake {
-          0%,100%{ transform: translateX(0); }
-          20%    { transform: translateX(-6px); }
-          40%    { transform: translateX(6px); }
-          60%    { transform: translateX(-4px); }
-          80%    { transform: translateX(4px); }
-        }
-        .shake { animation: shake 0.38s cubic-bezier(0.16,1,0.3,1); }
-
-        @keyframes card-scan {
-          from { top: -3px; opacity: 0; }
-          5%   { opacity: 1; }
-          95%  { opacity: 1; }
-          to   { top: calc(100% + 3px); opacity: 0; }
-        }
-
-        @keyframes shimmer-border {
-          0%   { background-position: 0% 50%; }
-          50%  { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-
-        @keyframes shield-pulse {
-          0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.3); }
-          50%     { box-shadow: 0 0 0 8px rgba(245,158,11,0); }
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .login-left-panel { display: none; }
+        @media (min-width: 900px) { .login-left-panel { display: block; } }
 
         @media (prefers-reduced-motion: reduce) {
-          *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+          .login-bg-img { animation: none !important; }
+          *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+          }
         }
       `}</style>
 
-      {/* ── BACKGROUND IMAGE with parallax ─────────────────────────────── */}
-      <motion.div
-        aria-hidden
-        initial={{ scale: 1.32 }}
-        animate={{ scale: 1.08 }}
-        transition={{ duration: 1.9, ease: E }}
-        style={{ position: 'absolute', inset: '-30px', zIndex: 0, willChange: 'transform' }}
-      >
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `url('/assets/pages/login-bg.jpg')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          transform: `translate(${offset.x * -0.5}px, ${offset.y * -0.5}px)`,
-          willChange: 'transform',
-        }}/>
-      </motion.div>
-
-      {/* Dark overlay */}
-      <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'rgba(5,4,5,0.72)', zIndex: 1 }}/>
-      {/* Aperture open — darkness lifts as the camera pulls back */}
-      <motion.div aria-hidden
-        initial={{ opacity: 1 }}
-        animate={{ opacity: 0 }}
-        transition={{ duration: 1.6, ease: E }}
-        style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, rgba(2,2,2,0.55) 0%, #020202 78%)', zIndex: 3, pointerEvents: 'none' }}
-      />
-      {/* Gold radial from bottom */}
-      <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 110%, rgba(245,158,11,0.1) 0%, transparent 55%)', zIndex: 1 }}/>
-
-      {/* Scanning grid overlay */}
-      <ScanGrid/>
-
-      {/* ── BACK LINK ──────────────────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, x: -12 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6, delay: 0.2, ease: E }}
-        style={{ position: 'absolute', top: 28, left: 32, zIndex: 20 }}
-      >
-        <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontFamily: "'Cabinet Grotesk',sans-serif", fontSize: 12, color: 'rgba(245,240,232,0.45)', textDecoration: 'none', letterSpacing: '0.04em', transition: 'color 140ms' }}
-          onMouseEnter={e => (e.currentTarget.style.color = 'rgba(245,240,232,0.8)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(245,240,232,0.45)')}
-        >
-          <ArrowLeft size={13}/> Back to site
-        </Link>
-      </motion.div>
-
-      {/* ── CARD ───────────────────────────────────────────────────────── */}
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, zIndex: 10 }}>
-        <div style={{ width: '100%', maxWidth: 420, transform: `translate(${offset.x * 0.18}px, ${offset.y * 0.18}px)`, willChange: 'transform' }}>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 44 }}
-          animate={{ opacity: 1, scale: 1,   y: 0  }}
-          transition={{ duration: 0.95, delay: 0.35, ease: E }}
+      {/* ── LEFT PANEL: atmospheric 55% ──────────────────────────────────── */}
+      <div className="login-left-panel" style={{
+        flex: '0 0 55%', position: 'relative', overflow: 'hidden',
+      }}>
+        {/* Background image — Ken Burns */}
+        <div
+          className="login-bg-img"
+          aria-hidden
           style={{
-            width: '100%',
-            position: 'relative',
-            background: 'rgba(10,9,8,0.55)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            border: '1px solid rgba(245,240,232,0.14)',
-            borderRadius: 18,
-            padding: 'clamp(32px,5vw,42px) clamp(28px,4vw,40px) clamp(28px,4vw,36px)',
-            overflow: 'hidden',
+            position: 'absolute', inset: 0,
+            backgroundImage: `url('/assets/pages/login-bg.jpg')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            animation: 'ken-burns 8s ease-out both',
+          }}
+        />
+
+        {/* Dark overlay */}
+        <div aria-hidden style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(135deg, rgba(5,4,5,0.92) 0%, rgba(5,4,5,0.70) 100%)',
+          zIndex: 1,
+        }}/>
+
+        {/* Gold accent line — left edge, vertically centered */}
+        <div aria-hidden style={{
+          position: 'absolute', left: 0, top: '50%',
+          width: 2, height: 60,
+          background: GOLD,
+          transform: 'translateY(-50%)',
+          zIndex: 3,
+          boxShadow: `0 0 16px rgba(245,158,11,0.5)`,
+        }}/>
+
+        {/* Content */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2, ease: E }}
+          style={{
+            position: 'absolute', inset: 0, zIndex: 2,
+            display: 'flex', flexDirection: 'column',
+            justifyContent: 'center', alignItems: 'flex-start',
+            padding: 'clamp(48px,6vw,80px)',
           }}
         >
-          {/* Ambient corner glow */}
-          <div aria-hidden style={{ position: 'absolute', top: 0, right: 0, width: 120, height: 120, background: 'radial-gradient(circle at top right, rgba(245,158,11,0.09) 0%, transparent 70%)', pointerEvents: 'none' }}/>
-          <div aria-hidden style={{ position: 'absolute', bottom: 0, left: 0, width: 80, height: 80, background: 'radial-gradient(circle at bottom left, rgba(245,158,11,0.06) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+          {/* Brand label */}
+          <span style={{
+            fontFamily: "'Clash Display', sans-serif",
+            fontSize: 13, fontWeight: 600,
+            letterSpacing: '0.2em',
+            color: 'rgba(245,240,232,0.5)',
+            marginBottom: 28,
+          }}>AEGISTRACE</span>
 
-          {/* Scanning line over card */}
-          <div aria-hidden style={{
-            position: 'absolute', left: 0, right: 0, height: 1,
-            background: 'linear-gradient(90deg, transparent, rgba(245,158,11,0.35) 30%, rgba(245,158,11,0.55) 50%, rgba(245,158,11,0.35) 70%, transparent)',
-            animation: 'card-scan 5s cubic-bezier(0.4,0,0.6,1) infinite',
-            pointerEvents: 'none', zIndex: 5,
-            boxShadow: '0 0 8px rgba(245,158,11,0.25)',
-          }}/>
+          {/* Large quote */}
+          <h2 style={{
+            fontFamily: "'Clash Display', sans-serif",
+            fontSize: 'clamp(28px,3vw,38px)',
+            fontWeight: 600,
+            color: INK,
+            lineHeight: 1.18,
+            margin: '0 0 20px',
+            letterSpacing: '-0.02em',
+            textWrap: 'balance',
+            maxWidth: '15ch',
+          }}>
+            "The perimeter is whoever you trust."
+          </h2>
 
-          {/* Brand */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 36, position: 'relative', zIndex: 2 }}>
-            <div style={{
-              width: 32, height: 32,
-              background: 'rgba(245,158,11,0.12)',
-              border: '1px solid rgba(245,158,11,0.25)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              animation: 'shield-pulse 3s ease-in-out infinite',
-            }}>
-              <Shield size={15} color={GOLD}/>
-            </div>
-            <div>
-              <div className="cd" style={{ fontSize: 14, fontWeight: 700, color: '#F5F0E8', letterSpacing: '0.08em', lineHeight: 1 }}>AEGISTRACE</div>
-              <div className="cg" style={{ fontSize: 10, color: 'rgba(245,240,232,0.35)', marginTop: 2, letterSpacing: '0.06em' }}>Security Operations Platform</div>
-            </div>
-          </div>
+          {/* Subtitle */}
+          <p style={{
+            fontFamily: "'Cabinet Grotesk', sans-serif",
+            fontSize: 14,
+            color: 'rgba(245,240,232,0.48)',
+            margin: '0 0 36px',
+            lineHeight: 1.55,
+            maxWidth: '36ch',
+          }}>
+            Identity Threat Detection &amp; Response — built for practitioners.
+          </p>
 
-          <div style={{ position: 'relative', zIndex: 2 }}>
-            <AnimatePresence mode="wait">
-              {!mfa ? (
-                /* ── LOGIN FORM ────────────────────────────────────────── */
-                <motion.div key="login"
-                  initial={{ opacity: 0, x: -16 }}
-                  animate={{ opacity: 1, x:   0 }}
-                  exit={{ opacity: 0, x: -16 }}
-                  transition={{ duration: 0.38, ease: E }}
-                >
-                  <h1 className="cd" style={{ fontSize: 26, fontWeight: 700, color: '#F5F0E8', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
-                    Sign in
-                  </h1>
-                  <p className="cg" style={{ fontSize: 13, color: 'rgba(245,240,232,0.42)', margin: '0 0 32px', lineHeight: 1.5 }}>
-                    Access your investigation workspace.
-                  </p>
-
-                  <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-                    {/* Email */}
-                    <div className="at-field-new">
-                      <label className="at-label-new">Email</label>
-                      <input
-                        className="at-input-new"
-                        type="email" autoComplete="email" autoFocus
-                        placeholder="you@example.com"
-                        value={email}
-                        onChange={e => { setEmail(e.target.value); setError(''); }}
-                      />
-                    </div>
-
-                    {/* Password */}
-                    <div className="at-field-new">
-                      <label className="at-label-new">Password</label>
-                      <div style={{ position: 'relative' }}>
-                        <input
-                          className="at-input-new"
-                          type={showPw ? 'text' : 'password'}
-                          autoComplete="current-password"
-                          placeholder="••••••••"
-                          value={password}
-                          onChange={e => { setPassword(e.target.value); setError(''); }}
-                          style={{ paddingRight: 44 }}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPw(v => !v)}
-                          aria-label={showPw ? 'Hide password' : 'Show password'}
-                          style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'rgba(245,240,232,0.35)', transition: 'color 140ms', lineHeight: 0 }}
-                          onMouseEnter={e => (e.currentTarget.style.color = 'rgba(245,240,232,0.7)')}
-                          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(245,240,232,0.35)')}
-                        >
-                          {showPw ? <EyeOff size={16}/> : <Eye size={16}/>}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Error */}
-                    <AnimatePresence>
-                      {error && (
-                        <motion.p
-                          className={`cg shake`}
-                          key="err"
-                          initial={{ opacity: 0, y: -6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.28, ease: E }}
-                          style={{ margin: 0, fontSize: 12, color: '#F87171', lineHeight: 1.5 }}
-                        >
-                          {error}
-                        </motion.p>
-                      )}
-                    </AnimatePresence>
-
-                    {/* Submit */}
-                    <button type="submit" className="submit-btn" disabled={loading} style={{ marginTop: 8 }}>
-                      {loading
-                        ? <span style={{ display: 'inline-block', width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(0,0,0,0.3)', borderTopColor: '#000', animation: 'spin 0.7s linear infinite' }}/>
-                        : <>Sign in <ArrowRight size={15}/></>
-                      }
-                    </button>
-                  </form>
-
-                  {/* Demo link */}
-                  <div style={{ marginTop: 24, textAlign: 'center' }}>
-                    <Link to="/" className="cg" style={{ fontSize: 12, color: 'rgba(245,240,232,0.28)', textDecoration: 'none', transition: 'color 140ms' }}
-                      onMouseEnter={e => (e.currentTarget.style.color = GOLD)}
-                      onMouseLeave={e => (e.currentTarget.style.color = 'rgba(245,240,232,0.28)')}
-                    >
-                      Don't have access? Request a demo
-                    </Link>
-                  </div>
-                </motion.div>
-              ) : (
-                /* ── MFA FORM ──────────────────────────────────────────── */
-                <motion.div key="mfa"
-                  initial={{ opacity: 0, x: 16 }}
-                  animate={{ opacity: 1, x: 0  }}
-                  exit={{ opacity: 0, x: 16 }}
-                  transition={{ duration: 0.38, ease: E }}
-                >
-                  <h1 className="cd" style={{ fontSize: 26, fontWeight: 700, color: '#F5F0E8', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
-                    Two-factor auth
-                  </h1>
-                  <p className="cg" style={{ fontSize: 13, color: 'rgba(245,240,232,0.42)', margin: '0 0 32px', lineHeight: 1.5 }}>
-                    Enter the 6-digit code from your authenticator app.
-                  </p>
-
-                  <form onSubmit={handleMfa} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-                    <div className="at-field-new">
-                      <label className="at-label-new">Verification Code</label>
-                      <input
-                        className="at-input-new"
-                        type="text" inputMode="numeric" maxLength={6}
-                        placeholder="000000" autoFocus
-                        value={mfaCode}
-                        onChange={e => { setMfaCode(e.target.value.replace(/\D/g, '')); setError(''); }}
-                        style={{ letterSpacing: '0.3em', fontSize: 20, textAlign: 'center' }}
-                      />
-                    </div>
-
-                    <AnimatePresence>
-                      {error && (
-                        <motion.p className="cg shake" key="err2"
-                          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                          style={{ margin: 0, fontSize: 12, color: '#F87171' }}
-                        >{error}</motion.p>
-                      )}
-                    </AnimatePresence>
-
-                    <button type="submit" className="submit-btn" disabled={loading} style={{ marginTop: 8 }}>
-                      {loading
-                        ? <span style={{ display: 'inline-block', width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(0,0,0,0.3)', borderTopColor: '#000', animation: 'spin 0.7s linear infinite' }}/>
-                        : <>Verify <ArrowRight size={15}/></>
-                      }
-                    </button>
-                  </form>
-
-                  <button onClick={() => { setMfa(false); setError(''); }} className="cg"
-                    style={{ display: 'block', width: '100%', marginTop: 20, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'rgba(245,240,232,0.3)', transition: 'color 140ms', textAlign: 'center', padding: '8px 0' }}
-                    onMouseEnter={e => (e.currentTarget.style.color = 'rgba(245,240,232,0.6)')}
-                    onMouseLeave={e => (e.currentTarget.style.color = 'rgba(245,240,232,0.3)')}
-                  >
-                    Back to sign in
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Footer mono notices */}
-          <div style={{ marginTop: 26, paddingTop: 22, borderTop: '1px solid rgba(245,240,232,0.1)', display: 'flex', flexDirection: 'column', gap: 8, position: 'relative', zIndex: 2 }}>
-            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11.5, color: 'rgba(245,240,232,0.4)' }}>
-              2FA enforced for admins · sessions are device-fingerprinted
-            </span>
-            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11.5, color: 'rgba(245,240,232,0.4)' }}>
-              Protected by ITDR — failed attempts are watched.
-            </span>
+          {/* Micro-stats row */}
+          <div style={{
+            display: 'flex', gap: 0,
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 11,
+          }}>
+            {['21 detectors', '35 API routers', '4 PyPI tools'].map((stat, i) => (
+              <React.Fragment key={stat}>
+                <span style={{ color: 'rgba(245,240,232,0.35)' }}>{stat}</span>
+                {i < 2 && (
+                  <span style={{ color: 'rgba(245,158,11,0.4)', margin: '0 10px' }}>·</span>
+                )}
+              </React.Fragment>
+            ))}
           </div>
         </motion.div>
+
+        {/* Version badge — bottom left */}
+        <div style={{
+          position: 'absolute', bottom: 28, left: 'clamp(48px,6vw,80px)', zIndex: 3,
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 10.5, color: 'rgba(245,240,232,0.25)',
+          letterSpacing: '0.1em',
+        }}>
+          v10.1
         </div>
       </div>
 
-      {/* ── BOTTOM BRAND LINE ──────────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8, duration: 0.6 }}
-        style={{ position: 'absolute', bottom: 28, left: 0, right: 0, textAlign: 'center', zIndex: 10 }}
-      >
-        <span className="cg" style={{ fontSize: 11, color: 'rgba(245,240,232,0.18)', letterSpacing: '0.1em' }}>
-          AegisTrace · Secure Operations Platform · 2026
-        </span>
-      </motion.div>
+      {/* ── RIGHT PANEL: form 45% ────────────────────────────────────────── */}
+      <div style={{
+        flex: 1,
+        background: BG,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 'clamp(32px,5vw,64px) clamp(24px,4vw,56px)',
+        position: 'relative',
+        minHeight: '100vh',
+      }}>
+        {/* Subtle ambient glow */}
+        <div aria-hidden style={{
+          position: 'absolute', top: '30%', right: 0, width: '60%', height: '40%',
+          background: 'radial-gradient(ellipse at right, rgba(245,158,11,0.04) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }}/>
+
+        {/* Back link */}
+        <motion.div
+          initial={{ opacity: 0, x: -8 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.1, ease: E }}
+          style={{ position: 'absolute', top: 28, left: 'clamp(24px,4vw,40px)' }}
+        >
+          <Link to="/" style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            fontFamily: "'Cabinet Grotesk', sans-serif",
+            fontSize: 12, color: 'rgba(245,240,232,0.35)',
+            textDecoration: 'none', letterSpacing: '0.04em',
+            transition: 'color 140ms',
+          }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'rgba(245,240,232,0.7)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'rgba(245,240,232,0.35)')}
+          >
+            <ArrowLeft size={12}/> Back to site
+          </Link>
+        </motion.div>
+
+        {/* Form container */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: E }}
+          style={{ width: '100%', maxWidth: 360 }}
+        >
+          <AnimatePresence mode="wait">
+            {!mfa ? (
+              <motion.div key="login"
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -12 }}
+                transition={{ duration: 0.32, ease: E }}
+              >
+                {/* Heading */}
+                <h1 style={{
+                  fontFamily: "'Clash Display', sans-serif",
+                  fontSize: 28, fontWeight: 700,
+                  color: INK, margin: '0 0 6px',
+                  letterSpacing: '-0.02em',
+                }}>
+                  Sign in
+                </h1>
+                <p style={{
+                  fontFamily: "'Cabinet Grotesk', sans-serif",
+                  fontSize: 13, color: 'rgba(245,240,232,0.38)',
+                  margin: '0 0 36px', lineHeight: 1.5,
+                }}>
+                  Access your investigation workspace.
+                </p>
+
+                <form onSubmit={handleLogin} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  {/* Username field */}
+                  <div>
+                    <label className="login-label" htmlFor="login-email">Username</label>
+                    <input
+                      id="login-email"
+                      className={`login-input${error ? ' has-error' : ''}`}
+                      type="text"
+                      autoComplete="username"
+                      autoFocus
+                      placeholder="admin"
+                      value={email}
+                      onChange={e => { setEmail(e.target.value); setError(''); }}
+                    />
+                  </div>
+
+                  {/* Password field */}
+                  <div>
+                    <label className="login-label" htmlFor="login-password">Password</label>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        id="login-password"
+                        className={`login-input${error ? ' has-error' : ''}`}
+                        type={showPw ? 'text' : 'password'}
+                        autoComplete="current-password"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={e => { setPassword(e.target.value); setError(''); }}
+                        style={{ paddingRight: 44 }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPw(v => !v)}
+                        aria-label={showPw ? 'Hide password' : 'Show password'}
+                        style={{
+                          position: 'absolute', right: 13, top: '50%',
+                          transform: 'translateY(-50%)',
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          padding: 0, color: 'rgba(245,240,232,0.28)',
+                          transition: 'color 140ms', lineHeight: 0,
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.color = 'rgba(245,240,232,0.65)')}
+                        onMouseLeave={e => (e.currentTarget.style.color = 'rgba(245,240,232,0.28)')}
+                      >
+                        {showPw ? <EyeOff size={15}/> : <Eye size={15}/>}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Error */}
+                  <AnimatePresence>
+                    {error && (
+                      <motion.div
+                        key={`err-${shakeKey}`}
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0, x: [0, -8, 8, -4, 4, 0] }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.4, ease: E }}
+                        style={{
+                          fontFamily: "'Cabinet Grotesk', sans-serif",
+                          fontSize: 12.5, color: '#F87171', lineHeight: 1.4,
+                          marginTop: -6,
+                        }}
+                      >
+                        {error}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Submit */}
+                  <button type="submit" className="sign-btn" disabled={loading} style={{ marginTop: 4 }}>
+                    {loading
+                      ? <span style={{
+                          display: 'inline-block', width: 16, height: 16, borderRadius: '50%',
+                          border: '2px solid rgba(0,0,0,0.25)',
+                          borderTopColor: '#050405',
+                          animation: 'spin-ring 0.65s linear infinite',
+                        }}/>
+                      : <>Sign in <ArrowRight size={14}/></>
+                    }
+                  </button>
+                </form>
+
+                {/* Demo credentials hint */}
+                <div style={{
+                  marginTop: 28,
+                  paddingTop: 20,
+                  borderTop: '1px solid rgba(245,240,232,0.07)',
+                }}>
+                  <p style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 11, color: 'rgba(245,240,232,0.22)',
+                    margin: 0, lineHeight: 1.6,
+                  }}>
+                    Demo: admin / aegis2024
+                  </p>
+                </div>
+              </motion.div>
+            ) : (
+              /* ── MFA FORM ──────────────────────────────────────────────── */
+              <motion.div key="mfa"
+                initial={{ opacity: 0, x: 12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 12 }}
+                transition={{ duration: 0.32, ease: E }}
+              >
+                <h1 style={{
+                  fontFamily: "'Clash Display', sans-serif",
+                  fontSize: 28, fontWeight: 700,
+                  color: INK, margin: '0 0 6px',
+                  letterSpacing: '-0.02em',
+                }}>
+                  Two-factor auth
+                </h1>
+                <p style={{
+                  fontFamily: "'Cabinet Grotesk', sans-serif",
+                  fontSize: 13, color: 'rgba(245,240,232,0.38)',
+                  margin: '0 0 36px', lineHeight: 1.5,
+                }}>
+                  Enter the 6-digit code from your authenticator app.
+                </p>
+
+                <form onSubmit={handleMfa} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  <div>
+                    <label className="login-label" htmlFor="mfa-code">Verification code</label>
+                    <input
+                      id="mfa-code"
+                      className={`login-input${error ? ' has-error' : ''}`}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      placeholder="000000"
+                      autoFocus
+                      value={mfaCode}
+                      onChange={e => { setMfaCode(e.target.value.replace(/\D/g, '')); setError(''); }}
+                      style={{ letterSpacing: '0.3em', fontSize: 20, textAlign: 'center' }}
+                    />
+                  </div>
+
+                  <AnimatePresence>
+                    {error && (
+                      <motion.div
+                        key={`mfa-err-${shakeKey}`}
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0, x: [0, -8, 8, -4, 4, 0] }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.4, ease: E }}
+                        style={{
+                          fontFamily: "'Cabinet Grotesk', sans-serif",
+                          fontSize: 12.5, color: '#F87171', lineHeight: 1.4,
+                          marginTop: -6,
+                        }}
+                      >
+                        {error}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <button type="submit" className="sign-btn" disabled={loading} style={{ marginTop: 4 }}>
+                    {loading
+                      ? <span style={{
+                          display: 'inline-block', width: 16, height: 16, borderRadius: '50%',
+                          border: '2px solid rgba(0,0,0,0.25)',
+                          borderTopColor: '#050405',
+                          animation: 'spin-ring 0.65s linear infinite',
+                        }}/>
+                      : <>Verify <ArrowRight size={14}/></>
+                    }
+                  </button>
+                </form>
+
+                <button
+                  onClick={() => { setMfa(false); setError(''); setMfaCode(''); }}
+                  style={{
+                    display: 'block', width: '100%', marginTop: 20,
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    fontFamily: "'Cabinet Grotesk', sans-serif",
+                    fontSize: 12, color: 'rgba(245,240,232,0.28)',
+                    transition: 'color 140ms', textAlign: 'center', padding: '8px 0',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'rgba(245,240,232,0.6)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(245,240,232,0.28)')}
+                >
+                  Back to sign in
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Footer notice */}
+        <div style={{
+          position: 'absolute', bottom: 24,
+          left: 'clamp(24px,4vw,40px)', right: 'clamp(24px,4vw,40px)',
+        }}>
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 10.5, color: 'rgba(245,240,232,0.18)',
+            letterSpacing: '0.05em',
+          }}>
+            Sessions device-fingerprinted · ITDR active
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
