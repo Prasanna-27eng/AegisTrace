@@ -210,13 +210,13 @@ function HeroScene() {
           initial={{ opacity: 0, y: 48 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.92, delay: 0.42, ease: E }}
           className="cd" style={{ fontSize: 'clamp(40px,6.5vw,84px)', fontWeight: 700, lineHeight: 0.94, letterSpacing: '-0.03em', color: INK, margin: '0 0 24px', maxWidth: 740 }}>
-          Attackers no longer<br/>break in —<br/><span style={{ color: GOLD, textShadow: '0 0 36px rgba(245,158,11,0.25)' }}>they sign in.</span>
+          Autonomous systems deserve<br/><span style={{ color: GOLD, textShadow: '0 0 36px rgba(245,158,11,0.25)' }}>accountable security.</span>
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.80, delay: 0.60, ease: E }}
-          className="cg" style={{ fontSize: 'clamp(14px,1.5vw,17px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.7, maxWidth: 460 }}>
-          Built inside a SOC, where the gaps were impossible to ignore.
+          className="cg" style={{ fontSize: 'clamp(14px,1.5vw,17px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.7, maxWidth: 520 }}>
+          We believe every identity must be scored, every decision explained, every action reversible.
         </motion.p>
       </motion.div>
 
@@ -372,7 +372,7 @@ function AttackTimelineScene() {
 
   /* Camera trucks right — near cards shift more, far BG shifts less */
   const cardsX   = useTransform(p, [0.04, 0.96], ['0%', '-58%']);
-  const bgX      = useTransform(p, [0.04, 0.96], ['0px', '-18px']);  /* far layer barely moves */
+  const bgX      = useTransform(p, [0.04, 0.96], ['0px', '-18px']);
   const lineW    = useTransform(p, [0.04, 0.96], ['0%', '100%']);
   const labelOp  = useTransform(p, [0, 0.05, 0.93, 1], [0, 1, 1, 0]);
   const progressW = useTransform(p, [0.04, 0.96], ['0%', '100%']);
@@ -445,7 +445,6 @@ function AttackTimelineScene() {
 
 /* ════════════════════════════════════════════════════════════════════════════
    SCENE 4 — EVIDENCE RACK FOCUS
-   4 problem statements; camera rack-focuses through them sequentially.
 ════════════════════════════════════════════════════════════════════════════ */
 const PROBLEMS = [
   { n: '01', title: 'Credential theft is the leading initial access vector', body: 'Over 80% of breaches involve stolen or misused credentials. Traditional IDS tools are blind to normal-looking logins from stolen identities.', focusAt: 0.12 },
@@ -461,7 +460,6 @@ function EvidenceScene() {
 
   return (
     <PinnedScene vh="320vh" sceneRef={ref}>
-      {/* Header */}
       <motion.div style={{
         position: 'absolute', top: '7vh', left: 'clamp(24px,5vw,72px)', right: 'clamp(24px,5vw,72px)',
         zIndex: 4, opacity: labelOp,
@@ -469,7 +467,6 @@ function EvidenceScene() {
         <div className="cd" style={{ fontSize: 'clamp(18px,2.2vw,28px)', fontWeight: 600, color: INK }}>Modern attacks are an identity problem first.</div>
       </motion.div>
 
-      {/* 2×2 grid with rack focus */}
       <div style={{
         display: 'grid', gridTemplateColumns: '1fr 1fr',
         gap: 2, width: '100%',
@@ -507,19 +504,50 @@ function OriginSection() {
       <motion.div aria-hidden style={{ position: 'absolute', inset: '-8%', background: 'radial-gradient(ellipse 50% 60% at 30% 50%, rgba(245,158,11,0.04) 0%, transparent 70%)', y: bgY, pointerEvents: 'none' }}/>
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'clamp(140px,18vw,220px) 1fr', gap: 'clamp(32px,5vw,72px)', alignItems: 'start' }}>
-          <Reveal><span className="cg" style={{ fontSize: 10, color: GOLD, letterSpacing: '0.22em', textTransform: 'uppercase', fontWeight: 600, paddingTop: 6, display: 'block' }}>Why it exists</span></Reveal>
+          <Reveal><span className="cg" style={{ fontSize: 10, color: GOLD, letterSpacing: '0.22em', textTransform: 'uppercase', fontWeight: 600, paddingTop: 6, display: 'block' }}>Origin Story</span></Reveal>
           <div>
-            <Reveal><h2 className="cd" style={{ fontSize: 'clamp(26px,3.5vw,48px)', fontWeight: 700, color: INK, margin: '0 0 22px', letterSpacing: '-0.025em', lineHeight: 1.04 }}>Built from the inside out.</h2></Reveal>
-            <Reveal delay={0.07}><p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 600 }}>Working as a security analyst with Microsoft Sentinel and real incident pipelines, the same pattern kept appearing: the tools existed, but they didn't talk to each other. SIEM gave you alerts. A separate tool gave you endpoint data. A third gave you identity events. Connecting them meant pivot tables, copy-paste, and waiting for escalations that never came with full context.</p></Reveal>
-            <Reveal delay={0.12}><p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 28, maxWidth: 600 }}>AegisTrace is the tool that should have existed. Not a commercial platform with a 6-month procurement cycle. A focused, deployable SOC in one place — built by someone who uses this kind of tooling every day.</p></Reveal>
+            <Reveal><h2 className="cd" style={{ fontSize: 'clamp(26px,3.5vw,48px)', fontWeight: 700, color: INK, margin: '0 0 22px', letterSpacing: '-0.025em', lineHeight: 1.04 }}>A SOC Analyst's Answer to an Impossible Question</h2></Reveal>
+            <Reveal delay={0.07}>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 640 }}>
+                I'm Prasanna — a blue team SOC analyst in Dublin.
+              </p>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 640 }}>
+                For years, I watched the same pattern play out in incident reviews. An alert fires.
+                An analyst triages. A case opens. And then the question nobody can answer:
+              </p>
+              <p className="cg" style={{ fontSize: 'clamp(15px,1.4vw,17px)', color: INK, lineHeight: 1.7, marginBottom: 22, maxWidth: 640, fontStyle: 'italic', borderLeft: `3px solid ${GOLD}`, paddingLeft: 20 }}>
+                "Why did the system allow this?"
+              </p>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 640 }}>
+                Not "what happened" — we have logs for that. But "why did the system, at that
+                moment, decide this action was acceptable?"
+              </p>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 640 }}>
+                When AI agents entered the picture, the question got louder. Agents approving
+                transactions. Agents accessing data. Agents making decisions in milliseconds that
+                used to take humans hours. And still — no platform could answer the question.
+              </p>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 640 }}>
+                SIEMs log events. EDRs protect endpoints. Firewalls block traffic. None of them
+                were built to answer "why did the AI decide this?" None of them were built to
+                track the trust relationships between 144 machine identities for every human
+                employee. None of them were built to preserve human control in a world where
+                machines act autonomously.
+              </p>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 640 }}>
+                So I started building AegisTrace. Not as a startup pitch. Not as a product
+                roadmap. As an answer to a question I couldn't stop asking:
+              </p>
+              <p className="cg" style={{ fontSize: 'clamp(15px,1.4vw,17px)', color: INK, lineHeight: 1.7, marginBottom: 28, maxWidth: 640, fontStyle: 'italic', borderLeft: `3px solid ${GOLD}`, paddingLeft: 20 }}>
+                "Which identity, agent, workflow, or prompt caused this breach — and can I
+                trust the AI's conclusion?"
+              </p>
+            </Reveal>
             <Reveal delay={0.16}>
-              <div style={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                {[{ label: 'SC-200', sub: 'Microsoft Security Analyst' }, { label: 'Security+', sub: 'CompTIA' }, { label: 'MSc Computing', sub: 'Dublin Business School' }, { label: 'Practical ETH', sub: 'TCM Security' }].map(({ label, sub }) => (
-                  <div key={label} style={{ background: 'rgba(245,158,11,0.05)', border: '1px solid rgba(245,158,11,0.12)', padding: '9px 14px' }}>
-                    <div className="cd" style={{ fontSize: 12.5, fontWeight: 600, color: INK, marginBottom: 2 }}>{label}</div>
-                    <div className="cg" style={{ fontSize: 10.5, color: 'rgba(241,245,249,0.32)' }}>{sub}</div>
-                  </div>
-                ))}
+              <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.16)', padding: '20px 24px', maxWidth: 560 }}>
+                <p className="cg" style={{ fontSize: 15, color: INK, lineHeight: 1.68, margin: 0, fontStyle: 'italic' }}>
+                  "Autonomous AI needs accountable security. AegisTrace is how you deliver it."
+                </p>
               </div>
             </Reveal>
           </div>
@@ -530,36 +558,95 @@ function OriginSection() {
 }
 
 function PrinciplesSection() {
-  const PRINCIPLES = [
-    { icon: Eye, title: 'Full provenance', body: 'Every alert, every verdict, every AI recommendation carries a full chain of custody — not a black-box score.' },
-    { icon: Fingerprint, title: 'Identity-first', body: 'In 80% of breaches, identity is the attack path. AegisTrace treats identity as the primary telemetry source, not an afterthought.' },
-    { icon: Brain, title: 'Explainable AI', body: 'AI that cannot show its reasoning cannot be trusted in a legal or regulatory context. Every inference is grounded in evidence the analyst can verify.' },
-    { icon: Layers, title: 'Unified timeline', body: 'Identity events, endpoint telemetry, email forensics, and threat intelligence all share one timeline — no pivot tables, no tab switching.' },
-    { icon: ShieldCheck, title: 'Built-in compliance', body: 'DORA Article 19 reports are generated automatically from investigation data — not filled in manually after the fact.' },
-    { icon: Zap, title: 'Speed of response', body: 'Mean time to respond is the metric that matters. AegisTrace cuts that number, not adds to the analyst\'s queue.' },
+  const CONVICTIONS = [
+    {
+      num: '01',
+      title: 'Every Identity Must Be a First-Class Security Entity',
+      body: '83% of breaches involve stolen credentials or identity abuse. The network is no longer the boundary — identity is. Every user, service account, API key, AI agent, and token must be tracked, scored, and monitored in real time. Not as a log entry. As a first-class entity with a risk score, a trust history, and an anomaly count.',
+    },
+    {
+      num: '02',
+      title: 'Black-Box AI Is Unacceptable in Security',
+      body: "When an AI system tells a SOC analyst \"this is a critical threat,\" the analyst needs to know four things: What evidence? What reasoning? What confidence? What could be wrong? If the AI can't answer those four questions, it doesn't get to make the call. Every AegisTrace verdict ships with all four answers. No exceptions.",
+    },
+    {
+      num: '03',
+      title: "Autonomous Doesn't Mean Unaccountable",
+      body: 'AI suggests. Humans confirm. Every automated action in AegisTrace — case closure, endpoint isolation, report generation, IOC enrichment, playbook execution — passes through an approval layer. Every decision logged to the Provenance Ledger with full reversibility. Automation without accountability is just liability.',
+    },
   ];
 
   return (
     <section style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', background: '#0D1A2E', borderTop: '1px solid rgba(241,245,249,0.05)' }}>
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
-        <Reveal style={{ marginBottom: 48 }}>
+        <Reveal style={{ marginBottom: 56 }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'clamp(140px,18vw,220px) 1fr', gap: 'clamp(32px,5vw,72px)', alignItems: 'baseline' }}>
-            <span className="cg" style={{ fontSize: 10, color: GOLD, letterSpacing: '0.22em', textTransform: 'uppercase', fontWeight: 600 }}>How we build</span>
-            <h2 className="cd" style={{ fontSize: 'clamp(24px,3.2vw,46px)', fontWeight: 700, color: INK, margin: 0, letterSpacing: '-0.025em' }}>Six principles behind every decision.</h2>
+            <span className="cg" style={{ fontSize: 10, color: GOLD, letterSpacing: '0.22em', textTransform: 'uppercase', fontWeight: 600 }}>Convictions</span>
+            <h2 className="cd" style={{ fontSize: 'clamp(24px,3.2vw,46px)', fontWeight: 700, color: INK, margin: 0, letterSpacing: '-0.025em' }}>Three Convictions That Drive Every Design Decision</h2>
           </div>
         </Reveal>
         <div style={{ display: 'grid', gridTemplateColumns: 'clamp(140px,18vw,220px) 1fr', gap: 'clamp(32px,5vw,72px)' }}>
           <div/>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 2 }}>
-            {PRINCIPLES.map(({ icon: Icon, title, body }, i) => (
-              <Reveal key={title} delay={i * 0.05} y={20}>
-                <div style={{ padding: 'clamp(18px,2vw,26px)', background: 'rgba(241,245,249,0.02)', border: '1px solid rgba(241,245,249,0.06)', height: '100%' }}>
-                  <Icon size={18} color={GOLD} style={{ marginBottom: 14, opacity: 0.75 }}/>
-                  <div className="cd" style={{ fontSize: 15, fontWeight: 600, color: INK, marginBottom: 8, letterSpacing: '-0.01em' }}>{title}</div>
-                  <div className="cg" style={{ fontSize: 13, color: 'rgba(241,245,249,0.44)', lineHeight: 1.68 }}>{body}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {CONVICTIONS.map(({ num, title, body }, i) => (
+              <Reveal key={num} delay={i * 0.08} y={20}>
+                <div style={{ padding: 'clamp(28px,3vw,40px)', background: 'rgba(241,245,249,0.02)', border: '1px solid rgba(241,245,249,0.07)', borderLeft: `3px solid ${GOLD}` }}>
+                  <div className="mono" style={{ fontSize: 12, color: GOLD, letterSpacing: '0.14em', marginBottom: 16, opacity: 0.9 }}>{num}</div>
+                  <div className="cd" style={{ fontSize: 20, fontWeight: 700, color: INK, marginBottom: 14, lineHeight: 1.2, letterSpacing: '-0.01em' }}>{title}</div>
+                  <div className="cg" style={{ fontSize: 15, color: 'rgba(241,245,249,0.54)', lineHeight: 1.72 }}>{body}</div>
                 </div>
               </Reveal>
             ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Philosophy Section ────────────────────────────────────────────────── */
+function PhilosophySection() {
+  const ref = useRef(null);
+  const p   = useSectionParallax(ref);
+  const bgY = useTransform(p, [0, 1], ['-4%', '4%']);
+
+  return (
+    <section ref={ref} style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', background: BG, position: 'relative', overflow: 'hidden', borderTop: '1px solid rgba(241,245,249,0.05)' }}>
+      <motion.div aria-hidden style={{ position: 'absolute', inset: '-8%', background: 'radial-gradient(ellipse 40% 50% at 70% 50%, rgba(245,158,11,0.03) 0%, transparent 70%)', y: bgY, pointerEvents: 'none' }}/>
+      <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'clamp(140px,18vw,220px) 1fr', gap: 'clamp(32px,5vw,72px)', alignItems: 'start' }}>
+          <Reveal><span className="cg" style={{ fontSize: 10, color: GOLD, letterSpacing: '0.22em', textTransform: 'uppercase', fontWeight: 600, paddingTop: 6, display: 'block' }}>Philosophy</span></Reveal>
+          <div>
+            <Reveal><h2 className="cd" style={{ fontSize: 'clamp(26px,3.5vw,48px)', fontWeight: 700, color: INK, margin: '0 0 28px', letterSpacing: '-0.025em', lineHeight: 1.04 }}>Not a SIEM. Not an EDR. Accountability Infrastructure.</h2></Reveal>
+            <Reveal delay={0.07}>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 640 }}>
+                The security industry keeps bolting new capabilities onto old architectures.
+                Add AI to the SIEM. Add identity to the EDR. Add SOAR to the XDR.
+              </p>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 640 }}>
+                AegisTrace was built from day one as accountability infrastructure — a platform
+                where identity scoring, explainability, and human control are not features.
+                They are the foundation.
+              </p>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 640 }}>
+                Every module was designed around one question:{' '}
+                <em style={{ color: INK }}>"Does this strengthen or weaken the accountability surface?"</em>
+              </p>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 640 }}>
+                The result is a platform that doesn't just detect threats — it reconstructs them.
+                Doesn't just respond — it learns. Doesn't just log — it explains.
+              </p>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 28, maxWidth: 640 }}>
+                When a regulator asks "what happened," you don't show them a log.
+                You show them a narrative — with evidence, reasoning, and confidence scores
+                attached to every claim.
+              </p>
+            </Reveal>
+            <Reveal delay={0.14}>
+              <div style={{ background: 'rgba(241,245,249,0.03)', border: '1px solid rgba(241,245,249,0.08)', padding: '16px 20px', maxWidth: 560, display: 'inline-block' }}>
+                <span className="mono" style={{ fontSize: 12, color: GOLD, letterSpacing: '0.1em' }}>That's the difference between a SIEM and accountability infrastructure.</span>
+              </div>
+            </Reveal>
           </div>
         </div>
       </div>
@@ -585,47 +672,33 @@ function VerBadge({ v, label, active = false, done = false }) {
 }
 
 function RoadmapSection() {
-  /* V1 grouped by category — compact grid, not a wall of text */
-  const V1_CATEGORIES = [
-    {
-      cat: 'IDENTITY & DETECTION',
-      items: ['ITDR — 4 real-time detectors (credential stuffing, impossible travel, privilege escalation, token theft)', 'Identity Risk Engine with pluggable detector architecture', 'Identity Graph + Trust Timeline', 'NHI Lifecycle Health Dashboard'],
-    },
-    {
-      cat: 'INVESTIGATION',
-      items: ['Case Management — 15-tab lifecycle (timeline, IOCs, attack graph, SOAR, reports)', '7-Source IOC Intelligence (VirusTotal, GreyNoise, threat feeds)', 'Email Forensics Engine — header analysis, link extraction, attachment hashing', 'Threat Hunting + Campaign Detection'],
-    },
-    {
-      cat: 'AI TRIAGE',
-      items: ['Hermes-3 Agentic Triage — 5-tool function-calling loop', 'NV-EmbedQA + NV-RerankQA Semantic Search', 'Llama 3.2 Vision — screenshot/image IOC analysis', 'Codestral 22B — YARA, Sigma, KQL, Splunk SPL generation', 'Temporal Linker — Nemotron-70B attack chain reconstruction'],
-    },
-    {
-      cat: 'AUTOMATION & COMPLIANCE',
-      items: ['SOAR Playbook Engine — human-gated automation', 'Shadow AI Detection — 14+ AI API domains', 'AI Defense Console — live human-in-the-loop', 'Control Plane — 5 KPI cards, ITDR feed, 30s auto-refresh', 'DORA Article 19 Compliance Reports (auto-generated)'],
-    },
+  const V1_ITEMS = [
+    'Core accountability infrastructure: Identity Graph, ITDR, Explainable AI,',
+    'Human Approval Queue, Endpoint Agent v6.1, Temporal Linker, SOAR Playbooks,',
+    'Adaptive Thresholds. Grassroots Security Toolkit (5 PyPI packages) live.',
+    'Two independent security audits completed.',
   ];
 
   const V2 = [
-    { text: 'Adaptive Thresholds Agent', why: 'Nemotron adjusts detector thresholds on a 4h cycle without touching permissions.', active: true },
-    { text: 'Auto-Rule Generation Trigger', why: 'When a MITRE technique appears in 3+ cases in 7 days, Codestral auto-queues detection rules.' },
-    { text: 'NHI vault + credential rotation', why: 'Vault that actually rotates credentials flagged by the health dashboard.' },
-    { text: 'Quantum-Resistant Key Monitoring', why: 'Flags RSA/EC keys in environments migrating to post-quantum cryptography.' },
+    { text: 'SCIM identity sync for enterprise push-based provisioning.', active: true },
+    { text: 'Agent Supervision Console with per-agent kill switches.', active: true },
+    { text: 'Attacker Path Reconstruction across human + machine actors.' },
+    { text: 'DPDPA + RBI compliance reporting for Asia-Pacific markets.' },
   ];
   const V3 = [
-    { text: 'Attacker Path Emulation', why: 'Simulate attack paths before real attackers find them.' },
-    { text: 'Multi-tenant Architecture', why: 'One instance across multiple client environments or business units.' },
-    { text: 'Federated Identity Graph', why: 'Detect lateral movement crossing organisational boundaries.' },
-    { text: 'Adversarial AI Detection', why: 'Prompt injection, model exfiltration, AI supply chain attacks.' },
+    { text: 'Federated accountability across multiple deployments.' },
+    { text: 'MCP Guard full sandbox with behavioural analysis.' },
+    { text: 'Endpoint Agent eBPF (Layer 3) + memory forensics (Layer 4).' },
+    { text: 'Community module marketplace for detection rules and playbooks.' },
   ];
 
   return (
     <section style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(241,245,249,0.05)' }}>
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
 
-        {/* ── Header ── */}
         <Reveal style={{ marginBottom: 56 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
-            <h2 className="cd" style={{ fontSize: 'clamp(26px,3.5vw,50px)', fontWeight: 700, color: INK, margin: 0, letterSpacing: '-0.025em' }}>Where we are.</h2>
+            <h2 className="cd" style={{ fontSize: 'clamp(26px,3.5vw,50px)', fontWeight: 700, color: INK, margin: 0, letterSpacing: '-0.025em' }}>From Solo Project to Industry Standard</h2>
             <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
               <VerBadge v="v1" label="Shipped" done/>
               <VerBadge v="v2" label="In Progress" active/>
@@ -634,51 +707,106 @@ function RoadmapSection() {
           </div>
         </Reveal>
 
-        {/* ── V1 compact category grid ── */}
         <Reveal style={{ marginBottom: 48 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
             <CheckCircle size={14} color={GOLD} style={{ filter: 'drop-shadow(0 0 4px rgba(245,158,11,0.4))' }}/>
-            <span className="cd" style={{ fontSize: 15, fontWeight: 600, color: INK }}>Foundation — v1 — Shipped</span>
+            <span className="cd" style={{ fontSize: 15, fontWeight: 600, color: INK }}>v1 — Foundation (NOW · v10.x) — SHIPPED</span>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px,1fr))', gap: 2, background: 'rgba(241,245,249,0.04)', border: '1px solid rgba(241,245,249,0.07)' }}>
-            {V1_CATEGORIES.map(({ cat, items }) => (
-              <div key={cat} style={{ padding: 'clamp(16px,2vw,24px)', background: BG }}>
-                <div className="mono" style={{ fontSize: 9, letterSpacing: '0.2em', color: GOLD, marginBottom: 14, opacity: 0.8 }}>{cat}</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {items.map(item => (
-                    <div key={item} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                      <span style={{ color: GOLD, fontSize: 9, marginTop: 4, flexShrink: 0 }}>✓</span>
-                      <span className="cg" style={{ fontSize: 12.5, color: 'rgba(241,245,249,0.52)', lineHeight: 1.58 }}>{item}</span>
-                    </div>
-                  ))}
-                </div>
+          <div style={{ background: 'rgba(241,245,249,0.02)', border: '1px solid rgba(245,158,11,0.12)', borderLeft: `3px solid ${GOLD}`, padding: 'clamp(20px,2.5vw,32px)' }}>
+            {V1_ITEMS.map((item, i) => (
+              <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: i < V1_ITEMS.length - 1 ? 8 : 0 }}>
+                <span style={{ color: GOLD, fontSize: 10, marginTop: 5, flexShrink: 0 }}>✓</span>
+                <span className="cg" style={{ fontSize: 13.5, color: 'rgba(241,245,249,0.58)', lineHeight: 1.6 }}>{item}</span>
               </div>
             ))}
           </div>
         </Reveal>
 
-        {/* ── V2 + V3 side by side ── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px,1fr))', gap: 'clamp(24px,4vw,48px)' }}>
           <div>
             <Reveal>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, paddingBottom: 14, borderBottom: '1px solid rgba(241,245,249,0.07)' }}>
                 <Clock size={13} color="#FBBF24"/>
-                <span className="cd" style={{ fontSize: 14, fontWeight: 600, color: INK }}>Scale — v2 — In Progress</span>
+                <span className="cd" style={{ fontSize: 14, fontWeight: 600, color: INK }}>v2 — Enterprise (2026 H2) — IN PROGRESS</span>
               </div>
             </Reveal>
-            {V2.map((item, i) => <RoadItem key={item.text} {...item} delay={i * 0.05}/>)}
+            {V2.map((item, i) => <RoadItem key={item.text} {...item} done={false} delay={i * 0.05}/>)}
           </div>
           <div>
             <Reveal>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, paddingBottom: 14, borderBottom: '1px solid rgba(241,245,249,0.07)' }}>
                 <div style={{ width: 13, height: 13, borderRadius: '50%', border: '1px solid rgba(241,245,249,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(241,245,249,0.18)' }}/></div>
-                <span className="cd" style={{ fontSize: 14, fontWeight: 600, color: 'rgba(241,245,249,0.38)' }}>Enterprise — v3 — Planned</span>
+                <span className="cd" style={{ fontSize: 14, fontWeight: 600, color: 'rgba(241,245,249,0.38)' }}>v3 — Platform (2027) — PLANNED</span>
               </div>
             </Reveal>
-            {V3.map((item, i) => <RoadItem key={item.text} {...item} delay={i * 0.05}/>)}
+            {V3.map((item, i) => <RoadItem key={item.text} {...item} done={false} delay={i * 0.05}/>)}
           </div>
         </div>
 
+      </div>
+    </section>
+  );
+}
+
+/* ─── Enterprise Philosophy / Who It's For ──────────────────────────────── */
+function EnterpriseSection() {
+  const AUDIENCE = [
+    {
+      icon: User,
+      label: 'SOC Analysts',
+      body: 'The 15-tab case workspace, ITDR engine, and threat hunt console were built for analysts who work live incidents, not demo environments.',
+    },
+    {
+      icon: Layers,
+      label: 'Security Engineers',
+      body: 'The full stack is open, self-hostable, and extensible. Build your own detectors, write your own playbooks, integrate your own data sources.',
+    },
+    {
+      icon: ShieldCheck,
+      label: 'CISOs & Compliance Teams',
+      body: 'Multi-tenant, org-scoped, audit-ready. DORA Article 19, DPDPA, and RBI reporting generated from the Provenance Ledger — not assembled manually.',
+    },
+  ];
+
+  return (
+    <section style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', background: '#0D1A2E', borderTop: '1px solid rgba(241,245,249,0.05)' }}>
+      <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'clamp(140px,18vw,220px) 1fr', gap: 'clamp(32px,5vw,72px)', alignItems: 'start' }}>
+          <Reveal><span className="cg" style={{ fontSize: 10, color: GOLD, letterSpacing: '0.22em', textTransform: 'uppercase', fontWeight: 600, paddingTop: 6, display: 'block' }}>Who It's For</span></Reveal>
+          <div>
+            <Reveal><h2 className="cd" style={{ fontSize: 'clamp(26px,3.5vw,48px)', fontWeight: 700, color: INK, margin: '0 0 22px', letterSpacing: '-0.025em', lineHeight: 1.04 }}>Self-Hostable. Multi-Tenant. Built for Regulated Industries.</h2></Reveal>
+            <Reveal delay={0.07}>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 600 }}>
+                AegisTrace is self-hostable. Your data never leaves your network.
+              </p>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 600 }}>
+                This isn't a deployment option. It's a conviction.
+              </p>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 600 }}>
+                The teams defending critical infrastructure — financial services, healthcare,
+                government, energy — deserve platforms they can audit, modify, and trust.
+              </p>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 28, maxWidth: 600 }}>
+                We fund development through enterprise contracts, consulting, and the goodwill
+                of a community that believes in the mission.
+              </p>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: INK, lineHeight: 1.78, marginBottom: 36, maxWidth: 600, fontStyle: 'italic' }}>
+                Deploy it. Break it. Improve it. Send the pull request.
+              </p>
+            </Reveal>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px,1fr))', gap: 2 }}>
+              {AUDIENCE.map(({ icon: Icon, label, body }, i) => (
+                <Reveal key={label} delay={i * 0.06} y={20}>
+                  <div style={{ padding: 'clamp(18px,2vw,26px)', background: 'rgba(241,245,249,0.02)', border: '1px solid rgba(241,245,249,0.07)', height: '100%' }}>
+                    <Icon size={18} color={GOLD} style={{ marginBottom: 14, opacity: 0.8 }}/>
+                    <div className="cd" style={{ fontSize: 15, fontWeight: 600, color: INK, marginBottom: 8, letterSpacing: '-0.01em' }}>{label}</div>
+                    <div className="cg" style={{ fontSize: 13, color: 'rgba(241,245,249,0.44)', lineHeight: 1.68 }}>{body}</div>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -708,6 +836,41 @@ function Nav() {
   );
 }
 
+/* ─── Builder Section ────────────────────────────────────────────────────── */
+function BuilderSection() {
+  return (
+    <section style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', background: BG, borderTop: '1px solid rgba(241,245,249,0.05)' }}>
+      <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'clamp(140px,18vw,220px) 1fr', gap: 'clamp(32px,5vw,72px)', alignItems: 'start' }}>
+          <Reveal><span className="cg" style={{ fontSize: 10, color: GOLD, letterSpacing: '0.22em', textTransform: 'uppercase', fontWeight: 600, paddingTop: 6, display: 'block' }}>The Builder</span></Reveal>
+          <div>
+            <Reveal><h2 className="cd" style={{ fontSize: 'clamp(26px,3.5vw,48px)', fontWeight: 700, color: INK, margin: '0 0 28px', letterSpacing: '-0.025em', lineHeight: 1.04 }}>Built by a SOC Analyst. For SOC Analysts.</h2></Reveal>
+            <Reveal delay={0.08}>
+              <div style={{ background: 'rgba(241,245,249,0.02)', border: '1px solid rgba(241,245,249,0.08)', padding: 'clamp(24px,3vw,36px)', maxWidth: 580 }}>
+                <div className="cd" style={{ fontSize: 17, fontWeight: 700, color: INK, marginBottom: 4 }}>Prasanna Kumar Surendran</div>
+                <div className="cg" style={{ fontSize: 13, color: GOLD, marginBottom: 18 }}>Blue Team SOC Analyst · Dublin, Ireland</div>
+                <p className="cg" style={{ fontSize: 14, color: 'rgba(241,245,249,0.56)', lineHeight: 1.72, marginBottom: 16 }}>
+                  MSc Information Systems & Computing, Dublin Business School (2025)
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 18 }}>
+                  {['SC-200', 'Security+', 'TCM PEH', 'BTL1', 'eJPT', 'SC-300'].map(cert => (
+                    <span key={cert} className="mono" style={{ fontSize: 11, color: 'rgba(241,245,249,0.45)', background: 'rgba(241,245,249,0.04)', border: '1px solid rgba(241,245,249,0.1)', padding: '3px 8px' }}>{cert}</span>
+                  ))}
+                </div>
+                <p className="cg" style={{ fontSize: 14, color: 'rgba(241,245,249,0.52)', lineHeight: 1.72, margin: 0 }}>
+                  Building AegisTrace to prove a point: a solo analyst can build SOC tooling
+                  that rivals commercial products — and that the next generation of security
+                  platforms must be built around identity, explainability, and human control.
+                </p>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ─── CTA ────────────────────────────────────────────────────────────────── */
 function CTASection() {
   const ref = useRef(null);
@@ -724,14 +887,14 @@ function CTASection() {
       <div style={{ maxWidth: 720, margin: '0 auto', position: 'relative' }}>
         <motion.div style={{ scale: ctaScale, opacity: ctaOp }}>
           <h2 className="cd" style={{ fontSize: 'clamp(30px,4.5vw,60px)', fontWeight: 700, color: INK, letterSpacing: '-0.03em', lineHeight: 0.96, marginBottom: 20 }}>
-            Built by a practitioner,<br/>for practitioners.
+            Autonomous AI needs<br/>accountable security.
           </h2>
           <p className="cg" style={{ fontSize: 15, color: 'rgba(241,245,249,0.44)', lineHeight: 1.72, maxWidth: 440, margin: '0 auto 40px' }}>
-            AegisTrace is not a commercial product. It is a proof of concept and a statement about what security tooling should be.
+            Book a private demo with the founder. See the full platform in a live environment.
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <Link to="/app/login" className="gold-btn" style={{ fontSize: 14, padding: '14px 32px' }}>Access Platform <ArrowRight size={15}/></Link>
-            <Link to="/portfolio" className="ghost-btn" style={{ fontSize: 14, padding: '13px 24px' }}>About the Builder</Link>
+            <Link to="/app/login" className="gold-btn" style={{ fontSize: 14, padding: '14px 32px' }}>Book a Private Demo <ArrowRight size={15}/></Link>
+            <Link to="/platform" className="ghost-btn" style={{ fontSize: 14, padding: '13px 24px' }}>About the Platform →</Link>
           </div>
         </motion.div>
       </div>
@@ -810,10 +973,10 @@ export default function Mission() {
           <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, #060E1C 0%, #0A1628 40%, #0D2240 70%, #1048A0 100%)' }}/>
           <Reveal style={{ position: 'relative', zIndex: 2, padding: '0 24px 60px' }}>
             <h1 className="cd" style={{ fontSize: 'clamp(38px,10vw,56px)', fontWeight: 700, lineHeight: 1.0, letterSpacing: '-0.02em', color: INK, margin: '0 0 16px' }}>
-              Attackers no longer break in —<br/><span style={{ color: GOLD }}>they sign in.</span>
+              Autonomous systems deserve<br/><span style={{ color: GOLD }}>accountable security.</span>
             </h1>
             <p className="cg" style={{ fontSize: 15.5, color: 'rgba(241,245,249,0.54)', lineHeight: 1.68, maxWidth: 440, margin: 0 }}>
-              Built inside a SOC, where the gaps were impossible to ignore.
+              We believe every identity must be scored, every decision explained, every action reversible.
             </p>
           </Reveal>
         </section>
@@ -828,7 +991,10 @@ export default function Mission() {
 
       <OriginSection/>
       <PrinciplesSection/>
+      <PhilosophySection/>
       <RoadmapSection/>
+      <EnterpriseSection/>
+      <BuilderSection/>
       <CTASection/>
 
       <footer style={{ borderTop: '1px solid rgba(241,245,249,0.05)', padding: '28px clamp(24px,5vw,72px)' }}>

@@ -55,6 +55,7 @@ const Portfolio        = lazy(() => import('./pages/Portfolio'));
 const PublicGallery    = lazy(() => import('./pages/PublicGallery'));
 const PublicCaseDetail = lazy(() => import('./pages/PublicCaseDetail'));
 const AgentSetup       = lazy(() => import('./pages/AgentSetup'));
+const Features         = lazy(() => import('./pages/Features'));
 
 /* ─── App shell ─────────────────────────────────────────────────────────── */
 const AppShell         = lazy(() => import('./pages/app/AppShell'));
@@ -107,6 +108,7 @@ export default function App() {
           <Route path="/public"        element={<PublicGallery />} />
           <Route path="/public/:token" element={<PublicCaseDetail />} />
           <Route path="/agent-setup"   element={<AgentSetup />} />
+          <Route path="/features"      element={<Features />} />
           <Route path="/app/login"     element={<Login />} />
 
           {/* ── Protected app ── */}
