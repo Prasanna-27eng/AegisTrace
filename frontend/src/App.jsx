@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Toasts from './components/Toast';
 import CustomCursor from './components/CustomCursor';
+import PageCurtain from './components/PageTransition';
 
 /* ─── Branded Suspense fallback ─────────────────────────────────────────────
    Shown during lazy-chunk loading. Matches the site's #050405 dark theme.   */
@@ -93,6 +94,7 @@ const MalwareTools     = lazy(() => import('./pages/app/MalwareTools'));
 export default function App() {
   return (
     <BrowserRouter>
+      <PageCurtain />
       <CustomCursor />
       <Toasts />
       <Suspense fallback={<PageLoader />}>

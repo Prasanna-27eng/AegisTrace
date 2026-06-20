@@ -1,18 +1,38 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import {
   motion, useScroll, useSpring, useTransform,
-  useInView, useReducedMotion, useMotionValueEvent,
+  useInView, useReducedMotion, useMotionValue,
 } from 'framer-motion';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useSceneCamera, PinnedScene, ScrollProgressBar } from '../components/SceneController';
+import {
+  useSceneCamera, useSectionParallax,
+  PinnedScene, RackFocus, ScrollProgressBar,
+} from '../components/SceneController';
 
 const E    = [0.16, 1, 0.3, 1];
+const EOUT = [0.23, 1, 0.32, 1];
 const GOLD = '#F59E0B';
 const BG   = '#050405';
 const INK  = '#F5F0E8';
 
-/* ─── mobile hook ───────────────────────────────────────────────────────── */
+/* ─── Lenis smooth scroll ───────────────────────────────────────────────── */
+function useLenis() {
+  const reduced = useReducedMotion();
+  useEffect(() => {
+    if (reduced || typeof window === 'undefined') return;
+    if (window.innerWidth <= 768) return;
+    let lenis, raf;
+    import('@studio-freight/lenis').then(({ default: Lenis }) => {
+      lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
+      const tick = t => { lenis.raf(t); raf = requestAnimationFrame(tick); };
+      raf = requestAnimationFrame(tick);
+    });
+    return () => { lenis?.destroy(); cancelAnimationFrame(raf); };
+  }, [reduced]);
+}
+
+/* ─── Helpers ───────────────────────────────────────────────────────────── */
 function useIsMobile() {
   const [m, setM] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 768);
   useEffect(() => {
@@ -23,22 +43,29 @@ function useIsMobile() {
   return m;
 }
 
-/* ─── ambient embers (unchanged) ────────────────────────────────────────── */
+function Reveal({ children, delay = 0, y = 28, style = {} }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-60px' });
+  return (
+    <motion.div ref={ref}
+      initial={{ opacity: 0, y }} animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.76, delay, ease: E }} style={style}
+    >{children}</motion.div>
+  );
+}
+
+/* ─── Ambient embers ─────────────────────────────────────────────────────── */
 function AmbientEmbers() {
   const canvasRef = useRef(null);
   const reduced   = useReducedMotion();
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const canvas = canvasRef.current; if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     let w = 0, h = 1, raf = 0, t = 0;
-    const embers = Array.from({ length: 52 }, () => ({
-      x: Math.random(), y: Math.random(),
-      r: 0.5 + Math.random() * 1.8,
-      v: 0.06 + Math.random() * 0.2,
-      ph: Math.random() * 6.28,
-      gold: Math.random() < 0.38,
+    const embers = Array.from({ length: 48 }, () => ({
+      x: Math.random(), y: Math.random(), r: 0.5 + Math.random() * 1.6,
+      v: 0.06 + Math.random() * 0.18, ph: Math.random() * 6.28, gold: Math.random() < 0.38,
     }));
     const size = () => {
       w = window.innerWidth; h = window.innerHeight;
@@ -49,8 +76,8 @@ function AmbientEmbers() {
       ctx.clearRect(0, 0, w, h);
       embers.forEach(e => {
         if (!still) { e.y -= e.v / h; if (e.y < -0.01) { e.y = 1.01; e.x = Math.random(); } }
-        const x = e.x * w + Math.sin(t * 0.5 + e.ph) * 16;
-        const a = still ? 0.2 : 0.08 + 0.15 * (0.5 + 0.5 * Math.sin(t * 1.1 + e.ph));
+        const x = e.x * w + Math.sin(t * 0.5 + e.ph) * 14;
+        const a = still ? 0.18 : 0.06 + 0.14 * (0.5 + 0.5 * Math.sin(t * 1.1 + e.ph));
         ctx.fillStyle = e.gold ? `rgba(245,158,11,${a * 1.3})` : `rgba(245,240,232,${a})`;
         ctx.beginPath(); ctx.arc(x, e.y * h, e.r, 0, Math.PI * 2); ctx.fill();
       });
@@ -65,199 +92,146 @@ function AmbientEmbers() {
   return <canvas ref={canvasRef} aria-hidden style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', zIndex: -1, pointerEvents: 'none' }}/>;
 }
 
-/* ─── 3D tilt card hook ─────────────────────────────────────────────────── */
-function use3DTilt(strength = 12) {
-  const ref      = useRef(null);
-  const [tilt, setTilt] = useState({ rx: 0, ry: 0, gx: 50, gy: 50 });
-  const onMove = useCallback(e => {
-    const el = ref.current; if (!el) return;
-    const r  = el.getBoundingClientRect();
-    const nx = (e.clientX - r.left) / r.width  - 0.5;
-    const ny = (e.clientY - r.top)  / r.height - 0.5;
-    setTilt({ rx: -ny * strength, ry: nx * strength, gx: (nx + 0.5) * 100, gy: (ny + 0.5) * 100 });
-  }, [strength]);
-  const onLeave = useCallback(() => setTilt({ rx: 0, ry: 0, gx: 50, gy: 50 }), []);
-  return { ref, tilt, onMove, onLeave };
-}
-
-/* ─── Split reveal — chars fly in ──────────────────────────────────────── */
-function SplitReveal({ text, style = {}, charStyle = {}, stagger = 0.04, delay = 0 }) {
-  const ref    = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-60px' });
-  return (
-    <span ref={ref} style={{ display: 'inline-block', ...style }}>
-      {text.split('').map((ch, i) => (
-        <motion.span
-          key={i}
-          initial={{ opacity: 0, y: 48, rotateX: -40 }}
-          animate={inView ? { opacity: 1, y: 0, rotateX: 0 } : {}}
-          transition={{ duration: 0.72, delay: delay + i * stagger, ease: E }}
-          style={{ display: 'inline-block', transformOrigin: 'bottom', ...charStyle }}
-        >
-          {ch === ' ' ? ' ' : ch}
-        </motion.span>
-      ))}
-    </span>
-  );
-}
-
-/* ─── Scroll Reveal (simple) ────────────────────────────────────────────── */
-function Reveal({ children, delay = 0, y = 36, style = {} }) {
-  const ref    = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-70px' });
-  return (
-    <motion.div ref={ref}
-      initial={{ opacity: 0, y }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.88, delay, ease: E }}
-      style={style}
-    >{children}</motion.div>
-  );
-}
-
-/* ─── Animated counter ──────────────────────────────────────────────────── */
-function Counter({ end, suffix = '' }) {
-  const ref    = useRef(null);
-  const inView = useInView(ref, { once: true });
-  const [val, setVal] = useState(0);
-  useEffect(() => {
-    if (!inView) return;
-    let raf;
-    const dur = 1800, start = performance.now();
-    const tick = now => {
-      const t = Math.min((now - start) / dur, 1);
-      setVal(Math.round((1 - Math.pow(1 - t, 4)) * end));
-      if (t < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [inView, end]);
-  return <span ref={ref}>{val}{suffix}</span>;
-}
-
-/* ════════════════════════════════════════════════════════════════════════
-   HERO — 3-beat dolly
-   Beat 1: Name zooms toward camera + blurs out
-   Beat 2: "One analyst. An entire SOC." zooms in from depth
-   Beat 3: Floating credential badges materialise
-════════════════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════════════════════
+   SCENE 1 — HERO  (4 beats, dolly zoom, mouse parallax)
+════════════════════════════════════════════════════════════════════════════ */
 function HeroScene() {
   const ref = useRef(null);
   const p   = useSceneCamera(ref);
 
-  const bgScale = useTransform(p, [0, 1], [1.14, 1.0]);
-  const bgY     = useTransform(p, v => v * 70);
+  /* Mouse-driven background parallax */
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const bgMouseX = useSpring(mouseX, { stiffness: 40, damping: 14 });
+  const bgMouseY = useSpring(mouseY, { stiffness: 40, damping: 14 });
+  const bgDriftX = useTransform(bgMouseX, v => v * 12);
+  const bgDriftY = useTransform(bgMouseY, v => v * 8);
 
-  /* beat 1 */
-  const b1Op    = useTransform(p, [0.22, 0.44], [1, 0], { clamp: true });
-  const b1Scale = useTransform(p, [0, 1], [1, 3.2]);
-  const b1BPx   = useTransform(p, [0.20, 0.44], [0, 18], { clamp: true });
+  useEffect(() => {
+    const fn = e => {
+      mouseX.set((e.clientX / window.innerWidth)  - 0.5);
+      mouseY.set((e.clientY / window.innerHeight) - 0.5);
+    };
+    window.addEventListener('mousemove', fn);
+    return () => window.removeEventListener('mousemove', fn);
+  }, [mouseX, mouseY]);
+
+  /* Dolly zoom — bg rushes, text floats */
+  const bgDollyScale  = useTransform(p, [0, 0.44], [1.08, 3.6]);
+  const bgDollyBlurPx = useTransform(p, [0.24, 0.46], [0, 20], { clamp: true });
+  const bgDollyFilter = useTransform(bgDollyBlurPx, v => `blur(${v}px)`);
+  const bgDollyOp     = useTransform(p, [0.36, 0.52], [1, 0], { clamp: true });
+
+  /* Beat 1: name */
+  const b1Op    = useTransform(p, [0.20, 0.42], [1, 0], { clamp: true });
+  const b1Scale = useTransform(p, [0, 0.42], [1, 1.36]);
+  const b1BPx   = useTransform(p, [0.22, 0.42], [0, 14], { clamp: true });
   const b1Filt  = useTransform(b1BPx, v => `blur(${v}px)`);
 
-  /* beat 2 */
-  const b2Op    = useTransform(p, [0.40, 0.60], [0, 1], { clamp: true });
-  const b2Scale = useTransform(p, [0.38, 0.66, 1], [0.45, 1, 1.08], { clamp: true });
-  const b2BPx   = useTransform(p, [0.42, 0.62], [14, 0], { clamp: true });
-  const b2Filt  = useTransform(b2BPx, v => `blur(${v}px)`);
-  const b2Out   = useTransform(p, [0.82, 0.95], [1, 0], { clamp: true });
+  /* Beat 2: tagline zooms in from depth */
   const b2CombOp = useTransform(p, v => {
-    const fadeIn  = Math.min(1, Math.max(0, (v - 0.40) / 0.20));
-    const fadeOut = Math.min(1, Math.max(0, 1 - (v - 0.82) / 0.13));
-    return fadeIn * fadeOut;
+    const i = Math.min(1, Math.max(0, (v - 0.40) / 0.18));
+    const o = Math.min(1, Math.max(0, 1 - (v - 0.80) / 0.14));
+    return i * o;
   });
+  const b2Scale = useTransform(p, [0.38, 0.64], [0.46, 1], { clamp: true });
+  const b2BPx   = useTransform(p, [0.40, 0.60], [16, 0], { clamp: true });
+  const b2Filt  = useTransform(b2BPx, v => `blur(${v}px)`);
 
-  /* beat 3 — badge cloud */
-  const b3Op    = useTransform(p, [0.80, 0.92], [0, 1], { clamp: true });
+  /* Beat 3: rack-focus credential badges materialise */
+  const b3Op    = useTransform(p, [0.78, 0.90], [0, 1], { clamp: true });
 
-  /* kicker */
-  const kickOp  = useTransform(p, [0.64, 0.78], [0, 1], { clamp: true });
-  const kickY   = useTransform(kickOp, o => (1 - o) * 24);
+  /* Kicker */
+  const kickOp  = useTransform(p, [0.62, 0.76], [0, 1], { clamp: true });
+  const kickY   = useTransform(kickOp, o => (1 - o) * 20);
 
   const BADGES = [
-    { label: 'SC-200', sub: 'Microsoft', x: '-38vw', y: '-12vh', delay: 0 },
-    { label: 'Security+', sub: 'CompTIA', x: '34vw', y: '-18vh', delay: 0.08 },
-    { label: 'Blue Team', sub: 'SOC Analyst', x: '-30vw', y: '20vh', delay: 0.14 },
-    { label: 'TCM PEH', sub: 'Red Team', x: '28vw', y: '22vh', delay: 0.06 },
-    { label: 'MSc Computing', sub: 'DBS Dublin', x: '0vw', y: '-28vh', delay: 0.10 },
+    { label: 'SC-200', sub: 'Microsoft', x: '-34vw', y: '-14vh', delay: 0.0 },
+    { label: 'Security+', sub: 'CompTIA', x: '32vw', y: '-20vh', delay: 0.1 },
+    { label: 'Blue Team', sub: 'SOC Analyst', x: '-26vw', y: '18vh', delay: 0.18 },
+    { label: 'TCM PEH', sub: 'Red Team', x: '26vw', y: '22vh', delay: 0.08 },
+    { label: 'MSc Computing', sub: 'Dublin', x: '4vw', y: '-30vh', delay: 0.14 },
   ];
 
   return (
-    <PinnedScene vh="340vh" sceneRef={ref}>
-      {/* Background */}
+    <PinnedScene vh="360vh" sceneRef={ref}>
+      {/* Background — 3-layer parallax + dolly zoom */}
       <motion.div aria-hidden style={{
-        position: 'absolute', inset: '-10%',
+        position: 'absolute', inset: '-14%',
         backgroundImage: "url('/assets/pages/login-bg.jpg')",
         backgroundSize: 'cover', backgroundPosition: 'center 25%',
-        scale: bgScale, y: bgY, willChange: 'transform',
+        scale: bgDollyScale,
+        x: bgDriftX, y: bgDriftY,
+        filter: bgDollyFilter,
+        opacity: bgDollyOp,
+        willChange: 'transform, opacity, filter',
       }}/>
-      <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(5,4,5,0.8) 0%, rgba(5,4,5,0.32) 38%, rgba(5,4,5,0.96) 100%)' }}/>
-      <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 115%, rgba(245,158,11,0.14) 0%, transparent 52%)' }}/>
+      {/* Mid overlay */}
+      <motion.div aria-hidden style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(180deg, rgba(5,4,5,0.82) 0%, rgba(5,4,5,0.28) 38%, rgba(5,4,5,0.96) 100%)',
+        x: useTransform(bgDriftX, v => v * 0.4),
+        y: useTransform(bgDriftY, v => v * 0.4),
+      }}/>
+      <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 50% 40% at 50% 105%, rgba(245,158,11,0.12) 0%, transparent 60%)' }}/>
 
-      {/* Beat 1 */}
+      {/* Beat 1 — name dolly-zooms toward camera */}
       <motion.div style={{
         position: 'absolute', inset: 0, zIndex: 4,
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        opacity: b1Op, scale: b1Scale, filter: b1Filt, willChange: 'transform, opacity, filter',
         textAlign: 'center', padding: '0 clamp(20px,5vw,60px)',
+        opacity: b1Op, scale: b1Scale, filter: b1Filt, willChange: 'transform, opacity, filter',
       }}>
         <div className="mono" style={{ fontSize: 11, letterSpacing: '0.28em', color: GOLD, marginBottom: 22 }}>
           BLUE TEAM · DUBLIN, IRELAND
         </div>
         <h1 className="cd" style={{
           fontSize: 'clamp(44px,7.5vw,116px)', fontWeight: 600, lineHeight: 1,
-          letterSpacing: '-0.02em', color: INK, margin: 0,
+          letterSpacing: '-0.025em', color: INK, margin: 0,
         }}>
           Prasanna Kumar<br/>Surendran
         </h1>
       </motion.div>
 
-      {/* Beat 2 */}
+      {/* Beat 2 — tagline zooms in from depth */}
       <motion.div style={{
         position: 'absolute', inset: 0, zIndex: 4,
         display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
-        opacity: b2CombOp,
-        scale: b2Scale, filter: b2Filt, willChange: 'transform, opacity, filter',
+        opacity: b2CombOp, scale: b2Scale, filter: b2Filt, willChange: 'transform, opacity, filter',
         padding: '0 clamp(20px,5vw,60px)',
       }}>
         <h1 className="cd" style={{
           fontSize: 'clamp(44px,7.5vw,116px)', fontWeight: 600, lineHeight: 1,
-          letterSpacing: '-0.02em', color: INK, margin: 0,
+          letterSpacing: '-0.025em', color: INK, margin: 0,
         }}>
           One analyst.<br/><span style={{ color: GOLD }}>An entire SOC.</span>
         </h1>
       </motion.div>
 
-      {/* Beat 3 — floating badges */}
+      {/* Beat 3 — rack-focus credential cloud */}
       <motion.div style={{
         position: 'absolute', inset: 0, zIndex: 5,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         opacity: b3Op, willChange: 'opacity',
       }}>
-        {/* Centre label */}
         <div style={{ textAlign: 'center' }}>
-          <div className="mono" style={{ fontSize: 11, letterSpacing: '0.26em', color: GOLD, marginBottom: 10 }}>CREDENTIALS</div>
-          <div className="cd" style={{ fontSize: 'clamp(22px,3vw,38px)', fontWeight: 600, color: INK }}>
-            Earned in the field.
-          </div>
+          <div className="mono" style={{ fontSize: 10, letterSpacing: '0.3em', color: 'rgba(245,240,232,0.4)', marginBottom: 8 }}>CREDENTIALS</div>
+          <div className="cd" style={{ fontSize: 'clamp(20px,2.5vw,32px)', fontWeight: 600, color: INK }}>Earned in the field.</div>
         </div>
-        {/* Orbiting badges */}
         {BADGES.map((b, i) => (
-          <motion.div
-            key={b.label}
-            initial={{ opacity: 0, scale: 0.6 }}
+          <motion.div key={b.label}
+            initial={{ opacity: 0, scale: 0.7 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: b.delay, ease: E }}
+            transition={{ duration: 0.56, delay: b.delay, ease: EOUT }}
             style={{
               position: 'absolute',
               left: `calc(50% + ${b.x})`, top: `calc(50% + ${b.y})`,
               transform: 'translate(-50%, -50%)',
-              background: 'rgba(245,158,11,0.07)',
-              border: '1px solid rgba(245,158,11,0.22)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
+              background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.2)',
+              backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
               padding: '10px 18px',
-            }}
-          >
+              animation: `float-badge ${3 + i * 0.4}s ease-in-out ${i * 0.4}s infinite`,
+            }}>
             <div className="cd" style={{ fontSize: 13, fontWeight: 600, color: INK }}>{b.label}</div>
             <div className="cg" style={{ fontSize: 10, color: 'rgba(245,240,232,0.4)', marginTop: 2 }}>{b.sub}</div>
           </motion.div>
@@ -267,345 +241,493 @@ function HeroScene() {
       {/* Kicker */}
       <motion.div style={{
         position: 'absolute', left: 0, right: 0, bottom: '8vh', zIndex: 6,
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
         opacity: kickOp, y: kickY,
       }}>
-        <p className="cg" style={{ fontSize: 17, fontWeight: 500, color: 'rgba(245,240,232,0.6)', maxWidth: 480, textAlign: 'center', margin: 0 }}>
-          SOC analyst who builds the tools he wishes existed — a Trust Operating System and four published security tools, solo.
+        <p className="cg" style={{ fontSize: 17, fontWeight: 500, color: 'rgba(245,240,232,0.56)', maxWidth: 460, textAlign: 'center', margin: 0 }}>
+          SOC analyst who builds the tools he wishes existed.
         </p>
-        <span className="mono" style={{ fontSize: 11, letterSpacing: '0.3em', color: 'rgba(245,240,232,0.35)' }}>SCROLL</span>
+        <span className="mono" style={{ fontSize: 10, letterSpacing: '0.32em', color: 'rgba(245,240,232,0.3)' }}>SCROLL</span>
       </motion.div>
     </PinnedScene>
   );
 }
 
-function MobileHero() {
-  return (
-    <section style={{ position: 'relative', minHeight: '92vh', display: 'flex', alignItems: 'flex-end', overflow: 'hidden' }}>
-      <div aria-hidden style={{ position: 'absolute', inset: '-6%', backgroundImage: "url('/assets/pages/login-bg.jpg')", backgroundSize: 'cover', backgroundPosition: 'center 25%', opacity: 0.5 }}/>
-      <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(5,4,5,0.7) 0%, rgba(5,4,5,0.35) 40%, rgba(5,4,5,0.96) 100%)' }}/>
-      <Reveal style={{ position: 'relative', zIndex: 2, padding: '0 24px 64px' }}>
-        <div className="mono" style={{ fontSize: 11, letterSpacing: '0.26em', color: GOLD, marginBottom: 18 }}>BLUE TEAM · DUBLIN, IRELAND</div>
-        <h1 className="cd" style={{ fontSize: 'clamp(38px,11vw,60px)', fontWeight: 600, lineHeight: 1.02, letterSpacing: '-0.02em', color: INK, margin: '0 0 16px' }}>
-          Prasanna Kumar Surendran
-        </h1>
-        <p className="cg" style={{ fontSize: 16, fontWeight: 500, color: 'rgba(245,240,232,0.6)', maxWidth: 420, margin: 0 }}>
-          One analyst. An entire SOC — a Trust Operating System and four published security tools, built solo.
-        </p>
-      </Reveal>
-    </section>
-  );
-}
-
-/* ════════════════════════════════════════════════════════════════════════
-   STATS — each stat is a camera beat: zoom in → hold → push through
-════════════════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════════════════════
+   SCENE 2 — FLYTHROUGH STATS
+   Camera flies through 5 stat "monoliths" positioned at different Z depths.
+   Each stat rushes toward and past the viewer at a different rate.
+════════════════════════════════════════════════════════════════════════════ */
 const STATS_DATA = [
-  { end: 1,  suffix: '',  label: 'full security platform, solo-built' },
-  { end: 30, suffix: '+', label: 'console pages shipped' },
-  { end: 35, suffix: '',  label: 'backend API routers' },
-  { end: 4,  suffix: '',  label: 'security tools on PyPI' },
-  { end: 18, suffix: '',  label: 'hardware attack parsers' },
+  { n: '1',   label: 'full security platform, solo-built' },
+  { n: '30+', label: 'console pages shipped' },
+  { n: '35',  label: 'backend API routers' },
+  { n: '4',   label: 'security tools on PyPI' },
+  { n: '18',  label: 'hardware attack parsers' },
 ];
 
-/* Ranges: [fadeIn0, fadeIn1, hold, fadeOut0, fadeOut1]
-   Last stat stays fully visible (fadeOut0 = fadeOut1 = 1) */
-const STAT_RANGES = [
-  [0.03, 0.14, 0.18, 0.22, 0.30],
-  [0.26, 0.37, 0.41, 0.44, 0.52],
-  [0.48, 0.58, 0.62, 0.65, 0.72],
-  [0.68, 0.78, 0.81, 0.84, 0.90],
-  [0.87, 0.95, 1.00, 1.00, 1.00],
+/* Each stat at a different depth — arrives and departs at its own speed */
+const STAT_DEPTHS = [
+  { arrive: [0.02, 0.14], peak: [0.14, 0.24], depart: [0.24, 0.34], zStart: 0.65 },
+  { arrive: [0.24, 0.36], peak: [0.36, 0.46], depart: [0.46, 0.56], zStart: 0.78 },
+  { arrive: [0.46, 0.56], peak: [0.56, 0.66], depart: [0.66, 0.74], zStart: 0.88 },
+  { arrive: [0.64, 0.74], peak: [0.74, 0.82], depart: [0.82, 0.90], zStart: 0.72 },
+  { arrive: [0.84, 0.93], peak: [0.93, 1.00], depart: [1.00, 1.00], zStart: 0.60 },
 ];
 
-function StatBeat({ p, stat, range }) {
-  const [i0, i1, , o0, o1] = range;
-  const opacity = useTransform(p, [i0, i1, o0, o1], [0, 1, 1, 0], { clamp: true });
-  const scale   = useTransform(p, [i0, i1, o0, o1], [0.52, 1, 1, 1.7], { clamp: true });
-  const blurPx  = useTransform(p, [o0, o1], [0, 16], { clamp: true });
-  const filter  = useTransform(blurPx, v => `blur(${v}px)`);
-  const lineW   = useTransform(opacity, v => `${v * 100}%`);
+function FlythroughStat({ p, stat, depth }) {
+  const { arrive, peak, depart, zStart } = depth;
+
+  const op = useTransform(p,
+    [arrive[0], arrive[1], peak[0], peak[1], depart[0], depart[1]],
+    [0, 1, 1, 1, 1, 0], { clamp: true }
+  );
+  /* Flythrough: arrives small (far away), grows as it nears, then overshoots past camera */
+  const scale = useTransform(p,
+    [arrive[0], peak[0], depart[1]],
+    [zStart, 1, 2.2], { clamp: true }
+  );
+  /* As it passes camera, Y shifts upward (flying past above us) */
+  const y = useTransform(p,
+    [peak[0], depart[1]],
+    ['0vh', '-12vh'], { clamp: true }
+  );
+  /* Blur peaks as it rushes past */
+  const blurPx = useTransform(p,
+    [depart[0], depart[1]],
+    [0, 18], { clamp: true }
+  );
+  const filter = useTransform(blurPx, v => `blur(${v}px)`);
+  /* Progress underline */
+  const lineOp = useTransform(p, [arrive[1], peak[0]], [0, 1], { clamp: true });
 
   return (
     <motion.div style={{
       position: 'absolute', inset: 0,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      opacity, scale, filter, willChange: 'transform, opacity, filter',
-      pointerEvents: 'none',
+      opacity: op, scale, y, filter, willChange: 'transform, opacity, filter',
+      pointerEvents: 'none', textAlign: 'center',
     }}>
-      {/* Underline progress bar */}
-      <div style={{ position: 'relative', marginBottom: 8 }}>
-        <div className="mono" style={{ fontSize: 'clamp(72px,14vw,190px)', fontWeight: 700, color: GOLD, lineHeight: 1 }}>
-          {stat.end}{stat.suffix}
-        </div>
+      <div style={{ position: 'relative', marginBottom: 6 }}>
+        <div className="mono" style={{
+          fontSize: 'clamp(80px,15vw,200px)', fontWeight: 700, color: GOLD, lineHeight: 1,
+        }}>{stat.n}</div>
         <motion.div aria-hidden style={{
-          position: 'absolute', bottom: -8, left: 0, height: 2,
-          background: GOLD, opacity: 0.5,
-          width: lineW,
+          position: 'absolute', bottom: -6, left: 0, right: 0, height: 2,
+          background: GOLD, opacity: lineOp, scaleX: lineOp, transformOrigin: 'left',
         }}/>
       </div>
-      <div className="cg" style={{ fontSize: 'clamp(14px,1.6vw,20px)', color: 'rgba(245,240,232,0.6)', marginTop: 16, letterSpacing: '0.01em' }}>
+      <div className="cg" style={{ fontSize: 'clamp(13px,1.4vw,18px)', color: 'rgba(245,240,232,0.55)', marginTop: 12 }}>
         {stat.label}
       </div>
     </motion.div>
   );
 }
 
-function StatsScene() {
+function FlythroughScene() {
   const ref = useRef(null);
   const p   = useSceneCamera(ref);
 
-  /* Background dot grid that zooms with the stat */
-  const gridScale = useTransform(p, [0, 1], [1, 1.4]);
-  const gridOp    = useTransform(p, [0, 0.05, 0.92, 1], [0, 0.18, 0.18, 0]);
+  /* Far background grid — barely moves (deep parallax) */
+  const gridOp    = useTransform(p, [0, 0.04, 0.94, 1], [0, 0.14, 0.14, 0]);
+  const gridScale = useTransform(p, [0, 1], [1.0, 1.6]);
+
+  const labelOp = useTransform(p, [0, 0.04, 0.94, 1], [0, 1, 1, 0]);
 
   return (
-    <PinnedScene vh="320vh" sceneRef={ref}>
-      {/* Radial dot grid */}
+    <PinnedScene vh="360vh" sceneRef={ref}>
+      {/* Far: dot grid parallax layer */}
       <motion.div aria-hidden style={{
         position: 'absolute', inset: '-80px',
-        backgroundImage: 'radial-gradient(circle, rgba(245,240,232,0.14) 1px, transparent 1px)',
-        backgroundSize: '28px 28px',
+        backgroundImage: 'radial-gradient(circle, rgba(245,240,232,0.12) 1px, transparent 1px)',
+        backgroundSize: '32px 32px',
         opacity: gridOp, scale: gridScale, willChange: 'transform, opacity',
       }}/>
-      {/* Gold glow */}
-      <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 40% 40% at 50% 50%, rgba(245,158,11,0.07) 0%, transparent 70%)', pointerEvents: 'none' }}/>
-      {/* Beats */}
-      {STATS_DATA.map((stat, i) => (
-        <StatBeat key={i} p={p} stat={stat} range={STAT_RANGES[i]} />
-      ))}
+      {/* Gold bloom glow */}
+      <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 50% 50% at 50% 50%, rgba(245,158,11,0.06) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+
       {/* Section label */}
-      <motion.div style={{
-        position: 'absolute', top: '6vh', left: 0, right: 0,
-        display: 'flex', justifyContent: 'center',
-        opacity: useTransform(p, [0, 0.04, 0.94, 1], [0, 1, 1, 0]),
-      }}>
-        <span className="mono" style={{ fontSize: 10, letterSpacing: '0.26em', color: 'rgba(245,240,232,0.35)' }}>BY THE NUMBERS</span>
+      <motion.div style={{ position: 'absolute', top: '7vh', left: 0, right: 0, display: 'flex', justifyContent: 'center', opacity: labelOp }}>
+        <span className="mono" style={{ fontSize: 10, letterSpacing: '0.28em', color: 'rgba(245,240,232,0.3)' }}>BY THE NUMBERS</span>
       </motion.div>
+
+      {/* Stats flythrough */}
+      {STATS_DATA.map((stat, i) => (
+        <FlythroughStat key={i} p={p} stat={stat} depth={STAT_DEPTHS[i]} />
+      ))}
     </PinnedScene>
   );
 }
 
-/* ════════════════════════════════════════════════════════════════════════
-   FLAGSHIP — unchanged content, new entrance
-════════════════════════════════════════════════════════════════════════ */
-const FLAGSHIP_POINTS = [
-  'Identity-first detection — 6 real-time ITDR detectors',
-  'Explainable AI triage on Groq + NVIDIA NIM',
-  'Attack-graph kill-chain reconstruction (Temporal Linker)',
-  'SOAR playbooks gated by human approval',
-  'Production-grade endpoint agent — honey tokens to auto-block',
-  'Deep multi-tenancy security audit shipped in v10.1',
+/* ════════════════════════════════════════════════════════════════════════════
+   SCENE 3 — TOOLS RACK FOCUS
+   4 tools laid out in a 2×2 grid. As p advances, focus shifts sequentially
+   through each tool — in-focus tool is sharp + bright, others blur + dim.
+════════════════════════════════════════════════════════════════════════════ */
+const TOOLS = [
+  { layer: 'ATTACKS THE TOOLS', name: 'mcp-sploit', desc: 'Metasploit-style exploitation framework for MCP servers. Enum, exfil, RCE, prompt-injection, policy-probe modules.', cmd: 'pip install mcp-sploit', href: 'https://pypi.org/project/mcp-sploit/', focusAt: 0.15 },
+  { layer: 'ATTACKS THE BRAIN', name: 'prompt-fuzz', desc: 'Async fuzzer with 51 curated jailbreak payloads across 10 categories. Reports exactly which ones bypass your guardrails.', cmd: 'pip install prompt-fuzz-cli', href: 'https://pypi.org/project/prompt-fuzz-cli/', focusAt: 0.38 },
+  { layer: 'ATTACKS THE IDENTITY LAYER', name: 'nhi-hunter', desc: 'AWS IAM privilege-escalation pathfinder. Builds the graph, finds the role chains that end at Admin.', cmd: 'pip install nhi-hunter', href: 'https://pypi.org/project/nhi-hunter/', focusAt: 0.62 },
+  { layer: 'WATCHES THE DATA', name: 'shadow-sniffer', desc: 'Offline shadow-AI detector. Scans connection logs against a 39-domain AI service catalog and your allowlist.', cmd: 'pip install shadow-sniffer', href: 'https://pypi.org/project/shadow-sniffer/', focusAt: 0.85 },
 ];
 
-/* ─── 3D tilt tool card ─────────────────────────────────────────────────── */
-function ToolCard3D({ tool, delay = 0 }) {
-  const ref    = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-40px' });
-  const [tilt, setTilt] = useState({ rx: 0, ry: 0, gx: 50, gy: 50 });
-  const [hov, setHov] = useState(false);
+function ToolRackCard({ tool, p }) {
+  const [copied, setCopied] = useState(false);
 
-  const onMove = useCallback(e => {
-    const el = ref.current; if (!el) return;
-    const r  = el.getBoundingClientRect();
-    const nx = (e.clientX - r.left) / r.width  - 0.5;
-    const ny = (e.clientY - r.top)  / r.height - 0.5;
-    setTilt({ rx: -ny * 10, ry: nx * 10, gx: (nx + 0.5) * 100, gy: (ny + 0.5) * 100 });
-  }, []);
-  const onLeave = useCallback(() => { setTilt({ rx: 0, ry: 0, gx: 50, gy: 50 }); setHov(false); }, []);
+  /* Rack focus — this card sharpens at `focusAt`, blurs outside */
+  const blur = useTransform(p,
+    [Math.max(0, tool.focusAt - 0.3), tool.focusAt - 0.12, tool.focusAt + 0.12, Math.min(1, tool.focusAt + 0.3)],
+    [8, 0, 0, 8], { clamp: true }
+  );
+  const op = useTransform(p,
+    [Math.max(0, tool.focusAt - 0.3), tool.focusAt - 0.12, tool.focusAt + 0.12, Math.min(1, tool.focusAt + 0.3)],
+    [0.2, 1, 1, 0.2], { clamp: true }
+  );
+  const borderOp = useTransform(p,
+    [Math.max(0, tool.focusAt - 0.15), tool.focusAt, Math.min(1, tool.focusAt + 0.15)],
+    [0, 1, 0], { clamp: true }
+  );
+  const filter = useTransform(blur, v => `blur(${v}px)`);
+
+  const copy = () => {
+    navigator.clipboard?.writeText(tool.cmd);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  };
 
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 40, scale: 0.92 }}
-      animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
-      transition={{ duration: 0.72, delay, ease: E }}
-      onMouseMove={onMove}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={onLeave}
-      style={{
-        perspective: 800,
-        height: '100%',
-      }}
-    >
+    <motion.div style={{ opacity: op, filter, willChange: 'filter, opacity', position: 'relative' }}>
+      {/* Gold border that pulses when in focus */}
+      <motion.div aria-hidden style={{
+        position: 'absolute', inset: -1, border: '1px solid rgba(245,158,11,0.6)',
+        opacity: borderOp, pointerEvents: 'none',
+      }}/>
       <div style={{
-        padding: '32px 28px', height: '100%', position: 'relative', overflow: 'hidden',
-        background: hov ? 'rgba(10,9,8,0.95)' : '#050405',
-        border: `1px solid ${hov ? 'rgba(245,158,11,0.25)' : 'rgba(245,240,232,0.1)'}`,
-        transform: `perspective(800px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
-        transition: 'transform 180ms ease, background 200ms ease, border-color 200ms ease',
-        willChange: 'transform',
-        boxShadow: hov ? '0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(245,158,11,0.06)' : 'none',
+        padding: 'clamp(20px,2.5vw,32px)',
+        background: 'rgba(245,240,232,0.025)',
+        border: '1px solid rgba(245,240,232,0.07)',
+        height: '100%',
       }}>
-        {/* Shine layer */}
-        <div aria-hidden style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: hov
-            ? `radial-gradient(circle at ${tilt.gx}% ${tilt.gy}%, rgba(245,158,11,0.08) 0%, transparent 60%)`
-            : 'none',
-          transition: 'background 180ms ease',
-        }}/>
-        <div className="mono" style={{ fontSize: 10, color: 'rgba(245,240,232,0.35)', marginBottom: 16, letterSpacing: '0.18em' }}>{tool.layer}</div>
-        <div className="mono" style={{ fontSize: 19, fontWeight: 700, marginBottom: 10, color: INK }}>{tool.name}</div>
-        <p className="cg" style={{ fontSize: 14, lineHeight: 1.58, color: 'rgba(245,240,232,0.55)', margin: '0 0 18px' }}>{tool.desc}</p>
-        <a className="mono" href={tool.href} target="_blank" rel="noopener noreferrer"
-          style={{ fontSize: 12, color: GOLD, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          {tool.cmd} <ArrowUpRight size={11}/>
-        </a>
+        <div className="mono" style={{ fontSize: 10, color: 'rgba(245,240,232,0.36)', marginBottom: 14, letterSpacing: '0.16em' }}>{tool.layer}</div>
+        <div className="mono" style={{ fontSize: 'clamp(18px,2vw,26px)', fontWeight: 700, color: INK, marginBottom: 10 }}>{tool.name}</div>
+        <p className="cg" style={{ fontSize: 13.5, lineHeight: 1.62, color: 'rgba(245,240,232,0.52)', margin: '0 0 18px' }}>{tool.desc}</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <code className="mono" style={{ fontSize: 11.5, color: GOLD, background: 'rgba(245,158,11,0.08)', padding: '5px 10px', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tool.cmd}</code>
+          <button onClick={copy} className="cg" style={{
+            background: 'none', border: '1px solid rgba(245,240,232,0.15)', color: 'rgba(245,240,232,0.5)',
+            fontSize: 11, padding: '5px 10px', cursor: 'pointer', flexShrink: 0,
+            transition: 'border-color 140ms, color 140ms',
+          }}>{copied ? '✓' : 'copy'}</button>
+          <a href={tool.href} target="_blank" rel="noopener noreferrer" className="mono" style={{ fontSize: 11, color: 'rgba(245,240,232,0.35)', textDecoration: 'none' }}>
+            PyPI ↗
+          </a>
+        </div>
       </div>
     </motion.div>
   );
 }
 
-/* ════════════════════════════════════════════════════════════════════════
-   TOOLS — horizontal dolly pan scene
-   Camera pans right through 4 tool cards as you scroll down
-════════════════════════════════════════════════════════════════════════ */
-const TOOLS = [
-  { layer: 'ATTACKS THE TOOLS', name: 'mcp-sploit', desc: 'Metasploit-style exploitation framework for MCP servers — enum, exfil, RCE, prompt-injection and policy-probe modules.', cmd: 'pip install mcp-sploit', href: 'https://pypi.org/project/mcp-sploit/' },
-  { layer: 'ATTACKS THE BRAIN', name: 'prompt-fuzz', desc: 'Async fuzzer with 51 curated jailbreak payloads across 10 categories — reports exactly which ones bypass your guardrails.', cmd: 'pip install prompt-fuzz-cli', href: 'https://pypi.org/project/prompt-fuzz-cli/' },
-  { layer: 'ATTACKS THE IDENTITY LAYER', name: 'nhi-hunter', desc: 'AWS IAM privilege-escalation pathfinder — builds the graph, finds the role chains that end at Admin.', cmd: 'pip install nhi-hunter', href: 'https://pypi.org/project/nhi-hunter/' },
-  { layer: 'WATCHES THE DATA', name: 'shadow-sniffer', desc: 'Offline shadow-AI detector — scans connection logs against a 39-domain AI service catalog and your allowlist.', cmd: 'pip install shadow-sniffer', href: 'https://pypi.org/project/shadow-sniffer/' },
-];
+function ToolsRackScene() {
+  const ref = useRef(null);
+  const p   = useSceneCamera(ref);
 
-function HorizontalToolsScene() {
-  const ref     = useRef(null);
-  const p       = useSceneCamera(ref, { smooth: false });
-  const x       = useTransform(p, [0.05, 0.95], ['0%', '-58%']);
+  /* Section label opacity */
   const labelOp = useTransform(p, [0, 0.06, 0.92, 1], [0, 1, 1, 0]);
-  const progressW = useTransform(p, [0.05, 0.95], ['0%', '100%']);
+
+  /* Active tool label */
+  const [activeIdx, setActiveIdx] = useState(0);
+  useEffect(() => {
+    const unsub = p.on('change', v => {
+      const idx = TOOLS.findIndex(t => v < t.focusAt + 0.13);
+      setActiveIdx(Math.max(0, idx === -1 ? TOOLS.length - 1 : idx));
+    });
+    return unsub;
+  }, [p]);
 
   return (
-    <PinnedScene vh="320vh" sceneRef={ref}>
+    <PinnedScene vh="340vh" sceneRef={ref}>
       {/* Header */}
       <motion.div style={{
-        position: 'absolute', top: '7vh', left: 'clamp(24px,5vw,72px)', right: 0, zIndex: 4,
-        opacity: labelOp,
+        position: 'absolute', top: '7vh', left: 'clamp(24px,5vw,72px)', right: 'clamp(24px,5vw,72px)',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
+        opacity: labelOp, zIndex: 4,
       }}>
-        <div className="mono" style={{ fontSize: 10, letterSpacing: '0.26em', color: 'rgba(245,240,232,0.35)', marginBottom: 6 }}>THE EXPANSION PACK</div>
-        <div className="cd" style={{ fontSize: 'clamp(20px,2.5vw,30px)', fontWeight: 600, color: INK }}>
-          Four tools. Four attack layers.
+        <div>
+          <div className="mono" style={{ fontSize: 10, letterSpacing: '0.26em', color: 'rgba(245,240,232,0.3)', marginBottom: 4 }}>THE EXPANSION PACK</div>
+          <div className="cd" style={{ fontSize: 'clamp(18px,2vw,26px)', fontWeight: 600, color: INK }}>Four tools. Four attack layers.</div>
         </div>
-        {/* Progress rail */}
-        <div style={{ marginTop: 14, width: 160, height: 1, background: 'rgba(245,240,232,0.1)', position: 'relative' }}>
-          <motion.div style={{ position: 'absolute', inset: 0, background: GOLD, width: progressW, transformOrigin: 'left' }}/>
+        {/* Active tool name */}
+        <div className="mono" style={{ fontSize: 12, color: GOLD, opacity: 0.8 }}>
+          {TOOLS[activeIdx].name}
         </div>
       </motion.div>
 
-      {/* Card rail */}
-      <motion.div style={{
-        display: 'flex', gap: 2,
-        x,
-        willChange: 'transform',
-        position: 'absolute',
-        left: 'clamp(24px,5vw,72px)',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        width: 'max-content',
-        paddingBottom: 4,
+      {/* 2×2 rack focus grid */}
+      <div style={{
+        display: 'grid', gridTemplateColumns: '1fr 1fr',
+        gap: 2, width: '100%',
+        padding: '0 clamp(24px,5vw,72px)',
+        maxWidth: 1100, margin: '0 auto',
       }}>
-        {TOOLS.map((tool, i) => (
-          <div key={tool.name} style={{ width: 'clamp(280px,28vw,400px)', flexShrink: 0 }}>
-            <ToolCard3D tool={tool} delay={0} />
-          </div>
+        {TOOLS.map(tool => (
+          <ToolRackCard key={tool.name} tool={tool} p={p} />
         ))}
-        {/* Cap label */}
-        <div style={{
-          width: 'clamp(220px,22vw,320px)', flexShrink: 0,
-          display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 32px',
-        }}>
-          <div className="mono" style={{ fontSize: 11, color: 'rgba(245,240,232,0.4)', lineHeight: 1.6 }}>
-            + mcp-aegis — the defensive gateway the offensive tools are tested against. Purple team in a box.
-          </div>
-        </div>
-      </motion.div>
+      </div>
     </PinnedScene>
   );
 }
 
-/* ─── Editorial row ─────────────────────────────────────────────────────── */
-function EditorialRow({ label, children }) {
+/* ════════════════════════════════════════════════════════════════════════════
+   EDITORIAL SECTIONS
+════════════════════════════════════════════════════════════════════════════ */
+const FLAGSHIP_POINTS = [
+  'Identity-first detection — 6 real-time ITDR detectors',
+  'Explainable AI triage on Groq + NVIDIA NIM',
+  'Attack-graph kill-chain reconstruction (Temporal Linker)',
+  'SOAR playbooks gated by human approval',
+  'Production endpoint agent — honey tokens to auto-block',
+  'Multi-tenancy security audit shipped in v10.1',
+];
+
+const CERTS_EARNED  = ['SC-200', 'Security+', 'TCM PEH'];
+const CERTS_PENDING = ['BTL1 — studying', 'eJPT — in progress', 'SC-300 — in progress'];
+
+function FlagshipSection() {
+  const ref = useRef(null);
+  const p   = useSectionParallax(ref);
+  const bgY = useTransform(p, [0, 1], ['-6%', '6%']);
+
   return (
-    <div style={{
-      display: 'grid', gridTemplateColumns: 'minmax(160px,240px) 1fr',
-      gap: 'clamp(24px,4vw,44px)',
-      borderTop: '1px solid rgba(245,240,232,0.1)',
-      padding: 'clamp(32px,5vw,48px) 0',
-    }}>
-      <div className="mono" style={{ fontSize: 11, letterSpacing: '0.22em', color: 'rgba(245,240,232,0.4)' }}>{label}</div>
-      <div>{children}</div>
-    </div>
+    <section ref={ref} style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', position: 'relative', overflow: 'hidden', borderTop: '1px solid rgba(245,240,232,0.06)' }}>
+      {/* Parallax depth layers */}
+      <motion.div aria-hidden style={{
+        position: 'absolute', inset: '-10%',
+        background: 'radial-gradient(ellipse 60% 50% at 80% 50%, rgba(245,158,11,0.04) 0%, transparent 70%)',
+        y: bgY, pointerEvents: 'none',
+      }}/>
+      <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px,1fr))', gap: 'clamp(40px,6vw,80px)', alignItems: 'start' }}>
+          <Reveal>
+            <div>
+              <div className="mono" style={{ fontSize: 10, letterSpacing: '0.24em', color: GOLD, marginBottom: 16 }}>FLAGSHIP — v10.1</div>
+              <h2 className="cd" style={{ fontSize: 'clamp(30px,3.5vw,52px)', fontWeight: 600, letterSpacing: '-0.025em', margin: '0 0 18px', lineHeight: 1.04 }}>AegisTrace</h2>
+              <p className="cg" style={{ fontSize: 16, lineHeight: 1.68, color: 'rgba(245,240,232,0.58)', maxWidth: 480, margin: '0 0 18px' }}>
+                A free, open Trust Operating System: identity-first detection, explainable AI triage, kill-chain reconstruction, SOAR playbooks with human approval gates, and a production-grade endpoint agent — running entirely on free-tier infrastructure.
+              </p>
+              <p className="cg" style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(245,240,232,0.36)', maxWidth: 480, margin: '0 0 28px' }}>
+                React 18 · FastAPI · SQLite · Groq · NVIDIA NIM · Docker · Render
+              </p>
+              <div style={{ display: 'flex', gap: 24 }}>
+                <a className="u-link" href="https://aegistrace-7qvn.onrender.com" target="_blank" rel="noopener noreferrer">Live <ArrowUpRight size={12} style={{ verticalAlign: -1 }}/></a>
+                <a className="u-link" href="https://github.com/Prasanna-27eng/AegisTrace" target="_blank" rel="noopener noreferrer">Source <ArrowUpRight size={12} style={{ verticalAlign: -1 }}/></a>
+              </div>
+            </div>
+          </Reveal>
+          <div style={{ background: 'rgba(245,240,232,0.02)', border: '1px solid rgba(245,240,232,0.08)', padding: 'clamp(20px,3vw,32px)' }}>
+            <div className="mono" style={{ fontSize: 10, letterSpacing: '0.2em', color: 'rgba(245,240,232,0.3)', marginBottom: 18 }}>WHAT IT SHIPS</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {FLAGSHIP_POINTS.map((pt, i) => (
+                <Reveal key={pt} delay={i * 0.05} y={10}>
+                  <div className="cg" style={{ display: 'flex', gap: 10, fontSize: 14, lineHeight: 1.55, color: 'rgba(245,240,232,0.62)' }}>
+                    <span className="mono" style={{ color: GOLD, flexShrink: 0 }}>▸</span><span>{pt}</span>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
-const CERTS_EARNED  = ['SC-200', 'Security+', 'TCM PEH'];
-const CERTS_PENDING = ['BTL1 — in progress', 'eJPT — in progress', 'SC-300 — in progress'];
+function BackgroundSection() {
+  const ref = useRef(null);
+  const p   = useSectionParallax(ref);
+  const lineW = useTransform(p, [0.2, 0.8], ['0%', '100%']);
 
-/* ════════════════════════════════════════════════════════════════════════
-   MAIN
-════════════════════════════════════════════════════════════════════════ */
+  return (
+    <section ref={ref} style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', position: 'relative', borderTop: '1px solid rgba(245,240,232,0.06)' }}>
+      <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+        {/* Animated horizontal rule */}
+        <div style={{ position: 'relative', height: 1, background: 'rgba(245,240,232,0.06)', marginBottom: 'clamp(40px,5vw,64px)' }}>
+          <motion.div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, background: GOLD, opacity: 0.5, width: lineW }}/>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(160px,240px) 1fr', gap: 'clamp(32px,5vw,64px)' }}>
+          <Reveal>
+            <div className="mono" style={{ fontSize: 10, letterSpacing: '0.22em', color: 'rgba(245,240,232,0.36)' }}>BACKGROUND</div>
+          </Reveal>
+          <div>
+            <Reveal>
+              <div className="cd" style={{ fontSize: 'clamp(20px,2.2vw,30px)', fontWeight: 600, color: INK, marginBottom: 20, lineHeight: 1.1 }}>
+                Blue Team SOC Analyst · Security Tooling Developer
+              </div>
+            </Reveal>
+            <Reveal delay={0.06}>
+              <p className="cg" style={{ fontSize: 15.5, lineHeight: 1.68, color: 'rgba(245,240,232,0.52)', maxWidth: 680, margin: '0 0 28px' }}>
+                Case triage, threat hunting, identity threat detection and incident response — plus designing, building, red-teaming and shipping the tooling that does it. Every feature in AegisTrace exists because a real gap in production tooling needed it.
+              </p>
+            </Reveal>
+            <Reveal delay={0.1}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px,1fr))', gap: 20 }}>
+                <div>
+                  <div className="mono" style={{ fontSize: 10, letterSpacing: '0.2em', color: 'rgba(245,240,232,0.3)', marginBottom: 12 }}>CERTIFICATIONS</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {CERTS_EARNED.map(c => (
+                      <span key={c} className="mono" style={{ fontSize: 12, border: '1px solid rgba(245,158,11,0.35)', color: INK, borderRadius: 100, padding: '7px 14px' }}>{c}</span>
+                    ))}
+                    {CERTS_PENDING.map(c => (
+                      <span key={c} className="mono" style={{ fontSize: 12, border: '1px solid rgba(245,240,232,0.14)', color: 'rgba(245,240,232,0.42)', borderRadius: 100, padding: '7px 14px' }}>{c}</span>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="mono" style={{ fontSize: 10, letterSpacing: '0.2em', color: 'rgba(245,240,232,0.3)', marginBottom: 12 }}>EDUCATION</div>
+                  <div className="cd" style={{ fontSize: 18, fontWeight: 600, color: INK, marginBottom: 4 }}>MSc Information Systems</div>
+                  <div className="cg" style={{ fontSize: 14, color: 'rgba(245,240,232,0.44)' }}>Dublin Business School · 2025</div>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   CTA
+════════════════════════════════════════════════════════════════════════════ */
+function CTASection() {
+  const ref = useRef(null);
+  const p   = useSectionParallax(ref);
+  /* Dolly-zoom settle on CTA heading as it enters viewport */
+  const ctaScale = useTransform(p, [0.1, 0.55], [1.06, 1.0], { clamp: true });
+  const ctaOp    = useTransform(p, [0.1, 0.45], [0, 1], { clamp: true });
+
+  return (
+    <section ref={ref} style={{
+      padding: 'clamp(100px,14vw,160px) clamp(24px,5vw,72px)',
+      textAlign: 'center', position: 'relative', overflow: 'hidden',
+      borderTop: '1px solid rgba(245,240,232,0.06)',
+    }}>
+      <div aria-hidden style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 640, height: 420, background: 'radial-gradient(ellipse, rgba(245,158,11,0.07) 0%, transparent 68%)', pointerEvents: 'none' }}/>
+      <motion.div style={{ scale: ctaScale, opacity: ctaOp, willChange: 'transform, opacity' }}>
+        <h2 className="cd" style={{ fontSize: 'clamp(36px,5.5vw,80px)', fontWeight: 600, letterSpacing: '-0.025em', margin: '0 0 28px', lineHeight: 1.0, color: INK }}>
+          Let&apos;s <span style={{ color: GOLD }}>talk shop.</span>
+        </h2>
+        <p className="cg" style={{ fontSize: 16, color: 'rgba(245,240,232,0.44)', lineHeight: 1.7, maxWidth: 440, margin: '0 auto 40px' }}>
+          Open to blue team roles, security engineering, and product work at the intersection of AI and security.
+        </p>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <a className="gold-btn" href="mailto:Prasanna80564@gmail.com" style={{ fontSize: 14, padding: '14px 32px' }}>Email me <ArrowRight size={15}/></a>
+          <a className="ghost-btn" href="https://github.com/Prasanna-27eng" target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, padding: '13px 26px' }}>GitHub</a>
+          <a className="ghost-btn" href="https://www.linkedin.com/in/prasannakumarsurendran" target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, padding: '13px 26px' }}>LinkedIn</a>
+        </div>
+      </motion.div>
+    </section>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   NAV
+════════════════════════════════════════════════════════════════════════════ */
+function Nav() {
+  const { scrollY } = useScroll();
+  const navBg = useTransform(scrollY, [0, 80], ['rgba(5,4,5,0)', 'rgba(5,4,5,0.92)']);
+  const navBorder = useTransform(scrollY, [60, 100], ['rgba(245,240,232,0)', 'rgba(245,240,232,0.08)']);
+  const navBlur = useTransform(scrollY, [0, 80], [0, 18]);
+  const navFilter = useTransform(navBlur, v => `blur(${v}px)`);
+
+  return (
+    <motion.nav style={{
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '0 clamp(20px,4vw,56px)', height: 64,
+      background: navBg, backdropFilter: navFilter, WebkitBackdropFilter: navFilter,
+      borderBottom: `1px solid`,
+      borderColor: navBorder,
+      transition: 'border-color 300ms',
+    }}>
+      <Link to="/" className="cd" style={{ color: INK, textDecoration: 'none', fontSize: 16, fontWeight: 700, letterSpacing: '0.1em' }}>AEGISTRACE</Link>
+      <div style={{ display: 'flex', gap: 'clamp(16px,3vw,36px)', alignItems: 'center' }}>
+        <Link to="/" className="nav-link">Home</Link>
+        <Link to="/mission" className="nav-link">Mission</Link>
+        <Link to="/platform" className="nav-link">Platform</Link>
+        <Link to="/app/login" className="gold-btn" style={{ padding: '9px 18px', fontSize: 12 }}>Platform <ArrowRight size={12}/></Link>
+      </div>
+    </motion.nav>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   ROOT
+════════════════════════════════════════════════════════════════════════════ */
 export default function Portfolio() {
-  const isMobile  = useIsMobile();
-  const reduced   = useReducedMotion();
-  const useFallback = isMobile || reduced;
+  useLenis();
+  const isMobile = useIsMobile();
+  const reduced  = useReducedMotion();
 
   return (
     <div style={{ background: BG, color: INK, overflowX: 'clip', minHeight: '100vh', position: 'relative', isolation: 'isolate' }}>
       <AmbientEmbers/>
       <ScrollProgressBar/>
+      <Nav/>
+
       <style>{`
         .cd   { font-family: 'Clash Display', sans-serif; }
         .cg   { font-family: 'Cabinet Grotesk', sans-serif; }
         .mono { font-family: 'JetBrains Mono', monospace; }
 
         .gold-btn {
-          display: inline-flex; align-items: center; gap: 9px;
+          display: inline-flex; align-items: center; gap: 8px;
           background: ${GOLD}; color: #000; font-weight: 700;
           font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px;
-          padding: 13px 26px; border: none; cursor: pointer;
+          padding: 12px 24px; border: none; cursor: pointer;
           text-decoration: none; letter-spacing: 0.03em;
-          transition: background 140ms cubic-bezier(0.16,1,0.3,1), transform 90ms, box-shadow 140ms;
+          transition: background 140ms ${EOUT.join(',')}, transform 100ms, box-shadow 140ms;
         }
-        .gold-btn:hover  { background: #FBBF24; box-shadow: 0 0 24px rgba(245,158,11,0.35); transform: translateY(-2px); }
-        .gold-btn:active { transform: scale(0.97); }
+        .gold-btn:hover  { background: #FBBF24; box-shadow: 0 0 20px rgba(245,158,11,0.3); transform: translateY(-2px); }
+        .gold-btn:active { transform: scale(0.97) translateY(0); }
 
         .ghost-btn {
           display: inline-flex; align-items: center; gap: 8px;
-          background: transparent; color: rgba(245,240,232,0.75);
+          background: transparent; color: rgba(245,240,232,0.7);
           font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px; font-weight: 500;
-          padding: 12px 24px; border: 1px solid rgba(245,240,232,0.2);
-          cursor: pointer; text-decoration: none; letter-spacing: 0.03em;
-          transition: border-color 140ms, color 140ms, transform 90ms;
+          padding: 11px 22px; border: 1px solid rgba(245,240,232,0.18);
+          cursor: pointer; text-decoration: none; letter-spacing: 0.02em;
+          transition: border-color 140ms, color 140ms, transform 100ms;
         }
-        .ghost-btn:hover  { border-color: rgba(245,240,232,0.44); color: #F5F0E8; transform: translateY(-2px); }
-        .ghost-btn:active { transform: scale(0.97); }
+        .ghost-btn:hover  { border-color: rgba(245,240,232,0.4); color: ${INK}; transform: translateY(-2px); }
+        .ghost-btn:active { transform: scale(0.97) translateY(0); }
 
         .nav-link {
           font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px; font-weight: 500;
-          color: rgba(245,240,232,0.6); text-decoration: none; letter-spacing: 0.03em;
-          transition: color 140ms; position: relative;
+          color: rgba(245,240,232,0.58); text-decoration: none; letter-spacing: 0.02em;
+          position: relative; transition: color 140ms;
         }
-        .nav-link:hover { color: #F5F0E8; }
+        .nav-link:hover { color: ${INK}; }
         .nav-link::after {
-          content: ''; position: absolute; left: 0; right: 100%; bottom: -4px;
-          height: 1px; background: #F59E0B;
-          transition: right 260ms cubic-bezier(0.16,1,0.3,1);
+          content: ''; position: absolute; left: 0; right: 100%; bottom: -3px;
+          height: 1px; background: ${GOLD};
+          transition: right 240ms cubic-bezier(0.16,1,0.3,1);
         }
         .nav-link:hover::after { right: 0; }
 
         .u-link {
-          font-family: 'Cabinet Grotesk', sans-serif; font-size: 15.5px; font-weight: 700;
-          color: #F5F0E8; text-decoration: none;
-          border-bottom: 1px solid rgba(245,158,11,0.5); padding-bottom: 4px;
+          font-family: 'Cabinet Grotesk', sans-serif; font-size: 15px; font-weight: 700;
+          color: ${INK}; text-decoration: none;
+          border-bottom: 1px solid rgba(245,158,11,0.45); padding-bottom: 3px;
           transition: color 140ms, border-color 140ms;
         }
         .u-link:hover { color: ${GOLD}; border-color: ${GOLD}; }
 
-        ::selection { background: rgba(245,158,11,0.35); color: #F5F0E8; }
+        ::selection { background: rgba(245,158,11,0.3); color: ${INK}; }
 
         @keyframes float-badge {
           0%,100% { transform: translate(-50%,-50%) translateY(0px); }
-          50%      { transform: translate(-50%,-50%) translateY(-8px); }
+          50%      { transform: translate(-50%,-50%) translateY(-7px); }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -613,165 +735,71 @@ export default function Portfolio() {
         }
       `}</style>
 
-      {/* ── NAV ── */}
-      <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 clamp(20px,4vw,56px)', height: 64,
-        background: 'linear-gradient(180deg, rgba(5,4,5,0.88), rgba(5,4,5,0))',
-        backdropFilter: 'blur(0px)',
-      }}>
-        <Link to="/" className="cd" style={{ color: INK, textDecoration: 'none', fontSize: 17, fontWeight: 700, letterSpacing: '0.1em' }}>AEGISTRACE</Link>
-        <div style={{ display: 'flex', gap: 'clamp(16px,3vw,36px)', alignItems: 'center' }}>
-          <Link to="/" className="nav-link">Home</Link>
-          <Link to="/mission" className="nav-link">Mission</Link>
-          <Link to="/app/login" className="gold-btn" style={{ padding: '9px 18px', fontSize: 12 }}>Platform <ArrowRight size={13}/></Link>
-        </div>
-      </nav>
-
-      {/* ── HERO ── */}
-      {useFallback ? <MobileHero/> : <HeroScene/>}
-
-      {/* ── STATS SCENE ── */}
-      {!useFallback && <StatsScene/>}
-
-      {/* Mobile stats fallback */}
-      {useFallback && (
-        <section style={{ padding: '0 clamp(24px,5vw,72px)' }}>
-          <div style={{ maxWidth: 1240, margin: '0 auto' }}>
-            <Reveal>
-              <div style={{
-                display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px,1fr))',
-                borderTop: '1px solid rgba(245,240,232,0.1)', borderBottom: '1px solid rgba(245,240,232,0.1)',
-              }}>
-                {STATS_DATA.map(s => (
-                  <div key={s.label} style={{ padding: '36px 24px 36px 0' }}>
-                    <div className="mono" style={{ fontSize: 40, fontWeight: 700, color: GOLD, lineHeight: 1 }}>
-                      <Counter end={s.end} suffix={s.suffix}/>
-                    </div>
-                    <div className="cg" style={{ fontSize: 13.5, color: 'rgba(245,240,232,0.5)', marginTop: 8 }}>{s.label}</div>
-                  </div>
-                ))}
-              </div>
+      {(isMobile || reduced) ? (
+        /* ── Mobile / reduced-motion fallback ── */
+        <div style={{ paddingTop: 64 }}>
+          <section style={{ minHeight: '80vh', display: 'flex', alignItems: 'flex-end', position: 'relative', overflow: 'hidden' }}>
+            <div aria-hidden style={{ position: 'absolute', inset: '-6%', backgroundImage: "url('/assets/pages/login-bg.jpg')", backgroundSize: 'cover', backgroundPosition: 'center 25%', opacity: 0.45 }}/>
+            <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(5,4,5,0.7) 0%, rgba(5,4,5,0.96) 100%)' }}/>
+            <Reveal style={{ position: 'relative', zIndex: 2, padding: '0 24px 60px' }}>
+              <div className="mono" style={{ fontSize: 11, letterSpacing: '0.26em', color: GOLD, marginBottom: 16 }}>BLUE TEAM · DUBLIN, IRELAND</div>
+              <h1 className="cd" style={{ fontSize: 'clamp(36px,10vw,56px)', fontWeight: 600, lineHeight: 1.04, letterSpacing: '-0.02em', color: INK, margin: '0 0 16px' }}>Prasanna Kumar Surendran</h1>
+              <p className="cg" style={{ fontSize: 16, fontWeight: 500, color: 'rgba(245,240,232,0.56)', maxWidth: 420, margin: 0 }}>One analyst. An entire SOC.</p>
             </Reveal>
-          </div>
-        </section>
+          </section>
+          <section style={{ padding: '48px 24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px,1fr))', gap: 1, borderTop: '1px solid rgba(245,240,232,0.08)', borderBottom: '1px solid rgba(245,240,232,0.08)' }}>
+              {STATS_DATA.map(s => (
+                <div key={s.label} style={{ padding: '28px 16px 28px 0' }}>
+                  <div className="mono" style={{ fontSize: 34, fontWeight: 700, color: GOLD, lineHeight: 1 }}>{s.n}</div>
+                  <div className="cg" style={{ fontSize: 12.5, color: 'rgba(245,240,232,0.48)', marginTop: 6 }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      ) : (
+        /* ── Desktop: full cinematic experience ── */
+        <>
+          <HeroScene/>
+          <FlythroughScene/>
+        </>
       )}
 
-      {/* ── FLAGSHIP ── */}
-      <section style={{ padding: 'clamp(72px,10vw,110px) clamp(24px,5vw,72px) 0' }}>
-        <div style={{ maxWidth: 1240, margin: '0 auto' }}>
-          <Reveal>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px,1fr))', gap: 56, alignItems: 'center' }}>
-              <div>
-                <div className="mono" style={{ fontSize: 11, letterSpacing: '0.24em', color: GOLD, marginBottom: 16 }}>FLAGSHIP — v10.1</div>
-                <h2 className="cd" style={{ fontSize: 'clamp(34px,4vw,56px)', fontWeight: 600, letterSpacing: '-0.02em', margin: '0 0 16px' }}>AegisTrace</h2>
-                <p className="cg" style={{ fontSize: 16.5, lineHeight: 1.65, color: 'rgba(245,240,232,0.6)', maxWidth: 480, margin: '0 0 18px' }}>
-                  A free, open Trust Operating System: identity-first detection, explainable AI triage, kill-chain reconstruction, SOAR playbooks with human approval gates, and a production-grade endpoint agent — running entirely on free-tier infrastructure.
-                </p>
-                <p className="cg" style={{ fontSize: 15, lineHeight: 1.6, color: 'rgba(245,240,232,0.45)', maxWidth: 480, margin: '0 0 26px' }}>
-                  React 18 · FastAPI · SQLite · Groq · NVIDIA NIM · Docker · Render
-                </p>
-                <div style={{ display: 'flex', gap: 24 }}>
-                  <a className="u-link" href="https://aegistrace-7qvn.onrender.com" target="_blank" rel="noopener noreferrer">Live <ArrowUpRight size={13} style={{ verticalAlign: -1 }}/></a>
-                  <a className="u-link" href="https://github.com/Prasanna-27eng/AegisTrace" target="_blank" rel="noopener noreferrer">Source <ArrowUpRight size={13} style={{ verticalAlign: -1 }}/></a>
-                </div>
-              </div>
-              <div style={{ background: '#0A0908', border: '1px solid rgba(245,240,232,0.1)', borderRadius: 14, padding: '30px 32px' }}>
-                <div className="mono" style={{ fontSize: 11, letterSpacing: '0.2em', color: 'rgba(245,240,232,0.45)', marginBottom: 18 }}>WHAT IT SHIPS</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {FLAGSHIP_POINTS.map((pt, i) => (
-                    <Reveal key={pt} delay={i * 0.06} y={12}>
-                      <div className="cg" style={{ display: 'flex', gap: 10, fontSize: 14.5, lineHeight: 1.55, color: 'rgba(245,240,232,0.65)' }}>
-                        <span className="mono" style={{ color: GOLD, flexShrink: 0 }}>▸</span><span>{pt}</span>
-                      </div>
-                    </Reveal>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
+      <FlagshipSection/>
 
-      {/* ── TOOLS — Horizontal dolly scene (desktop) or grid (mobile) ── */}
-      {!useFallback ? (
-        <HorizontalToolsScene/>
-      ) : (
-        <section style={{ padding: 'clamp(72px,10vw,110px) clamp(24px,5vw,72px) 0' }}>
+      {!isMobile && !reduced && <ToolsRackScene/>}
+
+      {(isMobile || reduced) && (
+        <section style={{ padding: 'clamp(60px,8vw,100px) clamp(24px,5vw,72px)' }}>
           <div style={{ maxWidth: 1240, margin: '0 auto' }}>
-            <Reveal>
-              <h2 className="cd" style={{ fontSize: 'clamp(32px,4vw,56px)', fontWeight: 600, letterSpacing: '-0.02em', margin: '0 0 14px' }}>The expansion pack.</h2>
-              <p className="cg" style={{ fontSize: 16.5, color: 'rgba(245,240,232,0.55)', maxWidth: 560, margin: '0 0 48px', lineHeight: 1.6 }}>
-                Four standalone offensive-security tools — each one attacks a different layer of the AI stack.
-              </p>
+            <Reveal style={{ marginBottom: 32 }}>
+              <h2 className="cd" style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 600, letterSpacing: '-0.02em', margin: 0 }}>The expansion pack.</h2>
             </Reveal>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px,1fr))', gap: 1, background: 'rgba(245,240,232,0.1)', border: '1px solid rgba(245,240,232,0.1)' }}>
-              {TOOLS.map((tool, i) => (
-                <ToolCard3D key={tool.name} tool={tool} delay={i * 0.07}/>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 2, background: 'rgba(245,240,232,0.08)', border: '1px solid rgba(245,240,232,0.08)' }}>
+              {TOOLS.map(t => (
+                <div key={t.name} style={{ padding: '26px 22px', background: BG }}>
+                  <div className="mono" style={{ fontSize: 10, color: 'rgba(245,240,232,0.32)', marginBottom: 12 }}>{t.layer}</div>
+                  <div className="mono" style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: INK }}>{t.name}</div>
+                  <p className="cg" style={{ fontSize: 13.5, lineHeight: 1.6, color: 'rgba(245,240,232,0.5)', margin: '0 0 14px' }}>{t.desc}</p>
+                  <a className="mono" href={t.href} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11.5, color: GOLD, textDecoration: 'none' }}>{t.cmd} ↗</a>
+                </div>
               ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* ── BACKGROUND ── */}
-      <section style={{ padding: 'clamp(72px,10vw,110px) clamp(24px,5vw,72px) 0' }}>
-        <div style={{ maxWidth: 1240, margin: '0 auto' }}>
-          <Reveal>
-            <EditorialRow label="EXPERIENCE">
-              <div className="cd" style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>Blue Team SOC Analyst · Security Tooling Developer</div>
-              <p className="cg" style={{ fontSize: 15.5, lineHeight: 1.6, color: 'rgba(245,240,232,0.55)', maxWidth: 720, margin: 0 }}>
-                Case triage, threat hunting, identity threat detection and incident response — plus designing, building, red-teaming and shipping the tooling that does it. Every feature in AegisTrace exists because a real shift needed it.
-              </p>
-            </EditorialRow>
-          </Reveal>
-          <Reveal>
-            <EditorialRow label="CERTIFICATIONS">
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-                {CERTS_EARNED.map(c => (
-                  <span key={c} className="mono" style={{ fontSize: 12.5, border: '1px solid rgba(245,158,11,0.4)', color: INK, borderRadius: 100, padding: '9px 18px' }}>{c}</span>
-                ))}
-                {CERTS_PENDING.map(c => (
-                  <span key={c} className="mono" style={{ fontSize: 12.5, border: '1px solid rgba(245,240,232,0.18)', color: 'rgba(245,240,232,0.5)', borderRadius: 100, padding: '9px 18px' }}>{c}</span>
-                ))}
-              </div>
-            </EditorialRow>
-          </Reveal>
-          <Reveal>
-            <EditorialRow label="EDUCATION">
-              <div className="cd" style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>MSc Information Systems &amp; Computing</div>
-              <p className="cg" style={{ fontSize: 15, color: 'rgba(245,240,232,0.55)', margin: 0 }}>Dublin Business School · 2025</p>
-            </EditorialRow>
-          </Reveal>
-          <div style={{ borderTop: '1px solid rgba(245,240,232,0.1)' }}/>
-        </div>
-      </section>
+      <BackgroundSection/>
+      <CTASection/>
 
-      {/* ── CONTACT CTA ── */}
-      <section style={{ padding: 'clamp(96px,12vw,150px) clamp(24px,5vw,72px)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-        {/* Gold bloom */}
-        <div aria-hidden style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 700, height: 500, background: 'radial-gradient(ellipse, rgba(245,158,11,0.07) 0%, transparent 68%)', pointerEvents: 'none' }}/>
-        <h2 className="cd" style={{ fontSize: 'clamp(40px,6vw,92px)', fontWeight: 600, letterSpacing: '-0.02em', margin: '0 0 34px', lineHeight: 1.02 }}>
-          <SplitReveal text="Let's talk shop." stagger={0.03}/>
-        </h2>
-        <Reveal delay={0.1}>
-          <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a className="gold-btn" href="mailto:Prasanna80564@gmail.com" style={{ fontSize: 14, padding: '15px 34px' }}>Email me <ArrowRight size={16}/></a>
-            <a className="ghost-btn" href="https://github.com/Prasanna-27eng" target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, padding: '14px 28px' }}>GitHub</a>
-            <a className="ghost-btn" href="https://www.linkedin.com/in/prasannakumarsurendran" target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, padding: '14px 28px' }}>LinkedIn</a>
-          </div>
-        </Reveal>
-      </section>
-
-      {/* ── FOOTER ── */}
-      <footer style={{ borderTop: '1px solid rgba(245,240,232,0.05)', padding: '32px clamp(24px,5vw,72px)' }}>
-        <div style={{ maxWidth: 1240, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-          <span className="mono" style={{ color: 'rgba(245,240,232,0.4)', fontSize: 12, letterSpacing: '0.18em' }}>PRASANNA KUMAR SURENDRAN — DUBLIN, IRELAND</span>
-          <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap' }}>
-            <Link to="/" className="cg" style={{ color: 'rgba(245,240,232,0.28)', fontSize: 12, textDecoration: 'none' }}>Home</Link>
-            <Link to="/mission" className="cg" style={{ color: 'rgba(245,240,232,0.28)', fontSize: 12, textDecoration: 'none' }}>Mission</Link>
-            <Link to="/app/login" className="cg" style={{ color: 'rgba(245,240,232,0.28)', fontSize: 12, textDecoration: 'none' }}>Platform</Link>
+      <footer style={{ borderTop: '1px solid rgba(245,240,232,0.05)', padding: '28px clamp(24px,5vw,72px)' }}>
+        <div style={{ maxWidth: 1240, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
+          <span className="mono" style={{ color: 'rgba(245,240,232,0.36)', fontSize: 11, letterSpacing: '0.18em' }}>PRASANNA KUMAR SURENDRAN — DUBLIN, IRELAND</span>
+          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+            <Link to="/" className="cg" style={{ color: 'rgba(245,240,232,0.26)', fontSize: 12, textDecoration: 'none' }}>Home</Link>
+            <Link to="/mission" className="cg" style={{ color: 'rgba(245,240,232,0.26)', fontSize: 12, textDecoration: 'none' }}>Mission</Link>
+            <Link to="/app/login" className="cg" style={{ color: 'rgba(245,240,232,0.26)', fontSize: 12, textDecoration: 'none' }}>Platform</Link>
           </div>
         </div>
       </footer>

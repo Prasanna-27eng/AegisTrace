@@ -929,7 +929,7 @@ export default function Landing() {
   /* Lenis smooth scroll — desktop only */
   useEffect(() => {
     if (reduced || useFallback) return;
-    const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
+    const lenis = new Lenis({ lerp: 0.06, smoothWheel: true, wheelMultiplier: 0.88, infinite: false });
     const raf = time => { lenis.raf(time); requestAnimationFrame(raf); };
     requestAnimationFrame(raf);
     return () => lenis.destroy();
