@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
-  ChevronLeft, ChevronRight, LogOut, Search,
+  ChevronLeft, ChevronRight, ChevronDown, LogOut, Search,
   LayoutDashboard, Radio, BarChart3,
   FolderOpen, Crosshair, Share2, Monitor, Mail, Rss,
   Radar, ShieldAlert, ScanEye, BookOpen,
@@ -61,10 +61,50 @@ const NAV_GROUPS = [
   },
 ];
 
+/* ── Animated collapsible group children ───────────────────────────────── */
+function GroupChildren({ open, children }) {
+  const ref = useRef(null);
+  const [height, setHeight] = useState(0);
+
+  useEffect(() => {
+    if (ref.current) setHeight(ref.current.scrollHeight);
+  }, [children]);
+
+  return (
+    <div style={{
+      overflow: 'hidden',
+      maxHeight: open ? `${height}px` : '0px',
+      transition: 'max-height 220ms cubic-bezier(0.23,1,0.32,1)',
+    }}>
+      <div ref={ref}>{children}</div>
+    </div>
+  );
+}
+
 export default function Sidebar({ collapsed, setCollapsed }) {
   const { logout, user } = useStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
+
+  /* Track which groups are open — Overview open by default, rest closed */
+  const [openGroups, setOpenGroups] = useState(() => {
+    const initial = {};
+    NAV_GROUPS.forEach(g => { initial[g.label] = g.label === 'Overview'; });
+    return initial;
+  });
+
+  /* Auto-open the group containing the active route */
+  useEffect(() => {
+    NAV_GROUPS.forEach(g => {
+      const hasActive = g.items.some(item => location.pathname.startsWith(item.to));
+      if (hasActive) setOpenGroups(prev => ({ ...prev, [g.label]: true }));
+    });
+  }, [location.pathname]);
+
+  const toggleGroup = (label) => {
+    setOpenGroups(prev => ({ ...prev, [label]: !prev[label] }));
+  };
 
   const initials = user?.name
     ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
@@ -200,84 +240,144 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
         {/* Nav groups */}
         <nav style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '4px 0' }}>
-          {filteredGroups.map(group => (
-            <div key={group.label} style={{ marginBottom: 2 }}>
-              {/* Group header */}
-              {!collapsed && (
-                <div style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 10,
-                  letterSpacing: '0.1em',
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                  padding: '10px 16px 3px',
-                  userSelect: 'none',
-                }}>
-                  {group.label}
-                </div>
-              )}
-              {collapsed && <div style={{ height: 6 }} />}
+          {filteredGroups.map(group => {
+            const isOpen = searchQuery.trim() ? true : (openGroups[group.label] ?? false);
+            const hasActiveItem = group.items.some(item => location.pathname.startsWith(item.to));
 
-              {group.items.map(({ to, label, Icon }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  title={collapsed ? label : undefined}
-                  style={({ isActive }) => ({
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 9,
-                    padding: collapsed ? '9px 0' : '7px 14px',
-                    margin: '1px 6px',
-                    borderRadius: 6,
-                    textDecoration: 'none',
-                    fontFamily: 'var(--font-ui)',
-                    fontSize: 13,
-                    fontWeight: isActive ? 500 : 400,
-                    color: isActive ? '#60A5FA' : 'var(--text-secondary)',
-                    background: isActive ? 'rgba(37,99,235,0.10)' : 'transparent',
-                    borderLeft: isActive ? '2px solid #2563EB' : '2px solid transparent',
-                    transition: 'background 140ms ease-out, color 140ms ease-out, border-color 120ms ease-out',
-                    cursor: 'pointer',
-                    justifyContent: collapsed ? 'center' : 'flex-start',
-                    paddingLeft: collapsed ? 0 : isActive ? 12 : 14,
-                  })}
-                  onMouseEnter={e => {
-                    const el = e.currentTarget;
-                    if (!el.getAttribute('aria-current')) {
-                      el.style.background = 'rgba(148,163,184,0.06)';
-                      el.style.color = 'var(--text-primary)';
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    const el = e.currentTarget;
-                    if (!el.getAttribute('aria-current')) {
-                      el.style.background = 'transparent';
-                      el.style.color = 'var(--text-secondary)';
-                    }
-                  }}
-                >
-                  {({ isActive }) => (
-                    <>
-                      <Icon
-                        size={15}
-                        style={{
-                          flexShrink: 0,
-                          color: isActive ? '#60A5FA' : 'var(--text-muted)',
-                          transition: 'color 140ms ease-out',
+            return (
+              <div key={group.label} style={{ marginBottom: 1 }}>
+
+                {/* ── Group header (clickable to toggle) ── */}
+                {!collapsed ? (
+                  <button
+                    onClick={() => toggleGroup(group.label)}
+                    title={group.label}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      padding: '8px 16px 4px',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      userSelect: 'none',
+                      gap: 6,
+                    }}
+                  >
+                    <span style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: 10,
+                      letterSpacing: '0.1em',
+                      color: hasActiveItem ? 'rgba(96,165,250,0.7)' : 'var(--text-muted)',
+                      textTransform: 'uppercase',
+                      transition: 'color 140ms ease-out',
+                    }}>
+                      {group.label}
+                    </span>
+                    <ChevronDown
+                      size={10}
+                      style={{
+                        color: 'var(--text-muted)',
+                        flexShrink: 0,
+                        transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
+                        transition: 'transform 200ms cubic-bezier(0.23,1,0.32,1)',
+                      }}
+                    />
+                  </button>
+                ) : (
+                  /* Collapsed: thin separator instead of group label */
+                  <div style={{ height: 1, background: 'var(--border)', margin: '6px 8px' }} />
+                )}
+
+                {/* ── Group children (animated collapse) ── */}
+                {!collapsed ? (
+                  <GroupChildren open={isOpen}>
+                    {group.items.map(({ to, label, Icon }) => (
+                      <NavLink
+                        key={to}
+                        to={to}
+                        style={({ isActive }) => ({
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 9,
+                          padding: '6px 14px',
+                          margin: '1px 6px',
+                          borderRadius: 6,
+                          textDecoration: 'none',
+                          fontFamily: 'var(--font-ui)',
+                          fontSize: 13,
+                          fontWeight: isActive ? 500 : 400,
+                          color: isActive ? '#60A5FA' : 'var(--text-secondary)',
+                          background: isActive ? 'rgba(37,99,235,0.10)' : 'transparent',
+                          borderLeft: isActive ? '2px solid #2563EB' : '2px solid transparent',
+                          transition: 'background 140ms ease-out, color 140ms ease-out',
+                          cursor: 'pointer',
+                        })}
+                        onMouseEnter={e => {
+                          if (!e.currentTarget.getAttribute('aria-current')) {
+                            e.currentTarget.style.background = 'rgba(148,163,184,0.06)';
+                            e.currentTarget.style.color = 'var(--text-primary)';
+                          }
                         }}
-                      />
-                      {!collapsed && (
-                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {label}
-                        </span>
+                        onMouseLeave={e => {
+                          if (!e.currentTarget.getAttribute('aria-current')) {
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.color = 'var(--text-secondary)';
+                          }
+                        }}
+                      >
+                        {({ isActive }) => (
+                          <>
+                            <Icon size={15} style={{ flexShrink: 0, color: isActive ? '#60A5FA' : 'var(--text-muted)', transition: 'color 140ms' }} />
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {label}
+                            </span>
+                          </>
+                        )}
+                      </NavLink>
+                    ))}
+                  </GroupChildren>
+                ) : (
+                  /* Collapsed: show all icons, no labels, no grouping animation */
+                  group.items.map(({ to, label, Icon }) => (
+                    <NavLink
+                      key={to}
+                      to={to}
+                      title={label}
+                      style={({ isActive }) => ({
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '8px 0',
+                        margin: '1px 6px',
+                        borderRadius: 6,
+                        textDecoration: 'none',
+                        background: isActive ? 'rgba(37,99,235,0.10)' : 'transparent',
+                        borderLeft: isActive ? '2px solid #2563EB' : '2px solid transparent',
+                        transition: 'background 140ms ease-out',
+                        cursor: 'pointer',
+                      })}
+                      onMouseEnter={e => {
+                        if (!e.currentTarget.getAttribute('aria-current')) {
+                          e.currentTarget.style.background = 'rgba(148,163,184,0.06)';
+                        }
+                      }}
+                      onMouseLeave={e => {
+                        if (!e.currentTarget.getAttribute('aria-current')) {
+                          e.currentTarget.style.background = 'transparent';
+                        }
+                      }}
+                    >
+                      {({ isActive }) => (
+                        <Icon size={15} style={{ color: isActive ? '#60A5FA' : 'var(--text-muted)' }} />
                       )}
-                    </>
-                  )}
-                </NavLink>
-              ))}
-            </div>
-          ))}
+                    </NavLink>
+                  ))
+                )}
+              </div>
+            );
+          })}
         </nav>
 
         {/* Divider */}
