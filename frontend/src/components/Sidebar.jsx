@@ -1,53 +1,62 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, LogOut, Search } from 'lucide-react';
+import {
+  ChevronLeft, ChevronRight, LogOut, Search,
+  LayoutDashboard, Radio, BarChart3,
+  FolderOpen, Crosshair, Share2, Monitor, Mail, Rss,
+  Radar, ShieldAlert, ScanEye, BookOpen,
+  Plug, KeyRound, FlaskConical, Wrench,
+  Settings2, ScrollText, Lock, ClipboardList,
+  Shield,
+} from 'lucide-react';
 import useStore from '../store/useStore';
 
+/* ─── Icon map — Lucide icons only, no emoji ────────────────────────────── */
 const NAV_GROUPS = [
   {
     label: 'Overview',
     items: [
-      { to: '/app/dashboard',       label: 'Dashboard',         icon: '📊' },
-      { to: '/app/control-plane',   label: 'Control Plane',     icon: '🛡️' },
-      { to: '/app/analytics',       label: 'Analytics',         icon: '📈' },
+      { to: '/app/dashboard',       label: 'Dashboard',         Icon: LayoutDashboard },
+      { to: '/app/control-plane',   label: 'Control Plane',     Icon: Radio           },
+      { to: '/app/analytics',       label: 'Analytics',         Icon: BarChart3       },
     ],
   },
   {
     label: 'Threat Management',
     items: [
-      { to: '/app/cases',           label: 'Cases',             icon: '📁' },
-      { to: '/app/hunt',            label: 'Threat Hunt',       icon: '🔍' },
-      { to: '/app/identity-graph',  label: 'Identity',          icon: '🕸️' },
-      { to: '/app/endpoints',       label: 'Endpoints',         icon: '💻' },
-      { to: '/app/email',           label: 'Email Analysis',    icon: '📧' },
-      { to: '/app/feeds',           label: 'Threat Feeds',      icon: '📡' },
+      { to: '/app/cases',           label: 'Cases',             Icon: FolderOpen  },
+      { to: '/app/hunt',            label: 'Threat Hunt',       Icon: Crosshair   },
+      { to: '/app/identity-graph',  label: 'Identity Graph',    Icon: Share2      },
+      { to: '/app/endpoints',       label: 'Endpoints',         Icon: Monitor     },
+      { to: '/app/email',           label: 'Email Analysis',    Icon: Mail        },
+      { to: '/app/feeds',           label: 'Threat Feeds',      Icon: Rss         },
     ],
   },
   {
     label: 'Detection',
     items: [
-      { to: '/app/itdr',            label: 'ITDR',              icon: '⚡' },
-      { to: '/app/defense-console', label: 'AI Defense',        icon: '🤖' },
-      { to: '/app/shadow-ai',       label: 'Shadow AI',         icon: '👁️' },
-      { to: '/app/playbooks',       label: 'Playbooks',         icon: '📋' },
+      { to: '/app/itdr',            label: 'ITDR',              Icon: Radar       },
+      { to: '/app/defense-console', label: 'AI Defense',        Icon: ShieldAlert },
+      { to: '/app/shadow-ai',       label: 'Shadow AI',         Icon: ScanEye     },
+      { to: '/app/playbooks',       label: 'Playbooks',         Icon: BookOpen    },
     ],
   },
   {
     label: 'Platform',
     items: [
-      { to: '/app/connectors',      label: 'Connectors',        icon: '🔌' },
-      { to: '/app/nhi-health',      label: 'NHI Health',        icon: '🔑' },
-      { to: '/app/simulation',      label: 'Simulation',        icon: '🔬' },
-      { to: '/app/tools',           label: 'Tools Hub',         icon: '🛠️' },
+      { to: '/app/connectors',      label: 'Connectors',        Icon: Plug        },
+      { to: '/app/nhi-health',      label: 'NHI Health',        Icon: KeyRound    },
+      { to: '/app/simulation',      label: 'Simulation',        Icon: FlaskConical },
+      { to: '/app/tools',           label: 'Tools Hub',         Icon: Wrench      },
     ],
   },
   {
     label: 'Settings',
     items: [
-      { to: '/app/admin',           label: 'Admin',             icon: '⚙️' },
-      { to: '/app/policies',        label: 'Policies',          icon: '📋' },
-      { to: '/app/agent-security',  label: 'Agent Security',    icon: '🔒' },
-      { to: '/app/audit',           label: 'Audit Log',         icon: '📜' },
+      { to: '/app/admin',           label: 'Admin',             Icon: Settings2   },
+      { to: '/app/policies',        label: 'Policies',          Icon: ClipboardList },
+      { to: '/app/agent-security',  label: 'Agent Security',    Icon: Lock        },
+      { to: '/app/audit',           label: 'Audit Log',         Icon: ScrollText  },
     ],
   },
 ];
@@ -113,7 +122,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(37,99,235,0.08)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <span style={{ fontSize: 15, lineHeight: 1 }}>🛡️</span>
+              <Shield size={16} color="#2563EB" />
               <span style={{
                 fontFamily: 'var(--font-display)',
                 fontWeight: 700,
@@ -126,7 +135,9 @@ export default function Sidebar({ collapsed, setCollapsed }) {
             </div>
           )}
           {collapsed && (
-            <span style={{ fontSize: 17, lineHeight: 1 }} title="AegisTrace">🛡️</span>
+            <div title="AegisTrace" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+              <Shield size={18} color="#2563EB" />
+            </div>
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
@@ -145,8 +156,8 @@ export default function Sidebar({ collapsed, setCollapsed }) {
             }}
             onMouseEnter={e => {
               e.currentTarget.style.background = 'rgba(37,99,235,0.10)';
-              e.currentTarget.style.color = 'var(--accent-light)';
-              e.currentTarget.style.borderColor = 'var(--accent-border)';
+              e.currentTarget.style.color = '#60A5FA';
+              e.currentTarget.style.borderColor = 'rgba(37,99,235,0.3)';
             }}
             onMouseLeave={e => {
               e.currentTarget.style.background = 'none';
@@ -160,23 +171,9 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
         {/* Search filter (expanded only) */}
         {!collapsed && (
-          <div style={{
-            padding: '7px 10px',
-            borderBottom: '1px solid var(--border)',
-            flexShrink: 0,
-          }}>
+          <div style={{ padding: '7px 10px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
             <div style={{ position: 'relative' }}>
-              <Search
-                size={11}
-                style={{
-                  position: 'absolute',
-                  left: 8,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: 'var(--text-muted)',
-                  pointerEvents: 'none',
-                }}
-              />
+              <Search size={11} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
               <input
                 type="text"
                 placeholder="Quick search..."
@@ -192,28 +189,17 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                   fontSize: 12,
                   fontFamily: 'var(--font-ui)',
                   outline: 'none',
-                  transition: 'border-color 140ms ease-out, background 140ms ease-out',
+                  transition: 'border-color 140ms, background 140ms',
                 }}
-                onFocus={e => {
-                  e.target.style.borderColor = 'rgba(37,99,235,0.4)';
-                  e.target.style.background = 'rgba(37,99,235,0.04)';
-                }}
-                onBlur={e => {
-                  e.target.style.borderColor = 'var(--border)';
-                  e.target.style.background = 'rgba(255,255,255,0.04)';
-                }}
+                onFocus={e => { e.target.style.borderColor = 'rgba(37,99,235,0.4)'; e.target.style.background = 'rgba(37,99,235,0.04)'; }}
+                onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.background = 'rgba(255,255,255,0.04)'; }}
               />
             </div>
           </div>
         )}
 
         {/* Nav groups */}
-        <nav style={{
-          flex: 1,
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          padding: '4px 0',
-        }}>
+        <nav style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '4px 0' }}>
           {filteredGroups.map(group => (
             <div key={group.label} style={{ marginBottom: 2 }}>
               {/* Group header */}
@@ -224,7 +210,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                   letterSpacing: '0.1em',
                   color: 'var(--text-muted)',
                   textTransform: 'uppercase',
-                  padding: '10px 14px 3px',
+                  padding: '10px 16px 3px',
                   userSelect: 'none',
                 }}>
                   {group.label}
@@ -232,7 +218,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
               )}
               {collapsed && <div style={{ height: 6 }} />}
 
-              {group.items.map(({ to, label, icon }) => (
+              {group.items.map(({ to, label, Icon }) => (
                 <NavLink
                   key={to}
                   to={to}
@@ -240,31 +226,32 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                   style={({ isActive }) => ({
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 8,
-                    padding: collapsed ? '9px 0' : '7px 12px',
+                    gap: 9,
+                    padding: collapsed ? '9px 0' : '7px 14px',
                     margin: '1px 6px',
                     borderRadius: 6,
                     textDecoration: 'none',
                     fontFamily: 'var(--font-ui)',
                     fontSize: 13,
                     fontWeight: isActive ? 500 : 400,
-                    color: isActive ? 'var(--accent-light)' : 'var(--text-secondary)',
+                    color: isActive ? '#60A5FA' : 'var(--text-secondary)',
                     background: isActive ? 'rgba(37,99,235,0.10)' : 'transparent',
                     borderLeft: isActive ? '2px solid #2563EB' : '2px solid transparent',
-                    transition: 'background 140ms ease-out, color 140ms ease-out',
+                    transition: 'background 140ms ease-out, color 140ms ease-out, border-color 120ms ease-out',
                     cursor: 'pointer',
                     justifyContent: collapsed ? 'center' : 'flex-start',
+                    paddingLeft: collapsed ? 0 : isActive ? 12 : 14,
                   })}
                   onMouseEnter={e => {
                     const el = e.currentTarget;
-                    if (!el.style.background.includes('37,99,235')) {
+                    if (!el.getAttribute('aria-current')) {
                       el.style.background = 'rgba(148,163,184,0.06)';
                       el.style.color = 'var(--text-primary)';
                     }
                   }}
                   onMouseLeave={e => {
                     const el = e.currentTarget;
-                    if (!el.style.background.includes('37,99,235')) {
+                    if (!el.getAttribute('aria-current')) {
                       el.style.background = 'transparent';
                       el.style.color = 'var(--text-secondary)';
                     }
@@ -272,20 +259,16 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                 >
                   {({ isActive }) => (
                     <>
-                      <span style={{
-                        fontSize: collapsed ? 16 : 14,
-                        flexShrink: 0,
-                        lineHeight: 1,
-                        opacity: isActive ? 1 : 0.75,
-                      }}>
-                        {icon}
-                      </span>
+                      <Icon
+                        size={15}
+                        style={{
+                          flexShrink: 0,
+                          color: isActive ? '#60A5FA' : 'var(--text-muted)',
+                          transition: 'color 140ms ease-out',
+                        }}
+                      />
                       {!collapsed && (
-                        <span style={{
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {label}
                         </span>
                       )}
@@ -297,64 +280,32 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           ))}
         </nav>
 
-        {/* Bottom divider */}
+        {/* Divider */}
         <div style={{ height: 1, background: 'var(--border)', flexShrink: 0 }} />
 
         {/* User section */}
-        <div style={{
-          padding: collapsed ? '10px 0' : '8px 8px',
-          flexShrink: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 3,
-        }}>
+        <div style={{ padding: collapsed ? '10px 0' : '8px 8px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
           {!collapsed && user && (
             <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '6px 8px',
-              borderRadius: 6,
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '6px 8px', borderRadius: 6,
               background: 'rgba(255,255,255,0.03)',
             }}>
               <div style={{
-                width: 26,
-                height: 26,
-                borderRadius: '50%',
+                width: 28, height: 28, borderRadius: '50%',
                 background: 'rgba(37,99,235,0.18)',
                 border: '1px solid rgba(37,99,235,0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 10,
-                fontWeight: 700,
-                color: 'var(--accent-light)',
-                fontFamily: 'var(--font-mono)',
-                flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 11, fontWeight: 700, color: '#60A5FA',
+                fontFamily: 'var(--font-mono)', flexShrink: 0,
               }}>
                 {initials}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{
-                  fontSize: 12,
-                  fontWeight: 500,
-                  color: 'var(--text-primary)',
-                  fontFamily: 'var(--font-ui)',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}>
+                <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-ui)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {user.name}
                 </div>
-                <div style={{
-                  fontSize: 10,
-                  color: 'var(--text-muted)',
-                  fontFamily: 'var(--font-mono)',
-                  marginTop: 1,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {user.role}
                 </div>
               </div>
@@ -362,65 +313,34 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           )}
           {collapsed && user && (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '4px 0' }}>
-              <div
-                title={user.name}
-                style={{
-                  width: 26,
-                  height: 26,
-                  borderRadius: '50%',
-                  background: 'rgba(37,99,235,0.18)',
-                  border: '1px solid rgba(37,99,235,0.3)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: 'var(--accent-light)',
-                  fontFamily: 'var(--font-mono)',
-                  cursor: 'default',
-                }}
-              >
+              <div title={user.name} style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(37,99,235,0.18)', border: '1px solid rgba(37,99,235,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#60A5FA', fontFamily: 'var(--font-mono)' }}>
                 {initials}
               </div>
             </div>
           )}
 
-          {/* Logout */}
           <button
             onClick={() => { logout(); navigate('/'); }}
             title="Sign out"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              width: '100%',
-              background: 'none',
-              border: 'none',
-              borderRadius: 6,
-              padding: collapsed ? '8px 0' : '6px 10px',
-              cursor: 'pointer',
-              color: 'var(--text-muted)',
-              fontFamily: 'var(--font-ui)',
-              fontSize: 13,
+              display: 'flex', alignItems: 'center', gap: 8,
+              width: '100%', background: 'none', border: 'none',
+              borderRadius: 6, padding: collapsed ? '8px 0' : '6px 10px',
+              cursor: 'pointer', color: 'var(--text-muted)',
+              fontFamily: 'var(--font-ui)', fontSize: 13,
               justifyContent: collapsed ? 'center' : 'flex-start',
               transition: 'all 140ms ease-out',
             }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = 'rgba(239,68,68,0.08)';
-              e.currentTarget.style.color = '#EF4444';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = 'none';
-              e.currentTarget.style.color = 'var(--text-muted)';
-            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.color = '#EF4444'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text-muted)'; }}
           >
             <LogOut size={13} style={{ flexShrink: 0 }} />
-            {!collapsed && <span>Sign Out</span>}
+            {!collapsed && <span>Sign out</span>}
           </button>
         </div>
       </aside>
 
-      {/* Layout spacer: pushes content right of the fixed sidebar */}
+      {/* Layout spacer */}
       <div style={{
         flexShrink: 0,
         width: collapsed ? 'var(--sidebar-w-collapsed, 56px)' : 'var(--sidebar-w, 240px)',

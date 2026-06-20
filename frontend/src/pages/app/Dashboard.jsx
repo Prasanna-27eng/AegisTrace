@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, useInView } from 'framer-motion';
 import {
   Plus, ExternalLink, FolderOpen, Zap, RefreshCw,
   ChevronUp, ChevronDown, ChevronsUpDown
@@ -7,6 +8,25 @@ import {
 import { SeverityBadge, StatusBadge } from '../../components/SeverityBadge';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
+
+/* ── Scroll-reveal wrapper ─────────────────────────────────────────────────
+   Each dashboard section fades + slides up when it enters the viewport.
+   Stagger delay staggers sections so they reveal in sequence on load.      */
+function RevealSection({ children, delay = 0, style = {} }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-40px' });
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 16 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.45, delay, ease: [0.23, 1, 0.32, 1] }}
+      style={style}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 /* ── helpers ── */
 const SEV_COLOR = { critical: '#EF4444', high: '#F97316', medium: '#F59E0B', low: '#10B981', info: '#6B7280' };
@@ -691,70 +711,73 @@ export default function Dashboard() {
       </div>
 
       {/* ── ROW 1: Alert Stream | Severity Donut | AI Queue ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 220px 260px', gap: 16, marginBottom: 16 }}>
+      <RevealSection delay={0.05}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 220px 260px', gap: 16, marginBottom: 16 }}>
 
-        {/* Alert Stream */}
-        <div style={{ ...CARD, overflow: 'hidden' }}>
-          <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
-            <SectionLabel action="View all" onAction={() => navigate('/app/cases')}>Alert Stream</SectionLabel>
-          </div>
-          <div style={{ maxHeight: 320, overflowY: 'auto' }}>
-            <AlertStream cases={cases} navigate={navigate} />
-          </div>
-        </div>
-
-        {/* Severity Distribution */}
-        <div style={{ ...CARD, padding: 16, display: 'flex', flexDirection: 'column' }}>
-          <SectionLabel>Severity</SectionLabel>
-          {donutData.length > 0 ? (
-            <DonutChart data={donutData} />
-          ) : (
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: 12, fontFamily: 'var(--font-ui)' }}>
-              No data
+          {/* Alert Stream */}
+          <div style={{ ...CARD, overflow: 'hidden' }}>
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
+              <SectionLabel action="View all" onAction={() => navigate('/app/cases')}>Alert Stream</SectionLabel>
             </div>
-          )}
-        </div>
-
-        {/* AI Action Queue */}
-        <div style={{ ...CARD, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
-            <SectionLabel>AI Action Queue</SectionLabel>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>
-              {aiQueue.length} pending {aiQueue.length === 1 ? 'decision' : 'decisions'}
+            <div style={{ maxHeight: 320, overflowY: 'auto' }}>
+              <AlertStream cases={cases} navigate={navigate} />
             </div>
           </div>
-          <div style={{ flex: 1, overflowY: 'auto', maxHeight: 300 }}>
-            {aiQueue.length === 0 ? (
-              <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12, fontFamily: 'var(--font-ui)' }}>
-                No pending AI actions
+
+          {/* Severity Distribution */}
+          <div style={{ ...CARD, padding: 16, display: 'flex', flexDirection: 'column' }}>
+            <SectionLabel>Severity</SectionLabel>
+            {donutData.length > 0 ? (
+              <DonutChart data={donutData} />
+            ) : (
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: 12, fontFamily: 'var(--font-ui)' }}>
+                No data
               </div>
-            ) : aiQueue.map(c => (
-              <AIQueueItem
-                key={c.id}
-                c={c}
-                onApprove={handleApprove}
-                onDismiss={handleDismiss}
-              />
-            ))}
+            )}
+          </div>
+
+          {/* AI Action Queue */}
+          <div style={{ ...CARD, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
+              <SectionLabel>AI Action Queue</SectionLabel>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>
+                {aiQueue.length} pending {aiQueue.length === 1 ? 'decision' : 'decisions'}
+              </div>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', maxHeight: 300 }}>
+              {aiQueue.length === 0 ? (
+                <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12, fontFamily: 'var(--font-ui)' }}>
+                  No pending AI actions
+                </div>
+              ) : aiQueue.map(c => (
+                <AIQueueItem
+                  key={c.id}
+                  c={c}
+                  onApprove={handleApprove}
+                  onDismiss={handleDismiss}
+                />
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      </RevealSection>
 
       {/* ── ROW 2: Active Cases Table | ITDR Bar Chart ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 16, marginBottom: 16 }}>
+      <RevealSection delay={0.12}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 16, marginBottom: 16 }}>
 
-        {/* Active Cases */}
-        <div style={{ ...CARD, overflow: 'hidden' }}>
-          <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
-            <SectionLabel action="All cases" onAction={() => navigate('/app/cases')}>Active Cases</SectionLabel>
+          {/* Active Cases */}
+          <div style={{ ...CARD, overflow: 'hidden' }}>
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
+              <SectionLabel action="All cases" onAction={() => navigate('/app/cases')}>Active Cases</SectionLabel>
+            </div>
+            <CasesTable cases={activeCases} navigate={navigate} />
           </div>
-          <CasesTable cases={activeCases} navigate={navigate} />
-        </div>
 
-        {/* ITDR Detections */}
-        <div style={{ ...CARD, padding: 16 }}>
-          <SectionLabel action="ITDR" onAction={() => navigate('/app/itdr')}>ITDR Detections (24h)</SectionLabel>
-          <ITDRBars data={itdrData} />
+          {/* ITDR Detections */}
+          <div style={{ ...CARD, padding: 16 }}>
+            <SectionLabel action="ITDR" onAction={() => navigate('/app/itdr')}>ITDR Detections (24h)</SectionLabel>
+            <ITDRBars data={itdrData} />
 
           {/* SLA Status below */}
           {analytics && (
@@ -785,16 +808,19 @@ export default function Dashboard() {
               })()}
             </div>
           )}
+          </div>
         </div>
-      </div>
+      </RevealSection>
 
       {/* ── ROW 3: Recent Endpoint Activity ── */}
-      <div style={{ ...CARD, overflow: 'hidden' }}>
-        <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
-          <SectionLabel action="Endpoints" onAction={() => navigate('/app/endpoints')}>Recent Endpoint Activity</SectionLabel>
+      <RevealSection delay={0.2}>
+        <div style={{ ...CARD, overflow: 'hidden' }}>
+          <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
+            <SectionLabel action="Endpoints" onAction={() => navigate('/app/endpoints')}>Recent Endpoint Activity</SectionLabel>
+          </div>
+          <EndpointActivity edrRecent={edrRecent} />
         </div>
-        <EndpointActivity edrRecent={edrRecent} />
-      </div>
+      </RevealSection>
     </div>
   );
 }

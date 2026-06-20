@@ -1002,7 +1002,7 @@ function CTABand() {
         </Reveal>
         <Reveal delay={0.1}>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 14, flexWrap: 'wrap', marginBottom: 24 }}>
-            <a href="https://aegistrace-7qvn.onrender.com" target="_blank" rel="noopener noreferrer"
+            <Link to="/app/login"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
                 background: BLUE, color: '#fff',
@@ -1015,7 +1015,7 @@ function CTABand() {
               onMouseLeave={e => { e.currentTarget.style.background = BLUE; e.currentTarget.style.transform = 'translateY(0)'; }}
             >
               Launch Platform <ArrowRight size={16}/>
-            </a>
+            </Link>
             <a href="https://github.com/Prasanna-27eng/AegisTrace" target="_blank" rel="noopener noreferrer"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
@@ -1212,7 +1212,7 @@ function Nav() {
             {label}
           </Link>
         ))}
-        <a href="https://aegistrace-7qvn.onrender.com" target="_blank" rel="noopener noreferrer"
+        <Link to="/app/login"
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
             background: BLUE, color: '#fff',
@@ -1226,7 +1226,7 @@ function Nav() {
           onMouseLeave={e => (e.currentTarget.style.background = BLUE)}
         >
           Get Started <ArrowRight size={12}/>
-        </a>
+        </Link>
       </div>
     </motion.nav>
   );
