@@ -1,5 +1,5 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v10.1 | **Last updated:** June 2026 (v10.0 Priority 1, 2 & 3 shipped — Temporal Linker/Attack Graph + SOAR Playbook Engine + Adaptive Thresholds Agent — followed by v10.1 deep multi-tenancy security audit: dependency CVE remediation + org-scoping IDOR fixes across the entire backend)
+**Version:** v10.2 | **Last updated:** June 2026 (v10.2 = full enterprise UI redesign: Sentinel/QRadar dashboard, IBM Plex Sans + Plus Jakarta Sans fonts, 5 new public pages, accountability infrastructure positioning, Skills system installed)
 **Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files. **This is the single master doc for this project — all other planning/session/deploy docs have been folded into this file and removed.**
 
 ---
@@ -15,11 +15,14 @@ You are working on AegisTrace, a security product built by Prasanna. Here is exa
 4. Never re-read the full codebase — this file is sufficient. If you need a specific file, read only that file.
 
 **Rules for every session:**
-- Theme is now **Enterprise v5.0** (June 2026): App uses QRadar-dark navy (#0B0F1A/#111827/#1A2235), Website uses IBM QRadar marketing style (deep navy gradient hero + light #F0F4F9 sections). NEVER revert to pure black (#000000).
-- Fonts: **Plus Jakarta Sans** (display headings) + **IBM Plex Sans** (UI/body) + **IBM Plex Mono** (data/code). Clash Display + Cabinet Grotesk kept for public pages only.
-- Design tokens live in `frontend/src/styles/tokens.css` — always import this first. Never re-declare `:root` color vars in other files.
-- New components: `ApprovalQueue.jsx` (swipe cards), `FocusRing.css` (enterprise focus rings), rebuilt `Toast.jsx` (bottom-right, auto-dismiss progress bar)
-- App accent: `#2563EB` (Microsoft blue) + `#7C3AED` (QRadar purple). Gold (#F59E0B) is the brand signature for dark website sections only.
+- Theme is now **Enterprise v5.0** (June 2026): App uses QRadar-dark navy (`#0B0F1A`/`#111827`/`#1A2235`). Website hero uses deep navy gradient (`#0A1628 → #0F3470 → #2563EB`). Content sections alternate dark navy / light `#F0F4F9`. NEVER use pure black (`#000000`) anywhere.
+- Fonts: **Plus Jakarta Sans** (display headings) + **IBM Plex Sans** (UI/body) + **IBM Plex Mono** (data/code). Clash Display + Cabinet Grotesk are GONE from all pages.
+- Design tokens in `frontend/src/styles/tokens.css` — ALWAYS import first. Never re-declare `:root` color vars in other files.
+- App accent: `#2563EB` (Microsoft blue) + `#7C3AED` (QRadar purple). Gold `#F59E0B` is brand-only for dark hero sections.
+- New micro-interaction components: `ApprovalQueue.jsx` (swipe cards, spring physics), `FocusRing.css` (blue glow `:focus-visible`), `Toast.jsx` (bottom-right slide-up, auto-dismiss progress bar), `PageTransition.jsx` (navy curtain on route change), `LoadingScreen.jsx` (letter-stagger + gold bar)
+- Sidebar: collapsible groups (click group header to expand/collapse), Lucide icons only (no emoji), active item = `#2563EB` left border + `rgba(37,99,235,0.1)` bg
+- All "Access Platform" / "Book a Demo" CTAs use `<Link to="/app/login">` — never `<a href="https://aegistrace-7qvn.onrender.com">` 
+- Positioning: "Accountability Infrastructure for the AI-agent era" (NOT "Trust Operating System" — that's retired)
 - Use inline styles only — this codebase does NOT use Tailwind CSS
 - Do NOT add `@tanstack/react-query`, `recharts`, `alembic`, or any new npm packages without explicit approval
 - All models go in `backend/models.py` — never create separate model files
@@ -31,14 +34,7 @@ You are working on AegisTrace, a security product built by Prasanna. Here is exa
 → Look at the backlog below, pick the highest-priority unchecked item, confirm it with him, then build it.
 
 **When Prasanna says "push to GitHub":**
-→ Give him these exact commands (the sandbox can't push, he must run them):
-```bash
-cd ~/Documents/Claude/Projects/aegistrace
-rm -f .git/index.lock .git/HEAD.lock
-git add -A
-git commit -m "your message here"
-git push origin main
-```
+→ Claude CAN push directly now — `git push origin main` works in session. Commit with targeted `git add <files>` (never `git add -A` — avoid staging binaries). Deploy to VPS: `ssh root@2.24.131.243` then `cd /opt/aegistrace && bash deploy/update.sh`
 
 **When Prasanna says "what's next?":**
 → Read the backlog, summarise the top 3 options with time estimates, let him choose.
@@ -47,9 +43,11 @@ git push origin main
 
 ## WHAT IS AEGISTRACE?
 
-AegisTrace is a **free, open-source Trust Operating System for the AI-agent era** — the security layer that tracks every identity (human, service account, AI agent, token), makes every AI decision auditable with a full reasoning chain, and requires human approval before every automated action executes. It is the only free platform that combines identity-first threat detection, explainable AI, hardware attack tool forensics, a terminal lab, and an AI agent approval queue — all on free-tier infrastructure.
+AegisTrace is **free, open-source Accountability Infrastructure for the AI-agent era** — the platform that gives every identity a risk score, every AI decision a reasoning chain, and every automated action a human approval gate. It is the only free platform combining identity-first threat detection, explainable AI, SOAR playbooks, hardware attack forensics, a terminal lab, and a human approval queue — all self-hostable, all free.
 
-**Core conviction:** Attackers no longer break in. They become trusted. AegisTrace is how you defend the trust surface.
+**Core positioning (v10.2):** "Autonomous AI has no audit trail. Until now." — AegisTrace is the accountability layer your stack is missing if you deploy AI agents.
+
+**Three convictions:** (1) Every identity must be a first-class security entity. (2) Black-box AI is unacceptable in security. (3) Autonomous doesn't mean unaccountable.
 
 **Built by:** Prasanna Kumar Surendran, Blue Team analyst, Dublin, Ireland  
 **Live at:** https://aegistrace.uk  
@@ -189,22 +187,27 @@ backend/agents/
 ### Public (no auth)
 | Route | File | Purpose |
 |-------|------|---------|
-| / | Landing.jsx | Main marketing page with bento features, split hero, AI demo |
-| /mission | Mission.jsx | Vision, roadmap, contribute — editorial layout |
-| /portfolio | Portfolio.jsx | Prasanna's personal SOC analyst portfolio |
+| / | Landing.jsx | Accountability Infrastructure landing — hero dolly zoom, 12-module grid, comparison table |
+| /mission | Mission.jsx | Three Convictions, SOC analyst origin story, 5-phase roadmap |
+| /portfolio | Portfolio.jsx | Prasanna's portfolio — flythrough stats, rack focus tool cards |
+| /platform | Platform.jsx | Deep-dive: capability matrix, ASCII architecture, AI models, terminal demo |
+| /tools | Tools.jsx | 5 PyPI offensive tools — mcp-aegis/mcp-sploit/prompt-fuzz/nhi-hunter/shadow-sniffer |
+| /features | Features.jsx | 12-module detail page with sticky quick-jump nav |
 | /agent-setup | AgentSetup.jsx | Docs-style setup guide for endpoint agent |
 | /public | PublicGallery.jsx | Browse public cases |
 | /public/:token | PublicCaseDetail.jsx | Story-format public case narrative |
-| /app/login | Login.jsx | JWT auth login |
+| /app/login | Login.jsx | Split-screen: atmospheric left panel + JWT auth form (spring mouse parallax) |
 
 ### App (auth required, inside AppShell)
+**Shell:** Sentinel-style topbar (blue gradient `#0A1628→#0A4DA6`) + dark navy sidebar (collapsible groups, Lucide icons, active `#2563EB` left border)
+
 | Route | Component | Purpose |
 |-------|-----------|---------|
-| /app/dashboard | Dashboard.jsx | Live stats, analytics trends, case queue, EDR status |
+| /app/dashboard | Dashboard.jsx | QRadar/Sentinel hybrid: KPI strip, alert stream table, SVG donut chart, AI approval queue, ITDR bar chart |
 | /app/cases | CaseList.jsx | Case list with SLA badges, templates, quick filters |
-| /app/cases/:id | CaseDetail/ | 13-tab case investigation workspace |
+| /app/cases/:id | CaseDetail/ | 15-tab investigation workspace (added vision + rules tabs in v8.0) |
 | /app/hunt | ThreatHunt.jsx | Cross-case IOC correlation + MITRE heatmap + SQL Console (DuckDB) |
-| /app/endpoints | Endpoints.jsx | Endpoint agent management + log viewer |
+| /app/endpoints | Endpoints.jsx | Endpoint agent management + log viewer + Vulns tab |
 | /app/vt-lookup | VTLookup.jsx | VirusTotal v3 with history |
 | /app/email | EmailAnalysis.jsx | Email header forensics + SPF/DKIM/DMARC |
 | /app/pcap | PcapAnalysis.jsx | PCAP packet analysis |
@@ -212,10 +215,10 @@ backend/agents/
 | /app/tools | ToolsHub.jsx | External tool links + IOC extractor + defang |
 | /app/hardware/tools | HardwareTools.jsx | 18 hardware attack tool parsers (AI-powered) |
 | /app/terminal-lab | TerminalLab.jsx | Full Linux-style analyst lab with session management |
-| /app/identity-graph | IdentityGraph.jsx | Force-directed identity relationship canvas |
-| /app/itdr | ITDRPage.jsx | Identity Threat Detection (6 detectors in v4.3) |
-| /app/nhi-health | NHIHealth.jsx | NHI lifecycle health dashboard (v4.3) |
-| /app/connectors | ConnectorHub.jsx | Identity provider connections + approved AI services (v4.3) |
+| /app/identity-graph | IdentityGraph.jsx | Force-directed canvas + click panel + risk sparkline + filter slider + type pills (v10.2) |
+| /app/itdr | ITDRPage.jsx | ITDR: 6 detectors, 3 tabs (Detection/Alerts/Analytics) |
+| /app/nhi-health | NHIHealth.jsx | NHI lifecycle health dashboard |
+| /app/connectors | ConnectorHub.jsx | Identity provider connections + approved AI services |
 | /app/analytics | Analytics.jsx | Severity/SLA/throughput analytics |
 | /app/policies | Policies.jsx | Access control policy engine |
 | /app/agent-security | AgentSecurity.jsx | AI action approval queue + OWASP Agentic coverage |
@@ -549,12 +552,39 @@ Key design decisions:
 - [ ] Endpoint Agent Layer 3 (eBPF/Falco) — kernel-level visibility on Linux
 - [ ] Endpoint Agent Layer 4 (Memory Forensics) — Volatility 3 integration
 
-### Next Session Plan (recommended build order, June 2026)
-1. **Priority 4 — Auto-Rule Generation Trigger** (~1 day) — last item in the active v10.0 plan (see line ~748); closes the "self-improving SOC" story arc with `DetectionRule` model + nightly `check_rule_generation_triggers()` + `/api/rules/pending` approve/reject + Pending Review tab.
-2. **Identity Graph interactions** (~1 day) — click-to-open Device Details panel, risk timeline from existing `trust_score_history`/`anomaly_count_7d`, risk-threshold filter slider. All data already exists in `IdentityNode`.
-3. **Adaptive Thresholds dashboard** (~1 day) — dedicated `/app/adaptive` page surfacing the v10.0 self-tuning agent's output: threshold time-series, FP/FN trending, manual lock/override.
-4. **SQL Console saved queries + export** (~0.5 day) — `SavedHuntQuery` model (name, sql, created_by, org_id), CSV/JSON export, query templates.
-5. Deferred until there's a concrete customer/prospect driving them: **SCIM** (2d), **Playbook visual builder** (2d), **DPDPA Compliance Report** (1.5d), **Temporal Linker cross-case + STIX export** (1.5d).
+### Phase 1 Completed (June 2026 — this session)
+
+**1. Auto-Rule Generation Trigger** ✅
+- `DetectionRule` model: rule_name, trigger_technique, trigger_case_ids, status (pending_review|approved|rejected|deployed), yara/sigma/kql/splunk_spl, ai_confidence, reviewed_by
+- `check_rule_generation_triggers(org_id, session)`: scans last 7 days, finds MITRE techniques in 3+ cases, generates via Codestral 22B, queues as pending_review
+- Wired into `PATCH /api/cases/{id}` (when mitre_techniques in payload) and `POST /api/cases/{id}/generate-ai`
+- `GET /api/rules/pending`, `GET /api/rules/pending/{id}`, `POST /api/rules/pending/{id}/approve`, `POST /api/rules/pending/{id}/reject`
+
+**2. Trust Score Trending** ✅
+- `IdentityRiskHistory` model: node_id FK, risk_score, trust_score, anomaly_count, recorded_at
+- `_record_risk_history()` wired into create_node_anomaly, resolve_anomaly, recalculate_node_risk
+- `GET /api/identity/nodes/{id}/history?days=30` — 30-day time-series trend
+
+**3. Identity Graph Enhancements** ✅
+- Click any node → NodeDetailOverlay slide panel (340px right): type badge, animated risk bar, metadata (privilege/last_active/anomaly_count/device IP+OS), 30-day RiskSparkline SVG, "Open Case" CTA
+- Risk filter slider (0–90, step 5): dims nodes below threshold to 0.15 opacity
+- Node type filter pills: shows only types present in graph, toggles type isolation
+
+**4. DPDPA Compliance Report** ✅
+- `GET /api/reports/dpdpa/{case_id}`: 5 DPDPA 2023 obligations mapped (Sections 5, 8(5), 8(6), 10, 77), AI executive summary, 72h notification deadline
+- ReportTab.jsx: DPDPA 2023 generate button + obligations table + status badges
+
+**5. ITDR Email Notifications** ✅
+- `_notify_itdr_alert(alert, org_id, session)`: HTML email to admin/analyst users for CRITICAL/HIGH alerts via SendGrid or SMTP; silent no-op if unconfigured
+- Wired into agent telemetry ingest loop (routers/ingest.py)
+- Admin.jsx: ITDR Email Notifications setup card
+
+### Next Session Plan (Phase 2 — recommended build order)
+1. **Hash Chain on ProvenanceLedger** (~3 days) — `prev_hash` + `entry_hash` SHA-256 chain, `GET /api/provenance/verify`, `GET /api/provenance/certificate/{case_id}` PDF/JSON Trust Certificate — biggest compliance narrative in the platform. Zero new deps.
+2. **AFSL File Security Layer** (~4 days) — `core/file_security.py` (magic byte verification, decompression bomb check), `core/file_store.py` (ChaCha20-Poly1305 encryption per file), `core/file_sandbox.py` (subprocess isolation for PCAP/PDF). Real attack surface.
+3. **Adaptive Thresholds dashboard** (~1 day) — `/app/adaptive` page surfacing self-tuning agent output: threshold time-series, FP/FN trending, manual lock/override.
+4. **SQL Console saved queries + export** (~0.5 day) — `SavedHuntQuery` model (name, sql, created_by, org_id), CSV/JSON export.
+5. **ATSP Stage A — Protocol Library** (1 week) — publish spec first, then build `atsp/crypto.py`, `atsp/packet.py`, `atsp/handshake.py`, `atsp/session.py`, ProVerif model. Zero new deps beyond `cryptography` already installed.
 
 ---
 
@@ -617,19 +647,41 @@ docker run -p 8000:8000 \
 
 ## FRONTEND DEPENDENCIES (package.json)
 ```json
-react, react-dom, react-router-dom, axios, zustand, lucide-react, react-scripts
+react, react-dom, react-router-dom, axios, zustand, lucide-react, react-scripts,
+framer-motion, gsap, three, @studio-freight/lenis
 ```
 **Removed in v4.2:** react-hook-form, @hookform/resolvers, zod (were unused, ~60KB saved)
 
+## NEW COMPONENTS (v10.2 UI overhaul — June 2026)
+| File | Purpose |
+|------|---------|
+| `src/styles/tokens.css` | Design tokens: QRadar navy palette, IBM Plex Sans/Plus Jakarta Sans, z-index scale, motion easings |
+| `src/components/Toast.jsx` | Bottom-right slide-up, auto-dismiss countdown bar (scaleX 1→0), stacked with AnimatePresence |
+| `src/components/ApprovalQueue.jsx` | Swipeable card stack — drag x>100px=approve (green), x<-100px=dismiss (red), 3-card depth |
+| `src/components/FocusRing.css` | Enterprise focus rings — 2px #2563EB + 4px glow on :focus-visible |
+| `src/components/PageTransition.jsx` | Navy #0A1628 curtain on every route change, 0.52s ease-out |
+| `src/components/LoadingScreen.jsx` | Letter-stagger AEGISTRACE reveal + gold progress bar on first load |
+| `src/components/Sidebar.jsx` | Collapsible groups (click header to expand), Lucide icons, active #2563EB left border, 56px collapse |
+| `src/components/SceneController.jsx` | useSceneCamera, PinnedScene, RackFocus, DepthLayer, DollyZoom, useSectionParallax |
+
+## SKILLS INSTALLED
+- **gstack** at `~/.claude/skills/gstack` — /review, /cso, /ship, /qa, /autoplan, /office-hours and 30+ more
+- **remotion-best-practices** at `.agents/skills/remotion-best-practices` — Remotion video creation rules
+- **PRODUCT.md** at repo root — brand/register/positioning for impeccable skill
+
 ---
 
-## CURRENT WEBSITE NARRATIVE (v4.3 — June 2026)
+## CURRENT WEBSITE NARRATIVE (v10.2 — June 2026)
 
-- **Landing hero:** "Attackers no longer break in. / They become trusted."
-- **Landing stat:** "The average enterprise has 144 machine identities for every human. Most are unmonitored."
-- **Landing badge:** "Trust Operating System · v4.3"
-- **Mission hero:** "The Trust Layer / for the AI-Agent Era."
-- **New bento cards:** "Identity Auto-Discovery" + "NHI Health Monitor"
+- **Landing hero:** "Your AI agents operate autonomously. Your security should too — with accountability."
+- **Landing positioning:** "Accountability Infrastructure for the AI-agent era" (NOT "Trust Operating System" — retired)
+- **Landing problem:** "Autonomous AI Has No Audit Trail. Until Now." — 78% can't explain AI decisions, 144:1 NHI ratio, €2.4M breach cost
+- **Landing CTA:** "Book a Private Demo" → /app/login
+- **Mission hero:** "Autonomous systems deserve accountable security."
+- **Three Convictions:** Identity as first-class entity / Black-box AI unacceptable / Autonomous ≠ Unaccountable
+- **Roadmap:** 5 phases from "Foundation (now)" to "Industry Standard (2029+)"
+- **New pages:** /platform (deep dive), /tools (5 PyPI tools), /features (12-module detail)
+- **Nav links:** Platform / Mission / Features / Tools / "Book a Demo" → /app/login
 
 ---
 
