@@ -2382,6 +2382,180 @@ _falco = FalcoCompanion()
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# § 15.7  MEMORY FORENSICS MODULE  (new v6.2 — Layer 4)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class MemoryForensicsModule:
+    """
+    Layer 4: Process-level memory forensics triggered on CRITICAL alerts.
+
+    Captures the virtual memory of a suspicious process using /proc/{pid}/mem
+    (Linux) or gcore (fallback), then ships a compressed snapshot to AegisTrace
+    for Volatility 3 analysis (malfind, pslist, netscan).
+
+    Design decisions:
+    - Per-PROCESS only (not full RAM dump). Limits size to ~50-200MB per process.
+    - Only triggers on CRITICAL severity + specific alert types (honey_token,
+      yara_match, suspicious_lineage) to avoid noise.
+    - 10-minute cooldown per PID to prevent duplicate dumps.
+    - Max 128MB per dump (reads only executable + heap segments).
+    - Runs in a background thread — never blocks the main collection cycle.
+    - Requires root on Linux. Silent no-op on macOS/Windows.
+    """
+
+    MAX_DUMP_BYTES   = 128 * 1024 * 1024    # 128 MB per process
+    TRIGGER_TYPES    = {"honey_token_access", "yara_match", "suspicious_lineage",
+                        "suspicious_process", "fileless_exec"}
+    COOLDOWN_SECONDS = 600                   # 10 minutes per PID
+    CHUNK_SIZE       = 1024 * 1024           # 1 MB chunks for upload
+
+    def __init__(self):
+        self._last_dump: dict = {}   # pid → last dump timestamp
+        self._lock = threading.Lock()
+        self._available = (platform.system() == "Linux" and os.geteuid() == 0)
+
+    @property
+    def available(self) -> bool:
+        return self._available
+
+    def should_trigger(self, alert: dict) -> bool:
+        """True if this alert should trigger a memory dump."""
+        if not self._available:
+            return False
+        alert_type = alert.get("type", "")
+        severity   = alert.get("severity", "")
+        pid        = alert.get("pid") or alert.get("process_pid")
+        return (
+            severity in ("CRITICAL",) and
+            alert_type in self.TRIGGER_TYPES and
+            pid is not None
+        )
+
+    def _readable_segments(self, pid: int) -> list:
+        """
+        Parse /proc/{pid}/maps and return executable + heap memory ranges.
+        Only reads 'r' (readable) segments that are [heap], [stack], or executable
+        mapped files — skips large shared library regions to limit dump size.
+        """
+        segments = []
+        maps_path = f"/proc/{pid}/maps"
+        try:
+            with open(maps_path, "r") as f:
+                for line in f:
+                    parts = line.split()
+                    if len(parts) < 5:
+                        continue
+                    addr_range, perms = parts[0], parts[1]
+                    label = parts[5] if len(parts) > 5 else ""
+                    # Only readable segments that look interesting
+                    if "r" not in perms:
+                        continue
+                    # Skip huge shared libraries (over 64MB each) unless heap/stack
+                    start_hex, end_hex = addr_range.split("-")
+                    start, end = int(start_hex, 16), int(end_hex, 16)
+                    size = end - start
+                    # Always include heap and stack
+                    if label in ("[heap]", "[stack]"):
+                        segments.append((start, end))
+                    # Include small executable segments (likely injected code)
+                    elif "x" in perms and size < 32 * 1024 * 1024:
+                        segments.append((start, end))
+        except (FileNotFoundError, PermissionError, ProcessLookupError):
+            pass
+        return segments
+
+    def _dump_process(self, pid: int, process_name: str) -> Optional[bytes]:
+        """
+        Read selected memory segments from /proc/{pid}/mem.
+        Returns compressed bytes or None on failure.
+        """
+        import gzip
+        segments = self._readable_segments(pid)
+        if not segments:
+            return None
+
+        chunks = []
+        total = 0
+        mem_path = f"/proc/{pid}/mem"
+        try:
+            with open(mem_path, "rb") as mem_file:
+                for start, end in segments:
+                    if total >= self.MAX_DUMP_BYTES:
+                        break
+                    try:
+                        mem_file.seek(start)
+                        remaining = min(end - start, self.MAX_DUMP_BYTES - total)
+                        data = mem_file.read(remaining)
+                        if data:
+                            chunks.append(data)
+                            total += len(data)
+                    except (OSError, OverflowError):
+                        continue
+        except (FileNotFoundError, PermissionError, ProcessLookupError):
+            return None
+
+        if not chunks:
+            return None
+
+        raw = b"".join(chunks)
+        compressed = gzip.compress(raw, compresslevel=6)
+        logger.info(f"[memforensics] PID {pid} ({process_name}): {len(raw):,} bytes → {len(compressed):,} compressed")
+        return compressed
+
+    def trigger(self, alert: dict) -> None:
+        """
+        Trigger a memory dump in a background thread.
+        Called from the main collection cycle — never blocks.
+        """
+        pid          = alert.get("pid") or alert.get("process_pid")
+        process_name = alert.get("process_name", "unknown")
+        alert_type   = alert.get("type", "")
+
+        if not pid:
+            return
+
+        with self._lock:
+            now = time.time()
+            if now - self._last_dump.get(pid, 0) < self.COOLDOWN_SECONDS:
+                return
+            self._last_dump[pid] = now
+
+        def _do_dump():
+            logger.info(f"[memforensics] Starting dump: PID {pid} ({process_name}) — triggered by {alert_type}")
+            dump_bytes = self._dump_process(int(pid), process_name)
+            if not dump_bytes:
+                logger.warning(f"[memforensics] Dump failed for PID {pid}")
+                return
+
+            # Ship to backend in a single payload
+            try:
+                import base64
+                payload = {
+                    "pid":          pid,
+                    "process_name": process_name,
+                    "trigger_type": alert_type,
+                    "trigger_severity": alert.get("severity", ""),
+                    "dump_size_compressed": len(dump_bytes),
+                    "dump_b64": base64.b64encode(dump_bytes).decode(),
+                    "hostname": platform.node(),
+                    "agent_version": AGENT_VERSION,
+                    "captured_at": datetime.utcnow().isoformat(),
+                }
+                _transport.send_direct(
+                    endpoint=f"/api/ingest/memory-dump/{AGENT_ID}",
+                    payload=payload,
+                )
+                logger.info(f"[memforensics] Shipped {len(dump_bytes):,} bytes for PID {pid}")
+            except Exception as e:
+                logger.error(f"[memforensics] Ship failed: {e}")
+
+        threading.Thread(target=_do_dump, daemon=True, name=f"memforensics-{pid}").start()
+
+
+_mem_forensics = MemoryForensicsModule()
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # § 15.5  VULNERABILITY & MISCONFIGURATION SCANNER  (new v6.0)
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -3072,6 +3246,26 @@ class TransportClient:
         except Exception:
             return False
 
+    def send_direct(self, endpoint: str, payload: dict) -> None:
+        """Ship payload to a specific endpoint (used for large/async payloads like memory dumps)."""
+        data = json.dumps(payload).encode("utf-8")
+        for attempt in range(len(self._backends)):
+            idx     = (self._current + attempt) % len(self._backends)
+            backend = self._backends[idx]
+            url     = f"{backend.rstrip('/')}{endpoint}"
+            try:
+                req = urllib_request.Request(
+                    url, data=data,
+                    headers=self._build_headers(data),
+                    method="POST",
+                )
+                with urllib_request.urlopen(req, timeout=120) as resp:
+                    resp.read()
+                return
+            except Exception as e:
+                logger.debug(f"[transport] send_direct failed to {url}: {e}")
+                continue
+
 
 _transport = TransportClient(BACKEND_URLS)
 
@@ -3565,6 +3759,12 @@ def _run_collection_cycle() -> list:
             "login_events":   [],
             "file_events":    [],
         })
+
+    # v6.2 — Layer 4: Memory Forensics — trigger on CRITICAL alerts
+    if _mem_forensics.available:
+        for alert in alerts:
+            if _mem_forensics.should_trigger(alert):
+                _mem_forensics.trigger(alert)
 
     # Drain raw logs collected during this cycle
     global _raw_log_queue

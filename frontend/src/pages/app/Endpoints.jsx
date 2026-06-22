@@ -236,6 +236,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
   const TABS = [
     { id:'overview',  label:'Overview' },
     { id:'vulns',     label:`Vulns${vulnCritical + vulnHigh > 0 ? ` (${vulnCritical + vulnHigh})` : ''}` },
+    { id:'memory',    label:'Memory' },
     { id:'logs',      label:'Live Logs' },
     { id:'processes', label:'Processes' },
     { id:'network',   label:'Network' },
@@ -718,6 +719,11 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
           </div>
         )}
 
+        {/* ══ MEMORY FORENSICS ══ */}
+        {tab === 'memory' && (
+          <MemoryForensicsPanel hostname={ep.hostname} />
+        )}
+
         {/* ══ RESPONSE ══ */}
         {tab === 'response' && (
           <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
@@ -806,6 +812,186 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
     </div>
   );
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   MEMORY FORENSICS PANEL  (v6.2 — Layer 4)
+───────────────────────────────────────────────────────────────────────────── */
+function MemoryForensicsPanel({ hostname }) {
+  const [dumps, setDumps]       = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [selected, setSelected] = useState(null);
+
+  useEffect(() => {
+    if (!hostname) return;
+    api.get(`/api/memory/dumps?hostname=${encodeURIComponent(hostname)}`)
+      .then(r => setDumps(r.data || []))
+      .catch(() => setDumps([]))
+      .finally(() => setLoading(false));
+  }, [hostname]);
+
+  if (loading) return (
+    <div style={{ padding:24, color:'#555', fontFamily:'JetBrains Mono,monospace', fontSize:13 }}>
+      Loading memory dumps...
+    </div>
+  );
+
+  const injectionCount = dumps.filter(d => d.injections_found).length;
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+      {/* Header */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:8 }}>
+        <div>
+          <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:14, fontWeight:600, color:'#BDD4E8' }}>
+            Memory Forensics
+          </div>
+          <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:10, color:'#555', marginTop:2 }}>
+            Layer 4 · Volatility 3 · Triggered on CRITICAL alerts
+          </div>
+        </div>
+        {injectionCount > 0 && (
+          <div style={{ padding:'4px 10px', background:'rgba(239,68,68,0.1)',
+            border:'1px solid rgba(239,68,68,0.3)', borderRadius:4,
+            fontFamily:'JetBrains Mono,monospace', fontSize:11, color:'#EF4444' }}>
+            {injectionCount} injection{injectionCount > 1 ? 's' : ''} detected
+          </div>
+        )}
+      </div>
+
+      {dumps.length === 0 ? (
+        <div style={{ padding:'32px 24px', textAlign:'center', color:'#555',
+          background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8 }}>
+          <div style={{ fontSize:28, marginBottom:10 }}>🧠</div>
+          <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:12, color:'#787878', marginBottom:6 }}>
+            No memory dumps captured yet
+          </div>
+          <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11, color:'#444', lineHeight:1.6 }}>
+            Memory forensics triggers automatically on CRITICAL alerts<br/>
+            (honey token access, YARA match) when the agent runs as root on Linux.
+          </div>
+        </div>
+      ) : (
+        <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+          {dumps.map(dump => {
+            const isExpanded = selected?.id === dump.id;
+            const statusColor = dump.status === 'done' ? '#10B981'
+              : dump.status === 'analysing' ? '#60A5FA' : '#F59E0B';
+            const borderColor = dump.injections_found
+              ? 'rgba(239,68,68,0.35)' : 'rgba(255,255,255,0.07)';
+            let analysisObj = null;
+            try { analysisObj = dump.analysis_result ? JSON.parse(dump.analysis_result) : null; }
+            catch { /* noop */ }
+
+            return (
+              <div key={dump.id}
+                onClick={() => setSelected(isExpanded ? null : dump)}
+                style={{ padding:'12px 16px', background:'rgba(0,0,0,0.3)',
+                  border:`1px solid ${borderColor}`, borderRadius:8,
+                  cursor:'pointer', transition:'border-color 140ms' }}>
+                {/* Row 1: process + badges */}
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:10, minWidth:0 }}>
+                    <span style={{ fontFamily:'JetBrains Mono,monospace', fontSize:13,
+                      color: dump.injections_found ? '#EF4444' : '#BDD4E8',
+                      fontWeight:600 }}>
+                      {dump.process_name}
+                    </span>
+                    <span style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11, color:'#555' }}>
+                      PID {dump.pid}
+                    </span>
+                    {dump.injections_found && (
+                      <span style={{ fontSize:10, color:'#EF4444',
+                        fontFamily:'JetBrains Mono,monospace', letterSpacing:'0.06em' }}>
+                        INJECTION
+                      </span>
+                    )}
+                    {dump.malfind_hits > 0 && (
+                      <span style={{ fontSize:10, color:'#F97316',
+                        background:'rgba(249,115,22,0.1)', border:'1px solid rgba(249,115,22,0.25)',
+                        borderRadius:3, padding:'1px 6px', fontFamily:'JetBrains Mono,monospace' }}>
+                        {dump.malfind_hits} malfind hit{dump.malfind_hits > 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ display:'flex', gap:8, alignItems:'center', flexShrink:0 }}>
+                    <span style={{ fontFamily:'JetBrains Mono,monospace', fontSize:10, color:'#555' }}>
+                      {Math.round(dump.dump_size_bytes / 1024)} KB
+                    </span>
+                    <span style={{ padding:'2px 8px', borderRadius:3,
+                      fontSize:10, fontFamily:'JetBrains Mono,monospace',
+                      background:`${statusColor}18`, color:statusColor,
+                      border:`1px solid ${statusColor}30` }}>
+                      {dump.status}
+                    </span>
+                  </div>
+                </div>
+                {/* Row 2: metadata */}
+                <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11, color:'#555', marginTop:4 }}>
+                  Triggered by {dump.trigger_type.replace(/_/g, ' ')} ·{' '}
+                  {new Date(dump.captured_at).toLocaleString()}
+                </div>
+                {/* Expanded: Volatility analysis */}
+                {isExpanded && (
+                  <div style={{ marginTop:12, padding:12, background:'#030308',
+                    borderRadius:6, border:'1px solid rgba(255,255,255,0.06)' }}>
+                    {analysisObj ? (
+                      <>
+                        {analysisObj.summary && (
+                          <div style={{ marginBottom:8 }}>
+                            <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:10,
+                              color:'#4A7EC8', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:6 }}>
+                              Volatility Summary
+                            </div>
+                            {Object.entries(analysisObj.summary).map(([k, v]) => (
+                              <div key={k} style={{ display:'flex', gap:12, marginBottom:2 }}>
+                                <span style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11,
+                                  color:'#555', minWidth:180 }}>{k.replace(/_/g, ' ')}</span>
+                                <span style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11,
+                                  color: v === true ? '#EF4444' : v === false ? '#10B981' : '#BDD4E8' }}>
+                                  {String(v)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {analysisObj.injections?.length > 0 && (
+                          <div>
+                            <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:10,
+                              color:'#EF4444', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:6 }}>
+                              Injection Regions
+                            </div>
+                            <pre style={{ margin:0, fontSize:10, color:'#EF4444',
+                              fontFamily:'JetBrains Mono,monospace', whiteSpace:'pre-wrap',
+                              wordBreak:'break-word' }}>
+                              {analysisObj.injections.slice(0, 10).join('\n')}
+                            </pre>
+                          </div>
+                        )}
+                        {!analysisObj.summary?.volatility_available && analysisObj.summary?.message && (
+                          <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11, color:'#787878' }}>
+                            {analysisObj.summary.message}
+                            {analysisObj.summary.install && (
+                              <span style={{ color:'#F59E0B' }}> · {analysisObj.summary.install}</span>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11, color:'#555' }}>
+                        Analysis pending...
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 /* ─────────────────────────────────────────────────────────────────────────────
    SETUP GUIDE MODAL (kept for deploy button)

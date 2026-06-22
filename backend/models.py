@@ -829,6 +829,31 @@ class IdentityRiskHistory(SQLModel, table=True):
     recorded_at: datetime      = Field(default_factory=datetime.utcnow)
 
 
+# ── v6.2 Layer 4: Memory Forensics ───────────────────────────────────────────
+class MemoryDump(SQLModel, table=True):
+    """
+    Process memory snapshot captured by the endpoint agent on critical alerts.
+    Analysed by Volatility 3 for fileless malware and injection detection.
+    """
+    id:               Optional[int] = Field(default=None, primary_key=True)
+    org_id:           int           = Field(default=1, index=True)
+    agent_id:         str           = Field(default="", index=True)
+    hostname:         str           = Field(default="")
+    pid:              int           = Field(default=0)
+    process_name:     str           = Field(default="")
+    trigger_type:     str           = Field(default="")     # yara_match | honey_token_access | etc.
+    trigger_severity: str           = Field(default="")
+    dump_size_bytes:  int           = Field(default=0)       # compressed size stored on disk
+    dump_path:        Optional[str] = Field(default=None)    # path on server filesystem
+    status:           str           = Field(default="received")  # received | analysing | done | error
+    analysis_result:  Optional[str] = Field(default=None, sa_column=Column(Text))  # JSON
+    malfind_hits:     int           = Field(default=0)       # number of malfind findings
+    injections_found: bool          = Field(default=False)
+    captured_at:      datetime      = Field(default_factory=datetime.utcnow)
+    analysed_at:      Optional[datetime] = Field(default=None)
+    agent_version:    str           = Field(default="")
+
+
 # ── NVIDIA Phase 2: Case Embeddings ──────────────────────────────────────────
 class CaseEmbedding(SQLModel, table=True):
     """Stores NV-EmbedQA-E5-v5 embeddings for semantic case similarity search."""

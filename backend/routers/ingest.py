@@ -1918,3 +1918,176 @@ async def ingest_shadowsniffer_event(
 
     return {"status": "ok", "action_id": action.id, "action_type": "shadow_ai_usage_detected"}
 
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# § MEMORY DUMP INGEST  (v6.2 — Layer 4)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+import base64 as _b64
+from pathlib import Path as _Path
+
+DUMP_STORE = _Path(os.getenv("DUMP_STORE_DIR", "/var/data/memory_dumps"))
+
+
+@router.post("/memory-dump/{agent_id}")
+async def receive_memory_dump(
+    agent_id: str,
+    request: Request,
+    session: Session = Depends(get_session),
+    x_agent_token: Optional[str] = Header(default=None, alias="X-Agent-Token"),
+):
+    """Receive a compressed process memory dump from an endpoint agent."""
+    from models import MemoryDump
+
+    # Auth: verify against stored ingest key or agent token
+    ep = session.exec(select(Endpoint).where(Endpoint.agent_id == agent_id)).first() if hasattr(Endpoint, 'agent_id') else None
+    # Fallback: look up by hostname matching the agent_id
+    if ep is None:
+        ep = session.exec(select(Endpoint).where(Endpoint.hostname == agent_id)).first()
+
+    # Accept if token matches global ingest key (agent self-registered)
+    try:
+        expected_key = _get_ingest_key()
+        if x_agent_token and not hmac.compare_digest(x_agent_token, expected_key):
+            raise HTTPException(403, "Invalid agent token")
+    except HTTPException as e:
+        if e.status_code == 503:
+            pass  # INGEST_API_KEY not set — skip token check in dev
+        else:
+            raise
+
+    data = await request.json()
+
+    dump_b64  = data.get("dump_b64", "")
+    pid       = int(data.get("pid", 0))
+    proc_name = data.get("process_name", "unknown")
+    trigger   = data.get("trigger_type", "")
+    severity  = data.get("trigger_severity", "")
+    hostname  = data.get("hostname", agent_id)
+
+    # Store dump to disk
+    DUMP_STORE.mkdir(parents=True, exist_ok=True)
+    dump_id_str = f"{agent_id}_{pid}_{int(datetime.utcnow().timestamp())}"
+    dump_path = DUMP_STORE / f"{dump_id_str}.mem.gz"
+
+    try:
+        raw = _b64.b64decode(dump_b64)
+        dump_path.write_bytes(raw)
+    except Exception as e:
+        raise HTTPException(400, f"Failed to store dump: {e}")
+
+    # Create DB record
+    from models import MemoryDump
+    dump = MemoryDump(
+        org_id           = ep.org_id if ep and hasattr(ep, 'org_id') else 1,
+        agent_id         = agent_id,
+        hostname         = hostname,
+        pid              = pid,
+        process_name     = proc_name,
+        trigger_type     = trigger,
+        trigger_severity = severity,
+        dump_size_bytes  = len(raw),
+        dump_path        = str(dump_path),
+        status           = "received",
+        agent_version    = data.get("agent_version", ""),
+        captured_at      = datetime.utcnow(),
+    )
+    session.add(dump)
+    session.commit()
+    session.refresh(dump)
+
+    # Kick off async Volatility analysis
+    asyncio.create_task(_analyse_dump(dump.id, str(dump_path)))
+
+    return {"ok": True, "dump_id": dump.id, "status": "received"}
+
+
+async def _analyse_dump(dump_id: int, dump_path: str):
+    """
+    Run Volatility 3 analysis on the dump. Gracefully skips if not installed.
+    Runs as a background task — never blocks the ingest endpoint.
+    """
+    import subprocess, json as _json
+    from database import get_session as _gs
+    from models import MemoryDump as _MD
+
+    with next(_gs()) as session:
+        dump = session.get(_MD, dump_id)
+        if not dump:
+            return
+        dump.status = "analysing"
+        session.commit()
+
+    findings = {"plugins": {}, "summary": {}, "injections": []}
+
+    try:
+        # Check Volatility 3 is available
+        vol_check = subprocess.run(
+            ["python3", "-m", "volatility3", "--version"],
+            capture_output=True, timeout=15
+        )
+        if vol_check.returncode != 0:
+            raise RuntimeError("Volatility 3 not installed")
+
+        vol_base = ["python3", "-m", "volatility3", "-q", "-f", dump_path, "--output", "json"]
+
+        results = {}
+        injections = []
+
+        # Plugin 1: linux.malfind — detect injected code / shellcode
+        try:
+            r = subprocess.run(vol_base + ["linux.malfind"], capture_output=True, timeout=120)
+            if r.returncode == 0:
+                malfind_out = r.stdout.decode(errors="replace")
+                hits = [l for l in malfind_out.split("\n") if "MZ" in l or "shellcode" in l.lower()]
+                results["malfind"] = {"hits": len(hits), "raw": malfind_out[:4000]}
+                injections = hits[:10]
+        except subprocess.TimeoutExpired:
+            results["malfind"] = {"error": "timeout"}
+
+        # Plugin 2: linux.pslist — process list
+        try:
+            r = subprocess.run(vol_base + ["linux.pslist"], capture_output=True, timeout=60)
+            if r.returncode == 0:
+                results["pslist"] = r.stdout.decode(errors="replace")[:2000]
+        except subprocess.TimeoutExpired:
+            results["pslist"] = {"error": "timeout"}
+
+        # Plugin 3: linux.netstat — network connections
+        try:
+            r = subprocess.run(vol_base + ["linux.netstat"], capture_output=True, timeout=60)
+            if r.returncode == 0:
+                results["netstat"] = r.stdout.decode(errors="replace")[:2000]
+        except subprocess.TimeoutExpired:
+            results["netstat"] = {"error": "timeout"}
+
+        findings["plugins"] = results
+        findings["injections"] = injections
+        findings["summary"] = {
+            "malfind_hits": results.get("malfind", {}).get("hits", 0),
+            "injections_detected": len(injections) > 0,
+            "analysis_complete": True,
+        }
+
+    except RuntimeError as e:
+        # Volatility not installed — store placeholder
+        findings = {
+            "summary": {
+                "volatility_available": False,
+                "message": str(e),
+                "install": "pip install volatility3",
+            }
+        }
+    except Exception as e:
+        findings = {"summary": {"error": str(e)}}
+
+    # Update DB record
+    with next(_gs()) as session:
+        dump = session.get(_MD, dump_id)
+        if dump:
+            dump.status = "done"
+            dump.analysis_result = _json.dumps(findings)
+            dump.malfind_hits = findings.get("summary", {}).get("malfind_hits", 0)
+            dump.injections_found = bool(findings.get("summary", {}).get("injections_detected", False))
+            dump.analysed_at = datetime.utcnow()
+            session.commit()

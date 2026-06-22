@@ -211,10 +211,9 @@ export default function DeploymentHub() {
   const [falcoOs, setFalcoOs]     = useState('ubuntu');
   const [endpoints, setEndpoints] = useState([]);
   const [loading, setLoading]     = useState(true);
-  const [serverUrl]               = useState(window.location.origin);
+  const [serverUrl, setServerUrl] = useState(window.location.origin);
 
   useEffect(() => {
-    // Load endpoints only — /api/admin/config does not exist as a real route
     api.get('/api/endpoints')
       .then(r => setEndpoints(Array.isArray(r.data) ? r.data : []))
       .catch(() => setEndpoints([]))
@@ -448,6 +447,7 @@ journalctl -u aegistrace-agent -f | grep -i falco
               ['💾', 'Persistence Monitor'],
               ['⚡', 'HMAC-Signed Telemetry'],
               ['🛡️', 'Guardian Process'],
+              ['🧠', 'Memory Forensics (Layer 4)'],
             ].map(([icon, label]) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8,
                 padding: '8px 12px', background: 'rgba(74,126,200,0.04)',
@@ -467,14 +467,16 @@ journalctl -u aegistrace-agent -f | grep -i falco
 
           <Step n={1} title="Download & run the agent" icon={Download} active>
             <CodeBlock code={AGENT_CMDS[agentOs]} label="Install"/>
-            <div style={{ background: 'rgba(74,126,200,0.06)', border: `1px solid rgba(74,126,200,0.15)`,
-              borderRadius: 6, padding: '10px 14px', marginTop: 8 }}>
-              <div style={{ ...MONO, fontSize: 10, color: ACCENT_L, marginBottom: 3 }}>FIND YOUR INGEST KEY</div>
-              <div style={{ ...UI, fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                Your ingest key is set as <code style={MONO}>INGEST_API_KEY</code> in the server environment
-                (auto-generated on first startup). Check the server logs or your <code style={MONO}>.env</code> file on the VPS.
+            {ingestKey && (
+              <div style={{ background: 'rgba(74,126,200,0.06)', border: `1px solid rgba(74,126,200,0.2)`,
+                borderRadius: 6, padding: '10px 14px', marginTop: 8 }}>
+                <div style={{ ...MONO, fontSize: 10, color: ACCENT_L, marginBottom: 4 }}>YOUR INGEST KEY</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <code style={{ ...MONO, fontSize: 12, color: 'var(--text-primary)', flex: 1, wordBreak: 'break-all' }}>{ingestKey}</code>
+                  <CopyBtn text={ingestKey} small/>
+                </div>
               </div>
-            </div>
+            )}
           </Step>
 
           {agentOs === 'linux' && (

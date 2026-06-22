@@ -52,6 +52,7 @@ from routers.vision import router as vision_router
 from routers.rules import router as rules_router
 from routers.graph import router as graph_router
 from routers.orchestration import router as orchestration_router
+from routers.memory import router as memory_router
 from adaptive_agent import start_adaptive_agent
 from hardware_tools import router as hardware_router
 from ai_router import call_ai_json
@@ -230,7 +231,8 @@ for r in [auth_router, cases_router, vt_router, email_router, ioc_router,
           policies_router, itdr_router, agent_security_router,
           connectors_router, nhi_router, health_router, simulation_router,
           defense_router, demo_router, semantic_router,
-          vision_router, rules_router, graph_router, orchestration_router]:
+          vision_router, rules_router, graph_router, orchestration_router,
+          memory_router]:
     app.include_router(r)
 
 
