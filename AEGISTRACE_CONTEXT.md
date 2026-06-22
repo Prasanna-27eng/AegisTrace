@@ -1,5 +1,5 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v10.2 | **Last updated:** June 2026 (v10.2 = full enterprise UI redesign: Sentinel/QRadar dashboard, IBM Plex Sans + Plus Jakarta Sans fonts, 5 new public pages, accountability infrastructure positioning, Skills system installed)
+**Version:** v10.3 | **Last updated:** June 2026 (v10.3 = Phase 2 Security Foundation: SHA-256 hash chain on ProvenanceLedger with Trust Certificate export + AFSL File Security Layer with ChaCha20-Poly1305 encryption)
 **Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files. **This is the single master doc for this project — all other planning/session/deploy docs have been folded into this file and removed.**
 
 ---
@@ -91,6 +91,10 @@ backend/            FastAPI (Python)
     events.py             Internal event bus (singleton event_bus)
     prompt_shield.py      Prompt injection shield — sanitises all Groq inputs (v5.4)
     encryption.py         Fernet field encryption for sensitive DB columns (v5.5)
+    ssrf_guard.py         SSRF validation + DNS-rebind recheck shared module (v10.2)
+    file_security.py      FileIdentityVerifier (magic bytes, size limits, decompression bomb) + FilenameSanitiser (v10.3)
+    file_store.py         SecureFileStore — ChaCha20-Poly1305 AEAD, HKDF-SHA256 key, cryptographic shredding (v10.3)
+    file_sandbox.py       FileSandbox — subprocess isolation for file analysis, 30s timeout, SIGKILL (v10.3)
     connectors/           Connector plugin architecture
       base.py             BaseConnector abstract class
       azure_ad.py         Microsoft Graph app-only auth
@@ -579,12 +583,30 @@ Key design decisions:
 - Wired into agent telemetry ingest loop (routers/ingest.py)
 - Admin.jsx: ITDR Email Notifications setup card
 
-### Next Session Plan (Phase 2 — recommended build order)
-1. **Hash Chain on ProvenanceLedger** (~3 days) — `prev_hash` + `entry_hash` SHA-256 chain, `GET /api/provenance/verify`, `GET /api/provenance/certificate/{case_id}` PDF/JSON Trust Certificate — biggest compliance narrative in the platform. Zero new deps.
-2. **AFSL File Security Layer** (~4 days) — `core/file_security.py` (magic byte verification, decompression bomb check), `core/file_store.py` (ChaCha20-Poly1305 encryption per file), `core/file_sandbox.py` (subprocess isolation for PCAP/PDF). Real attack surface.
-3. **Adaptive Thresholds dashboard** (~1 day) — `/app/adaptive` page surfacing self-tuning agent output: threshold time-series, FP/FN trending, manual lock/override.
-4. **SQL Console saved queries + export** (~0.5 day) — `SavedHuntQuery` model (name, sql, created_by, org_id), CSV/JSON export.
-5. **ATSP Stage A — Protocol Library** (1 week) — publish spec first, then build `atsp/crypto.py`, `atsp/packet.py`, `atsp/handshake.py`, `atsp/session.py`, ProVerif model. Zero new deps beyond `cryptography` already installed.
+### Phase 2 Completed (June 2026 — v10.3)
+
+**Phase 2.1 — SHA-256 Hash Chain on ProvenanceLedger** ✅
+- `ProvenanceLedger` model: added `prev_hash` (str, "GENESIS" for first entry) + `entry_hash` (SHA-256)
+- `_compute_entry_hash()`: deterministic SHA-256 over action_type|actor|timestamp|output_summary|prev_hash
+- `_get_chain_tail()`: fetches latest entry_hash to use as prev_hash for next write
+- `POST /api/provenance/` (`log_provenance`): stamps prev_hash + entry_hash on every write
+- `GET /api/provenance/verify`: walks chain asc, skips pre-v10.3 entries (legacy_skipped), returns { valid, entries_checked, broken_at, message }
+- `GET /api/provenance/certificate/{case_id}`: Trust Certificate JSON — case metadata, per-entry hashes, chain_fingerprint (SHA-256 of all entry_hashes), DORA Article 19 regulatory note
+- `ProvenanceTab.jsx`: chain integrity banner (🔒/⚠️), Export Trust Certificate button (downloads trust-certificate-{id}.json), truncated hash per entry
+
+**Phase 2.2 — AFSL File Security Layer** ✅
+- `backend/core/file_security.py`: FileIdentityVerifier (magic bytes: pcap/pdf/zip/gzip, size limits, decompression bomb: 512MB/50:1 ratio), FilenameSanitiser (UUID prefix, strip path traversal)
+- `backend/core/file_store.py`: SecureFileStore (ChaCha20-Poly1305 AEAD, key via HKDF-SHA256 from FERNET_KEY, {uuid}.enc + {uuid}.meta.json, cryptographic shredding on delete)
+- `backend/core/file_sandbox.py`: FileSandbox.run_analysis() (subprocess, stripped env, 30s timeout, SIGKILL)
+- Wired into: `routers/pcap.py` + `routers/email_router.py` — malicious files rejected before processing
+- `main.py`: file store init in startup handler
+
+### Next Session Plan (Phase 2.5 / Phase 3)
+1. **ATSP Stage A — Protocol Library** (1 week) — publish `ATSP_SPEC.md` first (max HN impact), then build `backend/atsp/crypto.py` (X25519 + HKDF + ChaCha20-Poly1305 + HMAC), `atsp/packet.py` (74-byte header + 12 types), `atsp/handshake.py` (Noise_XX), `atsp/session.py` (replay protection), `atsp/obfuscator.py`, ProVerif formal model. Zero new deps.
+2. **Adaptive Thresholds dashboard** (~1 day) — `/app/adaptive` page: threshold time-series, FP/FN trending, manual lock/override. All data already exists in `AdaptiveThresholdLog`.
+3. **SQL Console saved queries + export** (~0.5 day) — `SavedHuntQuery` model, CSV/JSON export from ThreatHunt.
+4. **Ollama local AI integration** (~1 week) — `backend/core/ollama_client.py`, fallback chain: Ollama → Groq → NVIDIA NIM. Enables genuine air-gap claim for regulated industries.
+5. **Agent Verified Boot Chain** (~2 days) — agent hashes its own binary at startup, refuses to run if tampered, sends CRITICAL alert.
 
 ---
 
