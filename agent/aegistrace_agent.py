@@ -91,7 +91,7 @@ ISOLATION_ENABLED = os.environ.get("AEGISTRACE_ISOLATION", "false").lower() == "
 # ═══════════════════════════════════════════════════════════════════════════════
 # § 2  CONSTANTS
 # ═══════════════════════════════════════════════════════════════════════════════
-AGENT_VERSION = "6.1.0"
+AGENT_VERSION = "6.2.0"
 
 AI_API_DOMAINS = [
     "api.openai.com",       "api.anthropic.com",
@@ -2190,6 +2190,198 @@ _autoblock = AutoBlockEngine()
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# § 15.6  FALCO COMPANION  (new v6.2 — Layer 3 eBPF/kernel-level visibility)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class FalcoCompanion:
+    """
+    Layer 3 kernel-level visibility via Falco (eBPF / kprobes).
+
+    Falco must be independently installed on the host:
+      Ubuntu/Debian:  apt install falco
+      RPM:            yum install falco
+      Binary:         https://falco.org/docs/getting-started/installation/
+
+    This companion tail-reads Falco's JSON log output and converts each
+    security rule violation into a structured AegisTrace alert.  It is a
+    pure read-and-forward module — no kernel code lives in the agent itself.
+
+    Requires Falco to be configured with json_output=true (the default since
+    Falco 0.28).  The standard log locations are checked automatically.
+    """
+
+    LOG_PATHS = [
+        "/var/log/falco.log",
+        "/var/log/falco/falco.log",
+        "/run/falco/falco.log",
+        "/tmp/falco.log",        # dev / test environments
+    ]
+
+    # Falco priority → AegisTrace severity
+    PRIORITY_MAP = {
+        "EMERGENCY": "CRITICAL",
+        "ALERT":     "CRITICAL",
+        "CRITICAL":  "CRITICAL",
+        "ERROR":     "HIGH",
+        "WARNING":   "MEDIUM",
+        "NOTICE":    "LOW",
+        "INFO":      "INFO",
+        "DEBUG":     "INFO",
+    }
+
+    # Common Falco rule → MITRE ATT&CK technique
+    RULE_MITRE = {
+        "Write below binary dir":                    ("T1543", "Create or Modify System Process"),
+        "Write below etc":                           ("T1565.001", "Stored Data Manipulation"),
+        "Read sensitive file untrusted":             ("T1552.001", "Credentials in Files"),
+        "Read sensitive file trusted after startup": ("T1552.001", "Credentials in Files"),
+        "Terminal shell in container":               ("T1059.004", "Unix Shell"),
+        "Redirect STDOUT/STDIN to Network Connection in Container": ("T1059", "Command and Scripting Interpreter"),
+        "Execution from /tmp":                       ("T1059", "Command and Scripting Interpreter"),
+        "Launch Ingress Remote File Copy Tools":     ("T1105", "Ingress Tool Transfer"),
+        "Outbound Connection to C2 Servers":         ("T1041", "Exfiltration Over C2 Channel"),
+        "Network tool launched in container":        ("T1016", "System Network Configuration Discovery"),
+        "Modify Shell Configuration File":           ("T1546.004", "Unix Shell Configuration Modification"),
+        "Launch Package Management Process":         ("T1072", "Software Deployment Tools"),
+        "Ptrace attached to process":                ("T1055.008", "Ptrace System Calls"),
+        "Container Drift Detected":                  ("T1610", "Deploy Container"),
+        "Fileless execution via memfd_create":       ("T1620", "Reflective Code Loading"),
+        "Linux Kernel Module Injection":             ("T1215", "Kernel Modules and Extensions"),
+        "Suspicious network connection":             ("T1071", "Application Layer Protocol"),
+        "Create Symlink Over Sensitive Files":       ("T1055", "Process Injection"),
+        "File Opened for Writing by Untrusted Program": ("T1565", "Data Manipulation"),
+        "Mount Sensitive Paths":                     ("T1611", "Escape to Host"),
+        "Drop and Execute New Binary in Container":  ("T1610", "Deploy Container"),
+        "Sudo Potential Privilege Escalation":       ("T1548.003", "Sudo and Sudo Caching"),
+    }
+
+    def __init__(self):
+        self._log_path: Optional[str] = None
+        self._file_handle = None
+        self._last_size: int = 0
+        self._available: bool = False
+        self._initialized: bool = False
+
+    def _detect_falco(self) -> Optional[str]:
+        """Find Falco's log file. Returns path or None if Falco not present."""
+        for path in self.LOG_PATHS:
+            if os.path.exists(path):
+                return path
+        return None
+
+    def initialize(self) -> None:
+        """Called once at agent startup. Silently no-ops if Falco not installed."""
+        if self._initialized:
+            return
+        self._initialized = True
+
+        path = self._detect_falco()
+        if not path:
+            logger.info("[falco] Falco log not found — Layer 3 visibility inactive. "
+                        "Install Falco (https://falco.org) to enable kernel-level detection.")
+            return
+
+        try:
+            self._log_path = path
+            self._file_handle = open(path, "r")
+            # Seek to end so we only forward NEW events after agent starts
+            self._file_handle.seek(0, 2)
+            self._last_size = self._file_handle.tell()
+            self._available = True
+            logger.info(f"[falco] Layer 3 active — tailing {path}")
+        except OSError as e:
+            logger.warning(f"[falco] Cannot open {path}: {e}")
+
+    @property
+    def available(self) -> bool:
+        return self._available
+
+    def _parse_line(self, line: str) -> Optional[dict]:
+        """Parse one Falco JSON log line into a structured alert dict."""
+        line = line.strip()
+        if not line:
+            return None
+        try:
+            ev = json.loads(line)
+        except json.JSONDecodeError:
+            return None
+
+        rule     = ev.get("rule", "Unknown Falco Rule")
+        priority = ev.get("priority", "WARNING").upper()
+        output   = ev.get("output", "")
+        ts_str   = ev.get("time", datetime.utcnow().isoformat())
+        fields   = ev.get("output_fields", {})
+
+        severity = self.PRIORITY_MAP.get(priority, "MEDIUM")
+        mitre_id, mitre_name = self.RULE_MITRE.get(rule, ("T1059", "Execution"))
+
+        hostname = (
+            fields.get("container.name")
+            or fields.get("k8s.pod.name")
+            or platform.node()
+        )
+
+        return {
+            "type":        "falco_alert",
+            "subtype":     rule,
+            "severity":    severity,
+            "title":       f"[Falco] {rule}",
+            "description": output,
+            "mitre_id":    mitre_id,
+            "mitre_name":  mitre_name,
+            "hostname":    hostname,
+            "timestamp":   ts_str,
+            "source":      "falco_ebpf",
+            "priority":    priority,
+            "output_fields": fields,
+            "raw":         ev,
+        }
+
+    def drain(self) -> list:
+        """
+        Read any new Falco events since last call.
+        Returns list of structured alert dicts (may be empty).
+        Called every collection cycle.
+        """
+        if not self._available or not self._file_handle:
+            return []
+
+        events = []
+        try:
+            # Detect log rotation
+            try:
+                current_size = os.path.getsize(self._log_path)
+                if current_size < self._last_size:
+                    # File was rotated — reopen from start
+                    self._file_handle.close()
+                    self._file_handle = open(self._log_path, "r")
+                    self._last_size = 0
+            except OSError:
+                pass
+
+            for line in self._file_handle:
+                alert = self._parse_line(line)
+                if alert:
+                    events.append(alert)
+
+            try:
+                self._last_size = self._file_handle.tell()
+            except OSError:
+                pass
+
+        except Exception as e:
+            logger.debug(f"[falco] drain error: {e}")
+
+        if events:
+            logger.info(f"[falco] {len(events)} new Falco event(s) forwarded")
+
+        return events
+
+
+_falco = FalcoCompanion()
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # § 15.5  VULNERABILITY & MISCONFIGURATION SCANNER  (new v6.0)
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -2692,6 +2884,7 @@ class VulnerabilityScanner:
 
 
 _vuln_scanner = VulnerabilityScanner()
+# Note: _falco is initialised above the VulnerabilityScanner class (§15.6)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -3325,6 +3518,13 @@ def _run_collection_cycle() -> list:
     # v6.1 — persistence-mechanism baseline diff (every 5 min)
     alerts += _persistence.run_if_due()
 
+    # v6.2 — Falco Layer 3 eBPF/kernel events (drain new events each cycle)
+    falco_events = _falco.drain()
+    # Promote CRITICAL/HIGH Falco events directly into alerts
+    for fe in falco_events:
+        if fe.get("severity") in ("CRITICAL", "HIGH"):
+            alerts.append(fe)
+
     # Behavioural baseline
     anomalies = _baseline.check_anomalies(processes, connections)
     _baseline.record(processes, connections)
@@ -3382,6 +3582,8 @@ def _run_collection_cycle() -> list:
         "raw_logs":            raw_logs,
         "local_anomaly_score": anomaly_score,
         "vuln_findings":       vuln_findings,
+        "falco_events":        falco_events,          # v6.2 Layer 3 eBPF
+        "falco_available":     _falco.available,      # lets server know Layer 3 status
     })
 
     return alerts
@@ -3686,6 +3888,9 @@ if __name__ == "__main__":
     # Honey tokens: plant fake credential files
     if HONEY_TOKENS_ENABLED:
         _honey.plant()
+
+    # v6.2 — Falco Layer 3 companion (silently no-ops if Falco not installed)
+    _falco.initialize()
 
     # Service registration (non-fatal)
     register_as_service()

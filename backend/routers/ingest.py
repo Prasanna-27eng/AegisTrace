@@ -788,7 +788,9 @@ async def ingest_telemetry(
     processes     = data.get("processes", [])
     connections   = data.get("network_connections", [])
     risk_score    = data.get("local_anomaly_score", 0)
-    vuln_findings = data.get("vuln_findings", [])
+    vuln_findings  = data.get("vuln_findings", [])
+    falco_events   = data.get("falco_events", [])
+    falco_available = data.get("falco_available", False)
 
     if endpoint:
         endpoint.last_seen        = datetime.utcnow()
@@ -1081,6 +1083,62 @@ async def ingest_telemetry(
                     evidence       = json.dumps(ev),
                 ))
 
+    # ── v6.2  Falco Layer 3 — process kernel-level events ────────────────────
+    falco_alert_count = 0
+    if falco_events:
+        _FALCO_SEV_MAP = {
+            "CRITICAL": "critical", "HIGH": "high",
+            "MEDIUM": "medium", "LOW": "low", "INFO": "info",
+        }
+        cutoff_falco = datetime.utcnow() - timedelta(minutes=5)
+        for fe in falco_events[:100]:          # cap at 100 per cycle
+            rule        = fe.get("subtype", fe.get("title", "Falco Alert"))
+            severity    = _FALCO_SEV_MAP.get(fe.get("severity", "MEDIUM"), "medium")
+            description = fe.get("description", "")
+            mitre_id    = fe.get("mitre_id", "T1059")
+            fields      = fe.get("output_fields", {})
+            proc_name   = fields.get("proc.name", "")
+
+            # Deduplicate: skip if same rule+host in last 5 min
+            existing_falco = session.exec(
+                select(ITDRAlert)
+                .where(ITDRAlert.alert_type == f"falco_{rule[:40]}")
+                .where(ITDRAlert.identity_label == hostname)
+                .where(ITDRAlert.detected_at >= cutoff_falco)
+            ).first()
+            if existing_falco:
+                continue
+
+            falco_itdr = ITDRAlert(
+                org_id         = org_id,
+                alert_type     = f"falco_{rule[:40]}",
+                severity       = severity,
+                identity_label = hostname,
+                node_id        = None,
+                description    = f"[Falco/eBPF] {rule}: {description[:300]}",
+                evidence       = json.dumps({
+                    "rule": rule,
+                    "mitre_id": mitre_id,
+                    "mitre_name": fe.get("mitre_name", ""),
+                    "process": proc_name,
+                    "priority": fe.get("priority", ""),
+                    "output_fields": fields,
+                    "source": "falco_ebpf",
+                }),
+                status         = "open",
+                detected_at    = datetime.utcnow(),
+            )
+            session.add(falco_itdr)
+            itdr_alerts.append(falco_itdr)
+            falco_alert_count += 1
+
+            # Notify if high/critical
+            try:
+                from routers.itdr import _notify_itdr_alert
+                _notify_itdr_alert(falco_itdr, org_id, session)
+            except Exception:
+                pass
+
     session.commit()
 
     # ── Evaluate playbooks (SOAR) for newly created alerts ───────────────────
@@ -1114,6 +1172,8 @@ async def ingest_telemetry(
         "alerts_processed": len(alerts),
         "shadow_ai_events": shadow_ai_count,
         "itdr_alerts_created": len(itdr_alerts),
+        "falco_alerts": falco_alert_count,
+        "falco_layer3_active": falco_available,
     }
 
 

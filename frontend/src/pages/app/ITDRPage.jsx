@@ -34,6 +34,8 @@ const DETECTOR_META = {
   user_management:                 { label: 'User Account Change',        color: '#EF4444', Icon: User },
   new_destination:                 { label: 'New Network Destination',    color: '#8BB8E8', Icon: Activity },
   behavioural_anomaly:             { label: 'Behavioural Anomaly',        color: '#EAB308', Icon: AlertCircle },
+  // v6.2 Falco Layer 3 — eBPF / kernel-level alerts (prefix: falco_)
+  falco_alert:                     { label: 'Falco eBPF Alert',           color: '#A78BFA', Icon: Zap },
 };
 
 const EVENT_TYPE_LABELS = {
@@ -426,7 +428,10 @@ function AlertsTab() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {alerts.map(a => {
-            const dm  = DETECTOR_META[a.alert_type] || { label: a.alert_type?.replace(/_/g, ' ') || 'Alert', color: '#EF4444', Icon: AlertTriangle };
+            // Falco alerts have prefix "falco_<rule>" — map them to the Falco meta
+            const isFalco = a.alert_type?.startsWith('falco_');
+            const dmKey   = isFalco ? 'falco_alert' : a.alert_type;
+            const dm  = DETECTOR_META[dmKey] || { label: a.alert_type?.replace(/_/g, ' ') || 'Alert', color: '#EF4444', Icon: AlertTriangle };
             const { Icon } = dm;
             const sc  = STATUS_COLORS[a.status] || '#787878';
             const ev  = parseEvidence(a.evidence);
@@ -854,7 +859,9 @@ export default function ITDRPage() {
             <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Identity Threat Detection & Response</h1>
           </div>
           <div style={{ fontSize: '0.7rem', color: '#787878', ...MONO }}>
-            6 detectors · credential stuffing · impossible travel · new device · privilege escalation · token theft · shadow AI
+            6 identity detectors · credential stuffing · impossible travel · new device · privilege escalation · token theft · shadow AI
+            {' · '}
+            <span style={{ color: '#A78BFA', fontWeight: 600 }}>Layer 3: Falco eBPF</span>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
