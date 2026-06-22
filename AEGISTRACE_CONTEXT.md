@@ -1,5 +1,5 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v10.3 | **Last updated:** June 2026 (v10.3 = Phase 2 Security Foundation: SHA-256 hash chain on ProvenanceLedger with Trust Certificate export + AFSL File Security Layer with ChaCha20-Poly1305 encryption)
+**Version:** v10.4 | **Last updated:** June 2026 (v10.4 = Phase 2.5 ATSP Stage A: formally verifiable secure telemetry protocol library — X25519+HKDF+ChaCha20+HMAC, Noise_XX handshake, ProVerif model, 17/17 tests pass)
 **Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files. **This is the single master doc for this project — all other planning/session/deploy docs have been folded into this file and removed.**
 
 ---
@@ -601,12 +601,38 @@ Key design decisions:
 - Wired into: `routers/pcap.py` + `routers/email_router.py` — malicious files rejected before processing
 - `main.py`: file store init in startup handler
 
-### Next Session Plan (Phase 2.5 / Phase 3)
-1. **ATSP Stage A — Protocol Library** (1 week) — publish `ATSP_SPEC.md` first (max HN impact), then build `backend/atsp/crypto.py` (X25519 + HKDF + ChaCha20-Poly1305 + HMAC), `atsp/packet.py` (74-byte header + 12 types), `atsp/handshake.py` (Noise_XX), `atsp/session.py` (replay protection), `atsp/obfuscator.py`, ProVerif formal model. Zero new deps.
-2. **Adaptive Thresholds dashboard** (~1 day) — `/app/adaptive` page: threshold time-series, FP/FN trending, manual lock/override. All data already exists in `AdaptiveThresholdLog`.
-3. **SQL Console saved queries + export** (~0.5 day) — `SavedHuntQuery` model, CSV/JSON export from ThreatHunt.
-4. **Ollama local AI integration** (~1 week) — `backend/core/ollama_client.py`, fallback chain: Ollama → Groq → NVIDIA NIM. Enables genuine air-gap claim for regulated industries.
-5. **Agent Verified Boot Chain** (~2 days) — agent hashes its own binary at startup, refuses to run if tampered, sends CRITICAL alert.
+### Phase 2.5 Completed (June 2026 — v10.4)
+
+**ATSP Stage A — Formally Verifiable Secure Telemetry Protocol** ✅
+- `ATSP_SPEC.md` (repo root) — RFC-style spec: 74-byte header diagram, 11 packet types, Noise_XX handshake, 3-layer replay protection, traffic obfuscation, ProVerif reference, "Why Not TLS?" table. Ready for HN/r/netsec.
+- `backend/atsp/crypto.py` — `generate_keypair()` (X25519 ephemeral), `derive_session_key()` (HKDF-SHA256, salt=nonce_a‖nonce_s, info=b"aegistrace-atsp-v1"), `ATSPCrypto` (ChaCha20-Poly1305 + HMAC-SHA256 constant-time)
+- `backend/atsp/packet.py` — 74-byte fixed header struct, `PacketType` IntEnum (11 types incl. CHAFF 0x99), `ATSPPacket.build()` / `ATSPPacket.parse()`
+- `backend/atsp/session.py` — `ATSPSession` with 3-layer replay: ±30s timestamp, monotonic SeqNum, 1000-nonce deque cache; `ReplayError`
+- `backend/atsp/handshake.py` — `ATSPHandshake` Noise_XX (agent + server sides); forward secrecy, mutual auth, transcript binding
+- `backend/atsp/obfuscator.py` — 64-byte padding blocks, 12% chaff injection probability
+- `verification/atsp_model.pv` — ProVerif ≥2.04 model: 4 queries (session key secrecy, payload secrecy, mutual auth inj-event correspondence, forward secrecy)
+- `verification/test_vectors.json` — 4 real computed vectors (TV-01 X25519, TV-02 HKDF, TV-03 ChaCha20, TV-04 HMAC) against deterministic seeds
+- `backend/atsp/tests/test_atsp.py` — 17 unit tests, 0 external deps — **all 17 PASS**
+- Zero new dependencies — `cryptography` (already installed) + stdlib only
+
+### Next Session Plan (Phase 3 — Platform Independence)
+1. **Ollama local AI integration** (~1 week) — `backend/core/ollama_client.py`, fallback chain Ollama → Groq → NVIDIA NIM. Enables genuine air-gap claim for regulated industries. `llama3.1:8b` runs on 4GB RAM VPS.
+2. **Agent Verified Boot Chain** (~2 days) — agent hashes own binary at startup via `GET /api/ingest/agent-manifest`, refuses to run if tampered, sends CRITICAL ITDRAlert.
+3. **Native Python Embedding Engine** (~3 days) — replace NVIDIA NV-EmbedQA with TF-IDF + cosine similarity. Makes semantic case search work air-gapped.
+4. **Adaptive Thresholds dashboard** (~1 day) — `/app/adaptive` page surfacing `AdaptiveThresholdLog`: threshold time-series, FP/FN trending, manual lock/override.
+5. **SQL Console saved queries + export** (~0.5 day) — `SavedHuntQuery` model, CSV/JSON export from ThreatHunt SQL Console.
+
+### New files to know about (v10.3–v10.4)
+| File | Purpose |
+|------|---------|
+| `backend/atsp/` | ATSP protocol library — Stage A (pure library, not wired to agent yet) |
+| `backend/atsp/tests/test_atsp.py` | Run: `python3 backend/atsp/tests/test_atsp.py` |
+| `verification/atsp_model.pv` | ProVerif formal model — `proverif verification/atsp_model.pv` |
+| `verification/test_vectors.json` | Real computed crypto test vectors |
+| `ATSP_SPEC.md` | RFC-style protocol spec — publish to HN when ready |
+| `backend/core/file_security.py` | FileIdentityVerifier + FilenameSanitiser |
+| `backend/core/file_store.py` | SecureFileStore (ChaCha20-Poly1305 per file) |
+| `backend/core/file_sandbox.py` | FileSandbox (subprocess isolation, 30s timeout) |
 
 ---
 
