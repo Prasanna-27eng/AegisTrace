@@ -132,8 +132,10 @@ const CAPABILITIES = [
   { cat: 'AI',           name: 'Llama 3.2 Vision',         desc: 'Analyzes screenshots and images for credential harvesting pages, phishing, and visual IOCs.' },
   { cat: 'COMPLIANCE',   name: 'DORA Reports',             desc: 'Auto-generates EU Digital Operational Resilience Act incident reports from case data.' },
   { cat: 'COMPLIANCE',   name: 'NIS2 Mapping',             desc: 'Maps detected incidents to NIS2 directive obligations with remediation guidance.' },
+  { cat: 'COMPLIANCE',   name: 'SHA-256 Hash Chain',       desc: 'Every AI decision cryptographically chained. Tamper any record and the chain breaks. Trust Certificate export for DORA Article 19.' },
   { cat: 'COMPLIANCE',   name: 'Audit Trail',              desc: 'Tamper-evident, signed event log covering all analyst actions and AI decisions.' },
-  { cat: 'ENDPOINT',     name: 'Endpoint Agent v5',        desc: 'Lightweight Go agent: process telemetry, honey tokens, 3s interval, zero-dependency deploy.' },
+  { cat: 'ENDPOINT',     name: 'Endpoint Agent v6.1',      desc: 'ATSP protocol: X25519 + ChaCha20-Poly1305 + 3-layer replay protection. Honey tokens, YARA-lite, auto-block, ProVerif-verified transport.' },
+  { cat: 'ENDPOINT',     name: 'ATSP Secure Protocol',     desc: 'Formally verifiable telemetry protocol. 4 security properties proved with ProVerif. Forward secrecy per session. Zero new dependencies.' },
   { cat: 'ENDPOINT',     name: 'Persistence Monitor',      desc: 'Watches run keys, cron, launchd, systemd, and startup paths for unauthorized persistence.' },
 ];
 
@@ -177,7 +179,7 @@ const TERMINAL_LINES = [
   { prompt: '#',  text: 'Deploy in one command' },
   { prompt: '$',  text: 'curl -fsSL https://aegistrace.uk/agent/install.sh | sudo bash', copy: true },
   { prompt: null, text: '' },
-  { prompt: '[✓]', text: 'AegisTrace Endpoint Agent v5.0 installed',    gold: true },
+  { prompt: '[✓]', text: 'AegisTrace Endpoint Agent v6.1 installed',    gold: true },
   { prompt: '[✓]', text: 'Connected to: aegistrace.uk',                  gold: true },
   { prompt: '[✓]', text: 'Telemetry interval: 3s',                       gold: true },
   { prompt: '[✓]', text: 'Honey tokens: active',                         gold: true },
@@ -200,7 +202,7 @@ const ASCII_DIAGRAM = `IDENTITY PROVIDERS          ENDPOINTS           EMAIL
        ↓                          ↓                  ↓
 ┌─────────────────────────────────────────────────────┐
 │              AEGISTRACE INGEST ENGINE               │
-│  Okta · Azure AD · Auth0 · Endpoint Agent v5        │
+│  Okta · Azure AD · Auth0 · Endpoint Agent v6.1        │
 └─────────────────────────────────────────────────────┘
            ↓                              ↓
 ┌──────────────────────┐    ┌────────────────────────┐

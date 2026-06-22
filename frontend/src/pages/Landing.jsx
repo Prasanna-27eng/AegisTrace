@@ -766,7 +766,7 @@ const MODULES = [
   { n: '04', name: 'Attack Graph',        desc: 'Temporal linker + AI-generated attack narratives from correlated events' },
   { n: '05', name: 'SOAR Playbooks',      desc: 'Visual builder with automated execution, approval gates, and rollback' },
   { n: '06', name: 'Adaptive Agent',      desc: 'Self-tuning detection thresholds based on live FP/FN performance' },
-  { n: '07', name: 'Endpoint Agent',      desc: 'v6.1 — honey tokens, YARA-lite, DNS/DGA, auto-block, HMAC-signed telemetry' },
+  { n: '07', name: 'Endpoint Agent',      desc: 'v6.1 — honey tokens, YARA-lite, DNS/DGA, auto-block, ATSP-encrypted telemetry' },
   { n: '08', name: 'AI Defense Console',  desc: 'Live attack feed with human-in-the-loop approve/block/escalate/dismiss' },
   { n: '09', name: 'Threat Hunt',         desc: 'Cross-case IOC correlation + DuckDB SQL console over live telemetry' },
   { n: '10', name: 'Hardware Forensics',  desc: '18 parsers for WiFi, RF, USB/HID, RFID/NFC, and network attack tools' },
@@ -1104,22 +1104,23 @@ function ComparisonSection() {
 ════════════════════════════════════════════════════════════════════════════ */
 const TRUST_PILLARS = [
   {
+    title: 'ATSP — Formally Verified Protocol',
+    body: 'AegisTrace Secure Protocol: X25519 forward-secret handshake, ChaCha20-Poly1305 encryption, 3-layer replay protection. Every security property machine-proved with ProVerif. Published spec — verify yourself.',
+    badge: 'v10.4 NEW',
+  },
+  {
     title: 'SHA-256 Hash Chain',
     body: 'Every AI decision is cryptographically chained. Tamper one provenance record and the entire chain breaks. Export a Trust Certificate for DORA Article 19 submission.',
-    badge: 'v10.3 NEW',
+    badge: 'v10.3',
   },
   {
     title: 'File Security Layer',
     body: 'Every uploaded file verified by magic bytes before processing. ChaCha20-Poly1305 encryption at rest. Decompression bomb detection. Subprocess isolation with 30s timeout.',
-    badge: 'v10.3 NEW',
+    badge: 'v10.3',
   },
   {
     title: 'Two Independent Audits',
     body: 'v10.1: CVE remediation, 17+ table IDOR sweep, CORS/CSP lockdown, DNS-rebinding defenses. v10.2: SSRF guard, agent-command auth, prompt injection shield on all AI paths.',
-  },
-  {
-    title: 'Multi-Tenant Ready',
-    body: 'Every query org-scoped. Cross-tenant leakage eliminated across all 17+ tables. MSP and MSSP ready — add a second tenant and nothing leaks.',
   },
   {
     title: 'Human Control Preserved',

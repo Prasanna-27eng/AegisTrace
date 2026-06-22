@@ -683,7 +683,7 @@ function RoadmapSection() {
   const V2 = [
     { text: 'SHA-256 hash chain on ProvenanceLedger — every AI decision cryptographically linked. Trust Certificate export for DORA Article 19.', done: true },
     { text: 'AFSL File Security — magic byte verification, ChaCha20-Poly1305 encryption at rest, decompression bomb detection, subprocess sandbox.', done: true },
-    { text: 'ATSP Protocol Library — formally verifiable secure telemetry protocol (crypto.py, packet.py, handshake.py, ProVerif model).', active: true },
+    { text: 'ATSP Protocol Library — formally verifiable secure telemetry protocol. X25519 + HKDF + ChaCha20-Poly1305, Noise_XX handshake, 4 security properties proved with ProVerif. 17/17 tests pass.', done: true },
     { text: 'SCIM identity sync for enterprise push-based provisioning.' },
     { text: 'Agent Supervision Console with per-agent kill switches and task-scope enforcement.' },
     { text: 'Attacker Path Reconstruction across human + machine actors.' },

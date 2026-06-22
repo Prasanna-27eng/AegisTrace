@@ -484,8 +484,9 @@ const FLAGSHIP_POINTS = [
   'Explainable AI triage on Groq + NVIDIA NIM',
   'Attack-graph kill-chain reconstruction (Temporal Linker)',
   'SOAR playbooks gated by human approval',
-  'Production endpoint agent — honey tokens to auto-block',
-  'Multi-tenancy security audit shipped in v10.1',
+  'Endpoint agent v6.1 — ATSP-encrypted telemetry, honey tokens, auto-block',
+  'SHA-256 hash chain on every AI decision — Trust Certificate for DORA',
+  'ATSP: formally verifiable protocol, 4 properties proved with ProVerif',
 ];
 
 const CERTS_EARNED  = ['SC-200', 'Security+', 'TCM PEH'];
@@ -511,7 +512,7 @@ function FlagshipSection() {
               <div className="mono" style={{ fontSize: 10, letterSpacing: '0.24em', color: GOLD, marginBottom: 16 }}>FLAGSHIP — v10.1</div>
               <h2 className="cd" style={{ fontSize: 'clamp(30px,3.5vw,52px)', fontWeight: 600, letterSpacing: '-0.025em', margin: '0 0 18px', lineHeight: 1.04 }}>AegisTrace</h2>
               <p className="cg" style={{ fontSize: 16, lineHeight: 1.68, color: 'rgba(241,245,249,0.58)', maxWidth: 480, margin: '0 0 18px' }}>
-                A free, open Trust Operating System: identity-first detection, explainable AI triage, kill-chain reconstruction, SOAR playbooks with human approval gates, and a production-grade endpoint agent — running entirely on free-tier infrastructure.
+                Free, open Accountability Infrastructure for the AI-agent era: identity-first detection, explainable AI triage, kill-chain reconstruction, SOAR playbooks with human approval gates, SHA-256 hash chain on every AI decision, and a production endpoint agent with a formally verified secure protocol — all on free-tier infrastructure.
               </p>
               <p className="cg" style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(241,245,249,0.36)', maxWidth: 480, margin: '0 0 28px' }}>
                 React 18 · FastAPI · SQLite · Groq · NVIDIA NIM · Docker · Render

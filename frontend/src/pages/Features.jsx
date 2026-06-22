@@ -370,20 +370,21 @@ export default function Features() {
       {/* ══════════════════════════════════════════════
           MODULE 07: Endpoint Agent v6.1
       ══════════════════════════════════════════════ */}
-      <ModuleSection id="threat-hunt" num="07" name="Endpoint Agent v6.1" tagline="Production-grade EDR with honey tokens, YARA-lite, and HMAC-signed telemetry." dark={false}>
+      <ModuleSection id="threat-hunt" num="07" name="Endpoint Agent v6.1" tagline="Production-grade EDR with ATSP-encrypted telemetry, honey tokens, and YARA-lite." dark={false}>
         <Body>
-          A full endpoint detection agent with 8 layered capabilities. Every telemetry event is HMAC-signed before transmission. A Guardian Process monitors agent health and auto-restarts if tampered. Multi-backend failover keeps collection running even when primary ingest is unavailable.
+          A full endpoint detection agent with 9 layered capabilities. All telemetry is transmitted over ATSP — the AegisTrace Secure Protocol — with X25519 forward-secret handshake, ChaCha20-Poly1305 encryption, and 3-layer replay protection. A Guardian Process monitors agent health and auto-restarts if tampered. Multi-backend failover keeps collection running even when the primary ingest endpoint is unreachable.
         </Body>
         <Reveal delay={0.08}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 2, marginBottom: 20 }}>
             {[
+              { name: 'ATSP Encrypted Transport', desc: 'X25519 forward-secret handshake + ChaCha20-Poly1305 AEAD. Security properties formally proved with ProVerif.' },
               { name: 'Honey Token Trap', desc: 'Decoy credentials that fire high-confidence alerts on first use' },
               { name: 'YARA-lite Engine', desc: '~40 signatures covering malware families, suspicious strings, packed executables' },
               { name: 'DNS/DGA Detection', desc: 'Domain generation algorithm detection via entropy analysis + volume thresholds' },
               { name: 'Auto-Block Engine', desc: 'Immediate IP and process blocking on confirmed high-confidence detections' },
               { name: 'Vulnerability Scanner', desc: 'OS patch level, open ports, misconfigured services — local assessment without network exposure' },
               { name: 'Persistence Monitor', desc: 'Registry keys, cron jobs, startup items, LaunchDaemons — live monitoring' },
-              { name: 'HMAC Telemetry', desc: 'Every event signed before transmission — tamper-evident log chain' },
+              { name: 'Replay Protection', desc: '3-layer: ±30s timestamp + monotonic SeqNum + 1000-nonce cache — four independent barriers' },
               { name: 'Guardian Process', desc: 'Watchdog monitors agent health, auto-restarts on tamper or crash' },
             ].map(({ name, desc }) => (
               <div key={name} style={{ background: '#fff', border: '1px solid #E2E8F0', padding: '16px 20px' }}>
@@ -393,7 +394,7 @@ export default function Features() {
             ))}
           </div>
         </Reveal>
-        <WhyMatters text="Most EDRs are cloud-first. This agent was built for environments where cloud egress is restricted or disallowed. Multi-backend failover means detection continues even when the primary ingest endpoint is unreachable." />
+        <WhyMatters text="Most EDRs send telemetry over HTTPS with no forward secrecy. ATSP provides per-session ephemeral keys, meaning past sessions cannot be decrypted even if long-term keys are compromised. Every security property is formally proved — not just claimed." />
       </ModuleSection>
 
       {/* ══════════════════════════════════════════════
@@ -546,6 +547,8 @@ export default function Features() {
           </Reveal>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 2 }}>
             {[
+              { title: 'ATSP Secure Protocol', body: 'AegisTrace Secure Protocol: X25519 ephemeral key exchange, ChaCha20-Poly1305 AEAD, 3-layer replay protection. Four security properties formally proved with ProVerif. Published spec — verify yourself.', pills: ['X25519 forward secrecy', 'ChaCha20-Poly1305', 'ProVerif verified', 'Zero new deps'] },
+              { title: 'Cryptographic Audit Chain', body: 'Every AI decision cryptographically chained via SHA-256. Tamper any provenance record and the chain breaks. Export Trust Certificates for DORA Article 19 regulatory submission.', pills: ['SHA-256 chain', 'Trust Certificates', 'DORA Article 19', 'Tamper-evident'] },
               { title: 'Multi-Tenancy', body: 'Org-scoped data isolation. Multiple tenants on a single deployment. Per-org API keys, user management, and audit logs.', pills: ['Org isolation', 'Per-org keys', 'Shared infrastructure'] },
               { title: 'Compliance Reporting', body: 'Automated DORA Article 19, DPDPA, and RBI reports generated from Provenance Ledger data — not assembled manually from scattered logs.', pills: ['DORA Article 19', 'DPDPA', 'RBI', 'Auto-generated'] },
               { title: 'Self-Hosting', body: 'Full deployment on your infrastructure. No cloud dependency. Your data never leaves your network. Designed for air-gapped environments.', pills: ['On-premise', 'Air-gap ready', 'Docker + Compose'] },
