@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "generated_by": "AegisTrace atsp/crypto.py \u2014 cryptography v44+",
+  "note": "All vectors computed from the actual implementation. Deterministic private keys used for reproducibility.",
+  "vectors": [
+    {
+      "id": "TV-01",
+      "operation": "x25519_key_agreement",
+      "inputs": {
+        "private_key_a": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "private_key_s": "202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f",
+        "public_key_a": "8f40c5adb68f25624ae5b214ea767a6ec94d829d3d7b5e1ad1ba6f3e2138285f",
+        "public_key_s": "358072d6365880d1aeea329adf9121383851ed21a28e3b75e965d0d2cd166254"
+      },
+      "expected": {
+        "shared_secret": "9663aa1da97e848a914a436d04163dfbb89178f107f1b5b77ed3854203382854"
+      }
+    },
+    {
+      "id": "TV-02",
+      "operation": "hkdf_sha256_key_derivation",
+      "inputs": {
+        "shared_secret": "9663aa1da97e848a914a436d04163dfbb89178f107f1b5b77ed3854203382854",
+        "nonce_a": "404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f",
+        "nonce_s": "606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f",
+        "info": "aegistrace-atsp-v1",
+        "length": 32
+      },
+      "expected": {
+        "session_key": "1c14430a6f86d5be626a91e50b5f7c1ed64ddbfb3dc78de2bd7b04581c424b39"
+      }
+    },
+    {
+      "id": "TV-03",
+      "operation": "chacha20poly1305_encrypt",
+      "inputs": {
+        "key": "1c14430a6f86d5be626a91e50b5f7c1ed64ddbfb3dc78de2bd7b04581c424b39",
+        "nonce": "000102030405060708090a0b",
+        "plaintext": "4165676973547261636520415453502074657374207061796c6f6164",
+        "plaintext_ascii": "AegisTrace ATSP test payload",
+        "aad": null
+      },
+      "expected": {
+        "ciphertext_with_tag": "3b3920ce00c10b7ef5471fdca5dc5182c13158878a97e65d3500364d389cc4c63303fcbe69aacdd95070e969",
+        "ciphertext_len": 44
+      }
+    },
+    {
+      "id": "TV-04",
+      "operation": "hmac_sha256",
+      "inputs": {
+        "key": "1c14430a6f86d5be626a91e50b5f7c1ed64ddbfb3dc78de2bd7b04581c424b39",
+        "data": "41545350207061636b657420686561646572",
+        "data_ascii": "ATSP packet header"
+      },
+      "expected": {
+        "mac": "069a1885c3d3518e3391d6bdedb51e044fcfc649264e9f9251db3db9f87ecba4"
+      }
+    }
+  ]
+}
