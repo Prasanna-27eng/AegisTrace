@@ -16,21 +16,6 @@ const GOLD = '#F59E0B';
 const BG   = '#050505';
 const INK  = '#BDD4E8';
 
-/* ─── Lenis smooth scroll ───────────────────────────────────────────────── */
-function useLenis() {
-  const reduced = useReducedMotion();
-  useEffect(() => {
-    if (reduced || typeof window === 'undefined') return;
-    if (window.innerWidth <= 768) return;
-    let lenis, raf;
-    import('@studio-freight/lenis').then(({ default: Lenis }) => {
-      lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
-      const tick = t => { lenis.raf(t); raf = requestAnimationFrame(tick); };
-      raf = requestAnimationFrame(tick);
-    });
-    return () => { lenis?.destroy(); cancelAnimationFrame(raf); };
-  }, [reduced]);
-}
 
 /* ─── Helpers ───────────────────────────────────────────────────────────── */
 function useIsMobile() {
@@ -668,7 +653,6 @@ function Nav() {
    ROOT
 ════════════════════════════════════════════════════════════════════════════ */
 export default function Portfolio() {
-  useLenis();
   const isMobile = useIsMobile();
   const reduced  = useReducedMotion();
 

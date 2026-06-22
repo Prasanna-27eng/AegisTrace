@@ -4,7 +4,6 @@ import {
   useInView, useReducedMotion, AnimatePresence,
 } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import Lenis from '@studio-freight/lenis';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { useSceneCamera, PinnedScene, ScrollProgressBar } from '../components/SceneController';
 import LoadingScreen, { useLoading } from '../components/LoadingScreen';
@@ -1473,15 +1472,6 @@ export default function Landing() {
   const reduced  = useReducedMotion();
   const useFallback = isMobile || reduced;
   const { done }    = useLoading();
-
-  /* Lenis smooth scroll — desktop only */
-  useEffect(() => {
-    if (reduced || useFallback) return;
-    const lenis = new Lenis({ lerp: 0.06, smoothWheel: true, wheelMultiplier: 0.88, infinite: false });
-    const raf = time => { lenis.raf(time); requestAnimationFrame(raf); };
-    requestAnimationFrame(raf);
-    return () => lenis.destroy();
-  }, [reduced, useFallback]);
 
   return (
     <>

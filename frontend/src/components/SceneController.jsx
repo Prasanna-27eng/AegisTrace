@@ -10,7 +10,8 @@ export function useSceneCamera(ref, { smooth = true } = {}) {
     offset: ['start start', 'end end'],
   });
   if (!smooth) return scrollYProgress;
-  return useSpring(scrollYProgress, { stiffness: 90, damping: 28, mass: 0.8 });
+  /* Higher stiffness = more responsive to native scroll (no Lenis anymore) */
+  return useSpring(scrollYProgress, { stiffness: 180, damping: 32, mass: 0.5 });
 }
 
 /* ─── Section-level parallax progress ───────────────────────────────────────

@@ -674,7 +674,6 @@ function InstallAllSection() {
    MAIN
 ════════════════════════════════════════════════════════════════════════ */
 export default function Tools() {
-  useSmoothScroll();
 
   return (
     <div style={{ background: BG, color: INK, overflowX: 'clip', position: 'relative', isolation: 'isolate' }}>
