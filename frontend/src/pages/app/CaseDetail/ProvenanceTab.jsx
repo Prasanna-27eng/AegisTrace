@@ -95,6 +95,12 @@ function ProvenanceRow({ record, onApprove }) {
             </div>
           )}
 
+          {record.entry_hash && (
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)', marginTop: 6, wordBreak: 'break-all' }}>
+              {record.entry_hash.slice(0, 16)}...{record.entry_hash.slice(-8)}
+            </div>
+          )}
+
           {record.approval_status === 'pending' && (
             <div style={{ display: 'flex', gap: 8 }}>
               <button className="btn-accent" onClick={() => onApprove(record.id, true)} style={{ fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -115,6 +121,8 @@ export default function ProvenanceTab({ caseId }) {
   const { addToast } = useStore();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [chainStatus, setChainStatus] = useState(null); // null | { valid, entries_checked, broken_at, message }
+  const [certLoading, setCertLoading] = useState(false);
 
   const load = () => {
     api.get(`/api/provenance/case/${caseId}`)
@@ -123,6 +131,29 @@ export default function ProvenanceTab({ caseId }) {
   };
 
   useEffect(() => { if (caseId && caseId !== 'new') load(); }, [caseId]);
+
+  useEffect(() => {
+    if (!caseId || caseId === 'new') return;
+    api.get(`/api/provenance/verify?case_id=${caseId}`)
+      .then(r => setChainStatus(r.data))
+      .catch(() => setChainStatus(null));
+  }, [caseId]);
+
+  const exportCertificate = async () => {
+    setCertLoading(true);
+    try {
+      const r = await api.get(`/api/provenance/certificate/${caseId}`);
+      // Download as JSON
+      const blob = new Blob([JSON.stringify(r.data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url;
+      a.download = `trust-certificate-${caseId}.json`; a.click();
+      URL.revokeObjectURL(url);
+      addToast('Trust Certificate exported', 'success');
+    } catch (e) {
+      addToast('Export failed', 'error');
+    } finally { setCertLoading(false); }
+  };
 
   const handleApprove = async (id, approved) => {
     try {
@@ -150,6 +181,29 @@ export default function ProvenanceTab({ caseId }) {
             </span>
           )}
         </div>
+      </div>
+
+      {/* Chain integrity banner */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: chainStatus?.valid ? 'rgba(16,185,129,0.08)' : chainStatus ? 'rgba(239,68,68,0.08)' : 'rgba(37,99,235,0.06)', border: `1px solid ${chainStatus?.valid ? 'rgba(16,185,129,0.2)' : chainStatus ? 'rgba(239,68,68,0.2)' : 'rgba(37,99,235,0.15)'}`, borderRadius: 8, marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 16 }}>{chainStatus?.valid ? '🔒' : chainStatus ? '⚠️' : '⟳'}</span>
+          <div>
+            <div style={{ fontFamily: 'var(--font-ui)', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+              {chainStatus?.valid ? 'Chain Integrity Verified' : chainStatus ? 'Chain Integrity Violation' : 'Verifying chain...'}
+            </div>
+            {chainStatus && (
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                {chainStatus.message}
+              </div>
+            )}
+          </div>
+        </div>
+        {chainStatus?.valid && (
+          <button onClick={exportCertificate} disabled={certLoading}
+            style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 6, padding: '7px 14px', fontFamily: 'var(--font-ui)', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+            {certLoading ? '...' : '📄 Export Trust Certificate'}
+          </button>
+        )}
       </div>
 
       {loading ? (

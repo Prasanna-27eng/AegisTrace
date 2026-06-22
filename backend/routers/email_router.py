@@ -6,6 +6,7 @@ from models import EmailAnalysisRecord, AuditLog, User, Case
 from database import get_session
 from ai_router import call_ai_json
 from routers.auth import get_current_user
+from core.file_security import FileIdentityVerifier, FileSecurityError, FilenameSanitiser
 
 router = APIRouter(prefix="/api/email", tags=["email"])
 
@@ -82,6 +83,14 @@ async def analyse_email(data: dict, session: Session = Depends(get_session),
         if not case or case.org_id != _user.org_id:
             raise HTTPException(404, "Case not found")
     full_text = raw_headers + "\n\n" + raw_body
+
+    # ── AFSL Phase 2.2: email content size and type verification ─────────────
+    email_bytes = full_text.encode("utf-8", errors="replace")
+    try:
+        FileIdentityVerifier("email", email_bytes).verify()
+    except FileSecurityError as e:
+        raise HTTPException(400, f"File rejected: {e}")
+    safe_name = FilenameSanitiser.sanitise(data.get("filename", "email.eml"))
 
     sender_ip = extract_sender_ip(raw_headers)
     sender_domain = ""

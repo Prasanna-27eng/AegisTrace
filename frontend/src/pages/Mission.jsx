@@ -673,17 +673,20 @@ function VerBadge({ v, label, active = false, done = false }) {
 
 function RoadmapSection() {
   const V1_ITEMS = [
-    'Core accountability infrastructure: Identity Graph, ITDR, Explainable AI,',
+    'Core accountability infrastructure: Identity Graph, ITDR (6 detectors), Explainable AI,',
     'Human Approval Queue, Endpoint Agent v6.1, Temporal Linker, SOAR Playbooks,',
-    'Adaptive Thresholds. Grassroots Security Toolkit (5 PyPI packages) live.',
-    'Two independent security audits completed.',
+    'Adaptive Thresholds, Auto-Rule Generation Trigger, Trust Score Trending.',
+    'Grassroots Security Toolkit (5 PyPI packages). Two independent security audits.',
+    'DPDPA 2023 compliance reports. ITDR email notifications. Identity Graph click panel.',
   ];
 
   const V2 = [
-    { text: 'SCIM identity sync for enterprise push-based provisioning.', active: true },
-    { text: 'Agent Supervision Console with per-agent kill switches.', active: true },
+    { text: 'SHA-256 hash chain on ProvenanceLedger — every AI decision cryptographically linked. Trust Certificate export for DORA Article 19.', done: true },
+    { text: 'AFSL File Security — magic byte verification, ChaCha20-Poly1305 encryption at rest, decompression bomb detection, subprocess sandbox.', done: true },
+    { text: 'ATSP Protocol Library — formally verifiable secure telemetry protocol (crypto.py, packet.py, handshake.py, ProVerif model).', active: true },
+    { text: 'SCIM identity sync for enterprise push-based provisioning.' },
+    { text: 'Agent Supervision Console with per-agent kill switches and task-scope enforcement.' },
     { text: 'Attacker Path Reconstruction across human + machine actors.' },
-    { text: 'DPDPA + RBI compliance reporting for Asia-Pacific markets.' },
   ];
   const V3 = [
     { text: 'Federated accountability across multiple deployments.' },

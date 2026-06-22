@@ -1104,28 +1104,30 @@ function ComparisonSection() {
 ════════════════════════════════════════════════════════════════════════════ */
 const TRUST_PILLARS = [
   {
-    title: 'v10.1 Security Audit',
-    body: 'CVE remediation, IDOR sweep across 17+ tables, CORS/CSP lockdown, DNS-rebinding defenses.',
+    title: 'SHA-256 Hash Chain',
+    body: 'Every AI decision is cryptographically chained. Tamper one provenance record and the entire chain breaks. Export a Trust Certificate for DORA Article 19 submission.',
+    badge: 'v10.3 NEW',
   },
   {
-    title: 'v10.2 SOC Hardening',
-    body: 'SSRF guard module, agent-command authorization, prompt injection shield, non-root Docker.',
+    title: 'File Security Layer',
+    body: 'Every uploaded file verified by magic bytes before processing. ChaCha20-Poly1305 encryption at rest. Decompression bomb detection. Subprocess isolation with 30s timeout.',
+    badge: 'v10.3 NEW',
+  },
+  {
+    title: 'Two Independent Audits',
+    body: 'v10.1: CVE remediation, 17+ table IDOR sweep, CORS/CSP lockdown, DNS-rebinding defenses. v10.2: SSRF guard, agent-command auth, prompt injection shield on all AI paths.',
   },
   {
     title: 'Multi-Tenant Ready',
-    body: 'Every query org-scoped. Cross-tenant leakage eliminated. MSP/MSSP ready.',
+    body: 'Every query org-scoped. Cross-tenant leakage eliminated across all 17+ tables. MSP and MSSP ready — add a second tenant and nothing leaks.',
   },
   {
-    title: 'Explainable AI',
-    body: 'Every verdict shows evidence, reasoning, confidence. No black boxes. Regulators can audit.',
-  },
-  {
-    title: 'Human Control',
-    body: 'Every automated action has approval layer. Provenance Ledger with full reversibility.',
+    title: 'Human Control Preserved',
+    body: 'Every automated action requires human confirmation. Approval layer + Provenance Ledger with full reversibility. Audit-ready by design.',
   },
   {
     title: 'Self-Hostable',
-    body: 'Your data never leaves your network. Built for regulated industries.',
+    body: 'Deploy on your own infrastructure. Your data never leaves your network. Full control over retention, access, and audit. Built for regulated industries.',
   },
 ];
 
@@ -1174,11 +1176,23 @@ function TrustSection() {
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(37,99,235,0.4)'; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
               >
-                <h3 style={{
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontSize: 15, fontWeight: 700, color: INK,
-                  margin: '0 0 10px', lineHeight: 1.3,
-                }}>{pillar.title}</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                  <h3 style={{
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontSize: 15, fontWeight: 700, color: INK,
+                    margin: 0, lineHeight: 1.3,
+                  }}>{pillar.title}</h3>
+                  {pillar.badge && (
+                    <span style={{
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontSize: 9, fontWeight: 700, color: GOLD,
+                      background: 'rgba(245,158,11,0.12)',
+                      border: '1px solid rgba(245,158,11,0.3)',
+                      padding: '2px 6px', borderRadius: 3, whiteSpace: 'nowrap',
+                      letterSpacing: '0.06em',
+                    }}>{pillar.badge}</span>
+                  )}
+                </div>
                 <p style={{
                   fontFamily: "'IBM Plex Sans', sans-serif",
                   fontSize: 13, color: MUTED, lineHeight: 1.65,

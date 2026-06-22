@@ -555,6 +555,14 @@ async def startup():
         print(f"[AegisTrace] Add to env vars: INGEST_API_KEY={generated_key}")
         print(f"[AegisTrace] Update your endpoint agents to use this key.")
 
+    # ── AFSL Phase 2.2: File Store ────────────────────────────────────────────
+    try:
+        from core.file_store import get_file_store as _init_file_store
+        _init_file_store()  # creates /var/data/files dir, derives encryption key
+        print("[AegisTrace] File store initialised")
+    except Exception as e:
+        print(f"[AegisTrace] File store init warning: {e}")
+
     print("[AegisTrace v5.4] Server ready.")
     print(f"[AegisTrace] Allowed origins: {ALLOWED_ORIGINS}")
     # ── Security posture check at startup ────────────────────────────────────

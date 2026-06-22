@@ -23,6 +23,7 @@ from models import PcapAnalysis, AuditLog, User, Case
 from database import get_session
 from routers.auth import get_current_user
 from ai_router import call_ai_json
+from core.file_security import FileIdentityVerifier, FileSecurityError, FilenameSanitiser
 
 router = APIRouter(prefix="/api/pcap", tags=["pcap"])
 
@@ -248,8 +249,13 @@ async def analyse_pcap(
         raise HTTPException(400, "Only .pcap / .pcapng / .cap files are accepted")
 
     data = await file.read()
-    if len(data) > MAX_PCAP_SIZE:
-        raise HTTPException(413, f"File too large. Max {MAX_PCAP_SIZE // 1024 // 1024} MB")
+    # ── AFSL Phase 2.2: file identity verification ────────────────────────────
+    try:
+        FileIdentityVerifier("pcap", data).verify()
+    except FileSecurityError as e:
+        raise HTTPException(400, f"File rejected: {e}")
+    safe_name = FilenameSanitiser.sanitise(file.filename or "upload.pcap")
+
     if len(data) < 24:
         raise HTTPException(400, "File is too small to be a valid PCAP")
 

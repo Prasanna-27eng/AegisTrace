@@ -468,6 +468,9 @@ class ProvenanceLedger(SQLModel, table=True):
     approved_by: Optional[str] = Field(default=None)
     linked_evidence_id: Optional[int] = Field(default=None)
     timestamp: datetime = Field(default_factory=datetime.utcnow)
+    # ── v10.3 Hash Chain ──────────────────────────────────────────────────
+    prev_hash: str = Field(default="GENESIS", sa_column=Column(Text))   # hash of previous entry, "GENESIS" for first
+    entry_hash: str = Field(default="", sa_column=Column(Text))          # SHA-256(action_type|actor|timestamp|output_summary|prev_hash)
 
 
 class CaseComment(SQLModel, table=True):
