@@ -1,5 +1,5 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v10.5 | **Last updated:** June 2026 (v10.5 = Priority B Deep Forensics: Falco Layer 3 eBPF, Memory Forensics Layer 4, Attacker Path Reconstruction; full enterprise UI with Aether Seal brand; Deployment Hub)
+**Version:** v10.6 | **Last updated:** June 2026 (v10.6 = ATSP Standard completion: Agent Identity Attestation (delegation tokens + HMAC signatures) + Regulatory Evidence Package (EU AI Act/DORA/DPDPA one-click export with chain integrity proof))
 **Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files. **This is the single master doc for this project — all other planning/session/deploy docs have been folded into this file and removed.**
 
 ---
@@ -650,6 +650,25 @@ Key design decisions:
 - All external `aegistrace-7qvn.onrender.com` links → `<Link to="/app/login">`
 - Lenis smooth scroll removed from all pages (Landing, Mission, Portfolio, Tools) → native scroll
 - mix-blend-mode: screen workaround removed after transparent PNG asset delivered
+
+### ATSP Standard Completion — Agent Identity Attestation + Regulatory Package (June 2026 — v10.6)
+
+**Agent Identity Attestation — Delegation Tokens** ✅
+- `AgentDelegationToken` model: `token_id` (UUID), `authorized_by`, `capabilities[]`, `not_before/not_after`, `is_revoked`, `signature` (HMAC-SHA256 using JWT_SECRET — proves platform issuance)
+- 11 defined capabilities: read_cases, enrich_ioc, add_case_comment, triage_alert, generate_report, close_case, isolate_endpoint, query_identity_graph, run_playbook, generate_rule, access_provenance
+- `backend/routers/delegation.py`: POST issue, GET list/verify/active, POST revoke
+- `AgentSecurity.jsx`: "Delegation Tokens" tab — issue form with capability checkboxes + expiry slider, active token cards with countdown + revoke
+- **Accountability chain complete**: Human → DelegationToken (signed) → AgentAction → ProvenanceLedger (hash-chained)
+
+**Regulatory Evidence Package** ✅
+- `GET /api/reports/regulatory-package/{case_id}?regulation=all|eu_ai_act|dora|dpdpa`
+- Bundles: chain integrity proof (chain_fingerprint), AI decisions with entry_hash, human approvals, delegation tokens, ITDR alerts, incident timeline
+- Regulatory mapping: EU AI Act Articles 9/12/13/14/17/26 + DORA Articles 17/19/28 + DPDPA Sections 8(6)/10 — each evaluated as Evidenced ✓ or Gap ⚠
+- Evidence completeness score 0-100% (8 boolean checks)
+- Notification deadlines: 72h (AI Act), 4h (DORA), 72h (DPDPA)
+- `ReportTab.jsx`: scope selector, completeness badges, chain integrity banner, article mapping tables, Download JSON
+
+**Strategic context**: These two features complete the "OIDC for AI Agents" positioning. The accountability chain is now: Human (authorized) → DelegationToken (signed credential) → AgentAction (logged) → ProvenanceLedger (hash-chained) → RegulatoryPackage (one-click export). This is what the EU AI Act requires and nobody else has built end-to-end.
 
 ### Next Session Plan (Phase 3 — Platform Independence)
 1. **Ollama local AI integration** (~1 week) — `backend/core/ollama_client.py`, fallback chain Ollama → Groq → NVIDIA NIM. Enables genuine air-gap claim for regulated industries. `llama3.1:8b` runs on 4GB RAM VPS.
