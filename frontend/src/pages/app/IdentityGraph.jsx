@@ -62,10 +62,53 @@ function RiskSparkline({ data }) {
   );
 }
 
+// ── Attack Path Mini-Viz for IdentityGraph overlay ───────────────────────────
+function IdentityAttackPathViz({ data }) {
+  if (!data) return null;
+  if (!data.nodes || !data.nodes.length) {
+    return (
+      <div style={{ padding: '12px 0', fontSize: 11, color: '#787878', fontFamily: 'JetBrains Mono, monospace', lineHeight: 1.6 }}>
+        {data.summary || 'No attack path found from this node.'}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ marginTop: 12 }}>
+      {data.summary && (
+        <div style={{ fontSize: 11, color: '#8BB8E8', lineHeight: 1.5, marginBottom: 10, padding: '8px 10px', background: 'rgba(74,126,200,0.06)', border: '1px solid rgba(74,126,200,0.15)', borderRadius: 5 }}>
+          {data.summary}
+        </div>
+      )}
+      {data.path_steps && data.path_steps.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {data.path_steps.map((step, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '6px 8px', background: 'rgba(74,126,200,0.04)', border: '1px solid rgba(74,126,200,0.1)', borderRadius: 4, fontSize: 11 }}>
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', color: '#555', flexShrink: 0, minWidth: 18 }}>{String(i+1).padStart(2,'0')}</span>
+              <span style={{ color: '#909090', flex: 1, lineHeight: 1.4 }}>
+                <span style={{ color: '#BDD4E8', fontWeight: 600 }}>{step.from_label}</span>
+                {' → '}
+                <span style={{ color: '#8BB8E8' }}>{step.action}</span>
+                {' → '}
+                <span style={{ color: '#BDD4E8', fontWeight: 600 }}>{step.to_label}</span>
+              </span>
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#A78BFA', background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)', padding: '1px 5px', borderRadius: 3, flexShrink: 0 }}>
+                {step.mitre_id}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Node Detail Overlay (slide-in panel over canvas, Feature 1) ───────────────
 function NodeDetailOverlay({ node, onClose }) {
   const navigate = useNavigate();
   const [nodeHistory, setNodeHistory] = useState([]);
+  const [pathData, setPathData]       = useState(null);
+  const [pathLoading, setPathLoading] = useState(false);
 
   useEffect(() => {
     if (!node) return;
@@ -204,6 +247,51 @@ function NodeDetailOverlay({ node, onClose }) {
       >
         OPEN CASE FOR THIS IDENTITY
       </button>
+
+      {/* Attack Path CTA */}
+      <button
+        onClick={async () => {
+          if (pathLoading) return;
+          setPathLoading(true);
+          try {
+            const r = await api.get(`/api/identity/attack-path?node_id=${node.id}`);
+            setPathData(r.data);
+          } catch {
+            setPathData({ nodes: [], edges: [], path_steps: [], summary: 'Failed to load attack path.' });
+          } finally {
+            setPathLoading(false);
+          }
+        }}
+        style={{
+          marginTop: 8,
+          width: '100%',
+          background: 'rgba(167,139,250,0.12)',
+          color: '#A78BFA',
+          border: '1px solid rgba(167,139,250,0.25)',
+          padding: '9px',
+          borderRadius: 6,
+          fontFamily: 'JetBrains Mono, monospace',
+          fontSize: 12,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 6,
+        }}
+      >
+        {pathLoading ? <Loader2 size={12} className="spinner" /> : null}
+        {pathLoading ? 'Reconstructing…' : 'Reconstruct Attack Path'}
+      </button>
+
+      {/* Attack path result panel */}
+      {pathData && (
+        <div style={{ marginTop: 4, borderTop: '1px solid rgba(167,139,250,0.15)', paddingTop: 8 }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#A78BFA', letterSpacing: '0.08em', marginBottom: 4 }}>
+            ATTACK PATH
+          </div>
+          <IdentityAttackPathViz data={pathData} />
+        </div>
+      )}
     </div>
   );
 }

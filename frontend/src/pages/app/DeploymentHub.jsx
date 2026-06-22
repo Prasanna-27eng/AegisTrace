@@ -8,7 +8,6 @@ import {
   Cpu, GitBranch, Package, Settings, RefreshCw,
 } from 'lucide-react';
 import api from '../../api/client';
-import useStore from '../../store/useStore';
 
 const E = [0.23, 1, 0.32, 1];
 const MONO = { fontFamily: "'IBM Plex Mono', 'JetBrains Mono', monospace" };
@@ -208,23 +207,18 @@ function SectionHead({ icon: Icon, title, badge, color = ACCENT, children }) {
    MAIN PAGE
 ════════════════════════════════════════════════════════════════════════════ */
 export default function DeploymentHub() {
-  const { addToast } = useStore();
   const [agentOs, setAgentOs]     = useState('linux');
   const [falcoOs, setFalcoOs]     = useState('ubuntu');
   const [endpoints, setEndpoints] = useState([]);
   const [loading, setLoading]     = useState(true);
-  const [ingestKey, setIngestKey] = useState('');
-  const [serverUrl, setServerUrl] = useState(window.location.origin);
+  const [serverUrl]               = useState(window.location.origin);
 
   useEffect(() => {
-    Promise.all([
-      api.get('/api/endpoints').catch(() => ({ data: [] })),
-      api.get('/api/admin/config').catch(() => ({ data: {} })),
-    ]).then(([eps, cfg]) => {
-      setEndpoints(eps.data || []);
-      if (cfg.data?.ingest_api_key) setIngestKey(cfg.data.ingest_api_key);
-      setLoading(false);
-    });
+    // Load endpoints only — /api/admin/config does not exist as a real route
+    api.get('/api/endpoints')
+      .then(r => setEndpoints(Array.isArray(r.data) ? r.data : []))
+      .catch(() => setEndpoints([]))
+      .finally(() => setLoading(false));
   }, []);
 
   const activeEndpoints   = endpoints.filter(e => e.is_active);
@@ -473,16 +467,14 @@ journalctl -u aegistrace-agent -f | grep -i falco
 
           <Step n={1} title="Download & run the agent" icon={Download} active>
             <CodeBlock code={AGENT_CMDS[agentOs]} label="Install"/>
-            {ingestKey && (
-              <div style={{ background: 'rgba(74,126,200,0.06)', border: `1px solid rgba(74,126,200,0.2)`,
-                borderRadius: 6, padding: '10px 14px', marginTop: 8 }}>
-                <div style={{ ...MONO, fontSize: 10, color: ACCENT_L, marginBottom: 4 }}>YOUR INGEST KEY</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <code style={{ ...MONO, fontSize: 12, color: 'var(--text-primary)', flex: 1, wordBreak: 'break-all' }}>{ingestKey}</code>
-                  <CopyBtn text={ingestKey} small/>
-                </div>
+            <div style={{ background: 'rgba(74,126,200,0.06)', border: `1px solid rgba(74,126,200,0.15)`,
+              borderRadius: 6, padding: '10px 14px', marginTop: 8 }}>
+              <div style={{ ...MONO, fontSize: 10, color: ACCENT_L, marginBottom: 3 }}>FIND YOUR INGEST KEY</div>
+              <div style={{ ...UI, fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                Your ingest key is set as <code style={MONO}>INGEST_API_KEY</code> in the server environment
+                (auto-generated on first startup). Check the server logs or your <code style={MONO}>.env</code> file on the VPS.
               </div>
-            )}
+            </div>
           </Step>
 
           {agentOs === 'linux' && (

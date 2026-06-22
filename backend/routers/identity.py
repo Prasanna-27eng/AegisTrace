@@ -1,5 +1,5 @@
 """
-AegisTrace Identity Graph Router — v3.0
+AegisTrace Identity Graph Router — v3.1
 ────────────────────────────────────────
 Endpoints for managing identity nodes and edges.
 
@@ -12,16 +12,22 @@ POST /api/identity/edges
 DELETE /api/identity/edges/{id}
 POST /api/identity/nodes/{id}/mark-compromised
 GET  /api/identity/search
+GET  /api/identity/attack-path  — attacker path reconstruction (BFS over IdentityEdge graph)
 """
 import json
 from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select
-from models import IdentityNode, IdentityEdge, IdentityAnomaly, User, AuditLog, IdentityRiskHistory
+from models import IdentityNode, IdentityEdge, IdentityAnomaly, User, AuditLog, IdentityRiskHistory, Case
 from database import get_session
 from routers.auth import get_current_user
 import adaptive_config
+
+
+def _org_case_ids(session: Session, user: User) -> set:
+    """Case IDs visible to the caller's org."""
+    return set(session.exec(select(Case.id).where(Case.org_id == user.org_id)).all())
 
 router = APIRouter(prefix="/api/identity", tags=["identity"])
 
@@ -428,3 +434,199 @@ def get_node_risk_history(
         }
         for h in history
     ]
+
+
+@router.get("/attack-path")
+def get_attack_path(
+    node_id: Optional[int] = Query(default=None),
+    case_id: Optional[int] = Query(default=None),
+    max_depth: int = Query(default=5, le=10),
+    _user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """
+    Reconstruct the attacker's path through the identity graph.
+
+    Starting from a compromised node (or all compromised nodes in a case),
+    walks IdentityEdge relationships to build a directed path graph.
+    Enriches each hop with ITDR alerts, case associations, and MITRE techniques.
+
+    Returns a structured path object ready for visual rendering.
+    """
+    from models import ITDRAlert
+
+    org_case_ids = _org_case_ids(session, _user)
+
+    # ── 1. Find starting nodes ─────────────────────────────────────────────
+    if node_id:
+        start_nodes = session.exec(
+            select(IdentityNode)
+            .where(IdentityNode.id == node_id)
+            .where(IdentityNode.org_id == _user.org_id)
+        ).all()
+    elif case_id:
+        # Find compromised identities mentioned in the case's ITDR alerts
+        if case_id not in org_case_ids:
+            raise HTTPException(404)
+        case_alerts = session.exec(
+            select(ITDRAlert)
+            .where(ITDRAlert.case_id == case_id)
+            .where(ITDRAlert.org_id == _user.org_id)
+        ).all()
+        identity_labels = list({a.identity_label for a in case_alerts if a.identity_label})
+        start_nodes = list(session.exec(
+            select(IdentityNode)
+            .where(IdentityNode.org_id == _user.org_id)
+            .where(IdentityNode.label.in_(identity_labels))
+        ).all()) if identity_labels else []
+
+        # Also include explicitly compromised nodes
+        compromised = session.exec(
+            select(IdentityNode)
+            .where(IdentityNode.org_id == _user.org_id)
+            .where(IdentityNode.is_compromised == True)
+        ).all()
+        existing_ids = {n.id for n in start_nodes}
+        for n in compromised:
+            if n.id not in existing_ids:
+                start_nodes.append(n)
+    else:
+        # All compromised nodes in the org
+        start_nodes = session.exec(
+            select(IdentityNode)
+            .where(IdentityNode.org_id == _user.org_id)
+            .where(IdentityNode.is_compromised == True)
+            .order_by(IdentityNode.risk_score.desc())
+            .limit(5)
+        ).all()
+
+    if not start_nodes:
+        return {"nodes": [], "edges": [], "path_steps": [], "summary": "No compromised identities found."}
+
+    # ── 2. BFS walk through IdentityEdge graph ─────────────────────────────
+    visited_ids = set()
+    path_nodes = {}   # id → enriched node dict
+    path_edges = []
+    queue = [(n, 0) for n in start_nodes]
+
+    # Get all edges for this org's nodes (pre-load for efficiency)
+    all_node_ids = [r[0] for r in session.exec(select(IdentityNode.id).where(IdentityNode.org_id == _user.org_id)).all()]
+    all_edges = session.exec(
+        select(IdentityEdge)
+        .where(IdentityEdge.source_id.in_(all_node_ids))
+    ).all()
+    edge_map = {}  # source_id → list of edges
+    for e in all_edges:
+        edge_map.setdefault(e.source_id, []).append(e)
+
+    # Get ITDR alerts for enrichment
+    itdr_by_label = {}
+    all_itdr = session.exec(
+        select(ITDRAlert)
+        .where(ITDRAlert.org_id == _user.org_id)
+        .where(ITDRAlert.severity.in_(["critical", "high"]))
+        .order_by(ITDRAlert.detected_at.desc())
+        .limit(200)
+    ).all()
+    for alert in all_itdr:
+        itdr_by_label.setdefault(alert.identity_label, []).append(alert)
+
+    # MITRE technique map for relationship types
+    REL_MITRE = {
+        "compromised_by":   ("T1078", "Valid Accounts"),
+        "accessed":         ("T1078.004", "Cloud Accounts"),
+        "inherited_from":   ("T1134", "Token Impersonation"),
+        "issued":           ("T1552.001", "Credentials in Files"),
+        "owned":            ("T1098", "Account Manipulation"),
+        "used":             ("T1071", "Application Layer Protocol"),
+        "escalated_to":     ("T1548", "Abuse Elevation Control"),
+        "lateral_to":       ("T1021", "Remote Services"),
+        "exfil_via":        ("T1041", "Exfil Over C2 Channel"),
+    }
+
+    while queue:
+        node, depth = queue.pop(0)
+        if node.id in visited_ids or depth > max_depth:
+            continue
+        visited_ids.add(node.id)
+
+        # Enrich node with ITDR alerts
+        node_alerts = itdr_by_label.get(node.label, [])
+
+        path_nodes[node.id] = {
+            "id": node.id,
+            "label": node.label,
+            "node_type": node.node_type,
+            "risk_score": float(node.risk_score or 0),
+            "is_compromised": node.is_compromised,
+            "privilege_level": node.privilege_level,
+            "anomaly_count": node.anomaly_count_7d or 0,
+            "last_active": node.last_active.isoformat() if node.last_active else None,
+            "depth": depth,
+            "itdr_alerts": [
+                {
+                    "type": a.alert_type,
+                    "severity": a.severity,
+                    "description": a.description[:100],
+                    "detected_at": a.detected_at.isoformat() if a.detected_at else None,
+                }
+                for a in node_alerts[:3]
+            ],
+        }
+
+        # Walk outgoing edges
+        for edge in edge_map.get(node.id, []):
+            target = session.get(IdentityNode, edge.target_id)
+            if not target or target.org_id != _user.org_id:
+                continue
+
+            mitre_id, mitre_name = REL_MITRE.get(edge.relationship, ("T1078", "Valid Accounts"))
+
+            path_edges.append({
+                "source": edge.source_id,
+                "target": edge.target_id,
+                "relationship": edge.relationship,
+                "confidence": edge.confidence,
+                "mitre_id": mitre_id,
+                "mitre_name": mitre_name,
+                "evidence_ref": edge.evidence_ref,
+            })
+
+            if edge.target_id not in visited_ids:
+                queue.append((target, depth + 1))
+
+    # ── 3. Build human-readable path steps ────────────────────────────────
+    path_steps = []
+    for edge in path_edges:
+        src = path_nodes.get(edge["source"], {})
+        tgt = path_nodes.get(edge["target"], {})
+        if src and tgt:
+            path_steps.append({
+                "step": len(path_steps) + 1,
+                "from_label": src.get("label", ""),
+                "from_type": src.get("node_type", ""),
+                "action": edge["relationship"].replace("_", " ").title(),
+                "to_label": tgt.get("label", ""),
+                "to_type": tgt.get("node_type", ""),
+                "mitre_id": edge["mitre_id"],
+                "mitre_name": edge["mitre_name"],
+            })
+
+    # Summary
+    if path_nodes:
+        compromised_count = sum(1 for n in path_nodes.values() if n["is_compromised"])
+        summary = (
+            f"Attack path spans {len(path_nodes)} identities across {len(path_edges)} hops. "
+            f"{compromised_count} confirmed compromised. "
+            f"Deepest lateral reach: {max((n['depth'] for n in path_nodes.values()), default=0)} hops from initial access."
+        )
+    else:
+        summary = "No attack path constructed."
+
+    return {
+        "nodes": list(path_nodes.values()),
+        "edges": path_edges,
+        "path_steps": path_steps,
+        "summary": summary,
+        "start_node_ids": [n.id for n in start_nodes],
+    }
