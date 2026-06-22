@@ -38,6 +38,22 @@ export default function ReportTab({ caseId, caseData }) {
   const hasAI       = !!caseData?.ai_executive_summary;
   const isClosed    = caseData?.status === 'closed';
   const { download, loading } = useAuthDownload();
+  const { addToast } = useStore();
+
+  const [dpdpaReport, setDpdpaReport] = useState(null);
+  const [dpdpaLoading, setDpdpaLoading] = useState(false);
+
+  const generateDpdpa = async () => {
+    setDpdpaLoading(true);
+    try {
+      const r = await api.get(`/api/reports/dpdpa/${caseId}`);
+      setDpdpaReport(r.data);
+    } catch (e) {
+      addToast('Failed to generate DPDPA report', 'error');
+    } finally {
+      setDpdpaLoading(false);
+    }
+  };
 
   const reports = [
     {
@@ -99,6 +115,80 @@ export default function ReportTab({ caseId, caseData }) {
             </button>
           </div>
         ))}
+      </div>
+
+      {/* ── DPDPA 2023 Compliance Section ── */}
+      <div style={{ marginBottom: 28 }}>
+        <div className="section-label">Regulatory Compliance</div>
+        <div className="at-card" style={{ padding: 20, borderColor: 'rgba(37,99,235,0.2)' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+            <Shield size={28} style={{ color: '#60A5FA', marginTop: 2, flexShrink: 0 }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 600, fontSize: '0.92rem', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+                DPDPA 2023 Compliance Report
+                <span style={{ fontSize: '0.62rem', background: 'rgba(37,99,235,0.12)', border: '1px solid rgba(37,99,235,0.3)', color: '#60A5FA', padding: '1px 6px', borderRadius: 3, fontFamily: 'JetBrains Mono', verticalAlign: 'middle' }}>IN</span>
+              </div>
+              <div style={{ fontSize: '0.78rem', color: '#787878', marginBottom: 16, lineHeight: 1.65 }}>
+                Digital Personal Data Protection Act 2023. Maps this investigation to DPDPA obligations including breach notification (Section 8(6)), data retention (Section 8(5)), and DPIA requirements (Section 10). Required for organisations processing personal data of Indian residents.
+              </div>
+              <button
+                onClick={generateDpdpa}
+                disabled={dpdpaLoading}
+                className="btn-ghost"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: '0.82rem', borderColor: 'rgba(37,99,235,0.3)', color: '#60A5FA' }}
+              >
+                {dpdpaLoading ? <Loader2 size={14} className="spinner" /> : '📋'}
+                {dpdpaLoading ? 'Generating…' : 'DPDPA 2023 Report'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {dpdpaReport && (
+          <div style={{ marginTop: 16, border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
+            <div style={{ padding: '16px 20px', background: 'rgba(37,99,235,0.08)', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
+                DPDPA 2023 — Digital Personal Data Protection Act
+              </div>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#60A5FA', marginTop: 4 }}>
+                ⚠ Notification deadline: {dpdpaReport.notification_deadline}
+              </div>
+            </div>
+            <div style={{ padding: '16px 20px' }}>
+              <p style={{ fontSize: 14, color: '#A8A8A8', lineHeight: 1.7, marginBottom: 20 }}>
+                {dpdpaReport.executive_summary}
+              </p>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                    {['Section', 'Title', 'Status', 'Evidence'].map(h => (
+                      <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#787878', textTransform: 'uppercase' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {dpdpaReport.dpdpa_obligations.map((o, i) => (
+                    <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <td style={{ padding: '10px 12px', color: '#60A5FA', fontFamily: 'JetBrains Mono, monospace', fontSize: 11 }}>{o.section}</td>
+                      <td style={{ padding: '10px 12px', color: '#EBEBEB' }}>{o.title}</td>
+                      <td style={{ padding: '10px 12px' }}>
+                        <span style={{
+                          fontFamily: 'JetBrains Mono, monospace', fontSize: 10, padding: '2px 8px',
+                          background: o.status === 'APPLICABLE' ? 'rgba(239,68,68,0.1)' : o.status === 'PENDING' ? 'rgba(245,158,11,0.1)' : 'rgba(37,99,235,0.1)',
+                          color: o.status === 'APPLICABLE' ? '#F87171' : o.status === 'PENDING' ? '#FBBF24' : '#60A5FA',
+                          borderRadius: 3,
+                        }}>
+                          {o.status}
+                        </span>
+                      </td>
+                      <td style={{ padding: '10px 12px', color: '#787878', fontSize: 12 }}>{o.evidence}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Completeness Preview ── */}

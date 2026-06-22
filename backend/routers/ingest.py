@@ -947,6 +947,11 @@ async def ingest_telemetry(
             "identity_id": None,
             "details": {"hostname": hostname},
         })
+        try:
+            from routers.itdr import _notify_itdr_alert
+            _notify_itdr_alert(alert_obj, alert_obj.org_id, session)
+        except Exception:
+            pass  # Never let notification failure break ingest
 
     # ── Store raw log events (comprehensive system logs from agent) ────────────
     raw_logs = data.get("raw_logs", [])

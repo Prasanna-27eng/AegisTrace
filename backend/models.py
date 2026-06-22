@@ -796,6 +796,36 @@ class AdaptiveThresholdLog(SQLModel, table=True):
     applied_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+# ── v10.2 Auto-Rule Generation ─────────────────────────────────────────────
+class DetectionRule(SQLModel, table=True):
+    id:               Optional[int] = Field(default=None, primary_key=True)
+    org_id:           int           = Field(default=1, index=True)
+    rule_name:        str           = Field(index=True)
+    trigger_technique: str          = ""   # MITRE technique ID that triggered generation
+    trigger_case_ids: str           = "[]" # JSON list of case IDs that triggered this
+    status:           str           = "pending_review"  # pending_review | approved | rejected | deployed
+    yara:             Optional[str] = Field(default=None, sa_column=Column(Text))
+    sigma:            Optional[str] = Field(default=None, sa_column=Column(Text))
+    kql:              Optional[str] = Field(default=None, sa_column=Column(Text))
+    splunk_spl:       Optional[str] = Field(default=None, sa_column=Column(Text))
+    description:      Optional[str] = None
+    ai_confidence:    float         = 0.0
+    reviewed_by:      Optional[str] = None
+    review_notes:     Optional[str] = None
+    generated_at:     datetime      = Field(default_factory=datetime.utcnow)
+    reviewed_at:      Optional[datetime] = None
+
+
+class IdentityRiskHistory(SQLModel, table=True):
+    id:          Optional[int] = Field(default=None, primary_key=True)
+    org_id:      int           = Field(default=1, index=True)
+    node_id:     int           = Field(foreign_key="identitynode.id", index=True)
+    risk_score:  float         = 0.0
+    trust_score: float         = 0.0
+    anomaly_count: int         = 0
+    recorded_at: datetime      = Field(default_factory=datetime.utcnow)
+
+
 # ── NVIDIA Phase 2: Case Embeddings ──────────────────────────────────────────
 class CaseEmbedding(SQLModel, table=True):
     """Stores NV-EmbedQA-E5-v5 embeddings for semantic case similarity search."""

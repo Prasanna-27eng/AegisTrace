@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Plus, Trash2, RefreshCw, AlertTriangle, Shield, Key,
   Monitor, Bot, User, Link, Loader2, X, ChevronRight,
@@ -27,6 +28,9 @@ const RELATIONSHIPS = [
   'inherited_from', 'linked', 'escalated_to',
 ];
 
+// Node type ids used for the quick-filter pills
+const FILTER_NODE_TYPES = ['user', 'service_account', 'api_key', 'token', 'device', 'agent', 'ai_agent', 'prompt'];
+
 function NodeIcon({ type, size = 14 }) {
   const meta = TYPE_MAP[type] || NODE_TYPES[0];
   const { Icon } = meta;
@@ -40,8 +44,172 @@ function riskColor(score) {
   return '#22C55E';
 }
 
+// ── Risk Sparkline (SVG) ───────────────────────────────────────────────────────
+function RiskSparkline({ data }) {
+  if (!data || data.length < 2) return null;
+  const scores = data.map(d => typeof d.risk_score === 'number' ? d.risk_score : 0);
+  const max = Math.max(...scores, 1);
+  const w = 300, h = 60;
+  const pts = scores.map((s, i) =>
+    `${(i / (scores.length - 1)) * w},${h - (s / max) * (h - 4)}`
+  ).join(' ');
+  const areaBottom = `0,${h} ${pts} ${w},${h}`;
+  return (
+    <svg width="100%" viewBox={`0 0 ${w} ${h}`} style={{ overflow: 'visible', display: 'block' }}>
+      <polyline points={areaBottom} fill="rgba(245,158,11,0.12)" strokeWidth="0" />
+      <polyline points={pts} fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ── Node Detail Overlay (slide-in panel over canvas, Feature 1) ───────────────
+function NodeDetailOverlay({ node, onClose }) {
+  const navigate = useNavigate();
+  const [nodeHistory, setNodeHistory] = useState([]);
+
+  useEffect(() => {
+    if (!node) return;
+    setNodeHistory([]);
+    api.get(`/api/identity/nodes/${node.id}/history?days=30`)
+      .then(r => setNodeHistory(r.data))
+      .catch(() => setNodeHistory([]));
+  }, [node?.id]);
+
+  if (!node) return null;
+
+  const score = node.risk_score ?? 0;
+  const color = riskColor(score);
+  const barPct = Math.min(100, Math.max(0, score));
+  const type = node.type || node.node_type || '';
+
+  // Build metadata rows based on node type
+  const rows = [
+    ['Privilege',      node.privilege_level ?? '—'],
+    ['Last Active',    node.last_active ? new Date(node.last_active).toLocaleDateString() : 'Never'],
+    ['Anomalies (7d)', node.anomaly_count_7d ?? 0],
+    ['Compromised',    node.is_compromised ? '⚠ YES' : 'No'],
+    ['Orphaned',       node.is_orphaned ? 'Yes' : 'No'],
+  ];
+
+  if (type === 'device') {
+    const meta = typeof node.metadata === 'object' && node.metadata ? node.metadata : {};
+    if (meta.ip)  rows.splice(1, 0, ['IP Address', meta.ip]);
+    if (meta.os)  rows.splice(2, 0, ['OS', meta.os]);
+  }
+  if (['ai_agent', 'agent', 'service_account', 'api_key'].includes(type)) {
+    if (node.expiry_date) rows.push(['Expiry', new Date(node.expiry_date).toLocaleDateString()]);
+    if (node.credential_sprawl_score != null) rows.push(['Sprawl Score', node.credential_sprawl_score]);
+  }
+
+  return (
+    <div style={{
+      position: 'absolute', top: 0, right: 0, bottom: 0,
+      width: 340,
+      background: '#0d0d0d',
+      borderLeft: '1px solid rgba(255,255,255,0.09)',
+      overflowY: 'auto',
+      zIndex: 10,
+      animation: 'slideInRight 220ms cubic-bezier(0.23,1,0.32,1)',
+      padding: '16px 18px',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
+      <style>{`
+        @keyframes slideInRight {
+          from { transform: translateX(100%); opacity: 0; }
+          to   { transform: translateX(0);    opacity: 1; }
+        }
+      `}</style>
+
+      {/* Close */}
+      <button
+        onClick={onClose}
+        style={{ position: 'absolute', top: 12, right: 14, background: 'none', border: 'none', color: '#787878', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: 2 }}
+      >×</button>
+
+      {/* Node type badge */}
+      <div style={{ marginBottom: 10, marginTop: 2 }}>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#8FAFC0', background: 'rgba(143,175,192,0.1)', padding: '3px 8px', borderRadius: 3, letterSpacing: '0.06em' }}>
+          {(type || 'unknown').replace(/_/g, ' ').toUpperCase()}
+        </span>
+      </div>
+
+      {/* Label */}
+      <div style={{ fontSize: 16, fontWeight: 600, color: '#EBEBEB', marginBottom: 16, wordBreak: 'break-all', lineHeight: 1.3 }}>
+        {node.label}
+      </div>
+
+      {/* Risk score bar */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#787878', letterSpacing: '0.06em' }}>RISK SCORE</span>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: color, fontWeight: 600 }}>
+            {Math.round(score)}/100
+          </span>
+        </div>
+        <div style={{ height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 3, overflow: 'hidden' }}>
+          <div style={{
+            height: '100%',
+            width: `${barPct}%`,
+            background: color,
+            borderRadius: 3,
+            transition: 'width 600ms ease',
+          }} />
+        </div>
+      </div>
+
+      {/* Metadata rows */}
+      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 12 }}>
+        {rows.map(([label, value]) => (
+          <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 13 }}>
+            <span style={{ color: '#787878', fontFamily: 'JetBrains Mono, monospace', fontSize: 11 }}>{label}</span>
+            <span style={{
+              color: label === 'Compromised' && value === '⚠ YES' ? '#EF4444' : '#EBEBEB',
+              fontFamily: 'JetBrains Mono, monospace',
+              fontSize: 11,
+              fontWeight: label === 'Compromised' && value === '⚠ YES' ? 600 : 400,
+            }}>{String(value)}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Risk trend sparkline */}
+      {nodeHistory.length > 1 && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#787878', letterSpacing: '0.06em', marginBottom: 8 }}>RISK TREND (30d)</div>
+          <RiskSparkline data={nodeHistory} />
+        </div>
+      )}
+
+      {/* Spacer pushes CTA to bottom when content is short */}
+      <div style={{ flex: 1 }} />
+
+      {/* Create Case CTA */}
+      <button
+        onClick={() => navigate(`/app/cases?identity=${node.id}`)}
+        style={{
+          marginTop: 16,
+          width: '100%',
+          background: '#F59E0B',
+          color: '#0d0d0d',
+          border: 'none',
+          padding: '10px 0',
+          borderRadius: 6,
+          fontFamily: 'JetBrains Mono, monospace',
+          fontSize: 12,
+          fontWeight: 700,
+          cursor: 'pointer',
+          letterSpacing: '0.04em',
+        }}
+      >
+        OPEN CASE FOR THIS IDENTITY
+      </button>
+    </div>
+  );
+}
+
 // ── Simple force-directed graph via Canvas ────────────────────────────────────
-function GraphCanvas({ nodes, edges, onNodeClick, selectedId }) {
+function GraphCanvas({ nodes, edges, onNodeClick, selectedId, riskFilter, typeFilter }) {
   const canvasRef = useRef(null);
   const posRef = useRef({});
   const velRef = useRef({});
@@ -129,6 +297,13 @@ function GraphCanvas({ nodes, edges, onNodeClick, selectedId }) {
       });
     }
 
+    function isDimmed(n) {
+      const score = n.risk_score ?? 0;
+      const belowRisk = score < riskFilter;
+      const wrongType = typeFilter !== null && n.type !== typeFilter;
+      return belowRisk || wrongType;
+    }
+
     function draw() {
       const W = canvas.offsetWidth, H = canvas.offsetHeight;
       ctx.clearRect(0, 0, W, H);
@@ -159,7 +334,11 @@ function GraphCanvas({ nodes, edges, onNodeClick, selectedId }) {
         if (!p) return;
         const meta = TYPE_MAP[n.type] || NODE_TYPES[0];
         const isSelected = n.id === selectedId;
+        const dimmed = isDimmed(n);
         const r = 18;
+
+        ctx.save();
+        ctx.globalAlpha = dimmed ? 0.15 : 1;
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
@@ -187,6 +366,8 @@ function GraphCanvas({ nodes, edges, onNodeClick, selectedId }) {
           p.x, p.y + r + 14
         );
         ctx.textAlign = 'left';
+
+        ctx.restore();
       });
     }
 
@@ -200,7 +381,6 @@ function GraphCanvas({ nodes, edges, onNodeClick, selectedId }) {
 
     // Mouse interaction
     const getNode = (mx, my) => {
-      const dpr = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
       const x = mx - rect.left, y = my - rect.top;
       for (const n of nodes) {
@@ -215,7 +395,7 @@ function GraphCanvas({ nodes, edges, onNodeClick, selectedId }) {
     const onMouseDown = e => {
       const n = getNode(e.clientX, e.clientY);
       if (n) { dragRef.current = n.id; onNodeClick(n); }
-      else dragRef.current = null;
+      else { dragRef.current = null; onNodeClick(null); }
     };
     const onMouseMove = e => {
       if (!dragRef.current) return;
@@ -237,7 +417,7 @@ function GraphCanvas({ nodes, edges, onNodeClick, selectedId }) {
       canvas.removeEventListener('mousemove', onMouseMove);
       canvas.removeEventListener('mouseup', onMouseUp);
     };
-  }, [nodes, edges, selectedId]);
+  }, [nodes, edges, selectedId, riskFilter, typeFilter]);
 
   return (
     <canvas
@@ -454,6 +634,7 @@ function NodePanel({ node, onMarkCompromised, onDelete, onClose, onScoreUpdate }
 // ── Main Page ──────────────────────────────────────────────────────────────────
 export default function IdentityGraph() {
   const { addToast } = useStore();
+  const navigate = useNavigate();
   const [graph, setGraph]       = useState({ nodes: [], edges: [], stats: {} });
   const [loading, setLoading]   = useState(true);
   const [selected, setSelected] = useState(null);
@@ -462,6 +643,12 @@ export default function IdentityGraph() {
   const [form, setForm]         = useState({ label: '', node_type: 'user', risk_score: 0, metadata: '{}' });
   const [edgeForm, setEdgeForm] = useState({ source_id: '', target_id: '', relationship: 'linked' });
   const [showEdge, setShowEdge] = useState(false);
+
+  // ── Feature 2: Risk score filter ──────────────────────────────────────────
+  const [riskFilter, setRiskFilter] = useState(0);
+
+  // ── Feature 3: Node type quick filter ─────────────────────────────────────
+  const [typeFilter, setTypeFilter] = useState(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -526,6 +713,18 @@ export default function IdentityGraph() {
   const filteredNodes = q
     ? graph.nodes.filter(n => n.label.toLowerCase().includes(q.toLowerCase()))
     : graph.nodes;
+
+  // Visible count (both filters applied) for display in toolbar
+  const visibleCount = graph.nodes.filter(n => {
+    const score = n.risk_score ?? 0;
+    const passRisk = score >= riskFilter;
+    const passType = typeFilter === null || n.type === typeFilter;
+    return passRisk && passType;
+  }).length;
+
+  // Only show pills for types actually present in the graph
+  const presentTypes = [...new Set(graph.nodes.map(n => n.type))].filter(Boolean);
+  const pillTypes = FILTER_NODE_TYPES.filter(t => presentTypes.includes(t));
 
   return (
     <div style={{ display: 'flex', height: '100%', background: '#080808', overflow: 'hidden' }}>
@@ -613,42 +812,136 @@ export default function IdentityGraph() {
         </div>
       </div>
 
-      {/* Canvas */}
-      <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-        {graph.nodes.length === 0 && !loading ? (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#787878' }}>
-            <div style={{ textAlign: 'center' }}>
-              <Fingerprint size={40} style={{ margin: '0 auto 16px', opacity: 0.12 }} />
-              <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: 8 }}>No identity nodes yet</div>
-              <div style={{ fontSize: '0.78rem', ...MONO, marginBottom: 20, maxWidth: 300, lineHeight: 1.6 }}>
-                Add users, service accounts, API keys, tokens, devices, and AI agents to build the identity graph.
-              </div>
-              <button className="btn-accent" onClick={() => setShowAdd(true)} style={{ fontSize: '0.8rem' }}>
-                <Plus size={13} /> Add First Identity
-              </button>
-            </div>
-          </div>
-        ) : (
-          <GraphCanvas
-            nodes={graph.nodes}
-            edges={graph.edges}
-            onNodeClick={setSelected}
-            selectedId={selected?.id}
-          />
-        )}
+      {/* Canvas area — column flex to hold filter toolbar + canvas */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-        {/* Node type legend */}
-        <div style={{ position: 'absolute', bottom: 16, left: 16, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {NODE_TYPES.map(t => (
-            <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', background: 'rgba(5,5,5,0.85)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 4, fontSize: '0.62rem', color: t.color, ...MONO }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: t.color }} />
-              {t.label}
+        {/* ── Feature 2 & 3: Filter toolbar ────────────────────────────────── */}
+        <div style={{
+          padding: '8px 14px',
+          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          background: 'rgba(0,0,0,0.4)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 7,
+          flexShrink: 0,
+        }}>
+          {/* Row 1: Risk score slider */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#787878', whiteSpace: 'nowrap', letterSpacing: '0.06em' }}>
+              MIN RISK
+            </span>
+            <input
+              type="range" min="0" max="90" step="5"
+              value={riskFilter}
+              onChange={e => setRiskFilter(Number(e.target.value))}
+              style={{ width: 110, accentColor: '#F59E0B', cursor: 'pointer' }}
+            />
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#F59E0B', minWidth: 28, fontWeight: 600 }}>
+              {riskFilter}+
+            </span>
+            {riskFilter > 0 && (
+              <button
+                onClick={() => setRiskFilter(0)}
+                style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#787878', padding: '2px 8px', cursor: 'pointer', borderRadius: 4 }}
+              >
+                Clear
+              </button>
+            )}
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#555', marginLeft: 4 }}>
+              {visibleCount} / {graph.nodes.length} shown
+            </span>
+          </div>
+
+          {/* Row 2: Node type pills (only types present in graph) */}
+          {pillTypes.length > 0 && (
+            <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' }}>
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#555', letterSpacing: '0.06em', marginRight: 2 }}>TYPE</span>
+              {pillTypes.map(type => {
+                const active = typeFilter === type;
+                const meta = TYPE_MAP[type];
+                const color = meta ? meta.color : '#787878';
+                return (
+                  <button
+                    key={type}
+                    onClick={() => setTypeFilter(active ? null : type)}
+                    style={{
+                      fontFamily: 'JetBrains Mono, monospace',
+                      fontSize: 10,
+                      padding: '3px 9px',
+                      border: '1px solid',
+                      borderColor: active ? color : 'rgba(255,255,255,0.1)',
+                      background: active ? `${color}18` : 'transparent',
+                      color: active ? color : '#787878',
+                      cursor: 'pointer',
+                      borderRadius: 4,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.04em',
+                      transition: 'all 140ms ease-out',
+                    }}
+                  >
+                    {type.replace(/_/g, ' ')}
+                  </button>
+                );
+              })}
+              {typeFilter && (
+                <button
+                  onClick={() => setTypeFilter(null)}
+                  style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#787878', padding: '3px 8px', cursor: 'pointer', borderRadius: 4 }}
+                >
+                  All
+                </button>
+              )}
             </div>
-          ))}
+          )}
+        </div>
+
+        {/* ── Canvas ────────────────────────────────────────────────────────── */}
+        <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+          {graph.nodes.length === 0 && !loading ? (
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#787878' }}>
+              <div style={{ textAlign: 'center' }}>
+                <Fingerprint size={40} style={{ margin: '0 auto 16px', opacity: 0.12 }} />
+                <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: 8 }}>No identity nodes yet</div>
+                <div style={{ fontSize: '0.78rem', ...MONO, marginBottom: 20, maxWidth: 300, lineHeight: 1.6 }}>
+                  Add users, service accounts, API keys, tokens, devices, and AI agents to build the identity graph.
+                </div>
+                <button className="btn-accent" onClick={() => setShowAdd(true)} style={{ fontSize: '0.8rem' }}>
+                  <Plus size={13} /> Add First Identity
+                </button>
+              </div>
+            </div>
+          ) : (
+            <GraphCanvas
+              nodes={graph.nodes}
+              edges={graph.edges}
+              onNodeClick={setSelected}
+              selectedId={selected?.id}
+              riskFilter={riskFilter}
+              typeFilter={typeFilter}
+            />
+          )}
+
+          {/* Node type legend */}
+          <div style={{ position: 'absolute', bottom: 16, left: 16, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {NODE_TYPES.map(t => (
+              <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', background: 'rgba(5,5,5,0.85)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 4, fontSize: '0.62rem', color: t.color, ...MONO }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: t.color }} />
+                {t.label}
+              </div>
+            ))}
+          </div>
+
+          {/* ── Feature 1: Slide-in node detail overlay ──────────────────────── */}
+          {selected && (
+            <NodeDetailOverlay
+              node={selected}
+              onClose={() => setSelected(null)}
+            />
+          )}
         </div>
       </div>
 
-      {/* Node detail panel */}
+      {/* Existing NodePanel (anomaly management + risk engine) — right sidebar */}
       {selected && (
         <NodePanel
           node={selected}

@@ -9,13 +9,13 @@ Endpoints:
 """
 
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from database import get_session
 from routers.auth import get_current_user, _audit
-from models import User, Case
+from models import User, Case, DetectionRule
 from nvidia_client import nvidia_chat, CODESTRAL, is_nvidia_available
 from ai_router import call_ai
 
@@ -139,3 +139,195 @@ async def generate_rules(
     session.commit()
 
     return result
+
+
+# ── Auto-rule trigger check ────────────────────────────────────────────────
+async def check_rule_generation_triggers(org_id: int, session: Session):
+    """
+    Called after any case update. Checks if any MITRE technique has appeared
+    in 3+ cases within the last 7 days for this org. If so, auto-generates
+    detection rules via Codestral and queues them for human review.
+    """
+    cutoff = datetime.utcnow() - timedelta(days=7)
+    cases = session.exec(
+        select(Case)
+        .where(Case.org_id == org_id)
+        .where(Case.created_at >= cutoff)
+        .where(Case.mitre_techniques != "[]")
+        .where(Case.mitre_techniques != None)  # noqa: E711
+    ).all()
+
+    # Count technique frequency
+    technique_cases: dict[str, list[int]] = {}
+    for case in cases:
+        try:
+            techniques = json.loads(case.mitre_techniques or "[]")
+        except Exception:
+            continue
+        for t in techniques:
+            tid = t.get("id", "") if isinstance(t, dict) else str(t)
+            if tid:
+                technique_cases.setdefault(tid, []).append(case.id)
+
+    # Find techniques at threshold (3+)
+    for technique_id, case_ids in technique_cases.items():
+        if len(case_ids) < 3:
+            continue
+
+        # Check if we already have a pending/approved rule for this technique
+        existing = session.exec(
+            select(DetectionRule)
+            .where(DetectionRule.org_id == org_id)
+            .where(DetectionRule.trigger_technique == technique_id)
+            .where(DetectionRule.status.in_(["pending_review", "approved", "deployed"]))
+        ).first()
+        if existing:
+            continue
+
+        # Auto-generate rules for the triggering cases
+        trigger_cases = [c for c in cases if c.id in case_ids[:3]]
+        if not trigger_cases:
+            continue
+
+        # Build IOC + context from triggering cases
+        all_iocs: list = []
+        for tc in trigger_cases:
+            try:
+                all_iocs.extend(json.loads(tc.iocs or "[]")[:3])
+            except Exception:
+                pass
+
+        safe_tech_id = technique_id.replace(".", "_")
+        prompt = f"""Generate detection rules for MITRE technique {technique_id}.
+This technique appeared in {len(case_ids)} cases in the last 7 days.
+
+Recent case titles: {', '.join(tc.title for tc in trigger_cases[:3])}
+Sample IOCs: {', '.join(i.get('ioc','') for i in all_iocs[:5] if isinstance(i, dict))}
+
+Return JSON:
+{{
+  "yara": "complete YARA rule",
+  "sigma": "complete Sigma rule YAML",
+  "kql": "complete KQL query",
+  "splunk_spl": "complete SPL query",
+  "rule_name": "AT_{safe_tech_id}",
+  "description": "one sentence",
+  "ai_confidence": 0.0
+}}"""
+
+        result = await _generate_with_codestral(prompt)
+        if not result:
+            continue
+
+        rule = DetectionRule(
+            org_id=org_id,
+            rule_name=result.get("rule_name", f"AT_{safe_tech_id}"),
+            trigger_technique=technique_id,
+            trigger_case_ids=json.dumps(case_ids[:10]),
+            status="pending_review",
+            yara=result.get("yara"),
+            sigma=result.get("sigma"),
+            kql=result.get("kql"),
+            splunk_spl=result.get("splunk_spl"),
+            description=result.get("description"),
+            ai_confidence=float(result.get("ai_confidence", 0.75)),
+        )
+        session.add(rule)
+        session.commit()
+
+
+# ── Pending rules endpoints ────────────────────────────────────────────────
+@router.get("/api/rules/pending")
+async def list_pending_rules(
+    _user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """List all auto-generated rules awaiting human review."""
+    rules = session.exec(
+        select(DetectionRule)
+        .where(DetectionRule.org_id == _user.org_id)
+        .order_by(DetectionRule.generated_at.desc())
+    ).all()
+    return [
+        {
+            "id": r.id,
+            "rule_name": r.rule_name,
+            "trigger_technique": r.trigger_technique,
+            "trigger_case_ids": json.loads(r.trigger_case_ids or "[]"),
+            "status": r.status,
+            "description": r.description,
+            "ai_confidence": r.ai_confidence,
+            "generated_at": r.generated_at.isoformat() if r.generated_at else None,
+            "reviewed_by": r.reviewed_by,
+            "review_notes": r.review_notes,
+        }
+        for r in rules
+    ]
+
+
+@router.get("/api/rules/pending/{rule_id}")
+async def get_pending_rule(
+    rule_id: int,
+    _user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    rule = session.get(DetectionRule, rule_id)
+    if not rule or rule.org_id != _user.org_id:
+        raise HTTPException(404, "Rule not found")
+    return {
+        "id": rule.id, "rule_name": rule.rule_name,
+        "trigger_technique": rule.trigger_technique,
+        "trigger_case_ids": json.loads(rule.trigger_case_ids or "[]"),
+        "status": rule.status, "description": rule.description,
+        "ai_confidence": rule.ai_confidence,
+        "yara": rule.yara, "sigma": rule.sigma,
+        "kql": rule.kql, "splunk_spl": rule.splunk_spl,
+        "generated_at": rule.generated_at.isoformat() if rule.generated_at else None,
+        "reviewed_by": rule.reviewed_by, "review_notes": rule.review_notes,
+    }
+
+
+@router.post("/api/rules/pending/{rule_id}/approve")
+async def approve_pending_rule(
+    rule_id: int,
+    body: dict = {},
+    _user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    if _user.role not in ("admin", "analyst"):
+        raise HTTPException(403, "Insufficient role")
+    rule = session.get(DetectionRule, rule_id)
+    if not rule or rule.org_id != _user.org_id:
+        raise HTTPException(404, "Rule not found")
+    rule.status = "approved"
+    rule.reviewed_by = _user.name or _user.email
+    rule.review_notes = body.get("notes")
+    rule.reviewed_at = datetime.utcnow()
+    session.add(rule)
+    session.commit()
+    _audit(session, "rule_approved", "detection_rule", str(rule.id),
+           _user.id, _user.email, rule.rule_name)
+    return {"status": "approved"}
+
+
+@router.post("/api/rules/pending/{rule_id}/reject")
+async def reject_pending_rule(
+    rule_id: int,
+    body: dict = {},
+    _user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    if _user.role not in ("admin", "analyst"):
+        raise HTTPException(403, "Insufficient role")
+    rule = session.get(DetectionRule, rule_id)
+    if not rule or rule.org_id != _user.org_id:
+        raise HTTPException(404, "Rule not found")
+    rule.status = "rejected"
+    rule.reviewed_by = _user.name or _user.email
+    rule.review_notes = body.get("notes", "Rejected")
+    rule.reviewed_at = datetime.utcnow()
+    session.add(rule)
+    session.commit()
+    _audit(session, "rule_rejected", "detection_rule", str(rule.id),
+           _user.id, _user.email, rule.rule_name)
+    return {"status": "rejected"}

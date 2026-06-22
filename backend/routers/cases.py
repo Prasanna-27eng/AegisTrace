@@ -8,6 +8,7 @@ from database import get_session
 from ai_router import call_ai, call_ai_json
 from routers.auth import get_current_user, _audit
 from models import User
+from routers.rules import check_rule_generation_triggers
 
 # NVIDIA integrations (graceful — all disabled if NVIDIA_API_KEY not set)
 try:
@@ -200,6 +201,13 @@ def update_case(
             })
         except Exception:
             pass
+    # Background trigger check for auto-rule generation — non-blocking
+    if "mitre_techniques" in data:
+        try:
+            import asyncio
+            asyncio.create_task(check_rule_generation_triggers(case.org_id, session))
+        except Exception:
+            pass
     return case
 
 
@@ -299,6 +307,13 @@ Respond ONLY with valid JSON:
             store_case_embedding(case, session)
         except Exception:
             pass
+
+    # Background trigger check for auto-rule generation — non-blocking
+    try:
+        import asyncio
+        asyncio.create_task(check_rule_generation_triggers(case.org_id, session))
+    except Exception:
+        pass
 
     return {**case.dict(), "nvidia_result": result}
 

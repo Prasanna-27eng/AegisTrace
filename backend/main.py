@@ -57,7 +57,7 @@ from hardware_tools import router as hardware_router
 from ai_router import call_ai_json
 from core.identity_engine import register_default_detectors
 from core.events import event_bus, Events
-from models import AuditLog
+from models import AuditLog, DetectionRule, IdentityRiskHistory
 
 # ── Rate limiter (slowapi) ────────────────────────────────────────────────────
 limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])

@@ -22,6 +22,8 @@ GET  /api/itdr/alerts            — ITDRAlert records
 """
 import json
 import re
+import asyncio
+import os
 from datetime import datetime, timedelta
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -361,6 +363,75 @@ def _create_anomaly(detection: dict, node_id: Optional[int], session: Session, o
     )
     session.add(anomaly)
     return anomaly
+
+
+# ── Email notification helper ────────────────────────────────────────────────
+
+def _notify_itdr_alert(alert, org_id: int, session):
+    """
+    Send email notification for CRITICAL/HIGH severity ITDR alerts.
+    Uses the same _send_email helper as schedule_reports.py.
+    Only fires if SENDGRID_API_KEY or SMTP_HOST is configured.
+    Silently skips if no email config found.
+    """
+    if alert.severity not in ("critical", "high"):
+        return
+
+    # Get notification recipients — admin users in this org
+    from sqlmodel import select as _select
+    admins = session.exec(
+        _select(User).where(
+            User.org_id == org_id,
+            User.role.in_(["admin", "analyst"]),
+        )
+    ).all()
+    emails = [u.email for u in admins if u.email]
+    if not emails:
+        return
+
+    has_email_config = bool(os.getenv("SENDGRID_API_KEY") or os.getenv("SMTP_HOST"))
+    if not has_email_config:
+        return
+
+    severity_color = {"critical": "#EF4444", "high": "#F97316"}.get(alert.severity, "#6B7280")
+
+    subject = f"[AegisTrace] {alert.severity.upper()} ITDR Alert: {alert.alert_type.replace('_', ' ').title()}"
+
+    detected_str = alert.detected_at.strftime('%Y-%m-%d %H:%M UTC') if alert.detected_at else 'Now'
+
+    body_html = f"""
+    <div style="font-family: 'IBM Plex Sans', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0B0F1A; color: #F1F5F9; padding: 0; border-radius: 8px; overflow: hidden;">
+      <div style="background: {severity_color}; padding: 20px 28px;">
+        <h1 style="margin: 0; font-size: 18px; color: #fff;">ITDR Alert — {alert.severity.upper()}</h1>
+        <p style="margin: 6px 0 0; font-size: 13px; color: rgba(255,255,255,0.8);">{alert.alert_type.replace('_', ' ').title()}</p>
+      </div>
+      <div style="padding: 28px;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr><td style="padding: 10px 0; color: #94A3B8; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">Identity</td>
+              <td style="padding: 10px 0; font-size: 13px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.06);">{alert.identity_label}</td></tr>
+          <tr><td style="padding: 10px 0; color: #94A3B8; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">Severity</td>
+              <td style="padding: 10px 0; font-size: 13px; color: {severity_color}; font-weight: 700; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.06);">{alert.severity.upper()}</td></tr>
+          <tr><td style="padding: 10px 0; color: #94A3B8; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">Detected</td>
+              <td style="padding: 10px 0; font-size: 13px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.06);">{detected_str}</td></tr>
+        </table>
+        <p style="margin: 20px 0 0; font-size: 13px; color: #94A3B8; line-height: 1.6;">{alert.description}</p>
+        <div style="margin-top: 24px;">
+          <a href="{os.getenv('PUBLIC_URL', 'https://aegistrace.uk')}/app/itdr"
+             style="background: #2563EB; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-size: 13px; font-weight: 600; display: inline-block;">
+            View in AegisTrace
+          </a>
+        </div>
+      </div>
+      <div style="padding: 16px 28px; border-top: 1px solid rgba(255,255,255,0.06); font-size: 11px; color: #475569;">
+        AegisTrace · Identity Threat Detection · aegistrace.uk
+      </div>
+    </div>"""
+
+    try:
+        from routers.schedule_reports import _send_email
+        _send_email(emails, subject, body_html)
+    except Exception:
+        pass  # Never let email failure break the ITDR flow
 
 
 # ── API Endpoints ─────────────────────────────────────────────────────────────

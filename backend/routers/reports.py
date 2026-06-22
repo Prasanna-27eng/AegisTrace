@@ -3,7 +3,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlmodel import Session, select
-from models import Case, TimelineEvent
+from models import Case, TimelineEvent, AuditLog
 from database import get_session
 from routers.auth import get_current_user
 from models import User
@@ -570,3 +570,108 @@ def download_dora(case_id: int, session: Session = Depends(get_session),
     filename = f"DORA_{case.case_number}.pdf"
     return StreamingResponse(buffer, media_type="application/pdf",
                              headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+
+# ── DPDPA 2023 Compliance Report ──────────────────────────────────────────────
+@router.get("/dpdpa/{case_id}")
+def generate_dpdpa_report(
+    case_id: int,
+    _user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Generate DPDPA 2023 compliance incident report for a case."""
+    case = session.get(Case, case_id)
+    if not case or case.org_id != _user.org_id:
+        raise HTTPException(404, "Case not found")
+
+    iocs = json.loads(case.iocs or "[]")
+    mitre = json.loads(case.mitre_techniques or "[]")
+    timeline = session.exec(
+        select(TimelineEvent).where(TimelineEvent.case_id == case_id)
+        .order_by(TimelineEvent.timestamp.asc())
+    ).all()
+
+    # Build DPDPA-mapped findings
+    dpdpa_obligations = [
+        {
+            "section": "Section 8(6)",
+            "title": "Personal Data Breach Notification",
+            "obligation": "Data Fiduciary must notify the Data Protection Board and affected Data Principals of any personal data breach",
+            "status": "APPLICABLE" if case.severity in ("critical", "high") else "REVIEW",
+            "evidence": f"Case {case.case_number}: {case.title}. Severity: {case.severity.upper()}",
+        },
+        {
+            "section": "Section 8(5)",
+            "title": "Data Retention and Erasure",
+            "obligation": "Erase personal data when the purpose for processing is no longer served",
+            "status": "REVIEW",
+            "evidence": f"Investigation identified {len(iocs)} indicators. Review data retention policies.",
+        },
+        {
+            "section": "Section 5",
+            "title": "Grounds for Processing Personal Data",
+            "obligation": "Processing of personal data must be for a lawful purpose with consent or legitimate use",
+            "status": "REVIEW",
+            "evidence": f"MITRE techniques involved: {', '.join(t.get('id','') for t in mitre[:5] if isinstance(t,dict)) or 'None identified'}",
+        },
+        {
+            "section": "Section 10",
+            "title": "Additional Obligations of Significant Data Fiduciaries",
+            "obligation": "Conduct periodic Data Protection Impact Assessments",
+            "status": "PENDING",
+            "evidence": "Post-incident DPIA recommended based on breach scope",
+        },
+        {
+            "section": "Section 77",
+            "title": "Penalty for Breach of Obligations",
+            "obligation": "Penalties up to INR 250 crore for failure to notify breach",
+            "status": "INFORMATION",
+            "evidence": f"Breach detected {case.created_at.strftime('%Y-%m-%d')}. Notification timeline must be documented.",
+        },
+    ]
+
+    prompt = f"""Generate an executive summary for a DPDPA 2023 incident report.
+
+Case: {case.case_number} — {case.title}
+Severity: {case.severity}
+Description: {(case.description or '')[:500]}
+Findings: {(case.findings or '')[:400]}
+Timeline events: {len(timeline)}
+IOCs: {len(iocs)}
+
+Write 3 paragraphs:
+1. Incident overview and personal data impact assessment
+2. DPDPA notification obligations triggered and timelines
+3. Recommended remediation steps to satisfy DPDPA requirements
+
+Be specific, professional, and reference DPDPA 2023 sections where relevant."""
+
+    summary = call_ai("report", prompt)
+
+    report_data = {
+        "report_type": "DPDPA_2023",
+        "case_number": case.case_number,
+        "case_title": case.title,
+        "severity": case.severity,
+        "generated_at": datetime.utcnow().isoformat(),
+        "generated_by": _user.name or _user.email,
+        "organisation": _user.org_id,
+        "incident_date": case.created_at.isoformat() if case.created_at else None,
+        "executive_summary": summary,
+        "dpdpa_obligations": dpdpa_obligations,
+        "ioc_count": len(iocs),
+        "timeline_events": len(timeline),
+        "mitre_techniques": [t.get("id") for t in mitre if isinstance(t, dict)],
+        "notification_deadline": "72 hours from detection (Section 8(6))",
+        "data_protection_board": "dpboard.gov.in",
+    }
+
+    session.add(AuditLog(
+        action="dpdpa_report_generated",
+        entity_type="case",
+        entity_id=str(case.case_number),
+        user_id=_user.id,
+        user_email=_user.email,
+    ))
+    session.commit()
+    return report_data

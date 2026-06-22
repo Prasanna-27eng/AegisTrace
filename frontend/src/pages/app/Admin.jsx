@@ -589,6 +589,20 @@ function SystemTab({ addToast }) {
         </div>
       </div>
 
+      {/* ITDR Email Notifications */}
+      <div className="at-card" style={{ padding:'20px 24px' }}>
+        <div style={{ fontSize:'0.88rem', fontWeight:600, color:'#EBEBEB', marginBottom:4 }}>
+          ITDR Email Notifications
+        </div>
+        <p style={{ fontSize:'0.78rem', color:'#787878', margin:'0 0 16px', lineHeight:1.6 }}>
+          Sends email alerts to admin and analyst accounts when CRITICAL or HIGH severity ITDR events are detected.
+          Requires <code style={{ fontFamily:'JetBrains Mono, monospace', fontSize:'0.74rem', background:'rgba(255,255,255,0.06)', padding:'1px 5px', borderRadius:3 }}>SENDGRID_API_KEY</code> or SMTP config on the server.
+        </p>
+        <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:'0.72rem', padding:'8px 12px', background:'#0D0D0D', border:'1px solid rgba(255,255,255,0.08)', borderRadius:4, color:'#787878', display:'inline-block' }}>
+          Configure: Set SENDGRID_API_KEY environment variable on the VPS
+        </div>
+      </div>
+
       <div className="at-card" style={{ padding:16, borderColor:'rgba(239,68,68,0.15)' }}>
         <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
           <AlertTriangle size={14} style={{ color:'#EF4444' }}/>

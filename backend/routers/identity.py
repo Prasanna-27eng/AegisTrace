@@ -14,16 +14,39 @@ POST /api/identity/nodes/{id}/mark-compromised
 GET  /api/identity/search
 """
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select
-from models import IdentityNode, IdentityEdge, IdentityAnomaly, User, AuditLog
+from models import IdentityNode, IdentityEdge, IdentityAnomaly, User, AuditLog, IdentityRiskHistory
 from database import get_session
 from routers.auth import get_current_user
 import adaptive_config
 
 router = APIRouter(prefix="/api/identity", tags=["identity"])
+
+
+def _record_risk_history(session: Session, node: IdentityNode) -> None:
+    """Append a risk/trust snapshot to IdentityRiskHistory after a recalculation."""
+    try:
+        trust_history = json.loads(node.trust_score_history or "[]")
+        if trust_history and isinstance(trust_history, list):
+            last = trust_history[-1]
+            trust_val = float(last.get("score", 0)) if isinstance(last, dict) else float(last)
+        else:
+            trust_val = 0.0
+    except Exception:
+        trust_val = 0.0
+
+    history = IdentityRiskHistory(
+        org_id=node.org_id,
+        node_id=node.id,
+        risk_score=float(node.risk_score or 0),
+        trust_score=trust_val,
+        anomaly_count=node.anomaly_count_7d or 0,
+    )
+    session.add(history)
+    session.commit()
 
 
 @router.get("/nodes")
@@ -287,6 +310,13 @@ def create_node_anomaly(
 
     result = identity_engine.process(node_id=node_id, session=session)
 
+    # Record risk history snapshot
+    try:
+        session.refresh(node)
+        _record_risk_history(session, node)
+    except Exception:
+        pass
+
     return {
         "node": result.get("node_id"),
         "risk_score": result["new_score"],
@@ -318,6 +348,14 @@ def resolve_anomaly(
     session.commit()
 
     result = identity_engine.process(node_id=node_id, session=session)
+
+    # Record risk history snapshot
+    try:
+        session.refresh(node)
+        _record_risk_history(session, node)
+    except Exception:
+        pass
+
     return {"ok": True, "new_score": result["new_score"]}
 
 
@@ -337,7 +375,16 @@ def recalculate_node_risk(
     if not node or node.org_id != user.org_id:
         raise HTTPException(404, "Node not found")
 
-    return identity_engine.process(node_id=node_id, session=session)
+    result = identity_engine.process(node_id=node_id, session=session)
+
+    # Record risk history snapshot
+    try:
+        session.refresh(node)
+        _record_risk_history(session, node)
+    except Exception:
+        pass
+
+    return result
 
 
 @router.get("/search")
@@ -352,3 +399,32 @@ def search_nodes(
         ).limit(20)
     ).all()
     return nodes
+
+
+@router.get("/nodes/{node_id}/history")
+def get_node_risk_history(
+    node_id: int,
+    days: int = Query(default=30, le=90),
+    _user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Return time-series risk/trust snapshots for a node (up to 90 days)."""
+    node = session.get(IdentityNode, node_id)
+    if not node or node.org_id != _user.org_id:
+        raise HTTPException(404, "Node not found")
+    cutoff = datetime.utcnow() - timedelta(days=days)
+    history = session.exec(
+        select(IdentityRiskHistory)
+        .where(IdentityRiskHistory.node_id == node_id)
+        .where(IdentityRiskHistory.recorded_at >= cutoff)
+        .order_by(IdentityRiskHistory.recorded_at.asc())
+    ).all()
+    return [
+        {
+            "risk_score": h.risk_score,
+            "trust_score": h.trust_score,
+            "anomaly_count": h.anomaly_count,
+            "recorded_at": h.recorded_at.isoformat(),
+        }
+        for h in history
+    ]
