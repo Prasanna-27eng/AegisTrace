@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Radio, BarChart3,
   FolderOpen, Crosshair, Share2, Monitor, Mail, Rss,
   Radar, ShieldAlert, ScanEye, BookOpen,
-  Plug, KeyRound, FlaskConical, Wrench,
+  Plug, KeyRound, FlaskConical, Wrench, Download,
   Settings2, ScrollText, Lock, ClipboardList,
 } from 'lucide-react';
 import useStore from '../store/useStore';
@@ -46,6 +46,7 @@ const NAV_GROUPS = [
       { to: '/app/connectors',      label: 'Connectors',        Icon: Plug        },
       { to: '/app/nhi-health',      label: 'NHI Health',        Icon: KeyRound    },
       { to: '/app/simulation',      label: 'Simulation',        Icon: FlaskConical },
+      { to: '/app/deploy',           label: 'Deploy & Setup',     Icon: Download         },
       { to: '/app/tools',           label: 'Tools Hub',         Icon: Wrench      },
     ],
   },

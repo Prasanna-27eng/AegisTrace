@@ -85,6 +85,7 @@ const NHIHealth        = lazy(() => import('./pages/app/NHIHealth'));
 const ShadowAI         = lazy(() => import('./pages/app/ShadowAI'));
 const ControlPlane     = lazy(() => import('./pages/app/ControlPlane'));
 const SimulationHub    = lazy(() => import('./pages/app/SimulationHub'));
+const DeploymentHub    = lazy(() => import('./pages/app/DeploymentHub'));
 const DefenseConsole   = lazy(() => import('./pages/app/DefenseConsole'));
 const Playbooks        = lazy(() => import('./pages/app/Playbooks'));
 const LogInvestigation = lazy(() => import('./pages/app/LogInvestigation'));
@@ -142,6 +143,7 @@ export default function App() {
             <Route path="shadow-ai"         element={<ShadowAI />} />
             <Route path="control-plane"     element={<ControlPlane />} />
             <Route path="simulation"        element={<SimulationHub />} />
+            <Route path="deploy"            element={<DeploymentHub />} />
             <Route path="defense-console"   element={<DefenseConsole />} />
             <Route path="playbooks"         element={<Playbooks />} />
           </Route>
