@@ -86,7 +86,7 @@ export default function TerminalTab({ caseData, caseId, updateCase }) {
                 {result.key_findings?.length > 0 && (
                   <div style={{ marginBottom: 10 }}>
                     <div style={{ fontSize: '0.68rem', color: '#787878', fontFamily: 'JetBrains Mono', textTransform: 'uppercase', marginBottom: 6 }}>Key Findings</div>
-                    {result.key_findings.map((f, i) => <div key={i} style={{ fontSize: '0.8rem', color: '#EBEBEB', padding: '3px 0', display: 'flex', gap: 8 }}><span style={{ color: '#5A8A9F' }}>→</span>{f}</div>)}
+                    {result.key_findings.map((f, i) => <div key={i} style={{ fontSize: '0.8rem', color: '#BDD4E8', padding: '3px 0', display: 'flex', gap: 8 }}><span style={{ color: '#4A7EC8' }}>→</span>{f}</div>)}
                   </div>
                 )}
 
@@ -103,7 +103,7 @@ export default function TerminalTab({ caseData, caseId, updateCase }) {
                   <div style={{ marginBottom: 10 }}>
                     <div style={{ fontSize: '0.68rem', color: '#787878', fontFamily: 'JetBrains Mono', textTransform: 'uppercase', marginBottom: 6 }}>MITRE Techniques</div>
                     {result.mitre_techniques.map((m, i) => (
-                      <div key={i} style={{ fontSize: '0.78rem', color: '#8FAFC0', fontFamily: 'JetBrains Mono', padding: '2px 0' }}>{m.id} — {m.name}</div>
+                      <div key={i} style={{ fontSize: '0.78rem', color: '#8BB8E8', fontFamily: 'JetBrains Mono', padding: '2px 0' }}>{m.id} — {m.name}</div>
                     ))}
                   </div>
                 )}
@@ -126,9 +126,9 @@ export default function TerminalTab({ caseData, caseId, updateCase }) {
               <div className="section-label">Run History</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 200, overflowY: 'auto' }}>
                 {history.map((run, i) => (
-                  <div key={run.id || i} style={{ padding: '7px 10px', background: '#111111', borderRadius: 5, cursor: 'pointer', fontSize: '0.78rem' }}
+                  <div key={run.id || i} style={{ padding: '7px 10px', background: '#0E0E16', borderRadius: 5, cursor: 'pointer', fontSize: '0.78rem' }}
                     onClick={() => { setTool(run.tool_name); setCommand(run.command); setOutput(run.output); const p = JSON.parse(run.ai_parsed_result || '{}'); setResult(p); }}>
-                    <div style={{ fontWeight: 500, color: '#EBEBEB' }}>{run.tool_name}</div>
+                    <div style={{ fontWeight: 500, color: '#BDD4E8' }}>{run.tool_name}</div>
                     <div style={{ fontSize: '0.7rem', color: '#787878', fontFamily: 'JetBrains Mono', marginTop: 2 }}>{new Date(run.created_at).toLocaleString()}</div>
                   </div>
                 ))}

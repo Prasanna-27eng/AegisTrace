@@ -57,7 +57,7 @@ export default function ReportTab({ caseId, caseData }) {
 
   const reports = [
     {
-      icon: <File size={28} style={{ color: '#5A8A9F', marginBottom: 12 }} />,
+      icon: <File size={28} style={{ color: '#4A7EC8', marginBottom: 12 }} />,
       title: 'Standard PDF Report',
       desc: 'Full case report with executive summary, findings, IOC table, MITRE mapping, timeline, and commands.',
       url: `/api/reports/${caseId}/pdf`,
@@ -66,7 +66,7 @@ export default function ReportTab({ caseId, caseData }) {
       btnStyle: {},
     },
     {
-      icon: <FileText size={28} style={{ color: '#8FAFC0', marginBottom: 12 }} />,
+      icon: <FileText size={28} style={{ color: '#8BB8E8', marginBottom: 12 }} />,
       title: 'Word Document',
       desc: 'Editable DOCX for sharing with stakeholders or including in SOC documentation.',
       url: `/api/reports/${caseId}/docx`,
@@ -155,7 +155,7 @@ export default function ReportTab({ caseId, caseData }) {
               </div>
             </div>
             <div style={{ padding: '16px 20px' }}>
-              <p style={{ fontSize: 14, color: '#A8A8A8', lineHeight: 1.7, marginBottom: 20 }}>
+              <p style={{ fontSize: 14, color: '#7A9DB8', lineHeight: 1.7, marginBottom: 20 }}>
                 {dpdpaReport.executive_summary}
               </p>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
@@ -170,7 +170,7 @@ export default function ReportTab({ caseId, caseData }) {
                   {dpdpaReport.dpdpa_obligations.map((o, i) => (
                     <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                       <td style={{ padding: '10px 12px', color: '#60A5FA', fontFamily: 'JetBrains Mono, monospace', fontSize: 11 }}>{o.section}</td>
-                      <td style={{ padding: '10px 12px', color: '#EBEBEB' }}>{o.title}</td>
+                      <td style={{ padding: '10px 12px', color: '#BDD4E8' }}>{o.title}</td>
                       <td style={{ padding: '10px 12px' }}>
                         <span style={{
                           fontFamily: 'JetBrains Mono, monospace', fontSize: 10, padding: '2px 8px',
@@ -238,7 +238,7 @@ export default function ReportTab({ caseId, caseData }) {
                   {s.done
                     ? <CheckCircle size={13} style={{ color: '#22C55E', flexShrink: 0 }} />
                     : <XCircle size={13} style={{ color: '#EF4444', opacity: 0.5, flexShrink: 0 }} />}
-                  <span style={{ flex: 1, fontSize: '0.78rem', color: s.done ? '#A8A8A8' : '#787878' }}>{s.label}</span>
+                  <span style={{ flex: 1, fontSize: '0.78rem', color: s.done ? '#7A9DB8' : '#787878' }}>{s.label}</span>
                   {!s.done && <span style={{ fontSize: '0.65rem', color: '#404040', ...MONO }}>{s.hint}</span>}
                 </div>
               ))}

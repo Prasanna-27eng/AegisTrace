@@ -46,9 +46,9 @@ function ConfirmModal({ caseNumber, onConfirm, onCancel }) {
         onClick={e => e.stopPropagation()}
         style={{ background: '#111', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: '24px 28px', maxWidth: 400, width: '90%', boxShadow: '0 24px 64px rgba(0,0,0,0.8)' }}
       >
-        <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: 8, color: '#EBEBEB' }}>Delete case?</h3>
+        <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: 8, color: '#BDD4E8' }}>Delete case?</h3>
         <p style={{ fontSize: '0.8rem', color: '#787878', marginBottom: 24, lineHeight: 1.55 }}>
-          <span style={{ fontFamily: 'JetBrains Mono', color: '#A8A8A8' }}>{caseNumber}</span> will be permanently deleted. This cannot be undone.
+          <span style={{ fontFamily: 'JetBrains Mono', color: '#7A9DB8' }}>{caseNumber}</span> will be permanently deleted. This cannot be undone.
         </p>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button className="btn-ghost" onClick={onCancel} style={{ fontSize: '0.8rem' }}>Cancel</button>
@@ -186,11 +186,14 @@ export default function CaseList() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
         <div>
-          <h1 className="cd" style={{ fontSize: '1.2rem' }}>Cases</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <img src="/assets/brand/aegistrace-icon.png" alt="" style={{ width: 24, height: 24, objectFit: 'contain', opacity: 0.8, filter: 'drop-shadow(0 0 4px rgba(74,126,200,0.5))' }}/>
+            <h1 className="cd" style={{ fontSize: '1.2rem' }}>Cases</h1>
+          </div>
           <div style={{ display: 'flex', gap: 12, marginTop: 4, fontSize: '0.7rem', fontFamily: 'JetBrains Mono' }}>
             <span style={{ color: '#787878' }}>{cases.length} total</span>
             {open > 0 && <span style={{ color: '#EF4444' }}>{open} open</span>}
-            {critical > 0 && <span style={{ color: '#5A8A9F' }}>{critical} critical</span>}
+            {critical > 0 && <span style={{ color: '#4A7EC8' }}>{critical} critical</span>}
             {pending > 0 && <span style={{ color: '#EAB308' }}>{pending} pending</span>}
           </div>
         </div>
@@ -229,9 +232,9 @@ export default function CaseList() {
             onClick={() => applyChip(idx, f)}
             style={{
               padding: '4px 12px', borderRadius: 20, fontSize: '0.72rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: activeChip === idx ? 600 : 400, transition: 'all 0.15s',
-              background: activeChip === idx ? '#5A8A9F' : 'rgba(255,255,255,0.04)',
+              background: activeChip === idx ? '#4A7EC8' : 'rgba(255,255,255,0.04)',
               color: activeChip === idx ? '#fff' : '#787878',
-              border: activeChip === idx ? '1px solid #5A8A9F' : '1px solid rgba(255,255,255,0.08)',
+              border: activeChip === idx ? '1px solid #4A7EC8' : '1px solid rgba(74,126,200,0.1)',
             }}
           >
             {f.label}
@@ -266,7 +269,7 @@ export default function CaseList() {
       {loading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {[0,1,2,3,4,5,6,7].map(i => (
-            <div key={i} style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12, background: '#1E1E1E', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8 }}>
+            <div key={i} style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12, background: '#141420', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8 }}>
               <div style={{ flex: 1 }}>
                 <div className="skeleton" style={{ height: 13, width: `${45 + (i % 3) * 15}%`, marginBottom: 6 }} />
                 <div className="skeleton" style={{ height: 9, width: `${25 + (i % 4) * 8}%` }} />
@@ -320,14 +323,14 @@ export default function CaseList() {
                 onClick={() => navigate(`/app/cases/${c.id}`)}
                 style={{
                   padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer',
-                  background: '#1E1E1E',
+                  background: '#141420',
                   ...(isSlaBreached && !pendingApproval ? { borderColor: 'rgba(239,68,68,0.2)' } : {}),
                   borderRadius: 8, position: 'relative', overflow: 'hidden'
                 }}
               >
                 {/* Severity left bar */}
                 {!pendingApproval && c.severity === 'critical' && (
-                  <div className="critical-pulse" style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '8px 0 0 8px', background: '#5A8A9F' }} />
+                  <div className="critical-pulse" style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '8px 0 0 8px', background: '#4A7EC8' }} />
                 )}
                 {!pendingApproval && isSlaBreached && c.severity !== 'critical' && (
                   <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '8px 0 0 8px', background: '#EF4444', opacity: 0.6 }} />

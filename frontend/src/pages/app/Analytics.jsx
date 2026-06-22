@@ -44,7 +44,7 @@ function HBar({ label, value, max, color }) {
   return (
     <div style={{ marginBottom: 10 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ fontSize: '0.74rem', color: '#A8A8A8', textTransform: 'capitalize' }}>{label}</span>
+        <span style={{ fontSize: '0.74rem', color: '#7A9DB8', textTransform: 'capitalize' }}>{label}</span>
         <span style={{ fontSize: '0.72rem', color, ...MONO, fontWeight: 600 }}>{value}</span>
       </div>
       <div style={{ height: 5, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
@@ -55,7 +55,7 @@ function HBar({ label, value, max, color }) {
 }
 
 /* ── Section header ───────────────────────────────────────────────────────── */
-function SectionHeader({ icon: Icon, label, color = '#4E7A8E' }) {
+function SectionHeader({ icon: Icon, label, color = '#4A7EC8' }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
       <Icon size={14} style={{ color }} />
@@ -132,7 +132,7 @@ export default function Analytics() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-            <BarChart2 size={20} style={{ color: '#4E7A8E' }} />
+            <BarChart2 size={20} style={{ color: '#4A7EC8' }} />
             <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Analytics</h1>
           </div>
           <div style={{ fontSize: '0.7rem', color: '#787878', ...MONO }}>
@@ -176,12 +176,12 @@ export default function Analytics() {
         <>
           {/* KPI Row */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 20 }}>
-            <KPICard label="Total Cases"    value={overview?.total_cases}    Icon={Activity}      color="#4E7A8E"  sub="All time" />
+            <KPICard label="Total Cases"    value={overview?.total_cases}    Icon={Activity}      color="#4A7EC8"  sub="All time" />
             <KPICard label="Open Cases"     value={overview?.open_cases}     Icon={AlertTriangle} color="#EAB308"  sub="Needs attention" />
             <KPICard label="Critical Open"  value={overview?.critical_open}  Icon={Zap}           color="#EF4444"  sub="Immediate action" />
             <KPICard label="SLA Breached"   value={slaBreached}              Icon={Clock}         color="#F97316"  sub={`${slaAtRisk} at risk`} />
             <KPICard label="Closed Cases"   value={overview?.closed_cases}   Icon={CheckCircle}   color="#22C55E"  sub="All time" />
-            <KPICard label="Avg Close Time" value={overview?.avg_time_to_close_hours ? `${overview.avg_time_to_close_hours}h` : '—'} Icon={Target} color="#8FAFC0" sub="Mean resolution" />
+            <KPICard label="Avg Close Time" value={overview?.avg_time_to_close_hours ? `${overview.avg_time_to_close_hours}h` : '—'} Icon={Target} color="#8BB8E8" sub="Mean resolution" />
           </div>
 
           {/* Main grid */}
@@ -209,7 +209,7 @@ export default function Analytics() {
                   { label: 'Breached', count: slaBreached,  color: '#EF4444' },
                 ].map(s => (
                   <div key={s.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: `${s.color}08`, border: `1px solid ${s.color}20`, borderRadius: 8 }}>
-                    <span style={{ fontSize: '0.82rem', color: '#A8A8A8' }}>{s.label}</span>
+                    <span style={{ fontSize: '0.82rem', color: '#7A9DB8' }}>{s.label}</span>
                     <span style={{ fontSize: '1.1rem', fontWeight: 700, color: s.color, ...MONO }}>{s.count}</span>
                   </div>
                 ))}
@@ -219,7 +219,7 @@ export default function Analytics() {
                     {sla.filter(c => c.sla_status !== 'on_track').slice(0, 3).map(c => (
                       <div key={c.case_id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: '0.72rem' }}>
                         <div style={{ width: 5, height: 5, borderRadius: '50%', background: c.sla_status === 'breached' ? '#EF4444' : '#EAB308', flexShrink: 0 }} />
-                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#A8A8A8' }}>{c.title}</span>
+                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#7A9DB8' }}>{c.title}</span>
                         <span style={{ ...MONO, color: '#787878', flexShrink: 0 }}>{c.pct_used}%</span>
                       </div>
                     ))}
@@ -230,14 +230,14 @@ export default function Analytics() {
 
             {/* Time to Close */}
             <Panel>
-              <SectionHeader icon={TrendingUp} label="Avg Close Time" color="#8FAFC0" />
+              <SectionHeader icon={TrendingUp} label="Avg Close Time" color="#8BB8E8" />
               {ttc.length === 0 ? (
                 <div style={{ color: '#787878', fontSize: '0.78rem', ...MONO }}>No closed cases</div>
               ) : (
                 ttc.map(t => (
                   <div key={t.severity} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                     <div style={{ width: 7, height: 7, borderRadius: '50%', background: SEV_COLOR[t.severity] || '#888888', flexShrink: 0 }} />
-                    <span style={{ flex: 1, fontSize: '0.8rem', color: '#A8A8A8', textTransform: 'capitalize' }}>{t.severity}</span>
+                    <span style={{ flex: 1, fontSize: '0.8rem', color: '#7A9DB8', textTransform: 'capitalize' }}>{t.severity}</span>
                     <span style={{ fontSize: '0.78rem', color: SEV_COLOR[t.severity] || '#787878', ...MONO, fontWeight: 600 }}>
                       {t.avg_hours ? `${t.avg_hours}h` : '—'}
                     </span>
@@ -260,7 +260,7 @@ export default function Analytics() {
                 <div>
                   <div style={{ display: 'flex', gap: 16, marginBottom: 14 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.7rem', color: '#787878' }}>
-                      <div style={{ width: 8, height: 8, background: '#4E7A8E', borderRadius: 2 }} /> Created
+                      <div style={{ width: 8, height: 8, background: '#4A7EC8', borderRadius: 2 }} /> Created
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.7rem', color: '#787878' }}>
                       <div style={{ width: 8, height: 8, background: '#22C55E', borderRadius: 2 }} /> Closed
@@ -272,7 +272,7 @@ export default function Analytics() {
                         <div style={{ width: '100%', height: 78, display: 'flex', alignItems: 'flex-end', gap: 1, justifyContent: 'center' }}>
                           <div
                             title={`Created: ${t.created}`}
-                            style={{ flex: 1, height: `${(t.created / trendMax) * 100}%`, background: '#4E7A8E', borderRadius: '2px 2px 0 0', minHeight: t.created > 0 ? 3 : 0, opacity: 0.85, transition: 'height 0.4s ease' }}
+                            style={{ flex: 1, height: `${(t.created / trendMax) * 100}%`, background: '#4A7EC8', borderRadius: '2px 2px 0 0', minHeight: t.created > 0 ? 3 : 0, opacity: 0.85, transition: 'height 0.4s ease' }}
                           />
                           <div
                             title={`Closed: ${t.closed}`}
@@ -296,7 +296,7 @@ export default function Analytics() {
                 <div style={{ color: '#787878', fontSize: '0.78rem', ...MONO }}>No data</div>
               ) : (
                 throughput.slice(0, 6).map(a => (
-                  <HBar key={a.analyst} label={a.analyst || 'Unassigned'} value={a.created} max={maxThroughput} color="#4E7A8E" />
+                  <HBar key={a.analyst} label={a.analyst || 'Unassigned'} value={a.created} max={maxThroughput} color="#4A7EC8" />
                 ))
               )}
             </Panel>
@@ -317,7 +317,7 @@ export default function Analytics() {
                       transition: 'all 0.2s',
                     }}>
                       <div style={{ fontSize: '0.65rem', color: '#EF4444', ...MONO, marginBottom: 3 }}>{m.id}</div>
-                      <div style={{ fontSize: '0.73rem', color: '#A8A8A8', lineHeight: 1.3, marginBottom: 4 }}>{m.name}</div>
+                      <div style={{ fontSize: '0.73rem', color: '#7A9DB8', lineHeight: 1.3, marginBottom: 4 }}>{m.name}</div>
                       <div style={{ fontSize: '0.62rem', color: '#787878', ...MONO }}>{m.count} {m.count === 1 ? 'case' : 'cases'}</div>
                     </div>
                   );

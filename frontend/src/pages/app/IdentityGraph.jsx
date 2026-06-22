@@ -12,12 +12,12 @@ import useStore from '../../store/useStore';
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 
 const NODE_TYPES = [
-  { id: 'user',            label: 'Human User',      color: '#5A8A9F',  Icon: User },
+  { id: 'user',            label: 'Human User',      color: '#4A7EC8',  Icon: User },
   { id: 'service_account', label: 'Service Account', color: '#EAB308',  Icon: Shield },
-  { id: 'api_key',         label: 'API Key',          color: '#8FAFC0',  Icon: Key },
+  { id: 'api_key',         label: 'API Key',          color: '#8BB8E8',  Icon: Key },
   { id: 'token',           label: 'Token',            color: '#F97316',  Icon: Key },
   { id: 'device',          label: 'Device',           color: '#22C55E',  Icon: Monitor },
-  { id: 'agent',           label: 'AI Agent',         color: '#00BFFF',  Icon: Bot },
+  { id: 'agent',           label: 'AI Agent',         color: '#4A7EC8',  Icon: Bot },
   { id: 'prompt',          label: 'Prompt',           color: '#787878',  Icon: GitMerge },
 ];
 
@@ -40,7 +40,7 @@ function NodeIcon({ type, size = 14 }) {
 function riskColor(score) {
   if (score >= 80) return '#EF4444';
   if (score >= 50) return '#EAB308';
-  if (score >= 20) return '#8FAFC0';
+  if (score >= 20) return '#8BB8E8';
   return '#22C55E';
 }
 
@@ -105,8 +105,8 @@ function NodeDetailOverlay({ node, onClose }) {
     <div style={{
       position: 'absolute', top: 0, right: 0, bottom: 0,
       width: 340,
-      background: '#0d0d0d',
-      borderLeft: '1px solid rgba(255,255,255,0.09)',
+      background: '#050505',
+      borderLeft: '1px solid rgba(74,126,200,0.12)',
       overflowY: 'auto',
       zIndex: 10,
       animation: 'slideInRight 220ms cubic-bezier(0.23,1,0.32,1)',
@@ -129,13 +129,13 @@ function NodeDetailOverlay({ node, onClose }) {
 
       {/* Node type badge */}
       <div style={{ marginBottom: 10, marginTop: 2 }}>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#8FAFC0', background: 'rgba(143,175,192,0.1)', padding: '3px 8px', borderRadius: 3, letterSpacing: '0.06em' }}>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#8BB8E8', background: 'rgba(139,184,232,0.1)', padding: '3px 8px', borderRadius: 3, letterSpacing: '0.06em' }}>
           {(type || 'unknown').replace(/_/g, ' ').toUpperCase()}
         </span>
       </div>
 
       {/* Label */}
-      <div style={{ fontSize: 16, fontWeight: 600, color: '#EBEBEB', marginBottom: 16, wordBreak: 'break-all', lineHeight: 1.3 }}>
+      <div style={{ fontSize: 16, fontWeight: 600, color: '#BDD4E8', marginBottom: 16, wordBreak: 'break-all', lineHeight: 1.3 }}>
         {node.label}
       </div>
 
@@ -147,7 +147,7 @@ function NodeDetailOverlay({ node, onClose }) {
             {Math.round(score)}/100
           </span>
         </div>
-        <div style={{ height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 3, overflow: 'hidden' }}>
+        <div style={{ height: 6, background: 'rgba(74,126,200,0.1)', borderRadius: 3, overflow: 'hidden' }}>
           <div style={{
             height: '100%',
             width: `${barPct}%`,
@@ -161,10 +161,10 @@ function NodeDetailOverlay({ node, onClose }) {
       {/* Metadata rows */}
       <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 12 }}>
         {rows.map(([label, value]) => (
-          <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 13 }}>
-            <span style={{ color: '#787878', fontFamily: 'JetBrains Mono, monospace', fontSize: 11 }}>{label}</span>
+          <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px solid rgba(74,126,200,0.08)', fontSize: 13 }}>
+            <span style={{ color: '#7A9DB8', fontFamily: 'JetBrains Mono, monospace', fontSize: 11 }}>{label}</span>
             <span style={{
-              color: label === 'Compromised' && value === '⚠ YES' ? '#EF4444' : '#EBEBEB',
+              color: label === 'Compromised' && value === '⚠ YES' ? '#EF4444' : '#BDD4E8',
               fontFamily: 'JetBrains Mono, monospace',
               fontSize: 11,
               fontWeight: label === 'Compromised' && value === '⚠ YES' ? 600 : 400,
@@ -307,7 +307,7 @@ function GraphCanvas({ nodes, edges, onNodeClick, selectedId, riskFilter, typeFi
     function draw() {
       const W = canvas.offsetWidth, H = canvas.offsetHeight;
       ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = '#080808';
+      ctx.fillStyle = '#050505';
       ctx.fillRect(0, 0, W, H);
 
       // Edges
@@ -318,7 +318,7 @@ function GraphCanvas({ nodes, edges, onNodeClick, selectedId, riskFilter, typeFi
         ctx.beginPath();
         ctx.moveTo(a.x, a.y);
         ctx.lineTo(b.x, b.y);
-        ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+        ctx.strokeStyle = 'rgba(74,126,200,0.12)';
         ctx.lineWidth = 1;
         ctx.stroke();
         // Label
@@ -494,9 +494,9 @@ function NodePanel({ node, onMarkCompromised, onDelete, onClose, onScoreUpdate }
   };
 
   return (
-    <div style={{ width: 300, background: '#080808', borderLeft: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+    <div style={{ width: 300, background: '#0E0E16', borderLeft: '1px solid rgba(74,126,200,0.12)', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
       {/* Header */}
-      <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+      <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(74,126,200,0.12)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
         <Icon size={14} style={{ color: meta.color }} />
         <div style={{ flex: 1, fontWeight: 600, fontSize: '0.84rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{node.label}</div>
         <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', padding: 2 }}><X size={13} /></button>
@@ -522,7 +522,7 @@ function NodePanel({ node, onMarkCompromised, onDelete, onClose, onScoreUpdate }
           <div>
             <div style={{ fontSize: '0.6rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5, ...MONO }}>Metadata</div>
             {Object.entries(node.metadata).map(([k, v]) => (
-              <div key={k} style={{ display: 'flex', gap: 8, padding: '3px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: '0.7rem' }}>
+              <div key={k} style={{ display: 'flex', gap: 8, padding: '3px 0', borderBottom: '1px solid rgba(74,126,200,0.06)', fontSize: '0.7rem' }}>
                 <span style={{ color: '#787878', minWidth: 60 }}>{k}</span>
                 <span style={{ color: 'rgba(240,240,248,0.7)', ...MONO, wordBreak: 'break-all', fontSize: '0.68rem' }}>{String(v)}</span>
               </div>
@@ -531,19 +531,19 @@ function NodePanel({ node, onMarkCompromised, onDelete, onClose, onScoreUpdate }
         )}
 
         {/* ── ANOMALIES SECTION ─────────────────────────────── */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10 }}>
+        <div style={{ borderTop: '1px solid rgba(74,126,200,0.08)', paddingTop: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
             <div style={{ fontSize: '0.6rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.08em', ...MONO, display: 'flex', alignItems: 'center', gap: 5 }}>
               <AlertTriangle size={10} style={{ color: '#F5B84B' }} /> Anomalies ({anomalies.length})
             </div>
-            <button onClick={() => setShowAddAnom(p => !p)} style={{ background: 'none', border: 'none', color: '#4E7A8E', cursor: 'pointer', fontSize: '0.68rem', ...MONO, display: 'flex', alignItems: 'center', gap: 3 }}>
+            <button onClick={() => setShowAddAnom(p => !p)} style={{ background: 'none', border: 'none', color: '#4A7EC8', cursor: 'pointer', fontSize: '0.68rem', ...MONO, display: 'flex', alignItems: 'center', gap: 3 }}>
               <Plus size={10} /> Add
             </button>
           </div>
 
           {/* Add anomaly form */}
           {showAddAnom && (
-            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, padding: 10, marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 7 }}>
+            <div style={{ background: 'rgba(74,126,200,0.05)', border: '1px solid rgba(74,126,200,0.1)', borderRadius: 6, padding: 10, marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 7 }}>
               <input className="at-input" value={anomForm.anomaly_type} onChange={e => setAnomForm(p => ({...p, anomaly_type: e.target.value}))} placeholder="Type (e.g. impossible_travel)" style={{ fontSize: '0.72rem', ...MONO }} />
               <input className="at-input" value={anomForm.description} onChange={e => setAnomForm(p => ({...p, description: e.target.value}))} placeholder="Description" style={{ fontSize: '0.72rem' }} />
               <div style={{ display: 'flex', gap: 6 }}>
@@ -590,9 +590,9 @@ function NodePanel({ node, onMarkCompromised, onDelete, onClose, onScoreUpdate }
         </div>
 
         {/* ── RISK ENGINE SECTION ───────────────────────────── */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10 }}>
+        <div style={{ borderTop: '1px solid rgba(74,126,200,0.08)', paddingTop: 10 }}>
           <div style={{ fontSize: '0.6rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, ...MONO, display: 'flex', alignItems: 'center', gap: 5 }}>
-            <BarChart2 size={10} style={{ color: '#4E7A8E' }} /> Risk Engine
+            <BarChart2 size={10} style={{ color: '#4A7EC8' }} /> Risk Engine
           </div>
           <button className="btn-ghost" onClick={recalculate} disabled={recalcLoading} style={{ width: '100%', fontSize: '0.74rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
             {recalcLoading ? <Loader2 size={12} className="spinner" /> : <RefreshCw size={12} />}
@@ -600,13 +600,13 @@ function NodePanel({ node, onMarkCompromised, onDelete, onClose, onScoreUpdate }
           </button>
 
           {recalcResult && (
-            <div style={{ marginTop: 8, background: 'rgba(78,122,142,0.06)', border: '1px solid rgba(78,122,142,0.15)', borderRadius: 6, padding: 10 }}>
-              <div style={{ fontSize: '0.7rem', color: '#4E7A8E', ...MONO, marginBottom: 6 }}>
+            <div style={{ marginTop: 8, background: 'rgba(74,126,200,0.06)', border: '1px solid rgba(74,126,200,0.15)', borderRadius: 6, padding: 10 }}>
+              <div style={{ fontSize: '0.7rem', color: '#4A7EC8', ...MONO, marginBottom: 6 }}>
                 {recalcResult.old_score ?? '—'} → <strong>{recalcResult.new_score}</strong>
                 {recalcResult.new_score > (recalcResult.old_score ?? 0) ? ' ↑' : ' ↓'}
               </div>
               {recalcResult.detector_results?.map(d => (
-                <div key={d.name} style={{ display: 'flex', gap: 6, fontSize: '0.65rem', ...MONO, padding: '2px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                <div key={d.name} style={{ display: 'flex', gap: 6, fontSize: '0.65rem', ...MONO, padding: '2px 0', borderBottom: '1px solid rgba(74,126,200,0.06)' }}>
                   <span style={{ color: '#787878', flex: 1 }}>{d.name}</span>
                   <span style={{ color: d.score > 50 ? '#EF4444' : d.score > 20 ? '#F5B84B' : '#22C55E' }}>{d.score}</span>
                   <span style={{ color: '#404040' }}>×{d.weight}</span>
@@ -617,7 +617,7 @@ function NodePanel({ node, onMarkCompromised, onDelete, onClose, onScoreUpdate }
         </div>
 
         {/* ── NODE ACTIONS ──────────────────────────────────── */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ borderTop: '1px solid rgba(74,126,200,0.08)', paddingTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
           <button className={node.is_compromised ? 'btn-ghost' : 'btn-danger'} onClick={() => onMarkCompromised(node.id, !node.is_compromised)} style={{ fontSize: '0.74rem', display: 'flex', alignItems: 'center', gap: 6 }}>
             <ShieldAlert size={12} />
             {node.is_compromised ? 'Clear Compromised Flag' : 'Mark as Compromised'}
@@ -727,14 +727,14 @@ export default function IdentityGraph() {
   const pillTypes = FILTER_NODE_TYPES.filter(t => presentTypes.includes(t));
 
   return (
-    <div style={{ display: 'flex', height: '100%', background: '#080808', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '100%', background: '#050505', overflow: 'hidden' }}>
       {/* Left panel */}
-      <div style={{ width: 220, flexShrink: 0, background: '#080808', borderRight: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ width: 220, flexShrink: 0, background: '#0E0E16', borderRight: '1px solid rgba(74,126,200,0.12)', display: 'flex', flexDirection: 'column' }}>
         {/* Header */}
-        <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(74,126,200,0.12)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Fingerprint size={14} style={{ color: '#8FAFC0' }} />
+              <Fingerprint size={14} style={{ color: '#8BB8E8' }} />
               <span style={{ fontWeight: 600, fontSize: '0.82rem' }}>Identity Graph</span>
             </div>
             <button onClick={load} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', padding: 2 }}><RefreshCw size={12} /></button>
@@ -742,12 +742,12 @@ export default function IdentityGraph() {
           {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginBottom: 10 }}>
             {[
-              { label: 'Nodes', val: graph.stats?.total_nodes || 0, color: '#EBEBEB' },
+              { label: 'Nodes', val: graph.stats?.total_nodes || 0, color: '#BDD4E8' },
               { label: 'Edges', val: graph.stats?.total_edges || 0, color: '#787878' },
               { label: 'Compromised', val: graph.stats?.compromised || 0, color: '#EF4444' },
               { label: 'High Risk', val: graph.stats?.high_risk || 0, color: '#EAB308' },
             ].map(s => (
-              <div key={s.label} style={{ padding: '5px 8px', background: 'rgba(255,255,255,0.03)', borderRadius: 4, textAlign: 'center' }}>
+              <div key={s.label} style={{ padding: '5px 8px', background: 'rgba(74,126,200,0.05)', borderRadius: 4, textAlign: 'center' }}>
                 <div style={{ fontSize: '1rem', fontWeight: 700, color: s.color, ...MONO }}>{s.val}</div>
                 <div style={{ fontSize: '0.58rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
               </div>
@@ -764,11 +764,11 @@ export default function IdentityGraph() {
         </div>
 
         {/* Search */}
-        <div style={{ padding: '8px 10px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#080808', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 5, padding: '4px 8px' }}>
+        <div style={{ padding: '8px 10px', borderBottom: '1px solid rgba(74,126,200,0.07)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#050505', border: '1px solid rgba(74,126,200,0.1)', borderRadius: 5, padding: '4px 8px' }}>
             <Search size={11} style={{ color: '#787878', flexShrink: 0 }} />
             <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search nodes…"
-              style={{ background: 'none', border: 'none', outline: 'none', color: '#EBEBEB', fontSize: '0.72rem', ...MONO, flex: 1 }} />
+              style={{ background: 'none', border: 'none', outline: 'none', color: '#BDD4E8', fontSize: '0.72rem', ...MONO, flex: 1 }} />
           </div>
         </div>
 
@@ -791,15 +791,15 @@ export default function IdentityGraph() {
                   style={{
                     padding: '8px 8px', borderRadius: 5, cursor: 'pointer', marginBottom: 2,
                     display: 'flex', alignItems: 'center', gap: 7,
-                    background: selected?.id === n.id ? 'rgba(143,175,192,0.08)' : 'transparent',
-                    border: `1px solid ${selected?.id === n.id ? 'rgba(143,175,192,0.2)' : 'transparent'}`,
+                    background: selected?.id === n.id ? 'rgba(74,126,200,0.08)' : 'transparent',
+                    border: `1px solid ${selected?.id === n.id ? 'rgba(74,126,200,0.2)' : 'transparent'}`,
                   }}
-                  onMouseEnter={e => { if (selected?.id !== n.id) e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
+                  onMouseEnter={e => { if (selected?.id !== n.id) e.currentTarget.style.background = 'rgba(74,126,200,0.05)'; }}
                   onMouseLeave={e => { if (selected?.id !== n.id) e.currentTarget.style.background = 'transparent'; }}
                 >
                   <Icon size={12} style={{ color: n.is_compromised ? '#EF4444' : meta.color, flexShrink: 0 }} />
                   <div style={{ flex: 1, overflow: 'hidden' }}>
-                    <div style={{ fontSize: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: n.is_compromised ? '#EF4444' : '#EBEBEB' }}>{n.label}</div>
+                    <div style={{ fontSize: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: n.is_compromised ? '#EF4444' : '#BDD4E8' }}>{n.label}</div>
                     <div style={{ fontSize: '0.6rem', color: '#787878', ...MONO }}>{n.type?.replace('_', ' ')}</div>
                   </div>
                   {n.risk_score > 0 && (
@@ -818,7 +818,7 @@ export default function IdentityGraph() {
         {/* ── Feature 2 & 3: Filter toolbar ────────────────────────────────── */}
         <div style={{
           padding: '8px 14px',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          borderBottom: '1px solid rgba(74,126,200,0.12)',
           background: 'rgba(0,0,0,0.4)',
           display: 'flex',
           flexDirection: 'column',
@@ -842,7 +842,7 @@ export default function IdentityGraph() {
             {riskFilter > 0 && (
               <button
                 onClick={() => setRiskFilter(0)}
-                style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#787878', padding: '2px 8px', cursor: 'pointer', borderRadius: 4 }}
+                style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, background: 'none', border: '1px solid rgba(74,126,200,0.14)', color: '#787878', padding: '2px 8px', cursor: 'pointer', borderRadius: 4 }}
               >
                 Clear
               </button>
@@ -869,7 +869,7 @@ export default function IdentityGraph() {
                       fontSize: 10,
                       padding: '3px 9px',
                       border: '1px solid',
-                      borderColor: active ? color : 'rgba(255,255,255,0.1)',
+                      borderColor: active ? color : 'rgba(74,126,200,0.14)',
                       background: active ? `${color}18` : 'transparent',
                       color: active ? color : '#787878',
                       cursor: 'pointer',
@@ -886,7 +886,7 @@ export default function IdentityGraph() {
               {typeFilter && (
                 <button
                   onClick={() => setTypeFilter(null)}
-                  style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#787878', padding: '3px 8px', cursor: 'pointer', borderRadius: 4 }}
+                  style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, background: 'none', border: '1px solid rgba(74,126,200,0.14)', color: '#787878', padding: '3px 8px', cursor: 'pointer', borderRadius: 4 }}
                 >
                   All
                 </button>
@@ -924,7 +924,7 @@ export default function IdentityGraph() {
           {/* Node type legend */}
           <div style={{ position: 'absolute', bottom: 16, left: 16, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {NODE_TYPES.map(t => (
-              <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', background: 'rgba(5,5,5,0.85)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 4, fontSize: '0.62rem', color: t.color, ...MONO }}>
+              <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', background: 'rgba(14,14,22,0.9)', border: '1px solid rgba(74,126,200,0.12)', borderRadius: 4, fontSize: '0.62rem', color: t.color, ...MONO }}>
                 <div style={{ width: 6, height: 6, borderRadius: '50%', background: t.color }} />
                 {t.label}
               </div>
@@ -961,7 +961,7 @@ export default function IdentityGraph() {
       {/* Add Node Modal */}
       {showAdd && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowAdd(false)}>
-          <div style={{ background: '#111111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: 24, width: 380, maxWidth: '90vw' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: '#0E0E16', border: '1px solid rgba(74,126,200,0.14)', borderRadius: 10, padding: 24, width: 380, maxWidth: '90vw' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
               <div style={{ fontWeight: 600 }}>Add Identity Node</div>
               <button onClick={() => setShowAdd(false)} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={15} /></button>
@@ -997,7 +997,7 @@ export default function IdentityGraph() {
       {/* Add Edge Modal */}
       {showEdge && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowEdge(false)}>
-          <div style={{ background: '#111111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: 24, width: 360, maxWidth: '90vw' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: '#0E0E16', border: '1px solid rgba(74,126,200,0.14)', borderRadius: 10, padding: 24, width: 360, maxWidth: '90vw' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
               <div style={{ fontWeight: 600 }}>Link Identity Nodes</div>
               <button onClick={() => setShowEdge(false)} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={15} /></button>

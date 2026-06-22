@@ -36,7 +36,7 @@ function PolicyCard({ policy, onEdit, onDelete, onToggle }) {
             <div style={{ width: 7, height: 7, borderRadius: '50%', background: policy.is_active ? '#22C55E' : '#888888', boxShadow: policy.is_active ? '0 0 6px #22C55E' : 'none' }} />
             <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{policy.name}</span>
             {policy.identity_type && (
-              <span style={{ fontSize: '0.62rem', ...MONO, background: 'rgba(78,122,142,0.1)', color: '#4E7A8E', padding: '1px 7px', borderRadius: 3 }}>
+              <span style={{ fontSize: '0.62rem', ...MONO, background: 'rgba(74,126,200,0.1)', color: '#4A7EC8', padding: '1px 7px', borderRadius: 3 }}>
                 {policy.identity_type}
               </span>
             )}
@@ -60,7 +60,7 @@ function PolicyCard({ policy, onEdit, onDelete, onToggle }) {
           <span key={d} style={{ fontSize: '0.65rem', ...MONO, background: 'rgba(239,68,68,0.08)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.2)', padding: '2px 7px', borderRadius: 3 }}>✗ {d}</span>
         ))}
         {ips.length > 0 && (
-          <span style={{ fontSize: '0.65rem', ...MONO, background: 'rgba(78,122,142,0.08)', color: '#4E7A8E', border: '1px solid rgba(78,122,142,0.2)', padding: '2px 7px', borderRadius: 3 }}>
+          <span style={{ fontSize: '0.65rem', ...MONO, background: 'rgba(74,126,200,0.08)', color: '#4A7EC8', border: '1px solid rgba(74,126,200,0.2)', padding: '2px 7px', borderRadius: 3 }}>
             <MapPin size={9} style={{ display: 'inline', marginRight: 3 }} />{ips.length} IP{ips.length !== 1 ? 's' : ''}
           </span>
         )}
@@ -108,7 +108,7 @@ function PolicyForm({ initial, onSave, onClose }) {
   };
 
   return (
-    <div className="at-card" style={{ padding: 20, borderColor: 'rgba(78,122,142,0.2)', marginBottom: 16 }}>
+    <div className="at-card" style={{ padding: 20, borderColor: 'rgba(74,126,200,0.2)', marginBottom: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{initial?.id ? 'Edit Policy' : 'New Policy'}</div>
         <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={15} /></button>
@@ -289,7 +289,7 @@ export default function Policies() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-            <Shield size={20} style={{ color: '#4E7A8E' }} />
+            <Shield size={20} style={{ color: '#4A7EC8' }} />
             <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Policy Engine</h1>
           </div>
           <div style={{ fontSize: '0.7rem', color: '#787878', ...MONO }}>
@@ -317,7 +317,7 @@ export default function Policies() {
 
       {/* Policy list */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 60 }}><Loader2 size={20} className="spinner" style={{ color: '#4E7A8E' }} /></div>
+        <div style={{ textAlign: 'center', padding: 60 }}><Loader2 size={20} className="spinner" style={{ color: '#4A7EC8' }} /></div>
       ) : policies.length === 0 ? (
         <div className="at-card" style={{ padding: 60, textAlign: 'center', color: '#787878' }}>
           <Shield size={32} style={{ margin: '0 auto 14px', opacity: 0.2 }} />

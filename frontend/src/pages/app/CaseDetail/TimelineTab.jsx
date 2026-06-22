@@ -6,8 +6,8 @@ import useStore from '../../../store/useStore';
 const EVENT_TYPES = ['detection','action','escalation','closure','intel','remediation'];
 
 const TYPE_CONFIG = {
-  detection:   { color: '#5A8A9F', bg: 'rgba(90,138,159,0.12)',   Icon: AlertCircle,  label: 'Detection'   },
-  action:      { color: '#8FAFC0', bg: 'rgba(143,175,192,0.12)', Icon: Wrench,        label: 'Action'      },
+  detection:   { color: '#4A7EC8', bg: 'rgba(74,126,200,0.12)',   Icon: AlertCircle,  label: 'Detection'   },
+  action:      { color: '#8BB8E8', bg: 'rgba(139,184,232,0.12)', Icon: Wrench,        label: 'Action'      },
   escalation:  { color: '#EF4444', bg: 'rgba(239,68,68,0.12)',   Icon: TrendingUp,    label: 'Escalation'  },
   closure:     { color: '#22C55E', bg: 'rgba(34,197,94,0.12)',   Icon: CheckCircle,   label: 'Closure'     },
   intel:       { color: '#EAB308', bg: 'rgba(234,179,8,0.12)',   Icon: Search,        label: 'Intel'       },
@@ -143,7 +143,7 @@ export default function TimelineTab({ caseId }) {
                       {new Date(ev.timestamp).toLocaleString('en-IE', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })}
                     </span>
                   </div>
-                  <div style={{ fontSize: '0.84rem', color: '#A8A8A8', lineHeight: 1.65 }}>{ev.description}</div>
+                  <div style={{ fontSize: '0.84rem', color: '#7A9DB8', lineHeight: 1.65 }}>{ev.description}</div>
                   <div style={{ marginTop: 5, fontSize: '0.6rem', color: 'rgba(136,136,136,0.35)', fontFamily: 'JetBrains Mono' }}>Event {i+1} of {events.length}</div>
                 </div>
               </div>

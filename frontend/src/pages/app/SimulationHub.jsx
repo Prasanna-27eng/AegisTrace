@@ -195,7 +195,7 @@ export default function SimulationHub() {
         <div style={{ fontSize: '0.6rem', color: '#505050', letterSpacing: '0.22em', textTransform: 'uppercase', ...MONO, marginBottom: 8 }}>
           AEGISTRACE // MITRE ATT&CK SIMULATION ENGINE
         </div>
-        <h1 style={{ fontSize: '2rem', fontWeight: 300, letterSpacing: '-0.04em', color: '#EBEBEB', lineHeight: 1, marginBottom: 8 }}>
+        <h1 style={{ fontSize: '2rem', fontWeight: 300, letterSpacing: '-0.04em', color: '#BDD4E8', lineHeight: 1, marginBottom: 8 }}>
           Detection Validation
         </h1>
         <div style={{ fontSize: '0.7rem', color: '#505050', ...MONO, maxWidth: 620, lineHeight: 1.7 }}>
@@ -207,12 +207,12 @@ export default function SimulationHub() {
       {/* ── KPI row ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, background: 'rgba(255,255,255,0.04)', marginBottom: 32 }}>
         {[
-          { label: 'Total Runs',      value: totalRuns,       color: '#EBEBEB' },
+          { label: 'Total Runs',      value: totalRuns,       color: '#BDD4E8' },
           { label: 'Detected',        value: detected,        color: '#00FF66' },
           { label: 'Not Detected',    value: notDetected,     color: '#FF3333' },
           { label: 'Detection Rate',  value: `${detectionRate}%`, color: detectionRate >= 80 ? '#00FF66' : detectionRate >= 50 ? '#F97316' : '#FF3333' },
         ].map(k => (
-          <div key={k.label} style={{ background: '#080808', padding: '20px 22px' }}>
+          <div key={k.label} style={{ background: '#050505', padding: '20px 22px' }}>
             <div style={{ fontSize: '2rem', fontWeight: 300, color: k.color, letterSpacing: '-0.04em', ...MONO, marginBottom: 6 }}>{k.value}</div>
             <div style={{ fontSize: '0.6rem', color: '#505050', textTransform: 'uppercase', letterSpacing: '0.14em' }}>{k.label}</div>
           </div>
@@ -246,7 +246,7 @@ export default function SimulationHub() {
                 <div key={t.id}
                   onClick={() => setSelected(t.id)}
                   style={{
-                    background: active ? 'rgba(255,255,255,0.04)' : '#080808',
+                    background: active ? 'rgba(74,126,200,0.06)' : '#050505',
                     padding: '16px 18px', cursor: 'pointer',
                     borderLeft: `2px solid ${active ? '#FFFFFF' : (res ? (res.result === 'DETECTED' ? '#00FF66' : '#FF3333') : 'transparent')}`,
                     transition: 'background 0.15s',
@@ -260,14 +260,14 @@ export default function SimulationHub() {
                       )}
                     </span>
                   </div>
-                  <div style={{ fontSize: '0.84rem', fontWeight: 500, color: '#EBEBEB', marginBottom: 3 }}>{t.name}</div>
+                  <div style={{ fontSize: '0.84rem', fontWeight: 500, color: '#BDD4E8', marginBottom: 3 }}>{t.name}</div>
                   <div style={{ fontSize: '0.65rem', color: '#505050', ...MONO }}>{t.tactic} · {t.events} event{t.events !== 1 ? 's' : ''} injected</div>
 
                   <button
                     onClick={e => { e.stopPropagation(); runSimulation(t.id); }}
                     disabled={!!running}
-                    style={{ marginTop: 10, background: isRun ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: isRun ? '#EBEBEB' : '#787878', padding: '5px 14px', fontSize: '0.62rem', cursor: running ? 'not-allowed' : 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase', ...MONO, display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.15s' }}
-                    onMouseEnter={e => !running && (e.currentTarget.style.color = '#EBEBEB')}
+                    style={{ marginTop: 10, background: isRun ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: isRun ? '#BDD4E8' : '#787878', padding: '5px 14px', fontSize: '0.62rem', cursor: running ? 'not-allowed' : 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase', ...MONO, display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.15s' }}
+                    onMouseEnter={e => !running && (e.currentTarget.style.color = '#BDD4E8')}
                     onMouseLeave={e => !running && (e.currentTarget.style.color = '#787878')}>
                     {isRun
                       ? <><RefreshCw size={9} style={{ animation: 'spin 0.8s linear infinite' }} /> RUNNING…</>
@@ -283,14 +283,14 @@ export default function SimulationHub() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
           {/* Result detail */}
-          <div style={{ background: '#080808', border: '1px solid rgba(255,255,255,0.06)', padding: '22px' }}>
+          <div style={{ background: '#050505', border: '1px solid rgba(255,255,255,0.06)', padding: '22px' }}>
             <div style={{ fontSize: '0.6rem', color: '#505050', letterSpacing: '0.16em', textTransform: 'uppercase', ...MONO, marginBottom: 18 }}>
               Simulation Result
             </div>
 
             {selectedTechMeta && !selectedResult && (
               <div>
-                <div style={{ fontSize: '1.1rem', color: '#EBEBEB', fontWeight: 400, marginBottom: 8 }}>{selectedTechMeta.name}</div>
+                <div style={{ fontSize: '1.1rem', color: '#BDD4E8', fontWeight: 400, marginBottom: 8 }}>{selectedTechMeta.name}</div>
                 <div style={{ fontSize: '0.68rem', color: '#505050', lineHeight: 1.7, ...MONO, marginBottom: 16 }}>
                   {selectedTechMeta.description}
                 </div>
@@ -327,7 +327,7 @@ export default function SimulationHub() {
                 </div>
 
                 {/* Description */}
-                <div style={{ fontSize: '0.72rem', color: '#A8A8A8', lineHeight: 1.7, marginBottom: 16, ...MONO }}>
+                <div style={{ fontSize: '0.72rem', color: '#7A9DB8', lineHeight: 1.7, marginBottom: 16, ...MONO }}>
                   {selectedResult.description}
                 </div>
 
@@ -340,7 +340,7 @@ export default function SimulationHub() {
                     {Object.entries(selectedResult.evidence).map(([k, v]) => (
                       <div key={k} style={{ display: 'flex', gap: 12, padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                         <span style={{ fontSize: '0.64rem', color: '#505050', ...MONO, minWidth: 140, flexShrink: 0 }}>{k}</span>
-                        <span style={{ fontSize: '0.64rem', color: '#A8A8A8', ...MONO, wordBreak: 'break-all' }}>
+                        <span style={{ fontSize: '0.64rem', color: '#7A9DB8', ...MONO, wordBreak: 'break-all' }}>
                           {typeof v === 'object' ? JSON.stringify(v) : String(v)}
                         </span>
                       </div>
@@ -358,7 +358,7 @@ export default function SimulationHub() {
           </div>
 
           {/* Run history */}
-          <div style={{ background: '#080808', border: '1px solid rgba(255,255,255,0.06)', padding: '22px' }}>
+          <div style={{ background: '#050505', border: '1px solid rgba(255,255,255,0.06)', padding: '22px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <div style={{ fontSize: '0.6rem', color: '#505050', letterSpacing: '0.16em', textTransform: 'uppercase', ...MONO }}>
                 Run History
@@ -384,7 +384,7 @@ export default function SimulationHub() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: 'rgba(255,255,255,0.03)' }}>
                 {history.slice(0, 12).map(h => (
-                  <div key={h.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 12px', background: '#080808' }}>
+                  <div key={h.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 12px', background: '#050505' }}>
                     <div style={{ width: 5, height: 5, borderRadius: '50%', background: h.result === 'DETECTED' ? '#00FF66' : '#FF3333', flexShrink: 0 }} />
                     <span style={{ fontSize: '0.62rem', color: '#505050', ...MONO, width: 72, flexShrink: 0 }}>{h.technique_id}</span>
                     <span style={{ fontSize: '0.7rem', color: '#787878', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.technique_name}</span>
@@ -416,9 +416,9 @@ export default function SimulationHub() {
             { step: '05', label: 'T1078.004 New Device', desc: 'Persistent access from new attacker device' },
           ].map((s, i) => (
             <React.Fragment key={s.step}>
-              <div style={{ flexShrink: 0, padding: '12px 16px', background: '#080808', border: '1px solid rgba(255,255,255,0.05)', minWidth: 170 }}>
+              <div style={{ flexShrink: 0, padding: '12px 16px', background: '#050505', border: '1px solid rgba(255,255,255,0.05)', minWidth: 170 }}>
                 <div style={{ fontSize: '0.58rem', color: '#383838', ...MONO, marginBottom: 5 }}>STEP {s.step}</div>
-                <div style={{ fontSize: '0.72rem', color: '#EBEBEB', fontWeight: 500, marginBottom: 4 }}>{s.label}</div>
+                <div style={{ fontSize: '0.72rem', color: '#BDD4E8', fontWeight: 500, marginBottom: 4 }}>{s.label}</div>
                 <div style={{ fontSize: '0.62rem', color: '#505050', lineHeight: 1.5 }}>{s.desc}</div>
               </div>
               {i < 4 && (

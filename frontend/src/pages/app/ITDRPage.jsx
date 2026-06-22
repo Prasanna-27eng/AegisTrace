@@ -18,8 +18,8 @@ const DETECTOR_META = {
   impossible_travel:               { label: 'Impossible Travel',          color: '#F97316', Icon: MapPin },
   new_device:                      { label: 'New Device Login',           color: '#EAB308', Icon: Smartphone },
   privilege_escalation:            { label: 'Privilege Escalation',       color: '#EF4444', Icon: Shield },
-  token_theft:                     { label: 'Token / Session Theft',      color: '#8FAFC0', Icon: Key },
-  shadow_ai:                       { label: 'Shadow AI Usage',            color: '#2EE6D6', Icon: Bot },
+  token_theft:                     { label: 'Token / Session Theft',      color: '#8BB8E8', Icon: Key },
+  shadow_ai:                       { label: 'Shadow AI Usage',            color: '#4A7EC8', Icon: Bot },
   // Endpoint agent alerts
   honey_token_access:              { label: 'Honey Token Accessed',       color: '#EF4444', Icon: AlertTriangle },
   suspicious_process:              { label: 'Suspicious Process',         color: '#F97316', Icon: Activity },
@@ -32,7 +32,7 @@ const DETECTOR_META = {
   usb_inserted:                    { label: 'USB Device Inserted',        color: '#EAB308', Icon: AlertCircle },
   registry_change:                 { label: 'Registry Persistence',       color: '#EF4444', Icon: AlertTriangle },
   user_management:                 { label: 'User Account Change',        color: '#EF4444', Icon: User },
-  new_destination:                 { label: 'New Network Destination',    color: '#8FAFC0', Icon: Activity },
+  new_destination:                 { label: 'New Network Destination',    color: '#8BB8E8', Icon: Activity },
   behavioural_anomaly:             { label: 'Behavioural Anomaly',        color: '#EAB308', Icon: AlertCircle },
 };
 
@@ -42,7 +42,7 @@ const EVENT_TYPE_LABELS = {
   logout:           { label: 'Logout',          color: '#787878' },
   privilege_change: { label: 'Priv. Change',    color: '#F97316' },
   mfa_challenge:    { label: 'MFA Challenge',   color: '#EAB308' },
-  password_reset:   { label: 'Pwd Reset',       color: '#8FAFC0' },
+  password_reset:   { label: 'Pwd Reset',       color: '#8BB8E8' },
   account_lock:     { label: 'Account Lock',    color: '#EF4444' },
 };
 
@@ -106,10 +106,10 @@ function AddEventPanel({ onCreated, onClose }) {
   const lbl = { fontSize: '0.67rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.06em' };
 
   return (
-    <div className="at-card" style={{ padding: 20, marginBottom: 20, borderColor: 'rgba(78,122,142,0.2)' }}>
+    <div className="at-card" style={{ padding: 20, marginBottom: 20, borderColor: 'rgba(74,126,200,0.2)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <span style={{ fontWeight: 600, fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: 7 }}>
-          <Plus size={14} style={{ color: '#4E7A8E' }} /> Add Auth Event
+          <Plus size={14} style={{ color: '#4A7EC8' }} /> Add Auth Event
         </span>
         <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={14} /></button>
       </div>
@@ -197,10 +197,10 @@ function ParseLogPanel({ onParsed, onClose }) {
   };
 
   return (
-    <div className="at-card" style={{ padding: 20, marginBottom: 20, borderColor: 'rgba(78,122,142,0.2)' }}>
+    <div className="at-card" style={{ padding: 20, marginBottom: 20, borderColor: 'rgba(74,126,200,0.2)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <span style={{ fontWeight: 600, fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: 7 }}>
-          <FileText size={14} style={{ color: '#4E7A8E' }} /> AI Log Parser
+          <FileText size={14} style={{ color: '#4A7EC8' }} /> AI Log Parser
         </span>
         <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={14} /></button>
       </div>
@@ -384,7 +384,7 @@ function AlertsTab() {
   const EvidenceRow = ({ label, value, mono = true }) => value ? (
     <div style={{ display: 'flex', gap: 10, marginBottom: 5, alignItems: 'flex-start' }}>
       <span style={{ fontSize: '0.68rem', color: '#787878', minWidth: 110, flexShrink: 0, paddingTop: 1 }}>{label}</span>
-      <span style={{ fontSize: '0.72rem', color: '#EBEBEB', ...(mono ? MONO : {}), wordBreak: 'break-all', lineHeight: 1.5 }}>{String(value)}</span>
+      <span style={{ fontSize: '0.72rem', color: '#BDD4E8', ...(mono ? MONO : {}), wordBreak: 'break-all', lineHeight: 1.5 }}>{String(value)}</span>
     </div>
   ) : null;
 
@@ -404,9 +404,9 @@ function AlertsTab() {
         {STATUS_FILTERS.map(f => (
           <button key={f} onClick={() => setFilter(f)}
             style={{ padding: '5px 14px', borderRadius: 6, border: '1px solid', fontSize: '0.72rem', cursor: 'pointer', ...MONO, textTransform: 'uppercase', letterSpacing: '0.06em',
-              background: filter === f ? 'rgba(78,122,142,0.12)' : 'transparent',
-              color: filter === f ? '#6BABEC' : '#787878',
-              borderColor: filter === f ? 'rgba(78,122,142,0.3)' : 'rgba(255,255,255,0.07)',
+              background: filter === f ? 'rgba(74,126,200,0.12)' : 'transparent',
+              color: filter === f ? '#8BB8E8' : '#787878',
+              borderColor: filter === f ? 'rgba(74,126,200,0.3)' : 'rgba(255,255,255,0.07)',
             }}>
             {f.replace('_', ' ')}
           </button>
@@ -445,7 +445,7 @@ function AlertsTab() {
                   <Icon size={15} style={{ color: dm.color, marginTop: 2, flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5, flexWrap: 'wrap' }}>
-                      <span style={{ fontWeight: 600, fontSize: '0.84rem', color: '#EBEBEB' }}>{dm.label}</span>
+                      <span style={{ fontWeight: 600, fontSize: '0.84rem', color: '#BDD4E8' }}>{dm.label}</span>
                       <span style={{ fontSize: '0.64rem', color: SEV_COLOR[a.severity], background: `${SEV_COLOR[a.severity]}14`, padding: '1px 7px', borderRadius: 3, ...MONO }}>
                         {(a.severity || 'low').toUpperCase()}
                       </span>
@@ -468,7 +468,7 @@ function AlertsTab() {
 
                     {/* Evidence fields */}
                     <div style={{ marginBottom: 14 }}>
-                      <div style={{ fontSize: '0.65rem', color: '#5A8A9F', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10, ...MONO }}>
+                      <div style={{ fontSize: '0.65rem', color: '#4A7EC8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10, ...MONO }}>
                         ◇ Evidence
                       </div>
                       <div style={{ padding: '12px 14px', background: 'rgba(0,0,0,0.3)', borderRadius: 7, border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -492,7 +492,7 @@ function AlertsTab() {
 
                     {/* Response actions */}
                     <div style={{ marginBottom: 12 }}>
-                      <div style={{ fontSize: '0.65rem', color: '#5A8A9F', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10, ...MONO }}>
+                      <div style={{ fontSize: '0.65rem', color: '#4A7EC8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10, ...MONO }}>
                         ◇ Response Actions
                       </div>
                       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -504,7 +504,7 @@ function AlertsTab() {
                         )}
                         {hasPid && (
                           <ActionBtn label="🌲 Process Tree"
-                            color="#8FAFC0" bg="rgba(143,175,192,0.08)" border="rgba(143,175,192,0.2)"
+                            color="#8BB8E8" bg="rgba(139,184,232,0.08)" border="rgba(139,184,232,0.2)"
                             loading={cmdLoading === `${a.id}-get_process_tree`}
                             onClick={() => dispatch(a.id, hostname, 'get_process_tree', { pid: hasPid })} />
                         )}
@@ -583,7 +583,7 @@ function AnalyticsTab() {
 
   if (loading) return (
     <div style={{ textAlign: 'center', padding: 80 }}>
-      <Loader2 size={22} className="spinner" style={{ color: '#4E7A8E' }} />
+      <Loader2 size={22} className="spinner" style={{ color: '#4A7EC8' }} />
       <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 12, ...MONO }}>Loading analytics…</div>
     </div>
   );
@@ -600,14 +600,14 @@ function AnalyticsTab() {
   const maxTrend    = Math.max(1, ...data.daily_trend.map(d => d.count));
   const sevTotal    = Object.values(data.severity_distribution).reduce((a, b) => a + b, 0) || 1;
 
-  const KPICard = ({ label, value, sub, color = '#EBEBEB', icon: Icon }) => (
+  const KPICard = ({ label, value, sub, color = '#BDD4E8', icon: Icon }) => (
     <div className="at-card" style={{ padding: '18px 20px', display: 'flex', alignItems: 'flex-start', gap: 14 }}>
       {Icon && <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <Icon size={16} style={{ color: '#4E7A8E' }} />
+        <Icon size={16} style={{ color: '#4A7EC8' }} />
       </div>}
       <div>
         <div style={{ fontSize: '1.6rem', fontWeight: 700, color, lineHeight: 1.1, ...MONO }}>{value}</div>
-        <div style={{ fontSize: '0.72rem', color: '#EBEBEB', fontWeight: 500, marginTop: 4 }}>{label}</div>
+        <div style={{ fontSize: '0.72rem', color: '#BDD4E8', fontWeight: 500, marginTop: 4 }}>{label}</div>
         {sub && <div style={{ fontSize: '0.64rem', color: '#787878', marginTop: 2, ...MONO }}>{sub}</div>}
       </div>
     </div>
@@ -625,9 +625,9 @@ function AnalyticsTab() {
           {[7, 14, 30, 60, 90].map(d => (
             <button key={d} onClick={() => setPeriod(d)}
               style={{ padding: '4px 11px', borderRadius: 5, border: '1px solid', fontSize: '0.7rem', cursor: 'pointer', ...MONO,
-                background: period === d ? 'rgba(78,122,142,0.12)' : 'transparent',
-                color: period === d ? '#6BABEC' : '#787878',
-                borderColor: period === d ? 'rgba(78,122,142,0.3)' : 'rgba(255,255,255,0.07)',
+                background: period === d ? 'rgba(74,126,200,0.12)' : 'transparent',
+                color: period === d ? '#8BB8E8' : '#787878',
+                borderColor: period === d ? 'rgba(74,126,200,0.3)' : 'rgba(255,255,255,0.07)',
               }}>
               {d}d
             </button>
@@ -640,7 +640,7 @@ function AnalyticsTab() {
         <KPICard label="Total Detections"  value={data.total_detections}  sub={`${period}d window`}          icon={Activity}   />
         <KPICard label="Active Threats"    value={data.active_threats}    sub="unresolved now"               icon={AlertTriangle} color={data.active_threats > 0 ? '#EF4444' : '#22C55E'} />
         <KPICard label="Total Alerts"      value={data.total_alerts}      sub="from agents + analysis"       icon={Bell ?? Eye} />
-        <KPICard label="False Positive Rate" value={`${data.fp_rate}%`}  sub={`${data.fp_count} FP alerts`} icon={Target}      color={data.fp_rate > 20 ? '#F97316' : '#EBEBEB'} />
+        <KPICard label="False Positive Rate" value={`${data.fp_rate}%`}  sub={`${data.fp_count} FP alerts`} icon={Target}      color={data.fp_rate > 20 ? '#F97316' : '#BDD4E8'} />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 20 }}>
@@ -657,16 +657,16 @@ function AnalyticsTab() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {data.detector_fire_rates.map(d => {
-                const dm = DETECTOR_META[d.detector] || { label: d.detector, color: '#4E7A8E', Icon: Shield };
+                const dm = DETECTOR_META[d.detector] || { label: d.detector, color: '#4A7EC8', Icon: Shield };
                 const pct = Math.round((d.count / maxDetector) * 100);
                 return (
                   <div key={d.detector}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                         <dm.Icon size={12} style={{ color: dm.color, flexShrink: 0 }} />
-                        <span style={{ fontSize: '0.76rem', color: '#A8A8A8' }}>{dm.label}</span>
+                        <span style={{ fontSize: '0.76rem', color: '#7A9DB8' }}>{dm.label}</span>
                       </div>
-                      <span style={{ fontSize: '0.72rem', color: '#EBEBEB', fontWeight: 600, ...MONO }}>{d.count}</span>
+                      <span style={{ fontSize: '0.72rem', color: '#BDD4E8', fontWeight: 600, ...MONO }}>{d.count}</span>
                     </div>
                     <div style={{ height: 5, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
                       <div style={{ height: '100%', width: `${pct}%`, background: dm.color, borderRadius: 3, transition: 'width 0.6s ease', opacity: 0.8 }} />
@@ -697,8 +697,8 @@ function AnalyticsTab() {
               {SEV_ORDER.map(s => (
                 <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <div style={{ width: 8, height: 8, borderRadius: 2, background: SEV_COLOR[s], flexShrink: 0 }} />
-                  <span style={{ fontSize: '0.72rem', color: '#A8A8A8', textTransform: 'capitalize' }}>{s}</span>
-                  <span style={{ marginLeft: 'auto', fontSize: '0.72rem', fontWeight: 600, color: '#EBEBEB', ...MONO }}>{data.severity_distribution[s]}</span>
+                  <span style={{ fontSize: '0.72rem', color: '#7A9DB8', textTransform: 'capitalize' }}>{s}</span>
+                  <span style={{ marginLeft: 'auto', fontSize: '0.72rem', fontWeight: 600, color: '#BDD4E8', ...MONO }}>{data.severity_distribution[s]}</span>
                 </div>
               ))}
             </div>
@@ -714,13 +714,13 @@ function AnalyticsTab() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {Object.entries(data.status_breakdown).map(([st, count]) => {
-                  const c = { open: '#EF4444', investigating: '#F97316', resolved: '#22C55E', false_positive: '#787878' }[st] || '#4E7A8E';
+                  const c = { open: '#EF4444', investigating: '#F97316', resolved: '#22C55E', false_positive: '#787878' }[st] || '#4A7EC8';
                   const pct = Math.round((count / Math.max(1, data.total_alerts)) * 100);
                   return (
                     <div key={st}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <span style={{ fontSize: '0.72rem', color: '#A8A8A8', textTransform: 'capitalize' }}>{st.replace('_', ' ')}</span>
-                        <span style={{ fontSize: '0.72rem', color: '#EBEBEB', fontWeight: 600, ...MONO }}>{count} <span style={{ color: '#787878', fontWeight: 400 }}>({pct}%)</span></span>
+                        <span style={{ fontSize: '0.72rem', color: '#7A9DB8', textTransform: 'capitalize' }}>{st.replace('_', ' ')}</span>
+                        <span style={{ fontSize: '0.72rem', color: '#BDD4E8', fontWeight: 600, ...MONO }}>{count} <span style={{ color: '#787878', fontWeight: 400 }}>({pct}%)</span></span>
                       </div>
                       <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: `${pct}%`, background: c, borderRadius: 2, opacity: 0.75 }} />
@@ -748,7 +748,7 @@ function AnalyticsTab() {
                 style={{ flex: 1, minWidth: 6, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, cursor: 'default' }}>
                 <div style={{
                   width: '100%', height: h,
-                  background: d.count > 0 ? (isToday ? '#4E7A8E' : 'rgba(78,122,142,0.55)') : 'rgba(255,255,255,0.05)',
+                  background: d.count > 0 ? (isToday ? '#4A7EC8' : 'rgba(74,126,200,0.4)') : 'rgba(74,126,200,0.05)',
                   borderRadius: '2px 2px 0 0',
                   transition: 'height 0.4s ease',
                 }} />
@@ -776,11 +776,11 @@ function AnalyticsTab() {
                 <div key={item.identity}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 5 }}>
                     <span style={{ fontSize: '0.68rem', color: '#787878', ...MONO, width: 16, textAlign: 'right', flexShrink: 0 }}>#{i + 1}</span>
-                    <span style={{ fontSize: '0.78rem', color: '#EBEBEB', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', ...MONO }}>{item.identity}</span>
-                    <span style={{ fontSize: '0.72rem', fontWeight: 600, color: i === 0 ? '#EF4444' : '#A8A8A8', ...MONO, flexShrink: 0 }}>{item.count} alert{item.count !== 1 ? 's' : ''}</span>
+                    <span style={{ fontSize: '0.78rem', color: '#BDD4E8', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', ...MONO }}>{item.identity}</span>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 600, color: i === 0 ? '#EF4444' : '#7A9DB8', ...MONO, flexShrink: 0 }}>{item.count} alert{item.count !== 1 ? 's' : ''}</span>
                   </div>
                   <div style={{ height: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 2, marginLeft: 26, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${pct}%`, background: i === 0 ? '#EF4444' : '#4E7A8E', borderRadius: 2, opacity: 0.7 }} />
+                    <div style={{ height: '100%', width: `${pct}%`, background: i === 0 ? '#EF4444' : '#4A7EC8', borderRadius: 2, opacity: 0.7 }} />
                   </div>
                 </div>
               );
@@ -850,7 +850,7 @@ export default function ITDRPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-            <Shield size={20} style={{ color: '#4E7A8E' }} />
+            <Shield size={20} style={{ color: '#4A7EC8' }} />
             <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Identity Threat Detection & Response</h1>
           </div>
           <div style={{ fontSize: '0.7rem', color: '#787878', ...MONO }}>
@@ -879,7 +879,7 @@ export default function ITDRPage() {
       {/* Run Analysis bar (Detection tab only) */}
       {tab === 'detection' && (
         <div className="at-card" style={{ padding: '12px 18px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <AlertTriangle size={14} style={{ color: '#4E7A8E', flexShrink: 0 }} />
+          <AlertTriangle size={14} style={{ color: '#4A7EC8', flexShrink: 0 }} />
           <div style={{ fontSize: '0.76rem', color: '#909090', flex: 1 }}>Run all 6 ITDR detectors for a specific identity</div>
           <input className="at-input" value={analyseForm.identity_label}
             onChange={e => setAnalyseForm(p => ({...p, identity_label: e.target.value}))}

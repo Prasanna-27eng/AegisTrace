@@ -149,7 +149,7 @@ export default function OverviewTab({ caseData, updateCase, caseId, reload }) {
                   ))}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                     <input type="checkbox" id="ev-check" checked={closure.evidence_complete} onChange={e => setClosure(p => ({ ...p, evidence_complete: e.target.checked }))} />
-                    <label htmlFor="ev-check" style={{ fontSize: '0.78rem', color: '#EBEBEB' }}>Evidence checklist complete</label>
+                    <label htmlFor="ev-check" style={{ fontSize: '0.78rem', color: '#BDD4E8' }}>Evidence checklist complete</label>
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button className="btn-danger" onClick={handleClose} style={{ flex: 1, justifyContent: 'center' }}>Confirm Close</button>

@@ -90,11 +90,11 @@ export default function PlaybookTab({ caseData, updateCase }) {
             <h3 style={{ fontSize: '0.92rem', fontWeight: 600, textTransform: 'capitalize' }}>{incidentType.replace('_',' ')} Playbook</h3>
             <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 2 }}>{completed}/{playbook.length} tasks complete</div>
           </div>
-          <div style={{ fontSize: '1.2rem', fontWeight: 700, color: progress === 100 ? '#22C55E' : '#EBEBEB' }}>{progress}%</div>
+          <div style={{ fontSize: '1.2rem', fontWeight: 700, color: progress === 100 ? '#22C55E' : '#BDD4E8' }}>{progress}%</div>
         </div>
         {/* Progress bar */}
         <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${progress}%`, background: progress === 100 ? '#22C55E' : '#5A8A9F', borderRadius: 2, transition: 'width 0.3s ease' }} />
+          <div style={{ height: '100%', width: `${progress}%`, background: progress === 100 ? '#22C55E' : '#4A7EC8', borderRadius: 2, transition: 'width 0.3s ease' }} />
         </div>
       </div>
 
@@ -106,8 +106,8 @@ export default function PlaybookTab({ caseData, updateCase }) {
                 {checked[task.id] ? <CheckSquare size={16} /> : <Square size={16} />}
               </div>
               <div>
-                <span style={{ fontSize: '0.84rem', color: checked[task.id] ? '#787878' : '#EBEBEB', textDecoration: checked[task.id] ? 'line-through' : 'none', transition: 'all 0.2s' }}>{task.task}</span>
-                {task.milestone && <div style={{ fontSize: '0.65rem', color: '#5A8A9F', fontFamily: 'JetBrains Mono', marginTop: 2 }}>MILESTONE</div>}
+                <span style={{ fontSize: '0.84rem', color: checked[task.id] ? '#787878' : '#BDD4E8', textDecoration: checked[task.id] ? 'line-through' : 'none', transition: 'all 0.2s' }}>{task.task}</span>
+                {task.milestone && <div style={{ fontSize: '0.65rem', color: '#4A7EC8', fontFamily: 'JetBrains Mono', marginTop: 2 }}>MILESTONE</div>}
               </div>
             </div>
           ))}
@@ -125,7 +125,7 @@ export default function PlaybookTab({ caseData, updateCase }) {
               <div style={{ color: closureChecked[item.id] ? '#22C55E' : '#787878', flexShrink: 0 }}>
                 {closureChecked[item.id] ? <CheckSquare size={15} /> : <Square size={15} />}
               </div>
-              <span style={{ fontSize: '0.82rem', color: closureChecked[item.id] ? '#787878' : '#EBEBEB' }}>{item.task}</span>
+              <span style={{ fontSize: '0.82rem', color: closureChecked[item.id] ? '#787878' : '#BDD4E8' }}>{item.task}</span>
             </div>
           ))}
         </div>

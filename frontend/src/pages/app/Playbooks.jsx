@@ -198,7 +198,7 @@ function PipelineBuilder({
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: slot === 'trigger' ? '13px' : '0.62rem',
         fontWeight: 700, color: c,
-        background: '#080808',
+        background: '#050505',
         boxShadow: `0 0 10px ${c}55`,
         flexShrink: 0,
         transition: 'all 0.35s ease',
@@ -461,7 +461,7 @@ function PipelineBuilder({
           <button
             className="btn-ghost"
             onClick={() => setDryRunOpen(o => !o)}
-            style={{ fontSize: '0.74rem', color: '#686868', display: 'flex', alignItems: 'center', gap: 6 }}
+            style={{ fontSize: '0.74rem', color: '#4A6A8A', display: 'flex', alignItems: 'center', gap: 6 }}
           >
             <Sparkles size={12} style={{ color: '#9C7CFF' }} />
             Simulate
@@ -608,7 +608,7 @@ function PlaybookForm({ initial, onSave, onClose }) {
     padding: '3px 11px', fontSize: '0.72rem', borderRadius: 4,
     border: 'none', cursor: 'pointer', transition: 'all 0.15s',
     background: active ? 'rgba(156,124,255,0.14)' : 'transparent',
-    color: active ? '#9C7CFF' : '#686868',
+    color: active ? '#9C7CFF' : '#4A6A8A',
     ...MONO,
   });
 
@@ -678,7 +678,7 @@ function PlaybookForm({ initial, onSave, onClose }) {
             </div>
             <div style={{ gridColumn: '1/-1', display: 'flex', alignItems: 'center', gap: 8 }}>
               <input type="checkbox" id="pb-requires-approval" checked={form.requires_approval} onChange={e => setForm(p => ({ ...p, requires_approval: e.target.checked }))} />
-              <label htmlFor="pb-requires-approval" style={{ fontSize: '0.78rem', color: '#A8A8A8', cursor: 'pointer' }}>
+              <label htmlFor="pb-requires-approval" style={{ fontSize: '0.78rem', color: '#7A9DB8', cursor: 'pointer' }}>
                 Global approval gate — when off, no actions in this playbook require approval (overrides per-action settings)
               </label>
             </div>
@@ -710,7 +710,7 @@ function PlaybookForm({ initial, onSave, onClose }) {
                   <select className="at-select" value={a.type} onChange={e => updateAction(i, 'type', e.target.value)} style={{ flex: 1 }}>
                     {ACTION_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                   </select>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: '#A8A8A8', whiteSpace: 'nowrap', cursor: 'pointer' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: '#7A9DB8', whiteSpace: 'nowrap', cursor: 'pointer' }}>
                     <input type="checkbox" checked={a.requires_approval} onChange={e => updateAction(i, 'requires_approval', e.target.checked)} />
                     Requires approval
                   </label>
@@ -749,7 +749,7 @@ function PlaybookForm({ initial, onSave, onClose }) {
               </select>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: 3 }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: '0.74rem', color: '#A8A8A8', cursor: 'pointer' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: '0.74rem', color: '#7A9DB8', cursor: 'pointer' }}>
                 <input type="checkbox" checked={form.requires_approval} onChange={e => setForm(p => ({ ...p, requires_approval: e.target.checked }))} />
                 Global approval gate
               </label>
@@ -865,7 +865,7 @@ function PlaybookCard({ pb, onEdit, onDelete, onToggle, onTest }) {
             IF {TRIGGER_TYPES.find(t => t.value === pb.trigger_event_type)?.label || pb.trigger_event_type}
           </span>
           {Object.entries(conditions).map(([k, v]) => (
-            <span key={k} style={{ fontSize: '0.66rem', ...MONO, background: 'rgba(255,255,255,0.04)', color: '#A8A8A8', border: '1px solid rgba(255,255,255,0.08)', padding: '2px 7px', borderRadius: 3 }}>
+            <span key={k} style={{ fontSize: '0.66rem', ...MONO, background: 'rgba(255,255,255,0.04)', color: '#7A9DB8', border: '1px solid rgba(255,255,255,0.08)', padding: '2px 7px', borderRadius: 3 }}>
               {k} = {String(v)}
             </span>
           ))}

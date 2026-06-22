@@ -5,8 +5,8 @@ import api from '../../api/client';
 import useStore from '../../store/useStore';
 
 const C = {
-  bg: '#0A0A0A', card: '#111111', border: '#181818',
-  blue: '#5A8A9F', purple: '#8FAFC0', green: '#34D399',
+  bg: '#0A0A0A', card: '#0E0E16', border: '#181818',
+  blue: '#4A7EC8', purple: '#8BB8E8', green: '#34D399',
   amber: '#FBBF24', red: '#F87171', muted: '#888888', text: '#E5E5E5',
 };
 

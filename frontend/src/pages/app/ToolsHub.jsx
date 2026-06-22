@@ -4,16 +4,16 @@ import api from '../../api/client';
 import useStore from '../../store/useStore';
 
 const TOOLS = [
-  { id: 'whois', name: 'WHOIS / RDAP Lookup', desc: 'Domain registration and ownership lookup', inputs: ['domain'], link: 'https://lookup.icann.org', linkLabel: 'ICANN RDAP', color: '#5A8A9F' },
-  { id: 'dns', name: 'DNS Lookup', desc: 'Query DNS records — A, MX, TXT, NS, CNAME', inputs: ['domain'], link: 'https://toolbox.googleapps.com/apps/dig/', linkLabel: 'Google Dig', color: '#8FAFC0' },
+  { id: 'whois', name: 'WHOIS / RDAP Lookup', desc: 'Domain registration and ownership lookup', inputs: ['domain'], link: 'https://lookup.icann.org', linkLabel: 'ICANN RDAP', color: '#4A7EC8' },
+  { id: 'dns', name: 'DNS Lookup', desc: 'Query DNS records — A, MX, TXT, NS, CNAME', inputs: ['domain'], link: 'https://toolbox.googleapps.com/apps/dig/', linkLabel: 'Google Dig', color: '#8BB8E8' },
   { id: 'domain-age', name: 'Domain Age Checker', desc: 'Check when a domain was registered', inputs: ['domain'], link: 'https://www.whois.com/whois/', linkLabel: 'WHOIS.com', color: '#EAB308' },
   { id: 'ip-geo', name: 'IP Geolocation & Reputation', desc: 'Locate IP and check basic reputation', inputs: ['ip'], link: 'https://www.abuseipdb.com/', linkLabel: 'IP Lookup', color: '#22C55E' },
-  { id: 'urlscan', name: 'URL Scanner', desc: 'Submit URL for sandboxed scanning', inputs: ['url'], link: 'https://urlscan.io/', linkLabel: 'urlscan.io', color: '#5A8A9F' },
-  { id: 'otx', name: 'AlienVault OTX', desc: 'Open threat intelligence platform', inputs: ['ip','domain','hash'], link: 'https://otxr.alienvault.com', linkLabel: 'OTX Pulse', color: '#8FAFC0' },
+  { id: 'urlscan', name: 'URL Scanner', desc: 'Submit URL for sandboxed scanning', inputs: ['url'], link: 'https://urlscan.io/', linkLabel: 'urlscan.io', color: '#4A7EC8' },
+  { id: 'otx', name: 'AlienVault OTX', desc: 'Open threat intelligence platform', inputs: ['ip','domain','hash'], link: 'https://otxr.alienvault.com', linkLabel: 'OTX Pulse', color: '#8BB8E8' },
   { id: 'cert', name: 'Certificate Transparency', desc: 'Search SSL certificate logs for subdomains', inputs: ['domain'], link: 'https://crt.sh/', linkLabel: 'crt.sh', color: '#EAB308' },
   { id: 'shodan', name: 'Shodan Search', desc: 'Search internet-connected device exposure', inputs: ['ip','domain'], link: 'https://www.shodan.io/', linkLabel: 'Shodan', color: '#22C55E' },
-  { id: 'mxtoolbox', name: 'MX Toolbox', desc: 'Email delivery and blacklist checks', inputs: ['domain','ip'], link: 'https://mxtoolbox.com/', linkLabel: 'MX Toolbox', color: '#5A8A9F' },
-  { id: 'vt-link', name: 'VirusTotal Search', desc: 'Search VirusTotal for any IOC', inputs: ['ip','domain','hash','url'], link: 'https://www.virustotal.com/', linkLabel: 'VirusTotal', color: '#8FAFC0' },
+  { id: 'mxtoolbox', name: 'MX Toolbox', desc: 'Email delivery and blacklist checks', inputs: ['domain','ip'], link: 'https://mxtoolbox.com/', linkLabel: 'MX Toolbox', color: '#4A7EC8' },
+  { id: 'vt-link', name: 'VirusTotal Search', desc: 'Search VirusTotal for any IOC', inputs: ['ip','domain','hash','url'], link: 'https://www.virustotal.com/', linkLabel: 'VirusTotal', color: '#8BB8E8' },
   { id: 'ioc-extract', name: 'Raw IOC Extractor', desc: 'Extract all IOCs from pasted text', inputs: ['raw text'], color: '#EAB308', internal: true },
   { id: 'defang-tool', name: 'Defang / Refang', desc: 'Safely defang IOCs for documentation', inputs: ['ip','domain','url'], color: '#22C55E', internal: true },
 ];
@@ -51,7 +51,7 @@ export default function ToolsHub() {
             onClick={() => tool.internal && setActiveInternal(activeInternal === tool.id ? null : tool.id)}
           >
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
-              <div style={{ fontWeight: 600, fontSize: '0.85rem', color: '#EBEBEB' }}>{tool.name}</div>
+              <div style={{ fontWeight: 600, fontSize: '0.85rem', color: '#BDD4E8' }}>{tool.name}</div>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: tool.color, flexShrink: 0, marginTop: 3 }} />
             </div>
             <div style={{ fontSize: '0.78rem', color: '#787878', marginBottom: 10, lineHeight: 1.5 }}>{tool.desc}</div>
@@ -97,7 +97,7 @@ export default function ToolsHub() {
                   <button className="btn-ghost" onClick={refang} style={{ flex: 1, justifyContent: 'center', fontSize: '0.78rem' }}>Refang</button>
                 </div>
                 {defangResult && (
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', background: '#111111', padding: '6px 10px', borderRadius: 5 }}>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', background: '#0E0E16', padding: '6px 10px', borderRadius: 5 }}>
                     <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.78rem', flex: 1, color: '#22C55E' }}>{defangResult}</span>
                     <button onClick={() => { navigator.clipboard.writeText(defangResult); addToast('Copied!', 'success'); }} className="btn-ghost" style={{ padding: '2px 6px' }}><Copy size={11} /></button>
                   </div>

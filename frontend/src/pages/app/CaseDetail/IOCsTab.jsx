@@ -116,7 +116,7 @@ export default function IOCsTab({ caseData, updateCase, caseId }) {
             <div key={i}>
               <div className="at-card" style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono', color: '#787878', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: 3, flexShrink: 0 }}>{item.type}</span>
-                <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.8rem', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', color: defanged[i] ? '#EAB308' : '#8FAFC0' }}>
+                <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.8rem', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', color: defanged[i] ? '#EAB308' : '#8BB8E8' }}>
                   {defanged[i] || item.ioc}
                 </span>
                 {item.verdict && (
@@ -131,7 +131,7 @@ export default function IOCsTab({ caseData, updateCase, caseId }) {
                 </div>
               </div>
               {correlations[item.ioc]?.found && correlations[item.ioc].case_count > 1 && (
-                <div style={{ marginTop: 3, marginLeft: 8, padding: '6px 10px', background: 'rgba(90,138,159,0.06)', border: '1px solid rgba(90,138,159,0.15)', borderRadius: 5, fontSize: '0.72rem', color: '#5A8A9F' }}>
+                <div style={{ marginTop: 3, marginLeft: 8, padding: '6px 10px', background: 'rgba(74,126,200,0.06)', border: '1px solid rgba(74,126,200,0.15)', borderRadius: 5, fontSize: '0.72rem', color: '#4A7EC8' }}>
                   ⚠ Campaign alert: this IOC appears in {correlations[item.ioc].case_count} cases (IDs: {correlations[item.ioc].case_ids?.join(', ')})
                 </div>
               )}

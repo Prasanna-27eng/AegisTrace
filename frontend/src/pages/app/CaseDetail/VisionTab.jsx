@@ -65,7 +65,7 @@ export default function VisionTab({ caseData, caseId, reload }) {
     <div style={{ padding: '20px 24px', maxWidth: 920 }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-        <Eye size={18} style={{ color: '#8FAFC0' }} />
+        <Eye size={18} style={{ color: '#8BB8E8' }} />
         <div>
           <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>Vision Analysis</div>
           <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 1 }}>
@@ -112,7 +112,7 @@ export default function VisionTab({ caseData, caseId, reload }) {
         value={context}
         onChange={e => setContext(e.target.value)}
         placeholder="Optional: add context about what this screenshot shows (e.g. 'from infected host', 'phishing email body')"
-        style={{ width: '100%', background: '#111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, color: '#EBEBEB', padding: '10px 12px', fontSize: '0.82rem', resize: 'vertical', minHeight: 56, marginBottom: 14, boxSizing: 'border-box' }}
+        style={{ width: '100%', background: '#111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, color: '#BDD4E8', padding: '10px 12px', fontSize: '0.82rem', resize: 'vertical', minHeight: 56, marginBottom: 14, boxSizing: 'border-box' }}
       />
 
       <button
@@ -141,7 +141,7 @@ export default function VisionTab({ caseData, caseId, reload }) {
           </div>
 
           {/* Summary */}
-          <p style={{ fontSize: '0.85rem', color: '#A8A8A8', lineHeight: 1.65, marginBottom: 16 }}>{result.summary}</p>
+          <p style={{ fontSize: '0.85rem', color: '#7A9DB8', lineHeight: 1.65, marginBottom: 16 }}>{result.summary}</p>
 
           {/* Key indicators */}
           {result.key_indicators?.length > 0 && (
@@ -162,8 +162,8 @@ export default function VisionTab({ caseData, caseId, reload }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {result.iocs_detected.map((ioc, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem' }}>
-                    <span style={{ background: 'rgba(143,175,192,0.1)', borderRadius: 3, padding: '2px 6px', color: '#8FAFC0', ...MONO, textTransform: 'uppercase', fontSize: '0.65rem' }}>{ioc.type}</span>
-                    <span style={{ color: '#EBEBEB', ...MONO }}>{ioc.value}</span>
+                    <span style={{ background: 'rgba(139,184,232,0.1)', borderRadius: 3, padding: '2px 6px', color: '#8BB8E8', ...MONO, textTransform: 'uppercase', fontSize: '0.65rem' }}>{ioc.type}</span>
+                    <span style={{ color: '#BDD4E8', ...MONO }}>{ioc.value}</span>
                   </div>
                 ))}
               </div>
@@ -188,7 +188,7 @@ export default function VisionTab({ caseData, caseId, reload }) {
               <div style={{ fontSize: '0.72rem', color: '#555', marginBottom: 8, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Recommended Actions</div>
               <ol style={{ margin: 0, paddingLeft: 18 }}>
                 {result.recommended_actions.map((a, i) => (
-                  <li key={i} style={{ fontSize: '0.82rem', color: '#A8A8A8', lineHeight: 1.65, marginBottom: 4 }}>{a}</li>
+                  <li key={i} style={{ fontSize: '0.82rem', color: '#7A9DB8', lineHeight: 1.65, marginBottom: 4 }}>{a}</li>
                 ))}
               </ol>
             </div>

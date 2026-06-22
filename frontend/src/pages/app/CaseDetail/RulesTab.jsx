@@ -6,7 +6,7 @@ import useStore from '../../../store/useStore';
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 
 const RULE_TYPES = [
-  { key: 'yara',       label: 'YARA',        color: '#8FAFC0', note: 'Malware detection' },
+  { key: 'yara',       label: 'YARA',        color: '#8BB8E8', note: 'Malware detection' },
   { key: 'sigma',      label: 'Sigma',        color: '#F59E0B', note: 'SIEM universal format' },
   { key: 'kql',        label: 'KQL',          color: '#A78BFA', note: 'Microsoft Sentinel' },
   { key: 'splunk_spl', label: 'Splunk SPL',   color: '#22C55E', note: 'Splunk query' },
@@ -45,7 +45,7 @@ function RuleBlock({ label, code, color, note }) {
           borderRadius: 6,
           padding: '14px 16px',
           fontSize: '0.72rem',
-          color: '#A8A8A8',
+          color: '#7A9DB8',
           overflowX: 'auto',
           margin: 0,
           lineHeight: 1.6,
@@ -82,7 +82,7 @@ export default function RulesTab({ caseData, caseId }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <FileCode size={18} style={{ color: '#8FAFC0' }} />
+          <FileCode size={18} style={{ color: '#8BB8E8' }} />
           <div>
             <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>Detection Rule Generator</div>
             <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 1 }}>

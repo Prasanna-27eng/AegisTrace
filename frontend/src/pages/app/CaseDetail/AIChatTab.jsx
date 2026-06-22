@@ -47,7 +47,7 @@ export default function AIChatTab({ caseId, caseData }) {
           <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
             {msg.role === 'assistant' && (
               <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(143,175,192,0.15)', border: '1px solid rgba(143,175,192,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Bot size={14} style={{ color: '#8FAFC0' }} />
+                <Bot size={14} style={{ color: '#8BB8E8' }} />
               </div>
             )}
             <div style={{
@@ -58,7 +58,7 @@ export default function AIChatTab({ caseId, caseData }) {
               border: `1px solid ${msg.role === 'user' ? 'rgba(90,138,159,0.25)' : 'rgba(255,255,255,0.07)'}`,
               fontSize: '0.84rem',
               lineHeight: 1.65,
-              color: '#EBEBEB',
+              color: '#BDD4E8',
               whiteSpace: 'pre-wrap',
             }}>
               {msg.content}
@@ -70,7 +70,7 @@ export default function AIChatTab({ caseId, caseData }) {
             </div>
             {msg.role === 'user' && (
               <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(90,138,159,0.15)', border: '1px solid rgba(90,138,159,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <User size={14} style={{ color: '#5A8A9F' }} />
+                <User size={14} style={{ color: '#4A7EC8' }} />
               </div>
             )}
           </div>
@@ -78,11 +78,11 @@ export default function AIChatTab({ caseId, caseData }) {
         {loading && (
           <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
             <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(143,175,192,0.15)', border: '1px solid rgba(143,175,192,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Bot size={14} style={{ color: '#8FAFC0' }} />
+              <Bot size={14} style={{ color: '#8BB8E8' }} />
             </div>
             <div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px 12px 12px 4px', display: 'flex', gap: 5, alignItems: 'center' }}>
               {[0, 1, 2].map(d => (
-                <div key={d} style={{ width: 6, height: 6, borderRadius: '50%', background: '#8FAFC0', animation: `spin 1s ease ${d * 0.2}s infinite`, opacity: 0.6 }} />
+                <div key={d} style={{ width: 6, height: 6, borderRadius: '50%', background: '#8BB8E8', animation: `spin 1s ease ${d * 0.2}s infinite`, opacity: 0.6 }} />
               ))}
             </div>
           </div>

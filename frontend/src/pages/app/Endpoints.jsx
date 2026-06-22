@@ -12,7 +12,7 @@ import useSSE from '../../hooks/useSSE';
 
 const OS_ICON   = { windows:'🪟', linux:'🐧', mac:'🍎', unknown:'💻' };
 const MONO      = { fontFamily:'JetBrains Mono,monospace' };
-const SEV_CLR   = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'#22C55E', info:'#5A8A9F', debug:'#555' };
+const SEV_CLR   = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'#22C55E', info:'#4A7EC8', debug:'#555' };
 const CAT_ICON  = { auth:'🔐', kernel:'⚙', service:'🔄', package:'📦', cron:'⏰', network:'🌐', ssh:'🔑', privilege:'⚡', user_mgmt:'👤', system:'💻' };
 const LOG_CATS  = ['all','auth','kernel','service','package','cron','network'];
 
@@ -45,7 +45,7 @@ function RiskGauge({ score }) {
   );
 }
 
-function StatCard({ icon: Icon, label, value, color = '#5A8A9F', sub }) {
+function StatCard({ icon: Icon, label, value, color = '#4A7EC8', sub }) {
   return (
     <div style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, padding:'12px 14px', flex:1, minWidth:100 }}>
       <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:6 }}>
@@ -68,14 +68,14 @@ function ConfirmModal({ title, body, confirmLabel = 'Confirm', danger = true, on
     <div style={{ position:'fixed', inset:0, zIndex:2000, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.72)', backdropFilter:'blur(4px)' }}
       onClick={e => { if (e.target === e.currentTarget) onCancel(); }}>
       <div style={{ background:'#0D0D0D', border:`1px solid ${danger ? 'rgba(239,68,68,0.25)' : 'rgba(90,138,159,0.25)'}`, borderRadius:12, padding:'24px 26px', width:'100%', maxWidth:420, boxShadow:'0 24px 64px rgba(0,0,0,0.65)' }}>
-        <div style={{ fontWeight:700, fontSize:'0.95rem', marginBottom:10, color: danger ? '#EF4444' : '#EBEBEB' }}>{title}</div>
+        <div style={{ fontWeight:700, fontSize:'0.95rem', marginBottom:10, color: danger ? '#EF4444' : '#BDD4E8' }}>{title}</div>
         <div style={{ fontSize:'0.78rem', color:'#787878', lineHeight:1.65, marginBottom:22, whiteSpace:'pre-line' }}>{body}</div>
         <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
           <button onClick={onCancel} style={{ background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'#787878', borderRadius:7, padding:'8px 18px', cursor:'pointer', fontSize:'0.78rem' }}>
             Cancel
           </button>
           <button onClick={() => { onConfirm(); onCancel(); }} autoFocus
-            style={{ background: danger ? 'rgba(239,68,68,0.13)' : 'rgba(90,138,159,0.13)', border:`1px solid ${danger ? 'rgba(239,68,68,0.35)' : 'rgba(90,138,159,0.35)'}`, color: danger ? '#EF4444' : '#5A8A9F', borderRadius:7, padding:'8px 18px', cursor:'pointer', fontSize:'0.78rem', fontWeight:600 }}>
+            style={{ background: danger ? 'rgba(239,68,68,0.13)' : 'rgba(90,138,159,0.13)', border:`1px solid ${danger ? 'rgba(239,68,68,0.35)' : 'rgba(90,138,159,0.35)'}`, color: danger ? '#EF4444' : '#4A7EC8', borderRadius:7, padding:'8px 18px', cursor:'pointer', fontSize:'0.78rem', fontWeight:600 }}>
             {confirmLabel}
           </button>
         </div>
@@ -88,7 +88,7 @@ function SortTh({ col, label, sort, onSort, style }) {
   const active = sort.col === col;
   const Icon = active ? (sort.dir === 'asc' ? ChevronUp : ChevronDown) : ChevronsUpDown;
   return (
-    <th onClick={() => onSort(col)} style={{ textAlign:'left', padding:'8px 10px', color: active ? '#5A8A9F' : '#555', fontWeight:600, fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.07em', borderBottom:'1px solid rgba(255,255,255,0.07)', cursor:'pointer', userSelect:'none', whiteSpace:'nowrap', ...style }}>
+    <th onClick={() => onSort(col)} style={{ textAlign:'left', padding:'8px 10px', color: active ? '#4A7EC8' : '#555', fontWeight:600, fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.07em', borderBottom:'1px solid rgba(255,255,255,0.07)', cursor:'pointer', userSelect:'none', whiteSpace:'nowrap', ...style }}>
       <span style={{ display:'flex', alignItems:'center', gap:3 }}>{label} <Icon size={9}/></span>
     </th>
   );
@@ -283,7 +283,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
           <div style={{ display:'flex', gap:8 }}>
             <button onClick={() => { loadDetail(); loadLogs(); }}
               style={{ background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:6, padding:'5px 10px', cursor:'pointer', color:'#787878', display:'flex', alignItems:'center', gap:5, fontSize:'0.72rem', ...MONO }}
-              onMouseEnter={e => e.currentTarget.style.color='#EBEBEB'} onMouseLeave={e => e.currentTarget.style.color='#787878'}>
+              onMouseEnter={e => e.currentTarget.style.color='#BDD4E8'} onMouseLeave={e => e.currentTarget.style.color='#787878'}>
               <RefreshCw size={11}/> Refresh
             </button>
             <button onClick={onClose}
@@ -299,8 +299,8 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
             style={{ padding:'10px 16px', background:'none', border:'none', fontSize:'0.76rem', cursor:'pointer', ...MONO, whiteSpace:'nowrap',
-              borderBottom: tab===t.id ? '2px solid #5A8A9F' : '2px solid transparent',
-              color: tab===t.id ? '#5A8A9F' : '#555', transition:'color 0.15s' }}>
+              borderBottom: tab===t.id ? '2px solid #4A7EC8' : '2px solid transparent',
+              color: tab===t.id ? '#4A7EC8' : '#555', transition:'color 0.15s' }}>
             {t.label}
             {t.id === 'alerts' && detail?.recent_alerts?.filter(a=>a.status==='open').length > 0 &&
               <span style={{ marginLeft:5, background:'#EF4444', color:'#fff', borderRadius:'50%', fontSize:'0.55rem', padding:'1px 5px', verticalAlign:'middle' }}>
@@ -324,7 +324,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                 <RiskGauge score={riskScore} />
               </div>
               <div style={{ flex:1, display:'flex', gap:10, flexWrap:'wrap' }}>
-                <StatCard icon={Activity}       label="Processes"       value={detail?.processes?.length ?? '…'} color="#5A8A9F" sub="running"/>
+                <StatCard icon={Activity}       label="Processes"       value={detail?.processes?.length ?? '…'} color="#4A7EC8" sub="running"/>
                 <StatCard icon={Wifi}           label="Connections"     value={detail?.connections?.length ?? '…'} color="#8FAFC0" sub="active"/>
                 <StatCard icon={AlertTriangle}  label="Open Alerts"     value={detail ? (detail.open_critical + detail.open_high) : '…'} color={detail?.open_critical > 0 ? '#EF4444' : '#EAB308'} sub="critical+high"/>
                 <StatCard icon={Shield}         label="Failed Logins"   value={detail?.failed_logins_24h ?? '…'} color={detail?.failed_logins_24h > 5 ? '#EF4444' : '#8FAFC0'} sub="last 24h"/>
@@ -335,7 +335,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
             {/* System info */}
             {sys.cpu_percent !== undefined && (
               <div style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, padding:'14px 16px' }}>
-                <div style={{ fontSize:'0.65rem', color:'#5A8A9F', textTransform:'uppercase', letterSpacing:'0.1em', ...MONO, marginBottom:12 }}>◇ System Resources</div>
+                <div style={{ fontSize:'0.65rem', color:'#4A7EC8', textTransform:'uppercase', letterSpacing:'0.1em', ...MONO, marginBottom:12 }}>◇ System Resources</div>
                 <div style={{ display:'flex', gap:20, flexWrap:'wrap' }}>
                   {[
                     { label:'CPU', value: sys.cpu_percent, unit:'%', color: sys.cpu_percent > 90 ? '#EF4444' : sys.cpu_percent > 70 ? '#F97316' : '#22C55E' },
@@ -364,14 +364,14 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
             {/* Recent alerts */}
             {detail?.recent_alerts?.length > 0 && (
               <div style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, padding:'14px 16px' }}>
-                <div style={{ fontSize:'0.65rem', color:'#5A8A9F', textTransform:'uppercase', letterSpacing:'0.1em', ...MONO, marginBottom:10 }}>◇ Recent Alerts</div>
+                <div style={{ fontSize:'0.65rem', color:'#4A7EC8', textTransform:'uppercase', letterSpacing:'0.1em', ...MONO, marginBottom:10 }}>◇ Recent Alerts</div>
                 <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
                   {detail.recent_alerts.slice(0,5).map(a => {
                     const sc = SEV_CLR[a.severity] || '#787878';
                     return (
                       <div key={a.id} style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 10px', background:'rgba(255,255,255,0.02)', borderRadius:6, border:`1px solid rgba(255,255,255,0.05)`, borderLeft:`3px solid ${sc}` }}>
                         <span style={{ fontSize:'0.6rem', fontWeight:700, color:sc, textTransform:'uppercase', ...MONO, minWidth:60 }}>{a.severity}</span>
-                        <span style={{ fontSize:'0.76rem', flex:1, color:'#EBEBEB' }}>{ALERT_LABELS[a.alert_type] || a.alert_type?.replace(/_/g,' ')}</span>
+                        <span style={{ fontSize:'0.76rem', flex:1, color:'#BDD4E8' }}>{ALERT_LABELS[a.alert_type] || a.alert_type?.replace(/_/g,' ')}</span>
                         <span style={{ fontSize:'0.62rem', color:'#555', ...MONO, flexShrink:0 }}>
                           {new Date(a.detected_at).toLocaleTimeString(undefined, {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})}
                         </span>
@@ -421,7 +421,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                 <button key={c} onClick={() => { setLogFilter(c); loadLogs(c); }}
                   style={{ padding:'3px 10px', borderRadius:5, border:'1px solid', fontSize:'0.65rem', cursor:'pointer', ...MONO, textTransform:'uppercase',
                     background: logFilter===c ? 'rgba(90,138,159,0.12)' : 'transparent',
-                    color: logFilter===c ? '#5A8A9F' : '#555',
+                    color: logFilter===c ? '#4A7EC8' : '#555',
                     borderColor: logFilter===c ? 'rgba(90,138,159,0.3)' : 'rgba(255,255,255,0.07)' }}>
                   {CAT_ICON[c] || ''} {c}
                 </button>
@@ -441,7 +441,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
             <div style={{ position:'relative', marginBottom:8 }}>
               <Search size={12} style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', color:'#555', pointerEvents:'none' }}/>
               <input value={logSearch} onChange={e => setLogSearch(e.target.value)} placeholder="Search logs…"
-                style={{ width:'100%', background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:6, padding:'6px 30px 6px 30px', color:'#EBEBEB', fontSize:'0.72rem', ...MONO, outline:'none', boxSizing:'border-box' }}/>
+                style={{ width:'100%', background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:6, padding:'6px 30px 6px 30px', color:'#BDD4E8', fontSize:'0.72rem', ...MONO, outline:'none', boxSizing:'border-box' }}/>
               {logSearch && (
                 <button onClick={() => setLogSearch('')} style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'#555', padding:2, display:'flex', alignItems:'center' }}>
                   <X size={12}/>
@@ -467,7 +467,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                       <span style={{ color:'#333', flexShrink:0, minWidth:62 }}>{ts}</span>
                       <span style={{ flexShrink:0, minWidth:14 }}>{CAT_ICON[log.category] || '●'}</span>
                       <span style={{ color:sc, flexShrink:0, minWidth:52, textTransform:'uppercase', fontSize:'0.58rem', paddingTop:1 }}>{log.severity}</span>
-                      <span style={{ color:'#5A8A9F', flexShrink:0, minWidth:55, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{log.source}</span>
+                      <span style={{ color:'#4A7EC8', flexShrink:0, minWidth:55, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{log.source}</span>
                       {log.username  && <span style={{ color:'#EAB308', flexShrink:0 }}>{log.username}</span>}
                       {log.source_ip && <span style={{ color:'#22C55E', flexShrink:0 }}>← {log.source_ip}</span>}
                       <span style={{ color: isBad ? '#EF4444' : isSudo ? '#F97316' : '#666', flex:1, wordBreak:'break-all', lineHeight:1.5 }}>{log.raw}</span>
@@ -485,7 +485,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
             <div style={{ display:'flex', justifyContent:'space-between', marginBottom:10, alignItems:'center' }}>
               <span style={{ fontSize:'0.68rem', color:'#555', ...MONO }}>{detail?.processes?.length ?? 0} processes · updated every 10s</span>
               <button onClick={() => dispatch('collect_now', {}, 'Collect Now')} disabled={cmdLoading==='collect_now'}
-                style={{ fontSize:'0.68rem', background:'rgba(90,138,159,0.1)', border:'1px solid rgba(90,138,159,0.25)', color:'#5A8A9F', borderRadius:5, padding:'4px 10px', cursor:'pointer', ...MONO, display:'flex', alignItems:'center', gap:5 }}>
+                style={{ fontSize:'0.68rem', background:'rgba(90,138,159,0.1)', border:'1px solid rgba(90,138,159,0.25)', color:'#4A7EC8', borderRadius:5, padding:'4px 10px', cursor:'pointer', ...MONO, display:'flex', alignItems:'center', gap:5 }}>
                 {cmdLoading==='collect_now' ? <Loader2 size={10} className="spinner"/> : <RefreshCw size={10}/>} Collect Now
               </button>
             </div>
@@ -505,7 +505,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                   {sortedProcs.map((p,i) => (
                     <tr key={i} style={{ borderBottom:'1px solid rgba(255,255,255,0.03)', background: p.suspicious ? 'rgba(239,68,68,0.04)' : 'transparent' }}>
                       <td style={{ padding:'6px 10px', color:'#555' }}>{p.pid}</td>
-                      <td style={{ padding:'6px 10px', color: p.suspicious ? '#EF4444' : '#EBEBEB', fontWeight: p.suspicious ? 700 : 400 }}>
+                      <td style={{ padding:'6px 10px', color: p.suspicious ? '#EF4444' : '#BDD4E8', fontWeight: p.suspicious ? 700 : 400 }}>
                         {p.suspicious && '⚠ '}{p.name}
                       </td>
                       <td style={{ padding:'6px 10px', color:'#EAB308' }}>{p.username || p.user || '—'}</td>
@@ -554,10 +554,10 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                 <tbody>
                   {sortedConns.map((c,i) => (
                     <tr key={i} style={{ borderBottom:'1px solid rgba(255,255,255,0.03)', background: c.suspicious ? 'rgba(239,68,68,0.04)' : 'transparent' }}>
-                      <td style={{ padding:'6px 10px', color: c.suspicious ? '#EF4444' : '#EBEBEB' }}>{c.process_name || '—'}</td>
+                      <td style={{ padding:'6px 10px', color: c.suspicious ? '#EF4444' : '#BDD4E8' }}>{c.process_name || '—'}</td>
                       <td style={{ padding:'6px 10px', color:'#555' }}>{c.local_ip}:{c.local_port}</td>
                       <td style={{ padding:'6px 10px', color:'#22C55E' }}>{c.remote_ip || '—'}</td>
-                      <td style={{ padding:'6px 10px', color: c.suspicious ? '#EF4444' : '#5A8A9F', fontWeight: c.suspicious ? 700 : 400 }}>
+                      <td style={{ padding:'6px 10px', color: c.suspicious ? '#EF4444' : '#4A7EC8', fontWeight: c.suspicious ? 700 : 400 }}>
                         {c.suspicious && '⚠ '}{c.remote_port}
                       </td>
                       <td style={{ padding:'6px 10px', color:'#555' }}>{c.status || '—'}</td>
@@ -606,7 +606,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                     style={{ padding:'12px 16px', cursor:'pointer', display:'flex', alignItems:'center', gap:10 }}>
                     <div style={{ flex:1 }}>
                       <div style={{ display:'flex', gap:8, alignItems:'center', marginBottom:4, flexWrap:'wrap' }}>
-                        <span style={{ fontWeight:600, fontSize:'0.82rem', color:'#EBEBEB' }}>{ALERT_LABELS[a.alert_type] || a.alert_type?.replace(/_/g,' ')}</span>
+                        <span style={{ fontWeight:600, fontSize:'0.82rem', color:'#BDD4E8' }}>{ALERT_LABELS[a.alert_type] || a.alert_type?.replace(/_/g,' ')}</span>
                         <span style={{ fontSize:'0.6rem', color:sc, background:`${sc}14`, padding:'1px 7px', borderRadius:3, ...MONO, textTransform:'uppercase' }}>{a.severity}</span>
                         <span style={{ fontSize:'0.6rem', color: a.status==='open'?'#EF4444':'#555', background:'rgba(255,255,255,0.04)', padding:'1px 7px', borderRadius:3, ...MONO, marginLeft:'auto' }}>{a.status}</span>
                       </div>
@@ -618,11 +618,11 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                   {isExp && (
                     <div style={{ borderTop:'1px solid rgba(255,255,255,0.06)', padding:'12px 16px', background:'rgba(0,0,0,0.2)' }}>
                       <div style={{ display:'flex', flexDirection:'column', gap:4, ...MONO, fontSize:'0.7rem', marginBottom:12 }}>
-                        {ev.process_name && <div style={{ display:'flex', gap:10 }}><span style={{ color:'#555', minWidth:100 }}>Process</span><span style={{ color:'#EBEBEB' }}>{ev.process_name} (PID {ev.process_pid})</span></div>}
+                        {ev.process_name && <div style={{ display:'flex', gap:10 }}><span style={{ color:'#555', minWidth:100 }}>Process</span><span style={{ color:'#BDD4E8' }}>{ev.process_name} (PID {ev.process_pid})</span></div>}
                         {ev.username     && <div style={{ display:'flex', gap:10 }}><span style={{ color:'#555', minWidth:100 }}>User</span><span style={{ color:'#EAB308' }}>{ev.username}</span></div>}
-                        {ev.cmdline      && <div style={{ display:'flex', gap:10 }}><span style={{ color:'#555', minWidth:100 }}>Cmdline</span><span style={{ color:'#EBEBEB', wordBreak:'break-all' }}>{ev.cmdline}</span></div>}
+                        {ev.cmdline      && <div style={{ display:'flex', gap:10 }}><span style={{ color:'#555', minWidth:100 }}>Cmdline</span><span style={{ color:'#BDD4E8', wordBreak:'break-all' }}>{ev.cmdline}</span></div>}
                         {ev.honey_file   && <div style={{ display:'flex', gap:10 }}><span style={{ color:'#555', minWidth:100 }}>Honey File</span><span style={{ color:'#EF4444' }}>{ev.honey_file}</span></div>}
-                        {ev.path         && <div style={{ display:'flex', gap:10 }}><span style={{ color:'#555', minWidth:100 }}>Path</span><span style={{ color:'#EBEBEB' }}>{ev.path}</span></div>}
+                        {ev.path         && <div style={{ display:'flex', gap:10 }}><span style={{ color:'#555', minWidth:100 }}>Path</span><span style={{ color:'#BDD4E8' }}>{ev.path}</span></div>}
                         {ev.remote_ip    && <div style={{ display:'flex', gap:10 }}><span style={{ color:'#555', minWidth:100 }}>Remote IP</span><span style={{ color:'#22C55E' }}>{ev.remote_ip}:{ev.remote_port}</span></div>}
                         {ev.source_ip    && <div style={{ display:'flex', gap:10 }}><span style={{ color:'#555', minWidth:100 }}>Source IP</span><span style={{ color:'#22C55E' }}>{ev.source_ip}</span></div>}
                         {ev.old_hash     && <div style={{ display:'flex', gap:10 }}><span style={{ color:'#555', minWidth:100 }}>Hash Change</span><span style={{ color:'#EAB308' }}>{ev.old_hash} → {ev.new_hash}</span></div>}
@@ -661,7 +661,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                 <button onClick={() => { loadVulns(); }} style={{ fontSize:'0.65rem', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', color:'#787878', borderRadius:5, padding:'4px 10px', cursor:'pointer', display:'flex', alignItems:'center', gap:5, ...MONO }}>
                   <RefreshCw size={10}/> Refresh
                 </button>
-                <button onClick={triggerVulnScan} disabled={vulnScanning} style={{ fontSize:'0.65rem', background:'rgba(90,138,159,0.12)', border:'1px solid rgba(90,138,159,0.3)', color:'#5A8A9F', borderRadius:5, padding:'4px 10px', cursor:'pointer', display:'flex', alignItems:'center', gap:5, ...MONO }}>
+                <button onClick={triggerVulnScan} disabled={vulnScanning} style={{ fontSize:'0.65rem', background:'rgba(90,138,159,0.12)', border:'1px solid rgba(90,138,159,0.3)', color:'#4A7EC8', borderRadius:5, padding:'4px 10px', cursor:'pointer', display:'flex', alignItems:'center', gap:5, ...MONO }}>
                   {vulnScanning ? <Loader2 size={10} className="spinner"/> : <ScanLine size={10}/>} Scan Now
                 </button>
               </div>
@@ -686,7 +686,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
 
             {!vulnLoading && (vulnData?.findings || []).map(f => {
               const sev = f.severity || 'INFO';
-              const clr = { CRITICAL:'#EF4444', HIGH:'#F97316', MEDIUM:'#EAB308', LOW:'#22C55E', INFO:'#5A8A9F' }[sev] || '#5A8A9F';
+              const clr = { CRITICAL:'#EF4444', HIGH:'#F97316', MEDIUM:'#EAB308', LOW:'#22C55E', INFO:'#4A7EC8' }[sev] || '#4A7EC8';
               const catIcon = { network:'🌐', ssh:'🔑', permissions:'🔒', firewall:'🛡', accounts:'👤', software:'📦', persistence:'⚓', config:'⚙', crypto:'🔐' }[f.category] || '⚠';
               return (
                 <div key={f.id} style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, overflow:'hidden', borderLeft:`3px solid ${clr}` }}>
@@ -695,13 +695,13 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                       <span style={{ fontSize:16, flexShrink:0, marginTop:1 }}>{catIcon}</span>
                       <div style={{ flex:1, minWidth:0 }}>
                         <div style={{ display:'flex', gap:8, alignItems:'center', marginBottom:6, flexWrap:'wrap' }}>
-                          <span style={{ fontWeight:600, fontSize:'0.83rem', color:'#EBEBEB' }}>{f.title}</span>
+                          <span style={{ fontWeight:600, fontSize:'0.83rem', color:'#BDD4E8' }}>{f.title}</span>
                           <span style={{ fontSize:'0.6rem', color:clr, background:`${clr}14`, padding:'1px 7px', borderRadius:3, ...MONO, textTransform:'uppercase', flexShrink:0 }}>{sev}</span>
                           <span style={{ fontSize:'0.6rem', color:'#555', background:'rgba(255,255,255,0.04)', padding:'1px 7px', borderRadius:3, ...MONO, textTransform:'uppercase' }}>{f.category}</span>
                         </div>
                         <div style={{ fontSize:'0.75rem', color:'#A0A0A0', lineHeight:1.55, marginBottom:8 }}>{f.description}</div>
-                        <div style={{ fontSize:'0.71rem', color:'#5A8A9F', background:'rgba(90,138,159,0.06)', border:'1px solid rgba(90,138,159,0.15)', borderRadius:5, padding:'7px 10px', lineHeight:1.5 }}>
-                          <span style={{ color:'#5A8A9F', fontWeight:600, ...MONO, fontSize:'0.62rem' }}>REMEDIATION </span>
+                        <div style={{ fontSize:'0.71rem', color:'#4A7EC8', background:'rgba(90,138,159,0.06)', border:'1px solid rgba(90,138,159,0.15)', borderRadius:5, padding:'7px 10px', lineHeight:1.5 }}>
+                          <span style={{ color:'#4A7EC8', fontWeight:600, ...MONO, fontSize:'0.62rem' }}>REMEDIATION </span>
                           {f.remediation}
                         </div>
                         {f.detected_at && (
@@ -722,11 +722,11 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
         {tab === 'response' && (
           <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
             <div style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, padding:'16px' }}>
-              <div style={{ fontSize:'0.65rem', color:'#5A8A9F', textTransform:'uppercase', letterSpacing:'0.1em', ...MONO, marginBottom:14 }}>◇ Immediate Response Actions</div>
+              <div style={{ fontSize:'0.65rem', color:'#4A7EC8', textTransform:'uppercase', letterSpacing:'0.1em', ...MONO, marginBottom:14 }}>◇ Immediate Response Actions</div>
               <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))', gap:10 }}>
                 {[
                   { cmd:'collect_now',    label:'Force Collect',    desc:'Trigger immediate telemetry cycle', color:'#22C55E', icon:'⚡' },
-                  { cmd:'fim_check_now',  label:'FIM Scan Now',     desc:'Check all monitored file paths', color:'#5A8A9F', icon:'📁' },
+                  { cmd:'fim_check_now',  label:'FIM Scan Now',     desc:'Check all monitored file paths', color:'#4A7EC8', icon:'📁' },
                   { cmd:'ping',           label:'Ping Agent',       desc:'Verify agent is alive and responsive', color:'#8FAFC0', icon:'🔔' },
                   { cmd:'honey_status',   label:'Honey Token Status',desc:'Check honey token file status', color:'#EAB308', icon:'🍯' },
                   { cmd:'get_blocked_ips',label:'List Blocked IPs', desc:'Show all currently blocked IPs', color:'#F97316', icon:'🚫' },
@@ -737,7 +737,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                     onMouseEnter={e => e.currentTarget.style.borderColor=`${color}40`}
                     onMouseLeave={e => e.currentTarget.style.borderColor='rgba(255,255,255,0.07)'}>
                     <div style={{ fontSize:'1.2rem', marginBottom:2 }}>{icon}</div>
-                    <div style={{ fontSize:'0.78rem', fontWeight:600, color:'#EBEBEB' }}>{label}</div>
+                    <div style={{ fontSize:'0.78rem', fontWeight:600, color:'#BDD4E8' }}>{label}</div>
                     <div style={{ fontSize:'0.66rem', color:'#555', ...MONO }}>{desc}</div>
                     {cmdLoading === cmd && <Loader2 size={12} className="spinner" style={{ color, marginTop:4 }}/>}
 
@@ -816,7 +816,7 @@ function CodeBlock({ code, label }) {
   return (
     <div style={{ position:'relative', marginTop:8 }}>
       {label && <div style={{ fontSize:'0.65rem', color:'#787878', marginBottom:4, fontFamily:'JetBrains Mono', textTransform:'uppercase', letterSpacing:'0.05em' }}>{label}</div>}
-      <pre style={{ background:'rgba(0,0,0,0.4)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:6, padding:'12px 40px 12px 14px', margin:0, fontFamily:'JetBrains Mono', fontSize:'0.76rem', color:'#A8A8A8', overflowX:'auto', whiteSpace:'pre-wrap', wordBreak:'break-all' }}>{code}</pre>
+      <pre style={{ background:'rgba(0,0,0,0.4)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:6, padding:'12px 40px 12px 14px', margin:0, fontFamily:'JetBrains Mono', fontSize:'0.76rem', color:'#7A9DB8', overflowX:'auto', whiteSpace:'pre-wrap', wordBreak:'break-all' }}>{code}</pre>
       <button onClick={copy} style={{ position:'absolute', top:8, right:8, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:4, padding:'3px 6px', cursor:'pointer', color:copied?'#22C55E':'#787878', fontSize:'0.65rem', display:'flex', alignItems:'center', gap:4 }}>
         {copied ? <CheckCircle size={11}/> : <Copy size={11}/>} {copied ? 'Copied' : 'Copy'}
       </button>
@@ -858,7 +858,7 @@ function SetupGuideModal({ onClose, ingestKey, onFetchKey }) {
         {/* Header */}
         <div style={{ padding:'20px 22px', borderBottom:'1px solid rgba(255,255,255,0.07)', display:'flex', alignItems:'center', gap:12 }}>
           <div style={{ width:38, height:38, borderRadius:9, background:'rgba(90,138,159,0.12)', border:'1px solid rgba(90,138,159,0.25)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <Terminal size={17} style={{ color:'#5A8A9F' }}/>
+            <Terminal size={17} style={{ color:'#4A7EC8' }}/>
           </div>
           <div>
             <div style={{ fontWeight:700, fontSize:'0.95rem' }}>Deploy Endpoint Agent</div>
@@ -878,7 +878,7 @@ function SetupGuideModal({ onClose, ingestKey, onFetchKey }) {
                   <div style={{ fontSize:'0.7rem', color:'#787878', fontFamily:'JetBrains Mono' }}>Your token will be embedded in the command automatically</div>
                 </div>
                 <button onClick={onFetchKey}
-                  style={{ background:'#5A8A9F', border:'none', borderRadius:7, padding:'8px 16px', cursor:'pointer', color:'#fff', fontSize:'0.76rem', fontWeight:600, flexShrink:0, display:'flex', alignItems:'center', gap:6 }}>
+                  style={{ background:'#4A7EC8', border:'none', borderRadius:7, padding:'8px 16px', cursor:'pointer', color:'#fff', fontSize:'0.76rem', fontWeight:600, flexShrink:0, display:'flex', alignItems:'center', gap:6 }}>
                   <Shield size={12}/> Load Token
                 </button>
               </div>
@@ -891,7 +891,7 @@ function SetupGuideModal({ onClose, ingestKey, onFetchKey }) {
               <button key={id} onClick={() => setOs(id)}
                 style={{ padding:'7px 14px', borderRadius:7, border:'1px solid', fontSize:'0.74rem', cursor:'pointer', fontFamily:'JetBrains Mono',
                   background: os===id ? 'rgba(90,138,159,0.1)' : 'transparent',
-                  color: os===id ? '#5A8A9F' : '#555',
+                  color: os===id ? '#4A7EC8' : '#555',
                   borderColor: os===id ? 'rgba(90,138,159,0.3)' : 'rgba(255,255,255,0.06)' }}>{label}</button>
             ))}
           </div>
@@ -907,7 +907,7 @@ function SetupGuideModal({ onClose, ingestKey, onFetchKey }) {
                 {cmd}
               </div>
               <button onClick={copy}
-                style={{ position:'absolute', top:'50%', right:10, transform:'translateY(-50%)', background: copied ? 'rgba(34,197,94,0.15)' : 'rgba(90,138,159,0.15)', border:`1px solid ${copied ? 'rgba(34,197,94,0.4)' : 'rgba(90,138,159,0.35)'}`, borderRadius:7, padding:'8px 14px', cursor:'pointer', color: copied ? '#22C55E' : '#5A8A9F', fontSize:'0.72rem', fontWeight:700, fontFamily:'JetBrains Mono', display:'flex', alignItems:'center', gap:5, transition:'all 0.15s', whiteSpace:'nowrap' }}>
+                style={{ position:'absolute', top:'50%', right:10, transform:'translateY(-50%)', background: copied ? 'rgba(34,197,94,0.15)' : 'rgba(90,138,159,0.15)', border:`1px solid ${copied ? 'rgba(34,197,94,0.4)' : 'rgba(90,138,159,0.35)'}`, borderRadius:7, padding:'8px 14px', cursor:'pointer', color: copied ? '#22C55E' : '#4A7EC8', fontSize:'0.72rem', fontWeight:700, fontFamily:'JetBrains Mono', display:'flex', alignItems:'center', gap:5, transition:'all 0.15s', whiteSpace:'nowrap' }}>
                 {copied ? <><CheckCircle size={12}/>Copied!</> : <><Copy size={12}/>Copy</>}
               </button>
             </div>
@@ -924,7 +924,7 @@ function SetupGuideModal({ onClose, ingestKey, onFetchKey }) {
 
           {/* Requirement note */}
           <div style={{ marginTop:16, padding:'10px 14px', background:'rgba(255,255,255,0.02)', borderRadius:7, fontSize:'0.68rem', color:'#555', fontFamily:'JetBrains Mono', display:'flex', alignItems:'center', gap:8 }}>
-            <span style={{ color:'#5A8A9F' }}>ℹ</span>
+            <span style={{ color:'#4A7EC8' }}>ℹ</span>
             Requires Python 3.8+ · Works on Linux, macOS, Windows · No curl or wget needed
           </div>
         </div>
@@ -996,7 +996,7 @@ export default function Endpoints() {
           </div>
         </div>
         <div style={{ display:'flex', gap:8 }}>
-          <button onClick={() => { fetchKey(); setShowGuide(true); }} style={{ background:'rgba(90,138,159,0.1)', border:'1px solid rgba(90,138,159,0.25)', color:'#5A8A9F', borderRadius:7, padding:'7px 14px', cursor:'pointer', fontSize:'0.76rem', display:'flex', alignItems:'center', gap:6, fontFamily:'JetBrains Mono' }}>
+          <button onClick={() => { fetchKey(); setShowGuide(true); }} style={{ background:'rgba(90,138,159,0.1)', border:'1px solid rgba(90,138,159,0.25)', color:'#4A7EC8', borderRadius:7, padding:'7px 14px', cursor:'pointer', fontSize:'0.76rem', display:'flex', alignItems:'center', gap:6, fontFamily:'JetBrains Mono' }}>
             <Download size={13}/> Deploy Agent
           </button>
           <button onClick={loadEndpoints} style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', color:'#787878', borderRadius:7, padding:'7px 10px', cursor:'pointer', display:'flex', alignItems:'center', gap:5, fontSize:'0.76rem' }}>
@@ -1012,9 +1012,9 @@ export default function Endpoints() {
       ) : endpoints.length === 0 ? (
         <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:14, color:'#555' }}>
           <Monitor size={40} style={{ opacity:0.2 }}/>
-          <div style={{ fontWeight:600, color:'#EBEBEB' }}>No endpoints connected</div>
+          <div style={{ fontWeight:600, color:'#BDD4E8' }}>No endpoints connected</div>
           <div style={{ fontSize:'0.82rem' }}>Deploy the agent on any machine to start monitoring.</div>
-          <button onClick={() => { fetchKey(); setShowGuide(true); }} style={{ background:'#5A8A9F', color:'#fff', border:'none', borderRadius:7, padding:'9px 20px', cursor:'pointer', fontSize:'0.8rem', display:'flex', alignItems:'center', gap:7 }}>
+          <button onClick={() => { fetchKey(); setShowGuide(true); }} style={{ background:'#4A7EC8', color:'#fff', border:'none', borderRadius:7, padding:'9px 20px', cursor:'pointer', fontSize:'0.8rem', display:'flex', alignItems:'center', gap:7 }}>
             <Download size={14}/> Deploy Agent
           </button>
         </div>
@@ -1047,7 +1047,7 @@ export default function Endpoints() {
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', fontSize:'0.65rem', color:'#555', fontFamily:'JetBrains Mono' }}>
                     <span style={{ color: online_ ? '#22C55E' : '#555' }}>● {online_ ? 'Online' : 'Offline'}</span>
                     <span>agent {ep.agent_version}</span>
-                    <ChevronRight size={12} style={{ color: selected?.id===ep.id ? '#5A8A9F' : '#444' }}/>
+                    <ChevronRight size={12} style={{ color: selected?.id===ep.id ? '#4A7EC8' : '#444' }}/>
                   </div>
                 </div>
               );

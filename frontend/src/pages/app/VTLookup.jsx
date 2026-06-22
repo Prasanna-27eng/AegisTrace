@@ -93,7 +93,7 @@ export default function VTLookup() {
             <div className="at-card" style={{ padding: 20, maxWidth: 700, borderColor: verdictBorder[result.verdict] || verdictBorder.unknown, background: verdictBg[result.verdict] }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                 <div>
-                  <div style={{ fontFamily: 'JetBrains Mono', fontSize: '0.9rem', color: '#EBEBEB', marginBottom: 6 }}>{result.ioc}</div>
+                  <div style={{ fontFamily: 'JetBrains Mono', fontSize: '0.9rem', color: '#BDD4E8', marginBottom: 6 }}>{result.ioc}</div>
                   <div style={{ fontSize: '0.72rem', color: '#787878' }}>{result.ioc_type?.toUpperCase()}</div>
                 </div>
                 <VerdictBadge verdict={result.verdict} />
@@ -109,7 +109,7 @@ export default function VTLookup() {
                   <div style={{ fontSize: '0.68rem', color: '#787878', marginTop: 2 }}>Suspicious</div>
                 </div>
                 <div style={{ textAlign: 'center', padding: '12px 8px', background: 'rgba(255,255,255,0.03)', borderRadius: 6 }}>
-                  <div style={{ fontSize: '1.6rem', fontWeight: 700, color: '#EBEBEB' }}>{result.total_engines}</div>
+                  <div style={{ fontSize: '1.6rem', fontWeight: 700, color: '#BDD4E8' }}>{result.total_engines}</div>
                   <div style={{ fontSize: '0.68rem', color: '#787878', marginTop: 2 }}>Total Engines</div>
                 </div>
               </div>
@@ -167,7 +167,7 @@ export default function VTLookup() {
               {history.map(h => (
                 <div key={h.id} className="at-card" style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
                   <span style={{ fontSize: '0.65rem', color: '#787878', fontFamily: 'JetBrains Mono', flexShrink: 0 }}>{h.ioc_type}</span>
-                  <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.8rem', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', color: '#EBEBEB' }}>{h.ioc}</span>
+                  <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.8rem', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', color: '#BDD4E8' }}>{h.ioc}</span>
                   <span style={{ fontSize: '0.72rem', color: '#787878', flexShrink: 0 }}>{h.malicious_count}/{h.total_engines}</span>
                   <VerdictBadge verdict={h.verdict} />
                   <span style={{ fontSize: '0.7rem', color: '#787878', flexShrink: 0 }}>{new Date(h.looked_up_at).toLocaleDateString()}</span>

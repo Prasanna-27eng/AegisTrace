@@ -20,9 +20,9 @@ const SEV_COLOR = {
 
 const STATUS_COLOR = {
   pending_review: '#F97316',
-  auto_handled:   '#5A8A9F',
+  auto_handled:   '#4A7EC8',
   approved:       '#22C55E',
-  dismissed:      '#686868',
+  dismissed:      '#4A6A8A',
   detecting:      '#EAB308',
 };
 
@@ -30,8 +30,8 @@ const ACTION_COLOR = {
   block:      '#EF4444',
   rate_limit: '#F97316',
   watchlist:  '#EAB308',
-  escalate:   '#8FAFC0',
-  dismiss:    '#686868',
+  escalate:   '#8BB8E8',
+  dismiss:    '#4A6A8A',
 };
 
 const ATTACK_LABEL = {
@@ -53,11 +53,11 @@ function timeAgo(iso) {
 }
 
 // ── KPI Card ──────────────────────────────────────────────────────────────────
-function KPICard({ label, value, sub, icon: Icon, color = '#5A8A9F', alert = false, pulse = false }) {
+function KPICard({ label, value, sub, icon: Icon, color = '#4A7EC8', alert = false, pulse = false }) {
   return (
     <div style={{
-      background:   alert ? 'rgba(239,68,68,0.05)' : 'rgba(255,255,255,0.02)',
-      border:       `1px solid ${alert ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.07)'}`,
+      background:   alert ? 'rgba(239,68,68,0.05)' : 'rgba(74,126,200,0.03)',
+      border:       `1px solid ${alert ? 'rgba(239,68,68,0.2)' : 'rgba(74,126,200,0.1)'}`,
       borderRadius: 10, padding: '16px 18px',
       display: 'flex', alignItems: 'flex-start', gap: 12,
     }}>
@@ -70,9 +70,9 @@ function KPICard({ label, value, sub, icon: Icon, color = '#5A8A9F', alert = fal
         <Icon size={16} style={{ color }} />
       </div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: '1.6rem', fontWeight: 700, color: alert ? '#EF4444' : '#EBEBEB', lineHeight: 1, ...MONO }}>{value}</div>
-        <div style={{ fontSize: '0.72rem', color: '#EBEBEB', fontWeight: 500, marginTop: 4 }}>{label}</div>
-        {sub && <div style={{ fontSize: '0.63rem', color: '#686868', marginTop: 2, ...MONO }}>{sub}</div>}
+        <div style={{ fontSize: '1.6rem', fontWeight: 700, color: alert ? '#EF4444' : '#BDD4E8', lineHeight: 1, ...MONO }}>{value}</div>
+        <div style={{ fontSize: '0.72rem', color: '#BDD4E8', fontWeight: 500, marginTop: 4 }}>{label}</div>
+        {sub && <div style={{ fontSize: '0.63rem', color: '#4A6A8A', marginTop: 2, ...MONO }}>{sub}</div>}
       </div>
     </div>
   );
@@ -84,7 +84,7 @@ function ConfBar({ value }) {
   const col = pct >= 90 ? '#EF4444' : pct >= 70 ? '#F97316' : '#EAB308';
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2 }}>
+      <div style={{ flex: 1, height: 4, background: 'rgba(74,126,200,0.08)', borderRadius: 2 }}>
         <div style={{ width: `${pct}%`, height: '100%', background: col, borderRadius: 2, transition: 'width 0.5s' }} />
       </div>
       <span style={{ fontSize: '0.7rem', color: col, ...MONO, minWidth: 32 }}>{pct}%</span>
@@ -99,8 +99,8 @@ function EventCard({ event, onAction, processing }) {
   const [notes, setNotes]         = useState('');
   const [showForm, setShowForm]   = useState(false);
   const isPending = event.status === 'pending_review';
-  const sevColor  = SEV_COLOR[event.severity] || '#686868';
-  const statColor = STATUS_COLOR[event.status] || '#686868';
+  const sevColor  = SEV_COLOR[event.severity] || '#4A6A8A';
+  const statColor = STATUS_COLOR[event.status] || '#4A6A8A';
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -113,8 +113,8 @@ function EventCard({ event, onAction, processing }) {
 
   return (
     <div style={{
-      background:   'rgba(255,255,255,0.02)',
-      border:       `1px solid ${isPending ? `${sevColor}30` : 'rgba(255,255,255,0.06)'}`,
+      background:   'rgba(74,126,200,0.03)',
+      border:       `1px solid ${isPending ? `${sevColor}30` : 'rgba(74,126,200,0.08)'}`,
       borderLeft:   `3px solid ${isPending ? sevColor : statColor}`,
       borderRadius: 8,
       marginBottom: 8,
@@ -136,7 +136,7 @@ function EventCard({ event, onAction, processing }) {
 
         {/* Attack type + IP */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#EBEBEB', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#BDD4E8', display: 'flex', alignItems: 'center', gap: 8 }}>
             {ATTACK_LABEL[event.attack_type] || event.attack_type}
             {isPending && (
               <span style={{ fontSize: '0.6rem', background: 'rgba(249,115,22,0.15)', color: '#F97316', padding: '1px 6px', borderRadius: 4, ...MONO }}>
@@ -144,14 +144,14 @@ function EventCard({ event, onAction, processing }) {
               </span>
             )}
           </div>
-          <div style={{ fontSize: '0.68rem', color: '#686868', ...MONO, marginTop: 2 }}>
+          <div style={{ fontSize: '0.68rem', color: '#4A6A8A', ...MONO, marginTop: 2 }}>
             {event.attacker_ip} · {event.endpoint_hit} · {timeAgo(event.detected_at)}
           </div>
         </div>
 
         {/* AI threat type */}
         {event.ai_threat_type && (
-          <div style={{ fontSize: '0.68rem', color: '#7AABB5', ...MONO, flexShrink: 0 }}>
+          <div style={{ fontSize: '0.68rem', color: '#8BB8E8', ...MONO, flexShrink: 0 }}>
             {event.ai_threat_type}
           </div>
         )}
@@ -161,29 +161,29 @@ function EventCard({ event, onAction, processing }) {
           [{event.status?.replace(/_/g, ' ').toUpperCase()}]
         </div>
 
-        {expanded ? <ChevronDown size={13} style={{ color: '#686868', flexShrink: 0 }} />
-                  : <ChevronRight size={13} style={{ color: '#686868', flexShrink: 0 }} />}
+        {expanded ? <ChevronDown size={13} style={{ color: '#4A6A8A', flexShrink: 0 }} />
+                  : <ChevronRight size={13} style={{ color: '#4A6A8A', flexShrink: 0 }} />}
       </div>
 
       {/* Expanded detail */}
       {expanded && (
-        <div style={{ padding: '0 16px 16px', borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: 0 }}>
+        <div style={{ padding: '0 16px 16px', borderTop: '1px solid rgba(74,126,200,0.07)', marginTop: 0 }}>
 
           {/* AI confidence + reasoning */}
           <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div>
-              <div style={{ fontSize: '0.65rem', color: '#686868', ...MONO, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              <div style={{ fontSize: '0.65rem', color: '#4A6A8A', ...MONO, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 AI Confidence
               </div>
               <ConfBar value={event.ai_confidence} />
             </div>
             <div>
-              <div style={{ fontSize: '0.65rem', color: '#686868', ...MONO, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              <div style={{ fontSize: '0.65rem', color: '#4A6A8A', ...MONO, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 Recommended Action
               </div>
               <span style={{
                 fontSize: '0.72rem', ...MONO, fontWeight: 700,
-                color: ACTION_COLOR[event.ai_recommended_action] || '#A8A8A8',
+                color: ACTION_COLOR[event.ai_recommended_action] || '#7A9DB8',
               }}>
                 {(event.ai_recommended_action || '—').toUpperCase()}
               </span>
@@ -192,18 +192,18 @@ function EventCard({ event, onAction, processing }) {
 
           {/* AI Reasoning */}
           {event.ai_reasoning && (
-            <div style={{ marginTop: 12, padding: '10px 12px', background: '#000', border: '1px solid #1A1A1A', borderRadius: 6 }}>
-              <div style={{ fontSize: '0.62rem', color: '#686868', ...MONO, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <div style={{ marginTop: 12, padding: '10px 12px', background: '#050505', border: '1px solid #1C1C24', borderRadius: 6 }}>
+              <div style={{ fontSize: '0.62rem', color: '#4A6A8A', ...MONO, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 AI Reasoning Chain
               </div>
-              <p style={{ margin: 0, fontSize: '0.78rem', color: '#A8A8A8', lineHeight: 1.6 }}>{event.ai_reasoning}</p>
+              <p style={{ margin: 0, fontSize: '0.78rem', color: '#7A9DB8', lineHeight: 1.6 }}>{event.ai_reasoning}</p>
             </div>
           )}
 
           {/* Indicators */}
           {indicators.length > 0 && (
             <div style={{ marginTop: 10 }}>
-              <div style={{ fontSize: '0.62rem', color: '#686868', ...MONO, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              <div style={{ fontSize: '0.62rem', color: '#4A6A8A', ...MONO, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 Key Indicators
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -211,7 +211,7 @@ function EventCard({ event, onAction, processing }) {
                   <span key={i} style={{
                     fontSize: '0.68rem', padding: '2px 8px', borderRadius: 4,
                     background: 'rgba(78,122,142,0.1)', border: '1px solid rgba(78,122,142,0.2)',
-                    color: '#5A8A9F', ...MONO,
+                    color: '#4A7EC8', ...MONO,
                   }}>
                     {ind}
                   </span>
@@ -222,23 +222,23 @@ function EventCard({ event, onAction, processing }) {
 
           {/* Request context */}
           <div style={{ marginTop: 10, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '0.67rem', color: '#686868', ...MONO }}>
-              Requests: <span style={{ color: '#EBEBEB' }}>{event.request_count}</span>
+            <span style={{ fontSize: '0.67rem', color: '#4A6A8A', ...MONO }}>
+              Requests: <span style={{ color: '#BDD4E8' }}>{event.request_count}</span>
             </span>
-            <span style={{ fontSize: '0.67rem', color: '#686868', ...MONO }}>
-              Unique endpoints: <span style={{ color: '#EBEBEB' }}>{event.request_pattern?.unique_endpoints || '—'}</span>
+            <span style={{ fontSize: '0.67rem', color: '#4A6A8A', ...MONO }}>
+              Unique endpoints: <span style={{ color: '#BDD4E8' }}>{event.request_pattern?.unique_endpoints || '—'}</span>
             </span>
             {event.user_agent && (
-              <span style={{ fontSize: '0.67rem', color: '#686868', ...MONO }}>
-                UA: <span style={{ color: '#A8A8A8' }}>{event.user_agent.slice(0, 60)}{event.user_agent.length > 60 ? '…' : ''}</span>
+              <span style={{ fontSize: '0.67rem', color: '#4A6A8A', ...MONO }}>
+                UA: <span style={{ color: '#7A9DB8' }}>{event.user_agent.slice(0, 60)}{event.user_agent.length > 60 ? '…' : ''}</span>
               </span>
             )}
           </div>
 
           {/* Reviewed info */}
           {event.reviewed_by && (
-            <div style={{ marginTop: 10, fontSize: '0.68rem', color: '#686868', ...MONO }}>
-              Reviewed by <span style={{ color: '#5A8A9F' }}>{event.reviewed_by}</span>
+            <div style={{ marginTop: 10, fontSize: '0.68rem', color: '#4A6A8A', ...MONO }}>
+              Reviewed by <span style={{ color: '#4A7EC8' }}>{event.reviewed_by}</span>
               {event.review_notes && <span> · "{event.review_notes}"</span>}
             </div>
           )}
@@ -249,8 +249,8 @@ function EventCard({ event, onAction, processing }) {
               {[
                 { act: 'block',     label: 'Block IP',    col: '#EF4444', Icon: Ban        },
                 { act: 'watchlist', label: 'Watchlist',   col: '#EAB308', Icon: Eye        },
-                { act: 'escalate',  label: 'Escalate',    col: '#8FAFC0', Icon: ShieldAlert},
-                { act: 'dismiss',   label: 'Dismiss',     col: '#686868', Icon: XCircle    },
+                { act: 'escalate',  label: 'Escalate',    col: '#8BB8E8', Icon: ShieldAlert},
+                { act: 'dismiss',   label: 'Dismiss',     col: '#4A6A8A', Icon: XCircle    },
               ].map(({ act, label, col, Icon: I }) => (
                 <button
                   key={act}
@@ -273,17 +273,17 @@ function EventCard({ event, onAction, processing }) {
           {/* Notes form */}
           {isPending && showForm && (
             <form onSubmit={handleSubmit} style={{ marginTop: 12 }}>
-              <div style={{ fontSize: '0.68rem', color: '#686868', ...MONO, marginBottom: 6 }}>
-                Action: <span style={{ color: ACTION_COLOR[action] || '#EBEBEB', fontWeight: 700 }}>{action.toUpperCase()}</span>
-                <span style={{ marginLeft: 12, cursor: 'pointer', color: '#686868' }} onClick={() => setShowForm(false)}>[cancel]</span>
+              <div style={{ fontSize: '0.68rem', color: '#4A6A8A', ...MONO, marginBottom: 6 }}>
+                Action: <span style={{ color: ACTION_COLOR[action] || '#BDD4E8', fontWeight: 700 }}>{action.toUpperCase()}</span>
+                <span style={{ marginLeft: 12, cursor: 'pointer', color: '#4A6A8A' }} onClick={() => setShowForm(false)}>[cancel]</span>
               </div>
               <textarea
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
                 placeholder="Optional notes for audit trail..."
                 style={{
-                  width: '100%', height: 60, background: '#000', color: '#EBEBEB',
-                  border: '1px solid #1A1A1A', borderRadius: 4, padding: '8px 10px',
+                  width: '100%', height: 60, background: '#050505', color: '#BDD4E8',
+                  border: '1px solid #1C1C24', borderRadius: 4, padding: '8px 10px',
                   fontSize: '0.75rem', fontFamily: 'JetBrains Mono, monospace',
                   resize: 'none', outline: 'none', boxSizing: 'border-box',
                 }}
@@ -292,7 +292,7 @@ function EventCard({ event, onAction, processing }) {
                 type="submit"
                 disabled={processing}
                 style={{
-                  marginTop: 8, padding: '7px 20px', background: '#EBEBEB', color: '#000',
+                  marginTop: 8, padding: '7px 20px', background: '#BDD4E8', color: '#050505',
                   border: 'none', borderRadius: 4, fontSize: '0.72rem', fontWeight: 700,
                   fontFamily: 'JetBrains Mono, monospace', cursor: 'pointer',
                   opacity: processing ? 0.5 : 1,
@@ -323,14 +323,14 @@ function AdaptivePanel({ adaptive }) {
 
   return (
     <div style={{
-      background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)',
+      background: 'rgba(74,126,200,0.03)', border: '1px solid rgba(74,126,200,0.1)',
       borderRadius: 10, padding: '16px 18px', marginBottom: 24,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <SlidersHorizontal size={14} style={{ color: '#5A8A9F' }} />
-          <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#EBEBEB' }}>Adaptive Thresholds Agent</span>
-          <span style={{ fontSize: '0.62rem', color: '#686868', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <SlidersHorizontal size={14} style={{ color: '#4A7EC8' }} />
+          <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#BDD4E8' }}>Adaptive Thresholds Agent</span>
+          <span style={{ fontSize: '0.62rem', color: '#4A6A8A', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             self-tunes every 4h · Nemotron-70B
           </span>
         </div>
@@ -342,15 +342,15 @@ function AdaptivePanel({ adaptive }) {
           const b = bounds[key];
           if (val === undefined) return null;
           return (
-            <div key={key} style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 8, padding: '10px 12px' }}>
-              <div style={{ fontSize: '0.62rem', color: '#686868', ...MONO, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+            <div key={key} style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(74,126,200,0.07)', borderRadius: 8, padding: '10px 12px' }}>
+              <div style={{ fontSize: '0.62rem', color: '#4A6A8A', ...MONO, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
                 {meta.label}
               </div>
-              <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#5A8A9F', ...MONO }}>
+              <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#4A7EC8', ...MONO }}>
                 {meta.fmt(val)}{meta.suffix}
               </div>
               {b && (
-                <div style={{ fontSize: '0.6rem', color: '#686868', ...MONO, marginTop: 2 }}>
+                <div style={{ fontSize: '0.6rem', color: '#4A6A8A', ...MONO, marginTop: 2 }}>
                   range: {meta.fmt(b[0])}{meta.suffix}–{meta.fmt(b[1])}{meta.suffix}
                 </div>
               )}
@@ -359,20 +359,20 @@ function AdaptivePanel({ adaptive }) {
         })}
       </div>
 
-      <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-        <History size={12} style={{ color: '#686868', marginTop: 2, flexShrink: 0 }} />
+      <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(74,126,200,0.07)', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+        <History size={12} style={{ color: '#4A6A8A', marginTop: 2, flexShrink: 0 }} />
         {lastChange ? (
-          <div style={{ fontSize: '0.68rem', color: '#A8A8A8', ...MONO, lineHeight: 1.6 }}>
-            Last change: <span style={{ color: '#EBEBEB' }}>{lastChange.threshold_name}</span>{' '}
+          <div style={{ fontSize: '0.68rem', color: '#7A9DB8', ...MONO, lineHeight: 1.6 }}>
+            Last change: <span style={{ color: '#BDD4E8' }}>{lastChange.threshold_name}</span>{' '}
             {THRESHOLD_META[lastChange.threshold_name]?.fmt(lastChange.old_value) ?? lastChange.old_value}
             {' → '}
             {THRESHOLD_META[lastChange.threshold_name]?.fmt(lastChange.new_value) ?? lastChange.new_value}
-            {' via '}<span style={{ color: '#7AABB5' }}>{lastChange.agent_model}</span>
+            {' via '}<span style={{ color: '#8BB8E8' }}>{lastChange.agent_model}</span>
             {' · '}{timeAgo(lastChange.applied_at)}
-            {lastChange.reason && <div style={{ color: '#686868', marginTop: 2 }}>"{lastChange.reason}"</div>}
+            {lastChange.reason && <div style={{ color: '#4A6A8A', marginTop: 2 }}>"{lastChange.reason}"</div>}
           </div>
         ) : (
-          <div style={{ fontSize: '0.68rem', color: '#686868', ...MONO }}>
+          <div style={{ fontSize: '0.68rem', color: '#4A6A8A', ...MONO }}>
             No adjustments yet — agent reviews FP/FN rates every 4 hours and only adjusts when targets drift.
           </div>
         )}
@@ -471,7 +471,7 @@ export default function DefenseConsole() {
   const pendingCount = events.filter(e => e.status === 'pending_review').length;
 
   return (
-    <div style={{ background: '#000000', minHeight: '100vh', padding: '28px 32px', color: '#EBEBEB' }}>
+    <div style={{ background: '#050505', minHeight: '100vh', padding: '28px 32px', color: '#BDD4E8' }}>
 
       {/* Toast notification */}
       {toast && (
@@ -506,9 +506,9 @@ export default function DefenseConsole() {
       `}</style>
 
       {/* ── Header ──────────────────────────────────────────────────────────── */}
-      <div style={{ borderBottom: '1px solid #101010', paddingBottom: 14, marginBottom: 24, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+      <div style={{ borderBottom: '1px solid rgba(74,126,200,0.12)', paddingBottom: 14, marginBottom: 24, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
         <div>
-          <div style={{ fontSize: '0.68rem', color: '#686868', ...MONO, letterSpacing: '0.15em', marginBottom: 4 }}>
+          <div style={{ fontSize: '0.68rem', color: '#4A6A8A', ...MONO, letterSpacing: '0.15em', marginBottom: 4 }}>
             AEGISTRACE // AI DEFENSE ENGINE v5.3
           </div>
           <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 300, letterSpacing: '-0.03em' }}>
@@ -523,7 +523,7 @@ export default function DefenseConsole() {
           </div>
 
           {/* Refresh countdown */}
-          <div style={{ fontSize: '0.65rem', color: '#686868', ...MONO }}>
+          <div style={{ fontSize: '0.65rem', color: '#4A6A8A', ...MONO }}>
             refresh in {countdown}s
           </div>
 
@@ -533,8 +533,8 @@ export default function DefenseConsole() {
             disabled={testLoading}
             style={{
               display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px',
-              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
-              color: '#A8A8A8', fontSize: '0.68rem', borderRadius: 5, cursor: 'pointer',
+              background: 'rgba(74,126,200,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+              color: '#7A9DB8', fontSize: '0.68rem', borderRadius: 5, cursor: 'pointer',
               fontFamily: 'JetBrains Mono, monospace', opacity: testLoading ? 0.5 : 1,
             }}
           >
@@ -556,8 +556,8 @@ export default function DefenseConsole() {
             disabled={demoLoading}
             style={{
               display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px',
-              background: 'rgba(122,171,181,0.08)', border: '1px solid rgba(122,171,181,0.25)',
-              color: '#7AABB5', fontSize: '0.68rem', borderRadius: 5, cursor: 'pointer',
+              background: 'rgba(74,126,200,0.08)', border: '1px solid rgba(74,126,200,0.25)',
+              color: '#8BB8E8', fontSize: '0.68rem', borderRadius: 5, cursor: 'pointer',
               fontFamily: 'JetBrains Mono, monospace', opacity: demoLoading ? 0.5 : 1,
             }}
           >
@@ -569,8 +569,8 @@ export default function DefenseConsole() {
             onClick={() => { load(); setCountdown(REFRESH_INTERVAL); }}
             style={{
               display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px',
-              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
-              color: '#A8A8A8', fontSize: '0.68rem', borderRadius: 5, cursor: 'pointer',
+              background: 'rgba(74,126,200,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+              color: '#7A9DB8', fontSize: '0.68rem', borderRadius: 5, cursor: 'pointer',
               fontFamily: 'JetBrains Mono, monospace',
             }}
           >
@@ -595,14 +595,14 @@ export default function DefenseConsole() {
           value={stats.auto_handled ?? 0}
           sub="AI managed automatically"
           icon={Cpu}
-          color="#5A8A9F"
+          color="#4A7EC8"
         />
         <KPICard
           label="Honeypot Hits"
           value={stats.honeypot_hits ?? 0}
           sub="scanner traps triggered"
           icon={Target}
-          color="#8FAFC0"
+          color="#8BB8E8"
           alert={(stats.honeypot_hits ?? 0) > 0}
         />
         <KPICard
@@ -618,7 +618,7 @@ export default function DefenseConsole() {
       <AdaptivePanel adaptive={adaptive} />
 
       {/* ── Filter Tabs ──────────────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16, borderBottom: '1px solid #101010', paddingBottom: 12 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, borderBottom: '1px solid rgba(74,126,200,0.12)', paddingBottom: 12 }}>
         {[
           { key: 'all',           label: 'All Events',       count: events.length },
           { key: 'pending_review',label: 'Pending Review',   count: stats.pending_review ?? 0 },
@@ -631,9 +631,9 @@ export default function DefenseConsole() {
             onClick={() => setFilter(tab.key)}
             style={{
               padding: '5px 14px', borderRadius: 5, border: '1px solid',
-              borderColor: filter === tab.key ? 'rgba(90,138,159,0.4)' : 'rgba(255,255,255,0.07)',
-              background:  filter === tab.key ? 'rgba(90,138,159,0.1)' : 'transparent',
-              color:       filter === tab.key ? '#5A8A9F' : '#686868',
+              borderColor: filter === tab.key ? 'rgba(74,126,200,0.4)' : 'rgba(74,126,200,0.1)',
+              background:  filter === tab.key ? 'rgba(74,126,200,0.1)' : 'transparent',
+              color:       filter === tab.key ? '#4A7EC8' : '#4A6A8A',
               fontSize: '0.7rem', fontFamily: 'JetBrains Mono, monospace', cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 6,
             }}
@@ -641,8 +641,8 @@ export default function DefenseConsole() {
             {tab.label}
             {tab.count > 0 && (
               <span style={{
-                background: filter === tab.key ? 'rgba(90,138,159,0.2)' : 'rgba(255,255,255,0.06)',
-                color: filter === tab.key ? '#5A8A9F' : '#A8A8A8',
+                background: filter === tab.key ? 'rgba(74,126,200,0.2)' : 'rgba(74,126,200,0.08)',
+                color: filter === tab.key ? '#4A7EC8' : '#7A9DB8',
                 fontSize: '0.62rem', padding: '0 5px', borderRadius: 3, ...MONO,
               }}>
                 {tab.count}
@@ -654,28 +654,28 @@ export default function DefenseConsole() {
 
       {/* ── Event Feed ───────────────────────────────────────────────────────── */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '60px 0', color: '#686868', fontSize: '0.8rem', ...MONO }}>
-          <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #5A8A9F', borderTopColor: 'transparent', animation: 'aegis-pulse 0.8s linear infinite', margin: '0 auto 12px' }} />
+        <div style={{ textAlign: 'center', padding: '60px 0', color: '#4A6A8A', fontSize: '0.8rem', ...MONO }}>
+          <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #4A7EC8', borderTopColor: 'transparent', animation: 'aegis-pulse 0.8s linear infinite', margin: '0 auto 12px' }} />
           Loading defense events…
         </div>
       ) : filteredEvents.length === 0 ? (
         <div style={{
           textAlign: 'center', padding: '80px 0',
-          background: 'rgba(255,255,255,0.01)', border: '1px solid #101010', borderRadius: 8,
+          background: 'rgba(74,126,200,0.02)', border: '1px solid rgba(74,126,200,0.12)', borderRadius: 8,
         }}>
           <ShieldCheck size={36} style={{ color: '#22C55E', margin: '0 auto 12px', display: 'block' }} />
-          <div style={{ color: '#EBEBEB', fontSize: '0.9rem', marginBottom: 6 }}>
+          <div style={{ color: '#BDD4E8', fontSize: '0.9rem', marginBottom: 6 }}>
             {filter === 'pending_review' ? 'No pending decisions — you\'re clear.' : 'No events found for this filter.'}
           </div>
-          <div style={{ color: '#686868', fontSize: '0.75rem', ...MONO }}>
+          <div style={{ color: '#4A6A8A', fontSize: '0.75rem', ...MONO }}>
             Defense engine is active and monitoring all incoming traffic.
           </div>
           <button
             onClick={handleTest}
             disabled={testLoading}
             style={{
-              marginTop: 16, padding: '7px 18px', background: 'rgba(90,138,159,0.1)',
-              border: '1px solid rgba(90,138,159,0.3)', color: '#5A8A9F', borderRadius: 5,
+              marginTop: 16, padding: '7px 18px', background: 'rgba(74,126,200,0.1)',
+              border: '1px solid rgba(74,126,200,0.3)', color: '#4A7EC8', borderRadius: 5,
               fontSize: '0.72rem', fontFamily: 'JetBrains Mono, monospace', cursor: 'pointer',
             }}
           >
@@ -707,13 +707,13 @@ export default function DefenseConsole() {
 
       {/* ── Footer info ──────────────────────────────────────────────────────── */}
       <div style={{
-        marginTop: 32, paddingTop: 16, borderTop: '1px solid #101010',
+        marginTop: 32, paddingTop: 16, borderTop: '1px solid rgba(74,126,200,0.12)',
         display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
       }}>
-        <div style={{ fontSize: '0.63rem', color: '#686868', ...MONO }}>
+        <div style={{ fontSize: '0.63rem', color: '#4A6A8A', ...MONO }}>
           Engine: Request Fingerprinter · Honeypot Trap · Groq Triage (llama-3.1-8b-instant)
         </div>
-        <div style={{ fontSize: '0.63rem', color: '#686868', ...MONO }}>
+        <div style={{ fontSize: '0.63rem', color: '#4A6A8A', ...MONO }}>
           All approvals logged to Provenance Ledger · Auto-handles at ≥92% confidence
         </div>
       </div>

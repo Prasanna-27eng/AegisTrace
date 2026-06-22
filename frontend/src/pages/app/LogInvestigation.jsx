@@ -5,7 +5,7 @@ import useStore from '../../store/useStore';
 import { useNavigate } from 'react-router-dom';
 
 const LOG_TYPES = ['auto','syslog','windows_event','apache_access','nginx_access','firewall','cloudtrail','auth_log','generic'];
-const SEVERITY_COLOR = { high:'#EF4444', medium:'#EAB308', low:'#8FAFC0' };
+const SEVERITY_COLOR = { high:'#EF4444', medium:'#EAB308', low:'#8BB8E8' };
 const VERDICT_COLOR  = { Malicious:'#EF4444', Suspicious:'#EAB308', Clean:'#22C55E', Unknown:'#888888' };
 
 const EXAMPLES = {
@@ -113,7 +113,7 @@ export default function LogInvestigation() {
       <div style={{ display:'flex', borderBottom:'1px solid rgba(255,255,255,0.07)', marginBottom:20 }}>
         <button className={`tab-btn ${tab==='analyse'?'active':''}`} onClick={() => setTab('analyse')}>Analyse Log</button>
         <button className={`tab-btn ${tab==='history'?'active':''}`} onClick={() => setTab('history')}>
-          History {history.length > 0 && <span style={{ marginLeft:5, background:'rgba(90,138,159,0.15)', color:'#5A8A9F', borderRadius:10, fontSize:'0.6rem', fontWeight:700, padding:'1px 5px', fontFamily:'JetBrains Mono' }}>{history.length}</span>}
+          History {history.length > 0 && <span style={{ marginLeft:5, background:'rgba(74,126,200,0.15)', color:'#4A7EC8', borderRadius:10, fontSize:'0.6rem', fontWeight:700, padding:'1px 5px', fontFamily:'JetBrains Mono' }}>{history.length}</span>}
         </button>
       </div>
 
@@ -127,7 +127,7 @@ export default function LogInvestigation() {
               onMouseEnter={e => e.currentTarget.style.borderColor='rgba(90,138,159,0.3)'}
               onMouseLeave={e => e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'}>
               <Upload size={20} style={{ color:'#787878', margin:'0 auto 8px' }}/>
-              <div style={{ fontSize:'0.8rem', color:'#787878', marginBottom:6 }}>Drop a log file or <label style={{ color:'#5A8A9F', cursor:'pointer' }}>browse<input type="file" accept=".log,.txt,.json,.csv" style={{ display:'none' }} onChange={handleFile}/></label></div>
+              <div style={{ fontSize:'0.8rem', color:'#787878', marginBottom:6 }}>Drop a log file or <label style={{ color:'#4A7EC8', cursor:'pointer' }}>browse<input type="file" accept=".log,.txt,.json,.csv" style={{ display:'none' }} onChange={handleFile}/></label></div>
               <div style={{ fontSize:'0.68rem', color:'#787878', fontFamily:'JetBrains Mono' }}>.log .txt .json .csv</div>
             </div>
 
@@ -199,7 +199,7 @@ export default function LogInvestigation() {
                     <div className="section-label">Key Findings</div>
                     {result.key_findings.map((f,i) => (
                       <div key={i} style={{ fontSize:'0.8rem', padding:'4px 0', display:'flex', gap:8, borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
-                        <span style={{ color:'#5A8A9F', flexShrink:0 }}>→</span><span style={{ color:'#EBEBEB' }}>{f}</span>
+                        <span style={{ color:'#4A7EC8', flexShrink:0 }}>→</span><span style={{ color:'#BDD4E8' }}>{f}</span>
                       </div>
                     ))}
                   </div>
@@ -211,7 +211,7 @@ export default function LogInvestigation() {
                     <div className="section-label">Suspicious Log Lines</div>
                     <div style={{ display:'flex', flexDirection:'column', gap:6, maxHeight:180, overflowY:'auto' }}>
                       {result.suspicious_entries.map((e,i) => (
-                        <div key={i} style={{ background:'#111111', borderRadius:5, padding:'7px 10px', borderLeft:`2px solid ${SEVERITY_COLOR[e.severity]||'#888888'}` }}>
+                        <div key={i} style={{ background:'#0E0E16', borderRadius:5, padding:'7px 10px', borderLeft:`2px solid ${SEVERITY_COLOR[e.severity]||'#888888'}` }}>
                           <code style={{ fontSize:'0.7rem', color:'#909090', fontFamily:'JetBrains Mono', display:'block', marginBottom:3 }}>{e.line?.slice(0,100)}</code>
                           <div style={{ fontSize:'0.68rem', color:SEVERITY_COLOR[e.severity]||'#787878' }}>{e.reason}</div>
                         </div>
@@ -242,7 +242,7 @@ export default function LogInvestigation() {
                     <div className="section-label">MITRE ATT&CK</div>
                     {result.mitre_techniques.map((m,i) => (
                       <div key={i} style={{ display:'flex', gap:10, padding:'5px 0', borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
-                        <span style={{ fontSize:'0.72rem', color:'#8FAFC0', fontFamily:'JetBrains Mono', minWidth:80 }}>{m.id}</span>
+                        <span style={{ fontSize:'0.72rem', color:'#8BB8E8', fontFamily:'JetBrains Mono', minWidth:80 }}>{m.id}</span>
                         <span style={{ fontSize:'0.78rem' }}>{m.name}</span>
                         <span style={{ fontSize:'0.68rem', color:'#787878', marginLeft:'auto' }}>{m.tactic}</span>
                       </div>
@@ -274,7 +274,7 @@ export default function LogInvestigation() {
             <div className="at-card" style={{ padding:40, textAlign:'center', color:'#787878' }}>No log analyses yet.</div>
           ) : history.map(h => (
             <div key={h.id} className="at-card" style={{ padding:'12px 16px', cursor:'pointer', transition:'border-color 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.borderColor='rgba(90,138,159,0.25)'}
+              onMouseEnter={e => e.currentTarget.style.borderColor='rgba(74,126,200,0.25)'}
               onMouseLeave={e => e.currentTarget.style.borderColor='rgba(255,255,255,0.07)'}
               onClick={() => { api.get(`/api/ingest/analyses`); setTab('analyse'); }}>
               <div style={{ display:'flex', alignItems:'center', gap:12 }}>
@@ -288,7 +288,7 @@ export default function LogInvestigation() {
                   <div style={{ fontSize:'0.65rem', color:'#787878', fontFamily:'JetBrains Mono', marginTop:2 }}>{h.threat_score}/100</div>
                   <div style={{ fontSize:'0.62rem', color:'#787878', marginTop:2 }}>{new Date(h.created_at).toLocaleDateString()}</div>
                 </div>
-                {h.case_id && <span style={{ fontSize:'0.65rem', background:'rgba(90,138,159,0.1)', border:'1px solid rgba(90,138,159,0.25)', color:'#5A8A9F', padding:'2px 6px', borderRadius:3, fontFamily:'JetBrains Mono' }}>CASE</span>}
+                {h.case_id && <span style={{ fontSize:'0.65rem', background:'rgba(74,126,200,0.1)', border:'1px solid rgba(74,126,200,0.25)', color:'#4A7EC8', padding:'2px 6px', borderRadius:3, fontFamily:'JetBrains Mono' }}>CASE</span>}
               </div>
             </div>
           ))}

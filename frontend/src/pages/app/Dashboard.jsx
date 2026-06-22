@@ -321,7 +321,7 @@ function CasesTable({ cases, navigate }) {
                   background: i % 2 === 0 ? 'transparent' : 'rgba(148,163,184,0.02)',
                   transition: 'background 140ms ease-out',
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(37,99,235,0.06)'}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(74,126,200,0.06)'}
                 onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? 'transparent' : 'rgba(148,163,184,0.02)'}
               >
                 <td style={{ padding: '0 12px', fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>
@@ -402,7 +402,7 @@ function AlertStream({ cases, navigate }) {
               transition: 'background 140ms ease-out',
               overflow: 'hidden',
             }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(37,99,235,0.06)'}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(74,126,200,0.06)'}
             onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? 'transparent' : 'rgba(148,163,184,0.02)'}
           >
             {/* Severity bar */}
@@ -637,13 +637,16 @@ export default function Dashboard() {
 
       {/* ── Page header ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-        <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.01em' }}>
-            Security Overview
-          </h1>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: 3 }}>
-            {new Date().toLocaleDateString('en-IE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-            {lastRefreshed && ` · Updated ${refreshAge < 5 ? 'just now' : `${refreshAge}s ago`}`}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <img src="/assets/brand/aegistrace-icon.png" alt="" style={{ width: 28, height: 28, objectFit: 'contain', filter: 'drop-shadow(0 0 6px rgba(74,126,200,0.5))' }}/>
+          <div>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.01em' }}>
+              Security Overview
+            </h1>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>
+              {new Date().toLocaleDateString('en-IE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              {lastRefreshed && ` · Updated ${refreshAge < 5 ? 'just now' : `${refreshAge}s ago`}`}
+            </div>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -658,7 +661,7 @@ export default function Dashboard() {
           <button
             onClick={() => navigate('/app/cases')}
             style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--accent)', border: 'none', borderRadius: 6, padding: '7px 16px', cursor: 'pointer', color: '#fff', fontSize: 13, fontFamily: 'var(--font-ui)', fontWeight: 500, transition: 'background 140ms ease-out' }}
-            onMouseEnter={e => e.currentTarget.style.background = '#1D4ED8'}
+            onMouseEnter={e => e.currentTarget.style.background = '#3A6EB8'}
             onMouseLeave={e => e.currentTarget.style.background = 'var(--accent)'}
           >
             <Plus size={13} /> New Case
@@ -694,7 +697,7 @@ export default function Dashboard() {
               background: kpi.alert ? 'rgba(239,68,68,0.04)' : 'transparent',
               transition: 'background 140ms ease-out',
             }}
-            onMouseEnter={e => e.currentTarget.style.background = kpi.alert ? 'rgba(239,68,68,0.07)' : 'rgba(37,99,235,0.06)'}
+            onMouseEnter={e => e.currentTarget.style.background = kpi.alert ? 'rgba(239,68,68,0.07)' : 'rgba(74,126,200,0.06)'}
             onMouseLeave={e => e.currentTarget.style.background = kpi.alert ? 'rgba(239,68,68,0.04)' : 'transparent'}
           >
             <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 700, color: kpi.color, lineHeight: 1, marginBottom: 6 }}>

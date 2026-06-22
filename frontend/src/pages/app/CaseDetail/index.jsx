@@ -112,7 +112,7 @@ export default function CaseDetail() {
   if (loading) return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header skeleton */}
-      <div style={{ background: '#111111', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '12px 20px' }}>
+      <div style={{ background: '#0E0E16', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '12px 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
           <div className="skeleton" style={{ height: 14, width: 60, borderRadius: 4 }} />
           <div className="skeleton" style={{ height: 14, width: 90, borderRadius: 4 }} />
@@ -127,7 +127,7 @@ export default function CaseDetail() {
         </div>
       </div>
       {/* Tab bar skeleton */}
-      <div style={{ background: '#111111', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: 4, padding: '0 4px', flexShrink: 0 }}>
+      <div style={{ background: '#0E0E16', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: 4, padding: '0 4px', flexShrink: 0 }}>
         {[70, 100, 48, 68, 68, 52, 72, 96, 64, 76, 88, 56, 60].map((w, i) => (
           <div key={i} className="skeleton" style={{ height: 8, width: w, borderRadius: 3, margin: '18px 8px' }} />
         ))}
@@ -154,7 +154,7 @@ export default function CaseDetail() {
   return (
     <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Case header */}
-      <div style={{ background: '#111111', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '12px 20px' }}>
+      <div style={{ background: '#0E0E16', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '12px 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
           <button onClick={() => navigate('/app/cases')} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.78rem' }}>
             <ChevronLeft size={14} /> Cases
@@ -184,7 +184,7 @@ export default function CaseDetail() {
       </div>
 
       {/* Tabs */}
-      <div style={{ background: '#111111', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', overflowX: 'auto', flexShrink: 0 }}>
+      <div style={{ background: '#0E0E16', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', overflowX: 'auto', flexShrink: 0 }}>
         {TABS.map(t => (
           <button
             key={t.id}

@@ -13,7 +13,7 @@ const REFRESH_INTERVAL = 30; // seconds
 
 const SEV  = { critical: '#EF4444', high: '#F97316', medium: '#EAB308', low: '#22C55E' };
 const NODE_COLORS = {
-  user: '#5A8A9F', service_account: '#8FAFC0', api_key: '#EAB308',
+  user: '#4A7EC8', service_account: '#8BB8E8', api_key: '#EAB308',
   token: '#F97316', device: '#22C55E', agent: '#2EE6D6', prompt: '#EC4899',
 };
 
@@ -34,7 +34,7 @@ function isOnline(lastSeen) {
 /* ══════════════════════════════════════════════════════════════════════════
    KPI CARD
 ══════════════════════════════════════════════════════════════════════════ */
-function KPICard({ label, value, sub, icon: Icon, color = '#5A8A9F', alert = false, onClick }) {
+function KPICard({ label, value, sub, icon: Icon, color = '#4A7EC8', alert = false, onClick }) {
   return (
     <div onClick={onClick}
       style={{
@@ -52,8 +52,8 @@ function KPICard({ label, value, sub, icon: Icon, color = '#5A8A9F', alert = fal
         <Icon size={17} style={{ color }} />
       </div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: '1.75rem', fontWeight: 700, color: alert ? '#EF4444' : '#EBEBEB', lineHeight: 1, ...MONO }}>{value}</div>
-        <div style={{ fontSize: '0.74rem', color: '#EBEBEB', fontWeight: 500, marginTop: 5 }}>{label}</div>
+        <div style={{ fontSize: '1.75rem', fontWeight: 700, color: alert ? '#EF4444' : '#BDD4E8', lineHeight: 1, ...MONO }}>{value}</div>
+        <div style={{ fontSize: '0.74rem', color: '#BDD4E8', fontWeight: 500, marginTop: 5 }}>{label}</div>
         {sub && <div style={{ fontSize: '0.64rem', color: '#686868', marginTop: 2, ...MONO }}>{sub}</div>}
       </div>
       {onClick && <ChevronRight size={14} style={{ color: '#686868', marginTop: 4, flexShrink: 0 }} />}
@@ -64,7 +64,7 @@ function KPICard({ label, value, sub, icon: Icon, color = '#5A8A9F', alert = fal
 /* ══════════════════════════════════════════════════════════════════════════
    PANEL WRAPPER
 ══════════════════════════════════════════════════════════════════════════ */
-function Panel({ title, icon: Icon, count, children, onNavigate, accentColor = '#5A8A9F', style = {} }) {
+function Panel({ title, icon: Icon, count, children, onNavigate, accentColor = '#4A7EC8', style = {} }) {
   return (
     <div style={{
       background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.07)',
@@ -72,7 +72,7 @@ function Panel({ title, icon: Icon, count, children, onNavigate, accentColor = '
     }}>
       <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
         <Icon size={14} style={{ color: accentColor }} />
-        <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#EBEBEB', letterSpacing: '0.03em' }}>{title}</span>
+        <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#BDD4E8', letterSpacing: '0.03em' }}>{title}</span>
         {count !== undefined && (
           <span style={{ marginLeft: 'auto', fontSize: '0.65rem', color: accentColor, background: `${accentColor}14`, border: `1px solid ${accentColor}28`, padding: '1px 8px', borderRadius: 10, ...MONO, fontWeight: 700 }}>
             {count}
@@ -112,13 +112,13 @@ function IdentityPanel({ nodes, navigate }) {
       {high.length === 0
         ? <EmptyState icon={CheckCircle} text="All identities within normal risk range" />
         : high.map(n => {
-          const c = NODE_COLORS[n.node_type] || '#5A8A9F';
-          const riskColor = n.risk_score >= 80 ? '#EF4444' : n.risk_score >= 60 ? '#F97316' : n.risk_score >= 40 ? '#EAB308' : '#A8A8A8';
+          const c = NODE_COLORS[n.node_type] || '#4A7EC8';
+          const riskColor = n.risk_score >= 80 ? '#EF4444' : n.risk_score >= 60 ? '#F97316' : n.risk_score >= 40 ? '#EAB308' : '#7A9DB8';
           return (
             <div key={n.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, background: n.is_compromised ? 'rgba(239,68,68,0.05)' : 'rgba(255,255,255,0.02)', border: `1px solid ${n.is_compromised ? 'rgba(239,68,68,0.18)' : 'rgba(255,255,255,0.05)'}` }}>
               <div style={{ width: 7, height: 7, borderRadius: '50%', background: c, flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '0.78rem', color: '#EBEBEB', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.label}</div>
+                <div style={{ fontSize: '0.78rem', color: '#BDD4E8', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.label}</div>
                 <div style={{ fontSize: '0.62rem', color: '#686868', ...MONO, display: 'flex', gap: 8 }}>
                   <span>{n.node_type?.replace('_',' ')}</span>
                   {n.is_compromised && <span style={{ color: '#EF4444' }}>COMPROMISED</span>}
@@ -147,7 +147,7 @@ function ActionQueuePanel({ actions, navigate }) {
   return (
     <Panel title="AI Action Queue" icon={Bot} count={pending.length}
       onNavigate={() => navigate('/app/agent-security')}
-      accentColor={pending.length > 0 ? '#EAB308' : '#5A8A9F'}>
+      accentColor={pending.length > 0 ? '#EAB308' : '#4A7EC8'}>
       {pending.length === 0
         ? <EmptyState icon={CheckCircle} text="No actions awaiting approval" />
         : pending.map(a => (
@@ -156,7 +156,7 @@ function ActionQueuePanel({ actions, navigate }) {
               <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#EAB308', ...MONO }}>{a.action_type || 'Action'}</span>
               <span style={{ marginLeft: 'auto', fontSize: '0.6rem', color: '#686868', ...MONO }}>{timeAgo(a.timestamp)}</span>
             </div>
-            <div style={{ fontSize: '0.7rem', color: '#A8A8A8', lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div style={{ fontSize: '0.7rem', color: '#7A9DB8', lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {a.actor || 'AI Agent'} · {a.model_used || 'model'}
             </div>
             <div style={{ fontSize: '0.62rem', color: '#686868', ...MONO, marginTop: 3 }}>
@@ -189,7 +189,7 @@ function ThreatFeedPanel({ alerts, navigate }) {
                 <span style={{ marginLeft: 'auto', fontSize: '0.6rem', color: '#686868', ...MONO }}>{timeAgo(a.detected_at)}</span>
               </div>
               {a.identity_label && (
-                <div style={{ fontSize: '0.68rem', color: '#A8A8A8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', ...MONO }}>
+                <div style={{ fontSize: '0.68rem', color: '#7A9DB8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', ...MONO }}>
                   {a.identity_label}
                 </div>
               )}
@@ -223,7 +223,7 @@ function EndpointPanel({ endpoints, navigate }) {
                 ? <Wifi size={13} style={{ color: '#22C55E', flexShrink: 0 }} />
                 : <WifiOff size={13} style={{ color: '#505050', flexShrink: 0 }} />}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '0.76rem', color: online ? '#EBEBEB' : '#686868', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', ...MONO }}>
+                <div style={{ fontSize: '0.76rem', color: online ? '#BDD4E8' : '#686868', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', ...MONO }}>
                   {ep.hostname || ep.ip_address || `ep-${ep.id}`}
                 </div>
                 <div style={{ fontSize: '0.6rem', color: '#686868', ...MONO }}>
@@ -262,7 +262,7 @@ function ActivityTicker({ nodes, alerts, actions, endpoints }) {
       {events.map((ev, i) => (
         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 14px', borderLeft: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
           <Circle size={5} style={{ color: ev.color, fill: ev.color, flexShrink: 0 }} />
-          <span style={{ fontSize: '0.65rem', color: '#A8A8A8', ...MONO, whiteSpace: 'nowrap' }}>{ev.text}</span>
+          <span style={{ fontSize: '0.65rem', color: '#7A9DB8', ...MONO, whiteSpace: 'nowrap' }}>{ev.text}</span>
           <span style={{ fontSize: '0.6rem', color: '#505050', ...MONO, whiteSpace: 'nowrap' }}>{timeAgo(ev.ts)}</span>
         </div>
       ))}
@@ -334,7 +334,7 @@ export default function ControlPlane() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-            <Activity size={20} style={{ color: '#5A8A9F' }} />
+            <Activity size={20} style={{ color: '#4A7EC8' }} />
             <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Control Plane</h1>
             <span style={{ fontSize: '0.6rem', color: '#22C55E', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', padding: '2px 8px', borderRadius: 10, ...MONO, fontWeight: 700 }}>LIVE</span>
           </div>
@@ -360,7 +360,7 @@ export default function ControlPlane() {
         <KPICard label="Total Identities"   value={nodes.length}       sub={`${highRiskNodes} high-risk`}     icon={Fingerprint} color="#8FAFC0"  onClick={() => navigate('/app/identity-graph')} />
         <KPICard label="Compromised"         value={compromised}        sub="identity nodes"                   icon={XCircle}     color="#EF4444"  alert={compromised > 0} onClick={() => navigate('/app/identity-graph')} />
         <KPICard label="Open Threats"        value={openAlerts}         sub="ITDR alerts"                      icon={AlertTriangle} color={openAlerts > 0 ? '#EF4444' : '#22C55E'} alert={openAlerts > 0} onClick={() => navigate('/app/itdr')} />
-        <KPICard label="Pending AI Actions"  value={pendingActions}     sub="awaiting approval"                icon={Bot}         color={pendingActions > 0 ? '#EAB308' : '#5A8A9F'} alert={pendingActions > 0} onClick={() => navigate('/app/agent-security')} />
+        <KPICard label="Pending AI Actions"  value={pendingActions}     sub="awaiting approval"                icon={Bot}         color={pendingActions > 0 ? '#EAB308' : '#4A7EC8'} alert={pendingActions > 0} onClick={() => navigate('/app/agent-security')} />
         <KPICard label="Endpoints Online"    value={`${onlineEndpoints}/${endpoints.length}`} sub="last 5 min" icon={Monitor}    color="#22C55E"  onClick={() => navigate('/app/endpoints')} />
       </div>
 
@@ -368,15 +368,15 @@ export default function ControlPlane() {
       {overview && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
           {[
-            { label: 'Open Cases',    value: overview.open_cases || 0,    color: '#5A8A9F', icon: Eye },
+            { label: 'Open Cases',    value: overview.open_cases || 0,    color: '#4A7EC8', icon: Eye },
             { label: 'SLA Breached',  value: overview.sla_breached || 0,  color: '#EF4444', icon: AlertTriangle, alert: (overview.sla_breached || 0) > 0 },
             { label: 'Critical Cases',value: overview.critical_open || 0, color: '#EF4444', icon: Zap, alert: (overview.critical_open || 0) > 0 },
-            { label: 'Avg Close Time',value: overview.avg_time_to_close ? `${overview.avg_time_to_close}h` : '—', color: '#8FAFC0', icon: Clock },
+            { label: 'Avg Close Time',value: overview.avg_time_to_close ? `${overview.avg_time_to_close}h` : '—', color: '#8BB8E8', icon: Clock },
           ].map(k => (
             <div key={k.label} style={{ background: k.alert ? 'rgba(239,68,68,0.04)' : 'rgba(255,255,255,0.015)', border: `1px solid ${k.alert ? 'rgba(239,68,68,0.16)' : 'rgba(255,255,255,0.06)'}`, borderRadius: 10, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
               <k.icon size={15} style={{ color: k.color, flexShrink: 0 }} />
               <div>
-                <div style={{ fontSize: '1.2rem', fontWeight: 700, color: k.alert ? '#EF4444' : '#EBEBEB', ...MONO }}>{k.value}</div>
+                <div style={{ fontSize: '1.2rem', fontWeight: 700, color: k.alert ? '#EF4444' : '#BDD4E8', ...MONO }}>{k.value}</div>
                 <div style={{ fontSize: '0.68rem', color: '#686868' }}>{k.label}</div>
               </div>
             </div>

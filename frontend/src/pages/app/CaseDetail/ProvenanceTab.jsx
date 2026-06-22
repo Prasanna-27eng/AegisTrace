@@ -6,11 +6,11 @@ import useStore from '../../../store/useStore';
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 
 const ACTION_META = {
-  ai_analysis:  { color: '#8FAFC0', label: 'AI Analysis',  Icon: Brain },
-  ai_summary:   { color: '#8FAFC0', label: 'AI Summary',   Icon: Brain },
+  ai_analysis:  { color: '#8BB8E8', label: 'AI Analysis',  Icon: Brain },
+  ai_summary:   { color: '#8BB8E8', label: 'AI Summary',   Icon: Brain },
   tool_run:     { color: '#EAB308', label: 'Tool Run',      Icon: Wrench },
   evidence_add: { color: '#22C55E', label: 'Evidence Added', Icon: Database },
-  ioc_enrich:   { color: '#5A8A9F', label: 'IOC Enrich',   Icon: Database },
+  ioc_enrich:   { color: '#4A7EC8', label: 'IOC Enrich',   Icon: Database },
   manual:       { color: '#787878', label: 'Manual',        Icon: Database },
 };
 
@@ -81,7 +81,7 @@ function ProvenanceRow({ record, onApprove }) {
             ].map(([k, v]) => (
               <div key={k}>
                 <div style={{ fontSize: '0.6rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2, ...MONO }}>{k}</div>
-                <div style={{ fontSize: '0.75rem', color: '#EBEBEB', ...MONO }}>{v}</div>
+                <div style={{ fontSize: '0.75rem', color: '#BDD4E8', ...MONO }}>{v}</div>
               </div>
             ))}
           </div>
@@ -166,7 +166,7 @@ export default function ProvenanceTab({ caseId }) {
   return (
     <div style={{ padding: '20px 24px', maxWidth: 1000 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-        <Database size={17} style={{ color: '#8FAFC0' }} />
+        <Database size={17} style={{ color: '#8BB8E8' }} />
         <div>
           <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>Provenance Ledger</div>
           <div style={{ fontSize: '0.7rem', color: '#787878', marginTop: 1 }}>

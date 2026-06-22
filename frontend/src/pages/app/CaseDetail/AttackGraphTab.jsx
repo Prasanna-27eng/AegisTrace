@@ -119,7 +119,7 @@ export default function AttackGraphTab({ caseData, updateCase, caseId }) {
                 </button>
               </div>
             </div>
-            <div style={{ fontSize: '0.85rem', color: '#EBEBEB', lineHeight: 1.6 }}>{result.narrative}</div>
+            <div style={{ fontSize: '0.85rem', color: '#BDD4E8', lineHeight: 1.6 }}>{result.narrative}</div>
             {result.mitre_chain?.length > 0 && (
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
                 {result.mitre_chain.map(t => (
@@ -144,7 +144,7 @@ export default function AttackGraphTab({ caseData, updateCase, caseId }) {
                   </div>
                   <div className="at-card" style={{ flex: 1, padding: '10px 14px', marginBottom: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
-                      <div style={{ fontSize: '0.82rem', color: '#EBEBEB' }}>{s.description}</div>
+                      <div style={{ fontSize: '0.82rem', color: '#BDD4E8' }}>{s.description}</div>
                       <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
                         {s.technique && <span style={{ background: 'rgba(156,124,255,0.1)', border: '1px solid rgba(156,124,255,0.3)', borderRadius: 4, padding: '1px 7px', fontSize: '0.66rem', color: '#9C7CFF', ...MONO }}>{s.technique}</span>}
                         {s.severity && <SeverityBadge severity={s.severity} />}
@@ -168,9 +168,9 @@ export default function AttackGraphTab({ caseData, updateCase, caseId }) {
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px', borderBottom: i < result.events.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none', fontSize: '0.76rem' }}>
                     <Clock size={12} style={{ color: '#444', flexShrink: 0 }} />
                     <span style={{ color: '#555', ...MONO, fontSize: '0.7rem', flexShrink: 0 }}>{fmtTime(e.timestamp)}</span>
-                    <span style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4, padding: '1px 6px', fontSize: '0.66rem', color: '#8FAFC0', flexShrink: 0, ...MONO }}>{SOURCE_LABELS[e.source] || e.source}</span>
+                    <span style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4, padding: '1px 6px', fontSize: '0.66rem', color: '#8BB8E8', flexShrink: 0, ...MONO }}>{SOURCE_LABELS[e.source] || e.source}</span>
                     {e.hostname && <span style={{ color: '#787878', fontSize: '0.7rem', ...MONO, flexShrink: 0 }}>{e.hostname}</span>}
-                    <span style={{ color: '#A8A8A8', flex: 1 }}>{e.description}</span>
+                    <span style={{ color: '#7A9DB8', flex: 1 }}>{e.description}</span>
                     <SeverityBadge severity={e.severity} />
                   </div>
                 ))}

@@ -34,7 +34,7 @@ export default function AIAnalysisTab({ caseData, updateCase, caseId, reload }) 
     if (!score) return '#888888';
     if (score >= 80) return '#EF4444';
     if (score >= 60) return '#EAB308';
-    if (score >= 40) return '#8FAFC0';
+    if (score >= 40) return '#8BB8E8';
     return '#22C55E';
   };
 
@@ -42,7 +42,7 @@ export default function AIAnalysisTab({ caseData, updateCase, caseId, reload }) 
     <div style={{ padding: '20px 24px', maxWidth: 900 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Brain size={18} style={{ color: '#8FAFC0' }} />
+          <Brain size={18} style={{ color: '#8BB8E8' }} />
           <div>
             <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>AI-Powered Analysis</div>
             <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 1 }}>Hermes-3 · NVIDIA NIM · Groq fallback</div>
@@ -88,8 +88,8 @@ export default function AIAnalysisTab({ caseData, updateCase, caseId, reload }) 
           {showExplain && (
             <div style={{ padding: '16px 18px', background: 'rgba(143,175,192,0.04)', border: '1px solid rgba(143,175,192,0.18)', borderRadius: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
-                <Eye size={13} style={{ color: '#8FAFC0' }} />
-                <span style={{ fontSize: '0.72rem', color: '#8FAFC0', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Reasoning Chain — Why the AI reached this conclusion</span>
+                <Eye size={13} style={{ color: '#8BB8E8' }} />
+                <span style={{ fontSize: '0.72rem', color: '#8BB8E8', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Reasoning Chain — Why the AI reached this conclusion</span>
               </div>
 
               {/* Reasoning chain (from ai_severity_reasoning as JSON or text) */}
@@ -102,7 +102,7 @@ export default function AIAnalysisTab({ caseData, updateCase, caseId, reload }) 
                     <div style={{ fontSize: '0.62rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6, ...MONO }}>Reasoning Steps</div>
                     {chain.map((step, i) => (
                       <div key={i} style={{ display: 'flex', gap: 8, padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: '0.78rem', color: 'rgba(240,240,248,0.75)', lineHeight: 1.5 }}>
-                        <span style={{ color: '#8FAFC0', ...MONO, flexShrink: 0, minWidth: 18 }}>{i + 1}.</span>
+                        <span style={{ color: '#8BB8E8', ...MONO, flexShrink: 0, minWidth: 18 }}>{i + 1}.</span>
                         <span>{step}</span>
                       </div>
                     ))}
@@ -123,7 +123,7 @@ export default function AIAnalysisTab({ caseData, updateCase, caseId, reload }) 
                     caseData.mitre_techniques && JSON.parse(caseData.mitre_techniques || '[]').length > 0 && 'MITRE techniques',
                     caseData.email_analysis && 'Email analysis',
                   ].filter(Boolean).map((e, i) => (
-                    <span key={i} style={{ fontSize: '0.68rem', background: 'rgba(143,175,192,0.1)', color: '#8FAFC0', padding: '2px 8px', borderRadius: 3, ...MONO }}>{e}</span>
+                    <span key={i} style={{ fontSize: '0.68rem', background: 'rgba(139,184,232,0.1)', color: '#8BB8E8', padding: '2px 8px', borderRadius: 3, ...MONO }}>{e}</span>
                   ))}
                 </div>
               </div>
@@ -141,8 +141,8 @@ export default function AIAnalysisTab({ caseData, updateCase, caseId, reload }) 
 
               {/* Model provenance */}
               <div style={{ marginTop: 10, display: 'flex', gap: 16, fontSize: '0.65rem', color: '#787878', ...MONO }}>
-                <span>Model: <span style={{ color: '#8FAFC0' }}>Hermes-3 70B</span></span>
-                <span>Provider: <span style={{ color: '#8FAFC0' }}>NVIDIA NIM</span></span>
+                <span>Model: <span style={{ color: '#8BB8E8' }}>Hermes-3 70B</span></span>
+                <span>Provider: <span style={{ color: '#8BB8E8' }}>NVIDIA NIM</span></span>
                 <span>Confidence: <span style={{ color: caseData.ai_severity_score >= 80 ? '#22C55E' : caseData.ai_severity_score >= 50 ? '#EAB308' : '#EF4444' }}>{caseData.ai_severity_score || 0}%</span></span>
               </div>
             </div>
@@ -196,8 +196,8 @@ export default function AIAnalysisTab({ caseData, updateCase, caseId, reload }) 
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {mitre.map((m, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px', background: '#111111', borderRadius: 6 }}>
-                    <span style={{ fontSize: '0.75rem', color: '#8FAFC0', fontFamily: 'JetBrains Mono', minWidth: 80 }}>{m.id}</span>
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px', background: '#0E0E16', borderRadius: 6 }}>
+                    <span style={{ fontSize: '0.75rem', color: '#8BB8E8', fontFamily: 'JetBrains Mono', minWidth: 80 }}>{m.id}</span>
                     <span style={{ fontSize: '0.82rem', fontWeight: 500, flex: 1 }}>{m.name}</span>
                     <span style={{ fontSize: '0.7rem', color: '#787878' }}>{m.tactic}</span>
                   </div>

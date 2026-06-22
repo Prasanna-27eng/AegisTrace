@@ -33,11 +33,11 @@ export default function EDRPage() {
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: '#050505', color: '#EBEBEB' }}>
+    <div style={{ minHeight: '100vh', background: '#050505', color: '#BDD4E8' }}>
 
       {/* Header */}
       <div style={{
-        background: '#111111', borderBottom: '1px solid rgba(255,255,255,0.07)',
+        background: '#0E0E16', borderBottom: '1px solid rgba(255,255,255,0.07)',
         padding: '12px 24px', display: 'flex', alignItems: 'center', gap: 12,
       }}>
         <button
@@ -52,7 +52,7 @@ export default function EDRPage() {
         {caseData && (
           <>
             <span style={{ color: 'rgba(255,255,255,0.2)' }}>—</span>
-            <span style={{ fontSize: '0.78rem', fontFamily: 'JetBrains Mono', color: '#8FAFC0' }}>{caseData.case_number}</span>
+            <span style={{ fontSize: '0.78rem', fontFamily: 'JetBrains Mono', color: '#8BB8E8' }}>{caseData.case_number}</span>
             <span style={{ fontSize: '0.82rem', fontWeight: 500 }}>{caseData.title}</span>
             <SeverityBadge severity={caseData.severity} />
             <StatusBadge   status={caseData.status} />
