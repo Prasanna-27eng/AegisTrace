@@ -557,3 +557,8 @@ input[type="checkbox"] {
   }
   .skeleton { opacity: 0.5 !important; }
 }
+
+/* ── Aether Seal icon: black bg becomes invisible on dark site via screen blend ── */
+img[src*="aegistrace-icon"] {
+  mix-blend-mode: screen;
+}

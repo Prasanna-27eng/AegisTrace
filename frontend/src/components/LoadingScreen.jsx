@@ -1,22 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
-const E = [0.23, 1, 0.32, 1];
+const EOUT   = [0.23, 1, 0.32, 1];
+const SPRING = { type: 'spring', stiffness: 260, damping: 22, mass: 0.8 };
 const LETTERS = 'AEGISTRACE'.split('');
 
-function SealIcon({ size = 80 }) {
+function SealRing({ progress }) {
+  const c = 2 * Math.PI * 54;
+  const offset = c - c * Math.min(progress, 1);
   return (
-    <div style={{
-      width: size, height: size, position: 'relative',
-      filter: 'drop-shadow(0 0 20px rgba(74,126,200,0.6)) drop-shadow(0 0 40px rgba(74,126,200,0.3))',
-    }}>
-      <img
-        src="/assets/brand/aegistrace-icon.png"
-        alt="AegisTrace Aether Seal"
-        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-        draggable={false}
-      />
-    </div>
+    <svg viewBox="0 0 120 120" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+      <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(74,126,200,0.22)" strokeWidth="1"
+        strokeDasharray={c} strokeDashoffset={offset} strokeLinecap="round" transform="rotate(-90 60 60)"/>
+      <circle cx="60" cy="60" r="46" fill="none" stroke="rgba(74,126,200,0.1)" strokeWidth="0.5"
+        strokeDasharray={`${c * 0.6 * Math.min(progress, 1)} 999`} transform="rotate(-90 60 60)"/>
+    </svg>
   );
 }
 
@@ -24,7 +22,7 @@ export function useLoading() {
   const reduced = useReducedMotion();
   const [done, setDone] = useState(false);
   useEffect(() => {
-    const t = setTimeout(() => setDone(true), reduced ? 100 : 2600);
+    const t = setTimeout(() => setDone(true), reduced ? 80 : 2700);
     return () => clearTimeout(t);
   }, [reduced]);
   return { done };
@@ -32,19 +30,30 @@ export function useLoading() {
 
 export default function LoadingScreen() {
   const reduced = useReducedMotion();
+  const [ring, setRing] = useState(0);
+  const raf = useRef(null);
+
+  useEffect(() => {
+    if (reduced) { setRing(1); return; }
+    const start = performance.now();
+    const dur = 1200;
+    const tick = (now) => {
+      const p = Math.min((now - start) / dur, 1);
+      setRing(1 - Math.pow(1 - p, 4));
+      if (p < 1) raf.current = requestAnimationFrame(tick);
+    };
+    raf.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf.current);
+  }, [reduced]);
 
   if (reduced) {
     return (
-      <AnimatePresence>
-        <motion.div
-          initial={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          style={{ position: 'fixed', inset: 0, background: '#050505', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 24, zIndex: 9999 }}
-        >
-          <SealIcon size={72} />
-          <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, letterSpacing: '0.3em', color: '#BDD4E8' }}>AEGISTRACE</span>
-        </motion.div>
-      </AnimatePresence>
+      <motion.div initial={{ opacity: 1 }} exit={{ opacity: 0 }}
+        style={{ position: 'fixed', inset: 0, background: '#050505', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 20, zIndex: 9999 }}>
+        <img src="/assets/brand/aegistrace-icon.png" alt="AegisTrace"
+          style={{ width: 72, height: 72, mixBlendMode: 'screen', filter: 'drop-shadow(0 0 8px rgba(74,126,200,0.6))' }}/>
+        <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, color: '#BDD4E8', letterSpacing: '0.3em' }}>AEGISTRACE</span>
+      </motion.div>
     );
   }
 
@@ -52,64 +61,69 @@ export default function LoadingScreen() {
     <motion.div
       initial={{ opacity: 1 }}
       exit={{ y: '-100%', opacity: 0 }}
-      transition={{ duration: 0.7, ease: [0.76,0,0.24,1], delay: 0.1 }}
+      transition={{ duration: 0.65, ease: [0.76, 0, 0.24, 1], delay: 0.08 }}
       style={{ position: 'fixed', inset: 0, background: '#050505', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', zIndex: 9999, overflow: 'hidden' }}
     >
-      {/* Ambient glow behind seal */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.2, ease: E }}
-        style={{ position: 'absolute', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(74,126,200,0.18) 0%, transparent 70%)', pointerEvents: 'none' }}
+      {/* Deep glow bloom */}
+      <motion.div aria-hidden
+        initial={{ opacity: 0, scale: 0.3 }} animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.4, ease: EOUT }}
+        style={{ position: 'absolute', width: 440, height: 440, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(74,126,200,0.14) 0%, rgba(74,126,200,0.04) 45%, transparent 70%)',
+          pointerEvents: 'none' }}
       />
 
-      {/* Seal — appears, then slowly rotates */}
-      <motion.div
-        initial={{ scale: 0.6, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.6, ease: E }}
-        style={{ marginBottom: 32, position: 'relative', zIndex: 2 }}
-      >
+      {/* Seal + ring */}
+      <div style={{ position: 'relative', width: 130, height: 130, marginBottom: 38 }}>
+        <SealRing progress={ring} />
         <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 12, ease: 'linear', repeat: Infinity }}
+          initial={{ scale: 0.45, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+          transition={{ ...SPRING, delay: 0.12 }}
+          style={{ position: 'absolute', inset: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
-          <SealIcon size={88} />
+          <motion.img
+            src="/assets/brand/aegistrace-icon.png" alt="AegisTrace" draggable={false}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 18, ease: 'linear', repeat: Infinity }}
+            style={{ width: '100%', height: '100%', objectFit: 'contain', mixBlendMode: 'screen',
+              filter: 'drop-shadow(0 0 14px rgba(74,126,200,0.75)) drop-shadow(0 0 32px rgba(74,126,200,0.4))' }}
+          />
         </motion.div>
-      </motion.div>
-
-      {/* AEGISTRACE letter stagger */}
-      <div style={{ display: 'flex', gap: 1, marginBottom: 20, position: 'relative', zIndex: 2 }}>
-        {LETTERS.map((ch, i) => (
-          <motion.span
-            key={i}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.7 + i * 0.055, ease: E }}
-            style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 15, fontWeight: 600, color: '#BDD4E8', letterSpacing: '0.22em', display: 'inline-block' }}
-          >
-            {ch}
-          </motion.span>
+        {/* Corner dots — Remotion Sequence timing */}
+        {[0, 90, 180, 270].map((angle, i) => (
+          <motion.div key={angle} aria-hidden
+            initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5 + i * 0.09, duration: 0.28, ease: EOUT }}
+            style={{ position: 'absolute', width: 4, height: 4, borderRadius: '50%', background: '#4A7EC8',
+              top: '50%', left: '50%', boxShadow: '0 0 8px rgba(74,126,200,0.9)',
+              transform: `rotate(${angle}deg) translateX(63px) translateY(-50%)` }}
+          />
         ))}
       </div>
 
-      {/* Progress bar */}
-      <div style={{ width: 160, height: 1, background: 'rgba(74,126,200,0.15)', position: 'relative', overflow: 'hidden', zIndex: 2 }}>
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 1.8, delay: 0.5, ease: [0.4,0,0.2,1] }}
-          style={{ position: 'absolute', inset: 0, background: '#4A7EC8', transformOrigin: 'left', boxShadow: '0 0 8px rgba(74,126,200,0.8)' }}
-        />
+      {/* Letter stagger — Remotion interpolate timing model */}
+      <div style={{ display: 'flex', marginBottom: 20 }}>
+        {LETTERS.map((ch, i) => (
+          <motion.span key={i}
+            initial={{ opacity: 0, y: 16, filter: 'blur(6px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 0.42, delay: 0.68 + i * 0.058, ease: EOUT }}
+            style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 14, fontWeight: 600,
+              color: '#BDD4E8', letterSpacing: '0.22em', display: 'inline-block' }}
+          >{ch}</motion.span>
+        ))}
       </div>
 
-      {/* Global keyframes for glow pulse */}
-      <style>{`
-        @keyframes sealGlow {
-          0%,100% { filter: drop-shadow(0 0 16px rgba(74,126,200,0.5)) drop-shadow(0 0 32px rgba(74,126,200,0.25)); }
-          50%      { filter: drop-shadow(0 0 28px rgba(74,126,200,0.8)) drop-shadow(0 0 56px rgba(74,126,200,0.4)); }
-        }
-      `}</style>
+      {/* Progress bar with gradient sweep */}
+      <div style={{ width: 150, height: 1.5, background: 'rgba(74,126,200,0.1)', position: 'relative', overflow: 'hidden' }}>
+        <motion.div
+          initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
+          transition={{ duration: 1.85, delay: 0.6, ease: [0.4, 0, 0.2, 1] }}
+          style={{ position: 'absolute', inset: 0, transformOrigin: 'left',
+            background: 'linear-gradient(90deg, #2A5A9E 0%, #4A7EC8 50%, #8BB8E8 100%)',
+            boxShadow: '0 0 10px rgba(74,126,200,0.9), 0 0 24px rgba(74,126,200,0.5)' }}
+        />
+      </div>
     </motion.div>
   );
 }

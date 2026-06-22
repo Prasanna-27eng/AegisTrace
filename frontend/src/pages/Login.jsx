@@ -183,13 +183,14 @@ export default function Login() {
             padding: 'clamp(48px,6vw,80px)',
           }}
         >
-          {/* Aether Seal logo */}
+          {/* Aether Seal logo — icon in dark circle hides any background */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12, marginBottom: 28 }}>
             <img
-              src="/assets/brand/aegistrace-logo.png"
+              src="/assets/brand/aegistrace-icon.png"
               alt="AegisTrace Aether Seal"
               style={{
                 width: 120, height: 120, objectFit: 'contain',
+                mixBlendMode: 'screen',
                 filter: 'drop-shadow(0 0 20px rgba(74,126,200,0.5)) drop-shadow(0 0 40px rgba(74,126,200,0.25))',
                 marginBottom: 8,
               }}

@@ -2,37 +2,55 @@ import React from 'react';
 
 /**
  * AegisTrace Aether Seal logo component.
- * variant: 'icon' | 'full' | 'dark'
- * size: number (controls icon height in px)
+ * variant: 'icon' — orbital knot (black bg, use mix-blend-mode:screen on dark surfaces)
+ * variant: 'seal' — full circular emblem in dark container
+ * size: number (px)
+ *
+ * The icon PNG has a black background. On dark sites (#050505),
+ * mix-blend-mode:screen makes the black background invisible — only the
+ * blue orbital knot renders. Never use on light backgrounds.
  */
-export default function AppLogo({ variant = 'icon', size = 28, style = {} }) {
-  const src = variant === 'icon'
-    ? '/assets/brand/aegistrace-icon.png'
-    : variant === 'dark'
-    ? '/assets/brand/aegistrace-logo-dark.png'
-    : '/assets/brand/aegistrace-logo.png';
+export default function AppLogo({ variant = 'icon', size = 28, glow = true, style = {} }) {
+  const glowFilter = glow
+    ? 'drop-shadow(0 0 6px rgba(74,126,200,0.6)) drop-shadow(0 0 14px rgba(74,126,200,0.3))'
+    : 'none';
 
-  const glow = {
-    filter: 'drop-shadow(0 0 6px rgba(74,126,200,0.55)) drop-shadow(0 0 12px rgba(74,126,200,0.25))',
-  };
-
-  if (variant === 'full' || variant === 'dark') {
+  /* Icon — orbital knot on black bg, blend mode removes the black */
+  if (variant === 'icon') {
     return (
       <img
-        src={src}
+        src="/assets/brand/aegistrace-icon.png"
         alt="AegisTrace"
-        style={{ height: size, width: 'auto', objectFit: 'contain', ...glow, ...style }}
         draggable={false}
+        style={{
+          width: size, height: size,
+          objectFit: 'contain',
+          mixBlendMode: 'screen',          /* black bg vanishes on dark site */
+          filter: glowFilter,
+          ...style,
+        }}
       />
     );
   }
 
+  /* Seal — full circular emblem wrapped in a dark circle to mask any bg */
   return (
-    <img
-      src="/assets/brand/aegistrace-icon.png"
-      alt="AegisTrace"
-      style={{ width: size, height: size, objectFit: 'contain', ...glow, ...style }}
-      draggable={false}
-    />
+    <div style={{
+      width: size, height: size,
+      borderRadius: '50%',
+      background: '#050505',
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      overflow: 'hidden',
+      flexShrink: 0,
+      boxShadow: glow ? '0 0 20px rgba(74,126,200,0.4), 0 0 40px rgba(74,126,200,0.2)' : 'none',
+      ...style,
+    }}>
+      <img
+        src="/assets/brand/aegistrace-seal.png"
+        alt="AegisTrace"
+        draggable={false}
+        style={{ width: '85%', height: '85%', objectFit: 'contain' }}
+      />
+    </div>
   );
 }
