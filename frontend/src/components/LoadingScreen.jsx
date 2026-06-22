@@ -50,8 +50,8 @@ export default function LoadingScreen() {
     return (
       <motion.div initial={{ opacity: 1 }} exit={{ opacity: 0 }}
         style={{ position: 'fixed', inset: 0, background: '#050505', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 20, zIndex: 9999 }}>
-        <img src="/assets/brand/aegistrace-icon.png" alt="AegisTrace"
-          style={{ width: 72, height: 72, mixBlendMode: 'screen', filter: 'drop-shadow(0 0 8px rgba(74,126,200,0.6))' }}/>
+        <img src="/assets/brand/aegistrace-icon-transparent.png" alt="AegisTrace"
+          style={{ width: 72, height: 72, filter: 'drop-shadow(0 0 8px rgba(74,126,200,0.6))' }}/>
         <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, color: '#BDD4E8', letterSpacing: '0.3em' }}>AEGISTRACE</span>
       </motion.div>
     );
@@ -82,10 +82,10 @@ export default function LoadingScreen() {
           style={{ position: 'absolute', inset: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
           <motion.img
-            src="/assets/brand/aegistrace-icon.png" alt="AegisTrace" draggable={false}
+            src="/assets/brand/aegistrace-icon-transparent.png" alt="AegisTrace" draggable={false}
             animate={{ rotate: 360 }}
             transition={{ duration: 18, ease: 'linear', repeat: Infinity }}
-            style={{ width: '100%', height: '100%', objectFit: 'contain', mixBlendMode: 'screen',
+            style={{ width: '100%', height: '100%', objectFit: 'contain',
               filter: 'drop-shadow(0 0 14px rgba(74,126,200,0.75)) drop-shadow(0 0 32px rgba(74,126,200,0.4))' }}
           />
         </motion.div>

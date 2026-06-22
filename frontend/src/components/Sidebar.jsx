@@ -151,12 +151,12 @@ export default function Sidebar({ collapsed, setCollapsed }) {
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(74,126,200,0.1)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <img src="/assets/brand/aegistrace-icon.png" alt="" style={{ width: 22, height: 22, objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(74,126,200,0.5))' }}/>
+              <img src="/assets/brand/aegistrace-icon-transparent.png" alt="" style={{ width: 22, height: 22, objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(74,126,200,0.5))' }}/>
               <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 12, color: 'var(--text-primary)', letterSpacing: '0.16em' }}>AEGISTRACE</span>
             </div>
           )}
           {collapsed && (
-            <img src="/assets/brand/aegistrace-icon.png" alt="AegisTrace" title="AegisTrace" onClick={() => navigate('/')} style={{ width: 24, height: 24, objectFit: 'contain', cursor: 'pointer', filter: 'drop-shadow(0 0 4px rgba(74,126,200,0.5))' }}/>
+            <img src="/assets/brand/aegistrace-icon-transparent.png" alt="AegisTrace" title="AegisTrace" onClick={() => navigate('/')} style={{ width: 24, height: 24, objectFit: 'contain', cursor: 'pointer', filter: 'drop-shadow(0 0 4px rgba(74,126,200,0.5))' }}/>
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}

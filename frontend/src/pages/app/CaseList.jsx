@@ -187,7 +187,7 @@ export default function CaseList() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <img src="/assets/brand/aegistrace-icon.png" alt="" style={{ width: 24, height: 24, objectFit: 'contain', opacity: 0.8, filter: 'drop-shadow(0 0 4px rgba(74,126,200,0.5))' }}/>
+            <img src="/assets/brand/aegistrace-icon-transparent.png" alt="" style={{ width: 24, height: 24, objectFit: 'contain', opacity: 0.8, filter: 'drop-shadow(0 0 4px rgba(74,126,200,0.5))' }}/>
             <h1 className="cd" style={{ fontSize: '1.2rem' }}>Cases</h1>
           </div>
           <div style={{ display: 'flex', gap: 12, marginTop: 4, fontSize: '0.7rem', fontFamily: 'JetBrains Mono' }}>

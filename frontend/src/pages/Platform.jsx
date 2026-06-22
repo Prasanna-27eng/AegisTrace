@@ -626,7 +626,7 @@ function EndpointSection() {
 
         {/* Logo + label above terminal */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-          <img src="/assets/brand/aegistrace-icon.png" alt="" style={{ width: 36, height: 36, objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(74,126,200,0.6))' }}/>
+          <img src="/assets/brand/aegistrace-icon-transparent.png" alt="" style={{ width: 36, height: 36, objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(74,126,200,0.6))' }}/>
           <div>
             <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: '#4A7EC8', letterSpacing: '0.2em' }}>ENDPOINT AGENT</div>
             <div style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 18, fontWeight: 700, color: '#BDD4E8' }}>Deploy in one command</div>
@@ -931,7 +931,7 @@ export default function Platform() {
         }}
       >
         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <img src="/assets/brand/aegistrace-icon.png" alt="AegisTrace"
+          <img src="/assets/brand/aegistrace-icon-transparent.png" alt="AegisTrace"
             style={{ width: 26, height: 26, objectFit: 'contain', filter: 'drop-shadow(0 0 5px rgba(74,126,200,0.5))' }}/>
           <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, fontWeight: 600,
             color: '#BDD4E8', letterSpacing: '0.18em' }}>AEGISTRACE</span>
@@ -974,7 +974,7 @@ export default function Platform() {
         flexWrap: 'wrap', gap: 12,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <img src="/assets/brand/aegistrace-icon.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain', opacity: 0.5 }}/>
+          <img src="/assets/brand/aegistrace-icon-transparent.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain', opacity: 0.5 }}/>
           <span style={{ fontFamily: "'IBM Plex Mono',monospace", color: 'rgba(189,212,232,0.28)', fontSize: 11, letterSpacing: '0.16em' }}>AEGISTRACE</span>
         </div>
         <span style={{

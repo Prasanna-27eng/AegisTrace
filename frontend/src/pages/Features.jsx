@@ -149,7 +149,7 @@ function Nav() {
       background: navBg, backdropFilter: navFilter, WebkitBackdropFilter: navFilter,
     }}>
       <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-        <img src="/assets/brand/aegistrace-icon.png" alt="AegisTrace"
+        <img src="/assets/brand/aegistrace-icon-transparent.png" alt="AegisTrace"
           style={{ width: 26, height: 26, objectFit: 'contain', filter: 'drop-shadow(0 0 5px rgba(74,126,200,0.5))' }}/>
         <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, fontWeight: 600,
           color: '#BDD4E8', letterSpacing: '0.18em' }}>AEGISTRACE</span>
@@ -603,7 +603,7 @@ export default function Features() {
       <footer style={{ borderTop: '1px solid rgba(74,126,200,0.06)', padding: '28px clamp(24px,5vw,72px)', background: DARK }}>
         <div style={{ maxWidth: 1240, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <img src="/assets/brand/aegistrace-icon.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain', opacity: 0.5 }}/>
+            <img src="/assets/brand/aegistrace-icon-transparent.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain', opacity: 0.5 }}/>
             <span style={{ fontFamily: "'IBM Plex Mono',monospace", color: 'rgba(189,212,232,0.28)', fontSize: 11, letterSpacing: '0.16em' }}>AEGISTRACE</span>
           </div>
           <div style={{ display: 'flex', gap: 24 }}>

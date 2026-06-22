@@ -286,7 +286,7 @@ export default function AppShell() {
         }}>
           <div onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', textDecoration: 'none' }}>
             <img
-              src="/assets/brand/aegistrace-icon.png"
+              src="/assets/brand/aegistrace-icon-transparent.png"
               alt="AegisTrace"
               style={{ width: 28, height: 28, objectFit: 'contain', filter: 'drop-shadow(0 0 6px rgba(74,126,200,0.6))' }}
             />

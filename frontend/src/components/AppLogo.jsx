@@ -19,13 +19,12 @@ export default function AppLogo({ variant = 'icon', size = 28, glow = true, styl
   if (variant === 'icon') {
     return (
       <img
-        src="/assets/brand/aegistrace-icon.png"
+        src="/assets/brand/aegistrace-icon-transparent.png"
         alt="AegisTrace"
         draggable={false}
         style={{
           width: size, height: size,
-          objectFit: 'contain',
-          mixBlendMode: 'screen',          /* black bg vanishes on dark site */
+          objectFit: 'contain',          /* black bg vanishes on dark site */
           filter: glowFilter,
           ...style,
         }}
