@@ -1,5 +1,5 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v10.4 | **Last updated:** June 2026 (v10.4 = Phase 2.5 ATSP Stage A: formally verifiable secure telemetry protocol library — X25519+HKDF+ChaCha20+HMAC, Noise_XX handshake, ProVerif model, 17/17 tests pass)
+**Version:** v10.5 | **Last updated:** June 2026 (v10.5 = Priority B Deep Forensics: Falco Layer 3 eBPF, Memory Forensics Layer 4, Attacker Path Reconstruction; full enterprise UI with Aether Seal brand; Deployment Hub)
 **Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files. **This is the single master doc for this project — all other planning/session/deploy docs have been folded into this file and removed.**
 
 ---
@@ -614,6 +614,42 @@ Key design decisions:
 - `verification/test_vectors.json` — 4 real computed vectors (TV-01 X25519, TV-02 HKDF, TV-03 ChaCha20, TV-04 HMAC) against deterministic seeds
 - `backend/atsp/tests/test_atsp.py` — 17 unit tests, 0 external deps — **all 17 PASS**
 - Zero new dependencies — `cryptography` (already installed) + stdlib only
+
+### Priority B — Deep Forensics & Visibility (June 2026 — v10.5)
+
+**Falco Layer 3 — eBPF / Kernel Visibility (Agent v6.2)** ✅
+- `FalcoCompanion` class: tails `/var/log/falco.log`, 10-min dedup, 22 rules→MITRE, CRITICAL events promoted to priority lane
+- Backend: `falco_events[]` processed → `ITDRAlert` records with `alert_type: "falco_{rule}"`
+- Frontend: ITDRPage shows purple `Falco eBPF` badge on Falco alerts
+- VPS kernel 6.8 confirmed eBPF-capable. Install Falco: `apt install falco`
+
+**Memory Forensics Layer 4 — Volatility 3 (Agent v6.2)** ✅
+- `MemoryForensicsModule`: on CRITICAL + yara_match/honey_token, reads `/proc/{pid}/mem` heap+stack+exec segments (max 128MB), gzip, ships async via `send_direct()`
+- `MemoryDump` model: status (received→analysing→done), analysis_result JSON, malfind_hits, injections_found
+- `POST /api/ingest/memory-dump/{agent_id}`: receives dump → stores → runs Volatility 3 (linux.malfind, pslist, netstat) in asyncio background task
+- `backend/routers/memory.py`: `GET /api/memory/dumps?hostname=X`, `GET /api/memory/dumps/{id}`
+- Frontend: Endpoints.jsx → "Memory" tab with dump cards, injection badges, expandable Volatility output
+- Volatility 3 install: `pip install volatility3` (graceful placeholder if absent)
+
+**Attacker Path Reconstruction** ✅
+- `GET /api/identity/attack-path?case_id=X&node_id=Y`: BFS walks `IdentityEdge` graph from compromised nodes, enriches hops with ITDR alerts, maps 9 relationship types → MITRE ATT&CK
+- `CaseDetail/AttackGraphTab.jsx`: "Attack Path" tab alongside "Timeline" — SVG kill-chain with depth lanes, dashed edges + MITRE IDs, node cards with type icons/risk bars
+- `IdentityGraph.jsx`: "Reconstruct Attack Path" purple button on node detail panel
+
+**Enterprise UI Overhaul (Aether Seal brand)** ✅
+- Logo: Aether Seal orbital knot — truly transparent PNG (real alpha, 84% pixels transparent from design handoff)
+- All public pages, AppShell, Sidebar: Aether Seal icon + AEGISTRACE wordmark
+- LoadingScreen: rotating orbital seal + letter-stagger + blue progress bar (Remotion-inspired animation)
+- Theme: #050505 black, #4A7EC8 electric steel blue, #BDD4E8 steel white
+- Browser tab favicon: aegistrace-icon-transparent.png (shows in all browsers after hard-refresh)
+- `/app/deploy` (DeploymentHub): Endpoint Agent + Falco Layer 3 install guide with OS tabs, code blocks, copy buttons, live endpoint status strip
+- Sidebar: collapsible groups, Lucide icons, "Deploy & Setup" in Platform group
+
+**Bug fixes this session** ✅
+- DeploymentHub black screen: `api.get('/api/admin/config')` removed (route caught by honeypot)
+- All external `aegistrace-7qvn.onrender.com` links → `<Link to="/app/login">`
+- Lenis smooth scroll removed from all pages (Landing, Mission, Portfolio, Tools) → native scroll
+- mix-blend-mode: screen workaround removed after transparent PNG asset delivered
 
 ### Next Session Plan (Phase 3 — Platform Independence)
 1. **Ollama local AI integration** (~1 week) — `backend/core/ollama_client.py`, fallback chain Ollama → Groq → NVIDIA NIM. Enables genuine air-gap claim for regulated industries. `llama3.1:8b` runs on 4GB RAM VPS.
