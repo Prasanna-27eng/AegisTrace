@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Bot, CheckCircle, XCircle, Clock, Shield, Brain, AlertTriangle,
   Zap, ChevronRight, RefreshCw, Settings, Eye, Lock, Unlock,
-  FileText, Search, Activity, Info
+  FileText, Search, Activity, Info, Key
 } from 'lucide-react';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
@@ -213,6 +213,229 @@ function SettingsPanel({ settings, onChange }) {
   );
 }
 
+/* ── Delegation Token Card ───────────────────────────────────────────── */
+function TokenCard({ token, onRevoke, dim = false }) {
+  const timeLeft = () => {
+    const ms = new Date(token.not_after) - new Date();
+    if (ms < 0) return 'Expired';
+    const h = Math.floor(ms / 3600000);
+    if (h < 24) return `${h}h remaining`;
+    return `${Math.floor(h / 24)}d remaining`;
+  };
+
+  return (
+    <div style={{ padding: '14px 16px', background: 'rgba(255,255,255,0.02)', border: `1px solid ${token.is_revoked ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.07)'}`, borderRadius: 8, marginBottom: 8, opacity: dim ? 0.55 : 1 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+        <div>
+          <div style={{ fontSize: '0.86rem', fontWeight: 600, color: '#BDD4E8' }}>{token.agent_name}</div>
+          <div style={{ fontSize: '0.76rem', color: '#787878', marginTop: 2 }}>{token.purpose}</div>
+        </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <span style={{ fontSize: '0.62rem', ...MONO, padding: '3px 8px', borderRadius: 3,
+            background: token.is_revoked ? 'rgba(239,68,68,0.1)' : token.is_usable ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)',
+            color: token.is_revoked ? '#EF4444' : token.is_usable ? '#10B981' : '#F59E0B',
+            border: `1px solid ${token.is_revoked ? 'rgba(239,68,68,0.2)' : token.is_usable ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)'}` }}>
+            {token.is_revoked ? 'REVOKED' : token.is_usable ? 'ACTIVE' : 'EXPIRED'}
+          </span>
+          {onRevoke && token.is_usable && (
+            <button onClick={() => onRevoke(token.token_id, token.agent_name)}
+              style={{ background: 'none', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 4, color: '#EF4444', cursor: 'pointer', padding: '3px 10px', fontSize: '0.72rem', ...MONO }}>
+              Revoke
+            </button>
+          )}
+        </div>
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 8 }}>
+        {token.capabilities?.map(cap => (
+          <span key={cap} style={{ fontSize: '0.65rem', color: '#8BB8E8', background: 'rgba(74,126,200,0.08)', border: '1px solid rgba(74,126,200,0.15)', padding: '2px 7px', borderRadius: 3, ...MONO }}>
+            {cap}
+          </span>
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: 16, fontSize: '0.65rem', color: '#787878', flexWrap: 'wrap', ...MONO }}>
+        <span>By {token.authorized_by}</span>
+        <span>·</span>
+        <span>{timeLeft()}</span>
+        <span>·</span>
+        <span>{token.actions_taken} actions</span>
+        <span>·</span>
+        <span style={{ opacity: 0.6 }}>sig: {token.signature}</span>
+      </div>
+    </div>
+  );
+}
+
+/* ── Delegation Tokens Tab ───────────────────────────────────────────── */
+const DEFINED_CAPS = [
+  'read_cases', 'enrich_ioc', 'add_case_comment', 'triage_alert',
+  'generate_report', 'close_case', 'isolate_endpoint',
+  'query_identity_graph', 'run_playbook', 'generate_rule', 'access_provenance',
+];
+
+function DelegationTokensTab() {
+  const { addToast } = useStore();
+  const [tokens, setTokens]       = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [showIssue, setShowIssue] = useState(false);
+  const [form, setForm] = useState({
+    agent_name: '', purpose: '', capabilities: [],
+    not_after_hours: 8, agent_type: 'ai',
+  });
+
+  const load = () => {
+    setLoading(true);
+    api.get('/api/delegation-tokens')
+      .then(r => setTokens(r.data || []))
+      .catch(() => setTokens([]))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const issueToken = async () => {
+    try {
+      await api.post('/api/delegation-tokens', form);
+      addToast('Delegation token issued', 'success');
+      setShowIssue(false);
+      setForm({ agent_name: '', purpose: '', capabilities: [], not_after_hours: 8, agent_type: 'ai' });
+      load();
+    } catch (e) {
+      addToast(e?.response?.data?.detail || 'Failed to issue token', 'error');
+    }
+  };
+
+  const revokeToken = async (token_id, agent_name) => {
+    if (!window.confirm(`Revoke delegation for ${agent_name}?`)) return;
+    try {
+      await api.post(`/api/delegation-tokens/${token_id}/revoke`, { reason: 'Manually revoked by analyst' });
+      addToast('Token revoked', 'success');
+      load();
+    } catch {
+      addToast('Failed to revoke token', 'error');
+    }
+  };
+
+  const active  = tokens.filter(t => t.is_usable);
+  const expired = tokens.filter(t => !t.is_usable);
+
+  return (
+    <div style={{ padding: '4px 0' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+            <Key size={15} style={{ color: '#8BB8E8' }} />
+            <h2 style={{ fontSize: '1rem', fontWeight: 600, color: '#BDD4E8', margin: 0 }}>
+              Agent Delegation Tokens
+            </h2>
+          </div>
+          <p style={{ fontSize: '0.72rem', color: '#787878', margin: 0, ...MONO }}>
+            Pre-authorize AI agents with bounded scope and time. Part of the ATSP standard.
+          </p>
+        </div>
+        <button onClick={() => setShowIssue(true)} style={{
+          background: '#4A7EC8', color: '#fff', border: 'none', borderRadius: 6,
+          padding: '8px 16px', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
+        }}>
+          + Issue Token
+        </button>
+      </div>
+
+      {/* Active tokens */}
+      {active.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: '0.62rem', color: '#10B981', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10, ...MONO }}>
+            {active.length} Active Token{active.length !== 1 ? 's' : ''}
+          </div>
+          {active.map(t => <TokenCard key={t.token_id} token={t} onRevoke={revokeToken} />)}
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!loading && tokens.length === 0 && (
+        <div style={{ padding: '40px 24px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8 }}>
+          <Key size={28} style={{ color: 'rgba(143,175,192,0.2)', margin: '0 auto 10px', display: 'block' }} />
+          <div style={{ fontSize: '0.82rem', color: '#787878' }}>
+            No delegation tokens yet. Issue a token to pre-authorize an AI agent.
+          </div>
+        </div>
+      )}
+
+      {/* Expired / revoked */}
+      {expired.length > 0 && (
+        <details style={{ marginTop: 16 }}>
+          <summary style={{ fontSize: '0.62rem', color: '#787878', letterSpacing: '0.1em', cursor: 'pointer', textTransform: 'uppercase', ...MONO }}>
+            {expired.length} Expired / Revoked
+          </summary>
+          <div style={{ marginTop: 8 }}>
+            {expired.map(t => <TokenCard key={t.token_id} token={t} onRevoke={null} dim />)}
+          </div>
+        </details>
+      )}
+
+      {/* Issue Token Modal */}
+      {showIssue && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#121820', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: 28, width: '90%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto' }}>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#BDD4E8', margin: '0 0 20px' }}>Issue Agent Delegation Token</h3>
+
+            {[
+              { label: 'Agent Name', field: 'agent_name', placeholder: 'e.g. Hermes-3 Triage Agent' },
+              { label: 'Purpose', field: 'purpose', placeholder: 'e.g. Triage incoming phishing alerts for Case #AT-2847' },
+            ].map(({ label, field, placeholder }) => (
+              <div key={field} style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: '0.62rem', color: '#787878', marginBottom: 5, letterSpacing: '0.08em', textTransform: 'uppercase', ...MONO }}>{label}</div>
+                <input value={form[field]} onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))}
+                  placeholder={placeholder}
+                  style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 5, padding: '9px 12px', color: '#BDD4E8', fontSize: '0.82rem', outline: 'none', fontFamily: 'inherit' }} />
+              </div>
+            ))}
+
+            {/* Capabilities */}
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: '0.62rem', color: '#787878', marginBottom: 8, letterSpacing: '0.08em', textTransform: 'uppercase', ...MONO }}>Capabilities</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                {DEFINED_CAPS.map(cap => (
+                  <label key={cap} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '6px 10px', background: form.capabilities.includes(cap) ? 'rgba(74,126,200,0.1)' : 'rgba(255,255,255,0.02)', border: `1px solid ${form.capabilities.includes(cap) ? 'rgba(74,126,200,0.35)' : 'rgba(255,255,255,0.07)'}`, borderRadius: 5 }}>
+                    <input type="checkbox" checked={form.capabilities.includes(cap)}
+                      onChange={e => setForm(f => ({ ...f, capabilities: e.target.checked ? [...f.capabilities, cap] : f.capabilities.filter(c => c !== cap) }))}
+                      style={{ width: 13, height: 13, accentColor: '#4A7EC8' }} />
+                    <span style={{ fontSize: '0.65rem', color: form.capabilities.includes(cap) ? '#8BB8E8' : '#787878', ...MONO }}>{cap}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Expiry */}
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: '0.62rem', color: '#787878', marginBottom: 5, letterSpacing: '0.08em', textTransform: 'uppercase', ...MONO }}>
+                Expires in: {form.not_after_hours}h ({form.not_after_hours < 24 ? `${form.not_after_hours} hours` : `${(form.not_after_hours / 24).toFixed(1)} days`})
+              </div>
+              <input type="range" min={1} max={720} value={form.not_after_hours}
+                onChange={e => setForm(f => ({ ...f, not_after_hours: parseInt(e.target.value) }))}
+                style={{ width: '100%', accentColor: '#4A7EC8' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6rem', color: '#787878', marginTop: 3, ...MONO }}>
+                <span>1h</span><span>8h</span><span>24h</span><span>7d</span><span>30d</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={issueToken} disabled={!form.agent_name || !form.purpose || !form.capabilities.length}
+                style={{ flex: 1, background: '#4A7EC8', color: '#fff', border: 'none', borderRadius: 6, padding: '11px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', opacity: (!form.agent_name || !form.purpose || !form.capabilities.length) ? 0.5 : 1 }}>
+                Issue Token
+              </button>
+              <button onClick={() => setShowIssue(false)}
+                style={{ padding: '11px 18px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#787878', cursor: 'pointer', fontSize: '0.82rem' }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Main page ───────────────────────────────────────────────────────── */
 export default function AgentSecurity() {
   const navigate = useNavigate();
@@ -220,6 +443,7 @@ export default function AgentSecurity() {
   const [actions, setActions]     = useState([]);
   const [loading, setLoading]     = useState(true);
   const [processing, setProcessing] = useState(null);
+  const [mainTab, setMainTab]     = useState('queue');
   const [tab, setTab]             = useState('pending');
   const [showSettings, setShowSettings] = useState(false);
   const [settings, setSettings]   = useState({ threshold: 85, required_types: ['case_close', 'report_generate'] });
@@ -294,98 +518,121 @@ export default function AgentSecurity() {
             Human approval queue for all AI-generated actions. Every action requires analyst sign-off before executing.
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => setShowSettings(!showSettings)}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, background: showSettings ? 'rgba(90,138,159,0.1)' : 'rgba(255,255,255,0.04)', border: `1px solid ${showSettings ? 'rgba(90,138,159,0.3)' : 'rgba(255,255,255,0.1)'}`, color: showSettings ? '#4A7EC8' : '#787878', borderRadius: 7, padding: '7px 14px', fontSize: '0.78rem', cursor: 'pointer' }}>
-            <Settings size={13} /> Settings
-          </button>
-          <button onClick={load} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#787878', borderRadius: 7, padding: '7px 14px', fontSize: '0.78rem', cursor: 'pointer' }}>
-            <RefreshCw size={13} /> Refresh
-          </button>
-        </div>
-      </div>
-
-      {/* Stats row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: 10, marginBottom: 20 }}>
-        {[
-          { label: 'Pending Review', val: pending.length,     color: pending.length ? '#EAB308' : '#787878', Icon: Clock,        onClick: () => setTab('pending') },
-          { label: 'Approved',       val: approved.length,    color: '#22C55E',                              Icon: CheckCircle,  onClick: () => setTab('approved') },
-          { label: 'Rejected',       val: rejected.length,    color: rejected.length ? '#EF4444' : '#787878', Icon: XCircle,     onClick: () => setTab('rejected') },
-          { label: 'Auto-Approved',  val: autoApproved.length,color: '#4A7EC8',                              Icon: Zap,          onClick: () => setTab('auto') },
-        ].map(({ label, val, color, Icon, onClick }) => (
-          <div key={label} className="at-card" onClick={onClick}
-            style={{ padding: '12px 14px', cursor: 'pointer', borderColor: tab === label.split(' ')[0].toLowerCase() ? `${color}40` : 'rgba(255,255,255,0.07)' }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = `${color}35`}
-            onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-              <span style={{ fontSize: '0.65rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.06em', ...MONO }}>{label}</span>
-              <Icon size={12} style={{ color }} />
-            </div>
-            <div style={{ fontSize: '1.6rem', fontWeight: 700, color, ...MONO, lineHeight: 1 }}>{val}</div>
+        {mainTab === 'queue' && (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={() => setShowSettings(!showSettings)}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, background: showSettings ? 'rgba(90,138,159,0.1)' : 'rgba(255,255,255,0.04)', border: `1px solid ${showSettings ? 'rgba(90,138,159,0.3)' : 'rgba(255,255,255,0.1)'}`, color: showSettings ? '#4A7EC8' : '#787878', borderRadius: 7, padding: '7px 14px', fontSize: '0.78rem', cursor: 'pointer' }}>
+              <Settings size={13} /> Settings
+            </button>
+            <button onClick={load} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#787878', borderRadius: 7, padding: '7px 14px', fontSize: '0.78rem', cursor: 'pointer' }}>
+              <RefreshCw size={13} /> Refresh
+            </button>
           </div>
-        ))}
+        )}
       </div>
 
-      {/* Settings panel */}
-      {showSettings && (
-        <div style={{ marginBottom: 20 }}>
-          <SettingsPanel settings={settings} onChange={setSettings} />
-        </div>
-      )}
-
-      {/* How it works callout */}
-      <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(143,175,192,0.05)', border: '1px solid rgba(143,175,192,0.15)', borderRadius: 8, display: 'flex', gap: 10, alignItems: 'center' }}>
-        <Shield size={14} style={{ color: '#8BB8E8', flexShrink: 0 }} />
-        <div style={{ fontSize: '0.76rem', color: '#909090', lineHeight: 1.6 }}>
-          <strong style={{ color: '#BDD4E8' }}>Bounded Autonomy:</strong> Every AI action is logged to the Provenance Ledger before executing. Actions above {settings.threshold}% confidence auto-approve. All others queue here for human review. You remain in control.
-        </div>
-      </div>
-
-      {/* Tab bar */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.07)', paddingBottom: 0 }}>
+      {/* Top-level tab bar: Approval Queue | Delegation Tokens */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '1px solid rgba(255,255,255,0.07)', paddingBottom: 0 }}>
         {[
-          { key: 'pending',  label: `Pending (${pending.length})` },
-          { key: 'approved', label: `Approved (${approved.length})` },
-          { key: 'rejected', label: `Rejected (${rejected.length})` },
-          { key: 'auto',     label: `Auto-approved (${autoApproved.length})` },
+          { key: 'queue',      label: 'Approval Queue' },
+          { key: 'delegation', label: 'Delegation Tokens' },
         ].map(({ key, label }) => (
-          <button key={key} onClick={() => setTab(key)}
-            style={{ padding: '8px 16px', background: 'none', border: 'none', borderBottom: tab === key ? '2px solid #4A7EC8' : '2px solid transparent', color: tab === key ? '#BDD4E8' : '#787878', cursor: 'pointer', fontSize: '0.78rem', fontWeight: tab === key ? 600 : 400, marginBottom: -1, ...MONO, transition: 'color 0.15s', whiteSpace: 'nowrap' }}>
+          <button key={key} onClick={() => setMainTab(key)}
+            style={{ padding: '8px 18px', background: 'none', border: 'none', borderBottom: mainTab === key ? '2px solid #4A7EC8' : '2px solid transparent', color: mainTab === key ? '#BDD4E8' : '#787878', cursor: 'pointer', fontSize: '0.82rem', fontWeight: mainTab === key ? 600 : 400, marginBottom: -1, transition: 'color 0.15s', whiteSpace: 'nowrap' }}>
             {label}
           </button>
         ))}
       </div>
 
-      {/* Actions list */}
-      {loading ? (
-        <div style={{ padding: 60, textAlign: 'center', color: '#787878', fontSize: '0.82rem' }}>Loading actions…</div>
-      ) : visibleActions.length === 0 ? (
-        <div style={{ padding: '48px 0', textAlign: 'center' }}>
-          <Bot size={32} style={{ color: 'rgba(143,175,192,0.2)', margin: '0 auto 12px', display: 'block' }} />
-          <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 6 }}>
-            {tab === 'pending' ? 'No pending actions' : `No ${tab} actions`}
-          </div>
-          <div style={{ fontSize: '0.76rem', color: '#787878', maxWidth: 340, margin: '0 auto' }}>
-            {tab === 'pending'
-              ? 'All AI actions have been reviewed. The queue is clear.'
-              : 'Actions will appear here once AI generates them during investigations.'}
-          </div>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {visibleActions.map(action => (
-            <ActionCard key={action.id} action={action} onApprove={handleApprove} onReject={handleReject} processing={processing} />
-          ))}
-        </div>
-      )}
+      {/* ── Delegation Tokens panel ─────────────────────────── */}
+      {mainTab === 'delegation' && <DelegationTokensTab />}
 
-      {/* Footer tip */}
-      <div style={{ marginTop: 32, padding: '12px 16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-        <Info size={13} style={{ color: '#787878', flexShrink: 0, marginTop: 1 }} />
-        <div style={{ fontSize: '0.72rem', color: '#787878', lineHeight: 1.65, ...MONO }}>
-          All actions — approved, rejected, or auto — are recorded in the <strong style={{ color: '#909090' }}>Provenance Ledger</strong> with full audit trail: actor, model, confidence, timestamp, and reviewer. View the full ledger from any case's Provenance tab.
-        </div>
-      </div>
+      {/* ── Approval Queue panel ────────────────────────────── */}
+      {mainTab === 'queue' && (
+        <>
+          {/* Stats row */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: 10, marginBottom: 20 }}>
+            {[
+              { label: 'Pending Review', val: pending.length,     color: pending.length ? '#EAB308' : '#787878', Icon: Clock,        onClick: () => setTab('pending') },
+              { label: 'Approved',       val: approved.length,    color: '#22C55E',                              Icon: CheckCircle,  onClick: () => setTab('approved') },
+              { label: 'Rejected',       val: rejected.length,    color: rejected.length ? '#EF4444' : '#787878', Icon: XCircle,     onClick: () => setTab('rejected') },
+              { label: 'Auto-Approved',  val: autoApproved.length,color: '#4A7EC8',                              Icon: Zap,          onClick: () => setTab('auto') },
+            ].map(({ label, val, color, Icon, onClick }) => (
+              <div key={label} className="at-card" onClick={onClick}
+                style={{ padding: '12px 14px', cursor: 'pointer', borderColor: tab === label.split(' ')[0].toLowerCase() ? `${color}40` : 'rgba(255,255,255,0.07)' }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = `${color}35`}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ fontSize: '0.65rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.06em', ...MONO }}>{label}</span>
+                  <Icon size={12} style={{ color }} />
+                </div>
+                <div style={{ fontSize: '1.6rem', fontWeight: 700, color, ...MONO, lineHeight: 1 }}>{val}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Settings panel */}
+          {showSettings && (
+            <div style={{ marginBottom: 20 }}>
+              <SettingsPanel settings={settings} onChange={setSettings} />
+            </div>
+          )}
+
+          {/* How it works callout */}
+          <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(143,175,192,0.05)', border: '1px solid rgba(143,175,192,0.15)', borderRadius: 8, display: 'flex', gap: 10, alignItems: 'center' }}>
+            <Shield size={14} style={{ color: '#8BB8E8', flexShrink: 0 }} />
+            <div style={{ fontSize: '0.76rem', color: '#909090', lineHeight: 1.6 }}>
+              <strong style={{ color: '#BDD4E8' }}>Bounded Autonomy:</strong> Every AI action is logged to the Provenance Ledger before executing. Actions above {settings.threshold}% confidence auto-approve. All others queue here for human review. You remain in control.
+            </div>
+          </div>
+
+          {/* Sub-tab bar */}
+          <div style={{ display: 'flex', gap: 4, marginBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.07)', paddingBottom: 0 }}>
+            {[
+              { key: 'pending',  label: `Pending (${pending.length})` },
+              { key: 'approved', label: `Approved (${approved.length})` },
+              { key: 'rejected', label: `Rejected (${rejected.length})` },
+              { key: 'auto',     label: `Auto-approved (${autoApproved.length})` },
+            ].map(({ key, label }) => (
+              <button key={key} onClick={() => setTab(key)}
+                style={{ padding: '8px 16px', background: 'none', border: 'none', borderBottom: tab === key ? '2px solid #4A7EC8' : '2px solid transparent', color: tab === key ? '#BDD4E8' : '#787878', cursor: 'pointer', fontSize: '0.78rem', fontWeight: tab === key ? 600 : 400, marginBottom: -1, ...MONO, transition: 'color 0.15s', whiteSpace: 'nowrap' }}>
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Actions list */}
+          {loading ? (
+            <div style={{ padding: 60, textAlign: 'center', color: '#787878', fontSize: '0.82rem' }}>Loading actions…</div>
+          ) : visibleActions.length === 0 ? (
+            <div style={{ padding: '48px 0', textAlign: 'center' }}>
+              <Bot size={32} style={{ color: 'rgba(143,175,192,0.2)', margin: '0 auto 12px', display: 'block' }} />
+              <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 6 }}>
+                {tab === 'pending' ? 'No pending actions' : `No ${tab} actions`}
+              </div>
+              <div style={{ fontSize: '0.76rem', color: '#787878', maxWidth: 340, margin: '0 auto' }}>
+                {tab === 'pending'
+                  ? 'All AI actions have been reviewed. The queue is clear.'
+                  : 'Actions will appear here once AI generates them during investigations.'}
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {visibleActions.map(action => (
+                <ActionCard key={action.id} action={action} onApprove={handleApprove} onReject={handleReject} processing={processing} />
+              ))}
+            </div>
+          )}
+
+          {/* Footer tip */}
+          <div style={{ marginTop: 32, padding: '12px 16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <Info size={13} style={{ color: '#787878', flexShrink: 0, marginTop: 1 }} />
+            <div style={{ fontSize: '0.72rem', color: '#787878', lineHeight: 1.65, ...MONO }}>
+              All actions — approved, rejected, or auto — are recorded in the <strong style={{ color: '#909090' }}>Provenance Ledger</strong> with full audit trail: actor, model, confidence, timestamp, and reviewer. View the full ledger from any case's Provenance tab.
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

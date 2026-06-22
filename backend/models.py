@@ -515,6 +515,43 @@ class AgentAction(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+# ── Agent Identity Attestation (v10.5 — ATSP Delegation Tokens) ──────────────
+class AgentDelegationToken(SQLModel, table=True):
+    """
+    Signed pre-authorization credential for an AI agent.
+    Records who authorized what agent to do what, within what scope, for how long.
+
+    This is the 'missing piece' in the accountability chain:
+    Human → DelegationToken → AgentAction → ProvenanceLedger
+
+    Implements the Agent Identity Attestation concept from the ATSP standard.
+    Signature = HMAC-SHA256(org_id|token_id|agent_name|authorized_by|not_after|capabilities)
+    using the server's JWT_SECRET — proves the token wasn't issued or modified outside
+    the platform.
+    """
+    id:                  Optional[int] = Field(default=None, primary_key=True)
+    org_id:              int           = Field(default=1, index=True)
+    token_id:            str           = Field(default="", index=True)  # UUID
+    agent_name:          str           = Field(default="")             # which agent is pre-authorized
+    agent_type:          str           = Field(default="ai")           # ai | mcp | automation | workflow
+    authorized_by:       str           = Field(default="")             # email of human who issued it
+    authorized_by_id:    Optional[int] = Field(default=None, foreign_key="user.id")
+    purpose:             str           = Field(default="", sa_column=Column(Text))  # plain-language what for
+    capabilities:        str           = Field(default="[]", sa_column=Column(Text))  # JSON list of allowed actions
+    scope_constraints:   str           = Field(default="{}", sa_column=Column(Text))  # JSON: case_id, max_actions, severity_limit, require_approval_above_confidence
+    not_before:          datetime      = Field(default_factory=datetime.utcnow)
+    not_after:           datetime      = Field(default_factory=datetime.utcnow)  # expiry
+    is_active:           bool          = Field(default=True)
+    is_revoked:          bool          = Field(default=False)
+    revoked_at:          Optional[datetime] = Field(default=None)
+    revoked_by:          Optional[str] = Field(default=None)
+    revocation_reason:   Optional[str] = Field(default=None)
+    actions_taken:       int           = Field(default=0)   # running count of actions using this token
+    last_used_at:        Optional[datetime] = Field(default=None)
+    signature:           str           = Field(default="")  # HMAC-SHA256 proof of integrity
+    created_at:          datetime      = Field(default_factory=datetime.utcnow)
+
+
 # ── v4.0 Identity Risk Engine ─────────────────────────────────────────────────
 
 class IdentityAnomaly(SQLModel, table=True):

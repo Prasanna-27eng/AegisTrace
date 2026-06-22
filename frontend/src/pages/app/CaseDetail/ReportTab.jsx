@@ -55,6 +55,33 @@ export default function ReportTab({ caseId, caseData }) {
     }
   };
 
+  const [regPackage, setRegPackage] = useState(null);
+  const [regLoading, setRegLoading] = useState(false);
+  const [regScope, setRegScope]     = useState('all');
+
+  const generateRegPackage = async () => {
+    setRegLoading(true);
+    try {
+      const r = await api.get(`/api/reports/regulatory-package/${caseId}?regulation=${regScope}`);
+      setRegPackage(r.data);
+    } catch (e) {
+      addToast('Failed to generate package', 'error');
+    } finally {
+      setRegLoading(false);
+    }
+  };
+
+  const downloadPackage = () => {
+    if (!regPackage) return;
+    const blob = new Blob([JSON.stringify(regPackage, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `regulatory-evidence-${regPackage.case?.case_number || caseId}-${regScope}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const reports = [
     {
       icon: <File size={28} style={{ color: '#4A7EC8', marginBottom: 12 }} />,
@@ -186,6 +213,111 @@ export default function ReportTab({ caseId, caseData }) {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Regulatory Evidence Package ── */}
+      <div style={{ marginTop: 24, marginBottom: 28, border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
+        {/* Header */}
+        <div style={{ padding: '16px 20px', background: 'rgba(74,126,200,0.06)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
+              Regulatory Evidence Package
+            </div>
+            <div style={{ fontFamily: 'var(--font-ui)', fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+              Hash-chained AI decisions · Human approvals · Delegation tokens · ATSP standard
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {/* Scope selector */}
+            <select value={regScope} onChange={e => setRegScope(e.target.value)}
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 5, padding: '6px 10px', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+              <option value="all">All Regulations</option>
+              <option value="eu_ai_act">EU AI Act</option>
+              <option value="dora">DORA</option>
+              <option value="dpdpa">DPDPA</option>
+            </select>
+            <button onClick={generateRegPackage} disabled={regLoading}
+              style={{ background: '#4A7EC8', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', fontFamily: 'var(--font-ui)', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: regLoading ? 0.6 : 1 }}>
+              {regLoading ? 'Generating...' : 'Generate Package'}
+            </button>
+            {regPackage && (
+              <button onClick={downloadPackage}
+                style={{ background: 'none', border: '1px solid rgba(16,185,129,0.4)', borderRadius: 6, padding: '7px 14px', color: '#10B981', fontFamily: 'var(--font-ui)', fontSize: 12, cursor: 'pointer' }}>
+                Download JSON
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Results */}
+        {regPackage && (
+          <div style={{ padding: '16px 20px' }}>
+            {/* Completeness score */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20, padding: '12px 16px', background: 'var(--surface)', borderRadius: 6 }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 700, color: regPackage.evidence_completeness.score_pct >= 80 ? '#10B981' : regPackage.evidence_completeness.score_pct >= 50 ? '#F59E0B' : '#EF4444' }}>
+                  {regPackage.evidence_completeness.score_pct}%
+                </div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.08em' }}>COMPLETE</div>
+              </div>
+              <div>
+                <div style={{ fontFamily: 'var(--font-ui)', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 3 }}>{regPackage.evidence_completeness.summary}</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {Object.entries(regPackage.evidence_completeness.checks).map(([k, v]) => (
+                    <span key={k} style={{ fontFamily: 'var(--font-mono)', fontSize: 9, padding: '2px 7px', borderRadius: 3, background: v ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.08)', color: v ? '#10B981' : '#EF4444', border: `1px solid ${v ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.15)'}` }}>
+                      {v ? '✓' : '✗'} {k.replace(/_/g,' ')}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Chain integrity */}
+            <div style={{ marginBottom: 16, padding: '10px 14px', background: regPackage.chain_integrity.valid ? 'rgba(16,185,129,0.06)' : 'rgba(239,68,68,0.06)', border: `1px solid ${regPackage.chain_integrity.valid ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`, borderRadius: 6 }}>
+              <div style={{ fontFamily: 'var(--font-ui)', fontSize: 13, fontWeight: 600, color: regPackage.chain_integrity.valid ? '#10B981' : '#EF4444', marginBottom: 4 }}>
+                {regPackage.chain_integrity.valid ? 'Chain Integrity Verified' : 'Chain Integrity Violation'}
+              </div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)', wordBreak: 'break-all' }}>
+                Fingerprint: {regPackage.chain_integrity.chain_fingerprint}
+              </div>
+              <div style={{ fontFamily: 'var(--font-ui)', fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+                {regPackage.chain_integrity.entries_chained} chained entries · {regPackage.chain_integrity.algorithm}
+              </div>
+            </div>
+
+            {/* Regulatory mapping tables */}
+            {Object.entries(regPackage.regulatory_mapping).map(([reg, articles]) => (
+              <div key={reg} style={{ marginBottom: 16 }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: '#8BB8E8', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>
+                  {reg.replace(/_/g,' ')}
+                </div>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-ui)', fontSize: 12 }}>
+                  <tbody>
+                    {Object.entries(articles).map(([article, result]) => (
+                      <tr key={article} style={{ borderBottom: '1px solid var(--border)' }}>
+                        <td style={{ padding: '7px 10px', color: 'var(--text-secondary)' }}>{article}</td>
+                        <td style={{ padding: '7px 10px', textAlign: 'right', color: result.satisfied ? '#10B981' : '#F59E0B', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                          {result.satisfied ? '✓ Evidenced' : '⚠ Gap'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ))}
+
+            {/* Notification deadlines */}
+            <div style={{ padding: '10px 14px', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 6 }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: '#F59E0B', letterSpacing: '0.1em', marginBottom: 6 }}>NOTIFICATION DEADLINES</div>
+              {Object.entries(regPackage.notification_deadlines).map(([reg, deadline]) => (
+                <div key={reg} style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-ui)', fontSize: 11, color: 'var(--text-secondary)', paddingBottom: 3 }}>
+                  <span style={{ textTransform: 'uppercase', fontFamily: 'var(--font-mono)', fontSize: 9 }}>{reg.replace(/_/g,' ')}</span>
+                  <span style={{ color: '#F59E0B' }}>{deadline}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}

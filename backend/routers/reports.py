@@ -1,11 +1,12 @@
 import json, io, os
-from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException
+import hashlib
+from datetime import datetime, timedelta
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlmodel import Session, select
 from models import Case, TimelineEvent, AuditLog
 from database import get_session
-from routers.auth import get_current_user
+from routers.auth import get_current_user, _audit
 from models import User
 from ai_router import call_ai, call_ai_json
 
@@ -675,3 +676,295 @@ Be specific, professional, and reference DPDPA 2023 sections where relevant."""
     ))
     session.commit()
     return report_data
+
+
+@router.get("/regulatory-package/{case_id}")
+async def generate_regulatory_package(
+    case_id: int,
+    regulation: str = Query(default="all"),  # all | eu_ai_act | dora | dpdpa
+    _user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """
+    One-click Regulatory Evidence Package.
+
+    Bundles everything an AI Act / DORA / DPDPA auditor needs:
+    - Hash-chained AI decision log with chain integrity proof
+    - Human approval records
+    - ITDR alerts during the incident window
+    - Trust Certificate (chain fingerprint)
+    - Regulatory article mapping
+    - Evidence completeness score
+
+    This is the "mathematical audit integrity" export described in the ATSP standard.
+    """
+    from models import (
+        ProvenanceLedger, TrustEvent, ITDRAlert, TimelineEvent,
+    )
+    from routers.provenance import _compute_entry_hash
+
+    case = session.get(Case, case_id)
+    if not case or case.org_id != _user.org_id:
+        raise HTTPException(404, "Case not found")
+
+    # ── 1. Provenance entries ────────────────────────────────────────────────
+    provenance = session.exec(
+        select(ProvenanceLedger)
+        .where(ProvenanceLedger.case_id == case_id)
+        .order_by(ProvenanceLedger.timestamp.asc())
+    ).all()
+
+    # ── 2. Chain verification ────────────────────────────────────────────────
+    chain_valid  = True
+    broken_at    = None
+    legacy_count = 0
+    for entry in provenance:
+        if not entry.entry_hash:
+            legacy_count += 1
+            continue
+        if _compute_entry_hash(entry) != entry.entry_hash:
+            chain_valid = False
+            broken_at   = entry.id
+            break
+
+    chain_fingerprint = hashlib.sha256(
+        "|".join(e.entry_hash for e in provenance if e.entry_hash).encode()
+    ).hexdigest()
+
+    # ── 3. Human approval records ────────────────────────────────────────────
+    approvals = [
+        p for p in provenance
+        if p.approval_status in ("approved", "rejected")
+    ]
+
+    # ── 4. AI decisions (auto-approved entries with model info) ──────────────
+    ai_decisions = [
+        p for p in provenance
+        if p.model_used and p.action_type in ("ai_analysis", "ai_triage", "ai_summary")
+    ]
+
+    # ── 5. ITDR alerts during the case window ────────────────────────────────
+    window_start = case.created_at - timedelta(hours=1) if case.created_at else datetime.utcnow() - timedelta(days=1)
+    window_end   = datetime.utcnow()
+
+    itdr_alerts = session.exec(
+        select(ITDRAlert)
+        .where(ITDRAlert.org_id == _user.org_id)
+        .where(
+            (ITDRAlert.case_id == case_id) |
+            (ITDRAlert.detected_at.between(window_start, window_end))
+        )
+        .order_by(ITDRAlert.detected_at.asc())
+    ).all()
+
+    # ── 6. Timeline events ───────────────────────────────────────────────────
+    timeline = session.exec(
+        select(TimelineEvent)
+        .where(TimelineEvent.case_id == case_id)
+        .order_by(TimelineEvent.timestamp.asc())
+    ).all()
+
+    # ── 7. Delegation tokens covering this case's period ────────────────────
+    delegation_tokens = []
+    try:
+        from models import AgentDelegationToken
+        delegation_tokens = session.exec(
+            select(AgentDelegationToken)
+            .where(AgentDelegationToken.org_id == _user.org_id)
+            .where(AgentDelegationToken.not_before <= window_end)
+            .where(AgentDelegationToken.not_after >= window_start)
+        ).all()
+    except Exception:
+        delegation_tokens = []  # table may not exist yet in older deployments
+
+    # ── 8. Evidence completeness scoring ────────────────────────────────────
+    checks = {
+        "has_ai_decisions":      len(ai_decisions) > 0,
+        "has_human_approvals":   len(approvals) > 0,
+        "chain_intact":          chain_valid,
+        "has_timeline":          len(timeline) > 0,
+        "has_itdr_context":      len(itdr_alerts) > 0,
+        "case_has_findings":     bool(case.findings),
+        "case_has_mitre":        bool(case.mitre_techniques and case.mitre_techniques != "[]"),
+        "has_delegation_tokens": len(delegation_tokens) > 0,
+    }
+    score = int(sum(checks.values()) / len(checks) * 100)
+
+    # ── 9. Regulatory article mapping ───────────────────────────────────────
+    EU_AI_ACT_ARTICLES = {
+        "Article 9 — Risk Management":
+            "chain_intact and has_ai_decisions",
+        "Article 12 — Record Keeping":
+            "has_ai_decisions and has_timeline",
+        "Article 13 — Transparency":
+            "has_ai_decisions",
+        "Article 14 — Human Oversight":
+            "has_human_approvals",
+        "Article 17 — Quality Management":
+            "has_delegation_tokens and chain_intact",
+        "Article 26 — Obligations of Deployers":
+            "has_delegation_tokens and has_human_approvals",
+    }
+
+    DORA_ARTICLES = {
+        "Article 17 — ICT-related incident management":
+            "has_timeline and has_itdr_context",
+        "Article 19 — Major incident reporting":
+            "has_findings and has_timeline",
+        "Article 28 — General principles on ICT third-party risk":
+            "has_delegation_tokens",
+    }
+
+    DPDPA_ARTICLES = {
+        "Section 8(6) — Personal data breach notification":
+            "has_timeline",
+        "Section 10 — Data Protection Impact Assessment":
+            "chain_intact and has_ai_decisions",
+    }
+
+    def _eval_mapping(mapping: dict) -> dict:
+        result = {}
+        # build eval namespace from checks, normalising key names
+        ns = {k: v for k, v in checks.items()}
+        ns["has_findings"] = checks.get("case_has_findings", False)
+        for article, condition in mapping.items():
+            try:
+                satisfied = eval(condition, {"__builtins__": {}}, ns)
+            except Exception:
+                satisfied = False
+            result[article] = {
+                "satisfied": satisfied,
+                "status": "Evidenced" if satisfied else "Gap",
+            }
+        return result
+
+    reg_mappings = {}
+    if regulation in ("all", "eu_ai_act"):
+        reg_mappings["eu_ai_act"] = _eval_mapping(EU_AI_ACT_ARTICLES)
+    if regulation in ("all", "dora"):
+        reg_mappings["dora"] = _eval_mapping(DORA_ARTICLES)
+    if regulation in ("all", "dpdpa"):
+        reg_mappings["dpdpa"] = _eval_mapping(DPDPA_ARTICLES)
+
+    # ── 10. Assemble package ─────────────────────────────────────────────────
+    package = {
+        "package_type":      "AegisTrace Regulatory Evidence Package",
+        "package_version":   "1.0",
+        "atsp_standard":     "https://github.com/Prasanna-27eng/AegisTrace/blob/main/ATSP_SPEC.md",
+        "generated_at":      datetime.utcnow().isoformat(),
+        "generated_by":      _user.email,
+        "regulation_scope":  regulation,
+
+        "case": {
+            "id":             case.id,
+            "case_number":    case.case_number,
+            "title":          case.title,
+            "severity":       case.severity,
+            "status":         case.status,
+            "incident_type":  case.incident_type,
+            "created_at":     case.created_at.isoformat() if case.created_at else None,
+            "analyst":        case.analyst_name,
+            "mitre_techniques": json.loads(case.mitre_techniques or "[]"),
+        },
+
+        "chain_integrity": {
+            "valid":             chain_valid,
+            "broken_at_entry":   broken_at,
+            "chain_fingerprint": chain_fingerprint,
+            "entries_chained":   len([e for e in provenance if e.entry_hash]),
+            "legacy_entries":    legacy_count,
+            "algorithm":         "SHA-256 HMAC chain (ATSP §2.1)",
+            "verification_note": "Chain fingerprint uniquely identifies this case's AI decision history. Tamper any entry and the fingerprint changes.",
+        },
+
+        "ai_decisions": [
+            {
+                "id":              p.id,
+                "action_type":     p.action_type,
+                "model_used":      p.model_used,
+                "actor":           p.actor,
+                "confidence":      p.confidence,
+                "output_summary":  (p.output_summary or "")[:500],
+                "approval_status": p.approval_status,
+                "approved_by":     p.approved_by,
+                "timestamp":       p.timestamp.isoformat() if p.timestamp else None,
+                "entry_hash":      p.entry_hash,
+                "prev_hash":       p.prev_hash,
+            }
+            for p in ai_decisions
+        ],
+
+        "human_approvals": [
+            {
+                "id":           p.id,
+                "action_type":  p.action_type,
+                "actor":        p.actor,
+                "decision":     p.approval_status,
+                "approved_by":  p.approved_by,
+                "timestamp":    p.timestamp.isoformat() if p.timestamp else None,
+                "entry_hash":   p.entry_hash,
+            }
+            for p in approvals
+        ],
+
+        "delegation_tokens": [
+            {
+                "token_id":      t.token_id,
+                "agent_name":    t.agent_name,
+                "authorized_by": t.authorized_by,
+                "capabilities":  json.loads(t.capabilities or "[]"),
+                "not_before":    t.not_before.isoformat(),
+                "not_after":     t.not_after.isoformat(),
+                "actions_taken": t.actions_taken,
+                "signature":     t.signature[:32] + "..." if t.signature else None,
+            }
+            for t in delegation_tokens
+        ],
+
+        "itdr_context": [
+            {
+                "id":           a.id,
+                "alert_type":   a.alert_type,
+                "severity":     a.severity,
+                "identity":     a.identity_label,
+                "description":  a.description[:200],
+                "detected_at":  a.detected_at.isoformat() if a.detected_at else None,
+            }
+            for a in itdr_alerts[:50]
+        ],
+
+        "incident_timeline": [
+            {
+                "id":          e.id,
+                "event_type":  e.event_type,
+                "description": e.description[:200],
+                "timestamp":   e.timestamp.isoformat() if e.timestamp else None,
+                "actor":       e.actor,
+            }
+            for e in timeline[:100]
+        ],
+
+        "regulatory_mapping": reg_mappings,
+
+        "evidence_completeness": {
+            "score_pct": score,
+            "checks":    checks,
+            "summary":   (
+                f"Evidence package is {score}% complete. "
+                + (f"{sum(1 for v in checks.values() if not v)} gap(s) identified." if score < 100 else "All evidence checks passed.")
+            ),
+        },
+
+        "notification_deadlines": {
+            "eu_ai_act":  "72 hours from detection (Article 73)",
+            "dora":       "4 hours for major ICT incidents (Article 19)",
+            "dpdpa":      "72 hours (Section 8(6))",
+        },
+    }
+
+    _audit(session, "regulatory_package_generated", "case", str(case.id),
+           _user.id, _user.email,
+           f"Regulatory evidence package ({regulation}) for {case.case_number}")
+    session.commit()
+
+    return package
