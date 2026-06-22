@@ -13,37 +13,36 @@
   --base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
   --slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
   --emil: cubic-bezier(0.16, 1, 0.3, 1);
-  --glass-bg:        rgba(17, 24, 39, 0.88);
-  --glass-border:    rgba(148, 163, 184, 0.1);
+  --glass-bg:        rgba(14,14,22,0.92);
+  --glass-border:    rgba(74,126,200,0.1);
   --accent-cyan:     var(--teal);
   --accent-cyan-soft: var(--teal-soft);
-  --glow-blue:   0 0 24px rgba(37,99,235,0.2);
-  --glow-purple: 0 0 24px rgba(124,58,237,0.18);
-  --glow-cyan:   0 0 24px rgba(8,145,178,0.18);
-  --shadow-soft: 0 10px 30px rgba(0,0,0,0.4);
+  --glow-blue:   0 0 24px rgba(74,126,200,0.35);
+  --glow-purple: 0 0 24px rgba(74,126,200,0.2);
+  --glow-cyan:   0 0 24px rgba(58,142,200,0.25);
+  --shadow-soft: 0 10px 30px rgba(0,0,0,0.6);
 }
 
 /* ── Reset ─────────────────────────────────────────────────────────────────── */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
-  font-family: var(--font-ui), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: var(--bg);
-  color: var(--text-secondary);
-  overflow-x: hidden;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  background: var(--bg);   /* #050505 */
+  color: var(--text-primary);  /* #BDD4E8 */
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
   line-height: 1.6;
 }
 
 /* ── Scrollbar ─────────────────────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: var(--surface); }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+::-webkit-scrollbar-thumb { background: rgba(74,126,200,0.2); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(74,126,200,0.4); }
 
 /* ── Selection ─────────────────────────────────────────────────────────────── */
-::selection { background: rgba(90,138,159,0.3); color: white; }
+::selection { background: rgba(74,126,200,0.3); color: #BDD4E8; }
 
 /* ── Typography utilities ──────────────────────────────────────────────────── */
 .mono { font-family: 'JetBrains Mono', monospace; }

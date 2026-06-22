@@ -17,8 +17,8 @@ import {
 const E    = [0.16, 1, 0.3, 1];
 const EOUT = [0.23, 1, 0.32, 1];
 const GOLD = '#F59E0B';
-const BG   = '#0A1628';
-const INK  = '#F1F5F9';
+const BG   = '#050505';
+const INK  = '#BDD4E8';
 
 /* ─── Lenis smooth scroll ───────────────────────────────────────────────── */
 function useLenis() {
@@ -83,7 +83,7 @@ function AmbientEmbers() {
         if (!still) { e.y -= e.v / h; if (e.y < -0.01) { e.y = 1.01; e.x = Math.random(); } }
         const x = e.x * w + Math.sin(t * 0.5 + e.ph) * 14;
         const a = still ? 0.18 : 0.07 + 0.13 * (0.5 + 0.5 * Math.sin(t * 1.1 + e.ph));
-        ctx.fillStyle = e.gold ? `rgba(245,158,11,${a * 1.25})` : `rgba(241,245,249,${a})`;
+        ctx.fillStyle = e.gold ? `rgba(245,158,11,${a * 1.25})` : `rgba(189,212,232,${a})`;
         ctx.beginPath(); ctx.arc(x, e.y * h, e.r, 0, Math.PI * 2); ctx.fill();
       });
     };
@@ -101,22 +101,22 @@ function AmbientEmbers() {
 function RoadItem({ text, why, done = false, active = false, delay = 0 }) {
   const ref    = useRef(null);
   const inView = useInView(ref, { once: true });
-  const color  = done ? GOLD : active ? '#FBBF24' : 'rgba(241,245,249,0.22)';
+  const color  = done ? GOLD : active ? '#FBBF24' : 'rgba(189,212,232,0.22)';
   return (
     <motion.div ref={ref}
       initial={{ opacity: 0, x: -8 }} animate={inView ? { opacity: 1, x: 0 } : {}}
       transition={{ duration: 0.58, delay, ease: E }}
-      style={{ padding: '12px 0', borderBottom: '1px solid rgba(241,245,249,0.04)' }}
+      style={{ padding: '12px 0', borderBottom: '1px solid rgba(189,212,232,0.04)' }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         <div style={{ flexShrink: 0, marginTop: 3 }}>
           {done   ? <CheckCircle size={13} color={GOLD} style={{ filter: 'drop-shadow(0 0 4px rgba(245,158,11,0.4))' }}/>
           : active ? <Clock size={13} color="#FBBF24"/>
-          : <div style={{ width: 13, height: 13, borderRadius: '50%', border: '1px solid rgba(241,245,249,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(241,245,249,0.18)' }}/></div>}
+          : <div style={{ width: 13, height: 13, borderRadius: '50%', border: '1px solid rgba(189,212,232,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(189,212,232,0.18)' }}/></div>}
         </div>
         <div>
           <span style={{ fontFamily: "'IBM Plex Sans',sans-serif", fontSize: 13.5, color, lineHeight: 1.6, display: 'block' }}>{text}</span>
-          {why && <span style={{ fontFamily: "'IBM Plex Sans',sans-serif", fontSize: 11.5, color: 'rgba(241,245,249,0.26)', lineHeight: 1.55, display: 'block', marginTop: 3 }}>{why}</span>}
+          {why && <span style={{ fontFamily: "'IBM Plex Sans',sans-serif", fontSize: 11.5, color: 'rgba(189,212,232,0.26)', lineHeight: 1.55, display: 'block', marginTop: 3 }}>{why}</span>}
         </div>
       </div>
     </motion.div>
@@ -178,7 +178,7 @@ function HeroScene() {
       {/* Far background — CSS gradient dolly (no image) */}
       <motion.div aria-hidden style={{
         position: 'absolute', inset: '-16%',
-        background: 'linear-gradient(135deg, #060E1C 0%, #0A1628 30%, #0D2240 55%, #0F3470 80%, #1048A0 100%)',
+        background: 'linear-gradient(135deg, #050505 0%, #080818 35%, #0A1428 65%, #0F1E3E 100%)',
         scale: bgDollyScale, x: bgDX, y: bgDY,
         filter: bgDollyFilt, opacity: bgDollyOp,
         willChange: 'transform, opacity, filter',
@@ -186,11 +186,11 @@ function HeroScene() {
       {/* Mid overlay — moves at different rate (depth) */}
       <motion.div aria-hidden style={{
         position: 'absolute', inset: 0,
-        background: 'linear-gradient(to bottom, rgba(10,22,40,0.22) 0%, rgba(10,22,40,0.06) 36%, rgba(10,22,40,0.94) 100%)',
+        background: 'linear-gradient(to bottom, rgba(5,5,5,0.22) 0%, rgba(5,5,5,0.06) 36%, rgba(5,5,5,0.94) 100%)',
         x: useTransform(bgDX, v => v * 0.35),
         y: useTransform(bgDY, v => v * 0.35),
       }}/>
-      <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, rgba(10,22,40,0.7) 0%, rgba(10,22,40,0.22) 55%, transparent 100%)' }}/>
+      <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, rgba(5,5,5,0.7) 0%, rgba(5,5,5,0.22) 55%, transparent 100%)' }}/>
       <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 50% 38% at 8% 94%, rgba(245,158,11,0.13) 0%, transparent 64%)' }}/>
 
       {/* Beat 1 */}
@@ -215,7 +215,7 @@ function HeroScene() {
         <motion.p
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.80, delay: 0.60, ease: E }}
-          className="cg" style={{ fontSize: 'clamp(14px,1.5vw,17px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.7, maxWidth: 520 }}>
+          className="cg" style={{ fontSize: 'clamp(14px,1.5vw,17px)', color: 'rgba(189,212,232,0.56)', lineHeight: 1.7, maxWidth: 520 }}>
           We believe every identity must be scored, every decision explained, every action reversible.
         </motion.p>
       </motion.div>
@@ -258,7 +258,7 @@ function HeroScene() {
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
         opacity: kickOp, y: kickY,
       }}>
-        <span className="mono" style={{ fontSize: 10, letterSpacing: '0.32em', color: 'rgba(241,245,249,0.3)' }}>SCROLL</span>
+        <span className="mono" style={{ fontSize: 10, letterSpacing: '0.32em', color: 'rgba(189,212,232,0.3)' }}>SCROLL</span>
       </motion.div>
     </PinnedScene>
   );
@@ -295,9 +295,9 @@ function Stat83Scene() {
       <section style={{ padding: 'clamp(60px,10vw,96px) clamp(24px,5vw,72px)', textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 6 }}>
           <span className="mono" style={{ fontSize: 'clamp(80px,20vw,140px)', fontWeight: 700, color: GOLD, lineHeight: 1 }}>83</span>
-          <span className="mono" style={{ fontSize: 'clamp(40px,9vw,64px)', fontWeight: 700, color: 'rgba(241,245,249,0.38)', lineHeight: 1 }}>%</span>
+          <span className="mono" style={{ fontSize: 'clamp(40px,9vw,64px)', fontWeight: 700, color: 'rgba(189,212,232,0.38)', lineHeight: 1 }}>%</span>
         </div>
-        <p className="cg" style={{ fontSize: 17, color: 'rgba(241,245,249,0.58)', maxWidth: 440, margin: '20px auto 0', lineHeight: 1.68 }}>
+        <p className="cg" style={{ fontSize: 17, color: 'rgba(189,212,232,0.58)', maxWidth: 440, margin: '20px auto 0', lineHeight: 1.68 }}>
           of breaches involve <strong style={{ color: INK }}>stolen credentials or identity abuse.</strong>
         </p>
       </section>
@@ -309,7 +309,7 @@ function Stat83Scene() {
       {/* Far layer: dot grid with 3-layer parallax */}
       <motion.div aria-hidden style={{
         position: 'absolute', inset: '-120px 0',
-        backgroundImage: 'radial-gradient(circle, rgba(241,245,249,0.16) 1.5px, transparent 1.5px)',
+        backgroundImage: 'radial-gradient(circle, rgba(189,212,232,0.16) 1.5px, transparent 1.5px)',
         backgroundSize: '30px 30px',
         y: dotsFarY, x: dotsFarX, opacity: 0.22, willChange: 'transform',
       }}/>
@@ -346,9 +346,9 @@ function Stat83Scene() {
             textShadow: fired ? '0 0 80px rgba(245,158,11,0.38)' : 'none',
             transition: 'text-shadow 600ms ease',
           }}>{count}</motion.span>
-          <span className="mono" style={{ fontSize: 'clamp(46px,7vw,106px)', fontWeight: 700, color: 'rgba(241,245,249,0.38)', lineHeight: 1 }}>%</span>
+          <span className="mono" style={{ fontSize: 'clamp(46px,7vw,106px)', fontWeight: 700, color: 'rgba(189,212,232,0.38)', lineHeight: 1 }}>%</span>
         </div>
-        <motion.p className="cg" style={{ fontSize: 19, fontWeight: 500, color: 'rgba(241,245,249,0.58)', maxWidth: 500, margin: '22px auto 0', opacity: capOp }}>
+        <motion.p className="cg" style={{ fontSize: 19, fontWeight: 500, color: 'rgba(189,212,232,0.58)', maxWidth: 500, margin: '22px auto 0', opacity: capOp }}>
           of breaches involve <strong style={{ color: INK }}>stolen credentials or identity abuse.</strong> The perimeter is whoever you trust.
         </motion.p>
       </motion.div>
@@ -382,7 +382,7 @@ function AttackTimelineScene() {
       {/* Far: subtle grid barely moves */}
       <motion.div aria-hidden style={{
         position: 'absolute', inset: 0,
-        backgroundImage: 'linear-gradient(rgba(241,245,249,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(241,245,249,0.02) 1px, transparent 1px)',
+        backgroundImage: 'linear-gradient(rgba(189,212,232,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(189,212,232,0.02) 1px, transparent 1px)',
         backgroundSize: '48px 48px',
         x: bgX, pointerEvents: 'none',
       }}/>
@@ -391,9 +391,9 @@ function AttackTimelineScene() {
       <motion.div style={{
         position: 'absolute', top: '7vh', left: 'clamp(24px,5vw,72px)', right: 0, zIndex: 4, opacity: labelOp,
       }}>
-        <div className="mono" style={{ fontSize: 10, letterSpacing: '0.26em', color: 'rgba(241,245,249,0.3)', marginBottom: 6 }}>HOW EVERY BREACH UNFOLDS</div>
+        <div className="mono" style={{ fontSize: 10, letterSpacing: '0.26em', color: 'rgba(189,212,232,0.3)', marginBottom: 6 }}>HOW EVERY BREACH UNFOLDS</div>
         <div className="cd" style={{ fontSize: 'clamp(18px,2vw,26px)', fontWeight: 600, color: INK }}>The anatomy of an identity attack.</div>
-        <div style={{ marginTop: 14, width: 160, height: 1, background: 'rgba(241,245,249,0.08)', position: 'relative' }}>
+        <div style={{ marginTop: 14, width: 160, height: 1, background: 'rgba(189,212,232,0.08)', position: 'relative' }}>
           <motion.div style={{ position: 'absolute', inset: 0, background: GOLD, width: progressW }}/>
         </div>
       </motion.div>
@@ -429,7 +429,7 @@ function AttackTimelineScene() {
                 <Icon size={18} color={stage.color} style={{ filter: `drop-shadow(0 0 5px ${stage.color})` }}/>
               </div>
               <div className="cd" style={{ fontSize: 'clamp(14px,1.4vw,20px)', fontWeight: 600, color: INK, marginBottom: 10, lineHeight: 1.2 }}>{stage.event}</div>
-              <div className="cg" style={{ fontSize: 13, color: 'rgba(241,245,249,0.5)', lineHeight: 1.64 }}>{stage.detail}</div>
+              <div className="cg" style={{ fontSize: 13, color: 'rgba(189,212,232,0.5)', lineHeight: 1.64 }}>{stage.detail}</div>
               <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 3, background: stage.color, opacity: 0.38 }}/>
             </motion.div>
           );
@@ -437,7 +437,7 @@ function AttackTimelineScene() {
       </motion.div>
 
       <motion.div style={{ position: 'absolute', bottom: '6vh', left: 0, right: 0, display: 'flex', justifyContent: 'center', opacity: useTransform(p, [0, 0.06, 0.92, 1], [0, 0.4, 0.4, 0]) }}>
-        <span className="mono" style={{ fontSize: 10, letterSpacing: '0.3em', color: 'rgba(241,245,249,0.3)' }}>PAN →</span>
+        <span className="mono" style={{ fontSize: 10, letterSpacing: '0.3em', color: 'rgba(189,212,232,0.3)' }}>PAN →</span>
       </motion.div>
     </PinnedScene>
   );
@@ -476,13 +476,13 @@ function EvidenceScene() {
         {PROBLEMS.map(prob => (
           <RackFocus key={prob.n} p={p} focusAt={prob.focusAt} window={0.24} maxBlur={9} minOp={0.18}>
             <div style={{
-              background: 'rgba(241,245,249,0.025)',
-              border: '1px solid rgba(241,245,249,0.07)',
+              background: 'rgba(189,212,232,0.025)',
+              border: '1px solid rgba(189,212,232,0.07)',
               padding: 'clamp(20px,2.5vw,32px)', height: '100%',
             }}>
               <div className="mono" style={{ fontSize: 10, color: GOLD, letterSpacing: '0.14em', marginBottom: 14 }}>{prob.n}</div>
               <div className="cd" style={{ fontSize: 'clamp(14px,1.4vw,18px)', fontWeight: 600, color: INK, marginBottom: 10, lineHeight: 1.28 }}>{prob.title}</div>
-              <div className="cg" style={{ fontSize: 13.5, color: 'rgba(241,245,249,0.46)', lineHeight: 1.68 }}>{prob.body}</div>
+              <div className="cg" style={{ fontSize: 13.5, color: 'rgba(189,212,232,0.46)', lineHeight: 1.68 }}>{prob.body}</div>
             </div>
           </RackFocus>
         ))}
@@ -500,7 +500,7 @@ function OriginSection() {
   const bgY = useTransform(p, [0, 1], ['-5%', '5%']);
 
   return (
-    <section ref={ref} style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', background: '#0D1A2E', position: 'relative', overflow: 'hidden', borderTop: '1px solid rgba(241,245,249,0.05)' }}>
+    <section ref={ref} style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', background: '#0A0A18', position: 'relative', overflow: 'hidden', borderTop: '1px solid rgba(189,212,232,0.05)' }}>
       <motion.div aria-hidden style={{ position: 'absolute', inset: '-8%', background: 'radial-gradient(ellipse 50% 60% at 30% 50%, rgba(245,158,11,0.04) 0%, transparent 70%)', y: bgY, pointerEvents: 'none' }}/>
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'clamp(140px,18vw,220px) 1fr', gap: 'clamp(32px,5vw,72px)', alignItems: 'start' }}>
@@ -508,33 +508,33 @@ function OriginSection() {
           <div>
             <Reveal><h2 className="cd" style={{ fontSize: 'clamp(26px,3.5vw,48px)', fontWeight: 700, color: INK, margin: '0 0 22px', letterSpacing: '-0.025em', lineHeight: 1.04 }}>A SOC Analyst's Answer to an Impossible Question</h2></Reveal>
             <Reveal delay={0.07}>
-              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 640 }}>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(189,212,232,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 640 }}>
                 I'm Prasanna — a blue team SOC analyst in Dublin.
               </p>
-              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 640 }}>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(189,212,232,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 640 }}>
                 For years, I watched the same pattern play out in incident reviews. An alert fires.
                 An analyst triages. A case opens. And then the question nobody can answer:
               </p>
               <p className="cg" style={{ fontSize: 'clamp(15px,1.4vw,17px)', color: INK, lineHeight: 1.7, marginBottom: 22, maxWidth: 640, fontStyle: 'italic', borderLeft: `3px solid ${GOLD}`, paddingLeft: 20 }}>
                 "Why did the system allow this?"
               </p>
-              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 640 }}>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(189,212,232,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 640 }}>
                 Not "what happened" — we have logs for that. But "why did the system, at that
                 moment, decide this action was acceptable?"
               </p>
-              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 640 }}>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(189,212,232,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 640 }}>
                 When AI agents entered the picture, the question got louder. Agents approving
                 transactions. Agents accessing data. Agents making decisions in milliseconds that
                 used to take humans hours. And still — no platform could answer the question.
               </p>
-              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 640 }}>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(189,212,232,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 640 }}>
                 SIEMs log events. EDRs protect endpoints. Firewalls block traffic. None of them
                 were built to answer "why did the AI decide this?" None of them were built to
                 track the trust relationships between 144 machine identities for every human
                 employee. None of them were built to preserve human control in a world where
                 machines act autonomously.
               </p>
-              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 640 }}>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(189,212,232,0.56)', lineHeight: 1.78, marginBottom: 22, maxWidth: 640 }}>
                 So I started building AegisTrace. Not as a startup pitch. Not as a product
                 roadmap. As an answer to a question I couldn't stop asking:
               </p>
@@ -577,7 +577,7 @@ function PrinciplesSection() {
   ];
 
   return (
-    <section style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', background: '#0D1A2E', borderTop: '1px solid rgba(241,245,249,0.05)' }}>
+    <section style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', background: '#0A0A18', borderTop: '1px solid rgba(189,212,232,0.05)' }}>
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
         <Reveal style={{ marginBottom: 56 }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'clamp(140px,18vw,220px) 1fr', gap: 'clamp(32px,5vw,72px)', alignItems: 'baseline' }}>
@@ -590,10 +590,10 @@ function PrinciplesSection() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {CONVICTIONS.map(({ num, title, body }, i) => (
               <Reveal key={num} delay={i * 0.08} y={20}>
-                <div style={{ padding: 'clamp(28px,3vw,40px)', background: 'rgba(241,245,249,0.02)', border: '1px solid rgba(241,245,249,0.07)', borderLeft: `3px solid ${GOLD}` }}>
+                <div style={{ padding: 'clamp(28px,3vw,40px)', background: 'rgba(189,212,232,0.02)', border: '1px solid rgba(189,212,232,0.07)', borderLeft: `3px solid ${GOLD}` }}>
                   <div className="mono" style={{ fontSize: 12, color: GOLD, letterSpacing: '0.14em', marginBottom: 16, opacity: 0.9 }}>{num}</div>
                   <div className="cd" style={{ fontSize: 20, fontWeight: 700, color: INK, marginBottom: 14, lineHeight: 1.2, letterSpacing: '-0.01em' }}>{title}</div>
-                  <div className="cg" style={{ fontSize: 15, color: 'rgba(241,245,249,0.54)', lineHeight: 1.72 }}>{body}</div>
+                  <div className="cg" style={{ fontSize: 15, color: 'rgba(189,212,232,0.54)', lineHeight: 1.72 }}>{body}</div>
                 </div>
               </Reveal>
             ))}
@@ -611,7 +611,7 @@ function PhilosophySection() {
   const bgY = useTransform(p, [0, 1], ['-4%', '4%']);
 
   return (
-    <section ref={ref} style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', background: BG, position: 'relative', overflow: 'hidden', borderTop: '1px solid rgba(241,245,249,0.05)' }}>
+    <section ref={ref} style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', background: BG, position: 'relative', overflow: 'hidden', borderTop: '1px solid rgba(189,212,232,0.05)' }}>
       <motion.div aria-hidden style={{ position: 'absolute', inset: '-8%', background: 'radial-gradient(ellipse 40% 50% at 70% 50%, rgba(245,158,11,0.03) 0%, transparent 70%)', y: bgY, pointerEvents: 'none' }}/>
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'clamp(140px,18vw,220px) 1fr', gap: 'clamp(32px,5vw,72px)', alignItems: 'start' }}>
@@ -619,31 +619,31 @@ function PhilosophySection() {
           <div>
             <Reveal><h2 className="cd" style={{ fontSize: 'clamp(26px,3.5vw,48px)', fontWeight: 700, color: INK, margin: '0 0 28px', letterSpacing: '-0.025em', lineHeight: 1.04 }}>Not a SIEM. Not an EDR. Accountability Infrastructure.</h2></Reveal>
             <Reveal delay={0.07}>
-              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 640 }}>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(189,212,232,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 640 }}>
                 The security industry keeps bolting new capabilities onto old architectures.
                 Add AI to the SIEM. Add identity to the EDR. Add SOAR to the XDR.
               </p>
-              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 640 }}>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(189,212,232,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 640 }}>
                 AegisTrace was built from day one as accountability infrastructure — a platform
                 where identity scoring, explainability, and human control are not features.
                 They are the foundation.
               </p>
-              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 640 }}>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(189,212,232,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 640 }}>
                 Every module was designed around one question:{' '}
                 <em style={{ color: INK }}>"Does this strengthen or weaken the accountability surface?"</em>
               </p>
-              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 640 }}>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(189,212,232,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 640 }}>
                 The result is a platform that doesn't just detect threats — it reconstructs them.
                 Doesn't just respond — it learns. Doesn't just log — it explains.
               </p>
-              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 28, maxWidth: 640 }}>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(189,212,232,0.56)', lineHeight: 1.78, marginBottom: 28, maxWidth: 640 }}>
                 When a regulator asks "what happened," you don't show them a log.
                 You show them a narrative — with evidence, reasoning, and confidence scores
                 attached to every claim.
               </p>
             </Reveal>
             <Reveal delay={0.14}>
-              <div style={{ background: 'rgba(241,245,249,0.03)', border: '1px solid rgba(241,245,249,0.08)', padding: '16px 20px', maxWidth: 560, display: 'inline-block' }}>
+              <div style={{ background: 'rgba(189,212,232,0.03)', border: '1px solid rgba(189,212,232,0.08)', padding: '16px 20px', maxWidth: 560, display: 'inline-block' }}>
                 <span className="mono" style={{ fontSize: 12, color: GOLD, letterSpacing: '0.1em' }}>That's the difference between a SIEM and accountability infrastructure.</span>
               </div>
             </Reveal>
@@ -660,13 +660,13 @@ function VerBadge({ v, label, active = false, done = false }) {
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
       <div style={{
         width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: done ? 'rgba(245,158,11,0.12)' : active ? 'rgba(241,245,249,0.04)' : 'rgba(241,245,249,0.02)',
-        border: done ? '1px solid rgba(245,158,11,0.24)' : active ? '1px solid rgba(241,245,249,0.1)' : '1px solid rgba(241,245,249,0.05)',
+        background: done ? 'rgba(245,158,11,0.12)' : active ? 'rgba(189,212,232,0.04)' : 'rgba(189,212,232,0.02)',
+        border: done ? '1px solid rgba(245,158,11,0.24)' : active ? '1px solid rgba(189,212,232,0.1)' : '1px solid rgba(189,212,232,0.05)',
         boxShadow: done ? '0 0 10px rgba(245,158,11,0.14)' : 'none',
       }}>
-        <span className="mono" style={{ fontSize: 9, fontWeight: 700, color: done ? GOLD : active ? 'rgba(241,245,249,0.5)' : 'rgba(241,245,249,0.24)' }}>{v}</span>
+        <span className="mono" style={{ fontSize: 9, fontWeight: 700, color: done ? GOLD : active ? 'rgba(189,212,232,0.5)' : 'rgba(189,212,232,0.24)' }}>{v}</span>
       </div>
-      <span className="cd" style={{ fontSize: 13, fontWeight: 600, color: done ? INK : active ? INK : 'rgba(241,245,249,0.36)' }}>{label}</span>
+      <span className="cd" style={{ fontSize: 13, fontWeight: 600, color: done ? INK : active ? INK : 'rgba(189,212,232,0.36)' }}>{label}</span>
     </div>
   );
 }
@@ -696,7 +696,7 @@ function RoadmapSection() {
   ];
 
   return (
-    <section style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(241,245,249,0.05)' }}>
+    <section style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(189,212,232,0.05)' }}>
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
 
         <Reveal style={{ marginBottom: 56 }}>
@@ -715,11 +715,11 @@ function RoadmapSection() {
             <CheckCircle size={14} color={GOLD} style={{ filter: 'drop-shadow(0 0 4px rgba(245,158,11,0.4))' }}/>
             <span className="cd" style={{ fontSize: 15, fontWeight: 600, color: INK }}>v1 — Foundation (NOW · v10.x) — SHIPPED</span>
           </div>
-          <div style={{ background: 'rgba(241,245,249,0.02)', border: '1px solid rgba(245,158,11,0.12)', borderLeft: `3px solid ${GOLD}`, padding: 'clamp(20px,2.5vw,32px)' }}>
+          <div style={{ background: 'rgba(189,212,232,0.02)', border: '1px solid rgba(245,158,11,0.12)', borderLeft: `3px solid ${GOLD}`, padding: 'clamp(20px,2.5vw,32px)' }}>
             {V1_ITEMS.map((item, i) => (
               <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: i < V1_ITEMS.length - 1 ? 8 : 0 }}>
                 <span style={{ color: GOLD, fontSize: 10, marginTop: 5, flexShrink: 0 }}>✓</span>
-                <span className="cg" style={{ fontSize: 13.5, color: 'rgba(241,245,249,0.58)', lineHeight: 1.6 }}>{item}</span>
+                <span className="cg" style={{ fontSize: 13.5, color: 'rgba(189,212,232,0.58)', lineHeight: 1.6 }}>{item}</span>
               </div>
             ))}
           </div>
@@ -728,7 +728,7 @@ function RoadmapSection() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px,1fr))', gap: 'clamp(24px,4vw,48px)' }}>
           <div>
             <Reveal>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, paddingBottom: 14, borderBottom: '1px solid rgba(241,245,249,0.07)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, paddingBottom: 14, borderBottom: '1px solid rgba(189,212,232,0.07)' }}>
                 <Clock size={13} color="#FBBF24"/>
                 <span className="cd" style={{ fontSize: 14, fontWeight: 600, color: INK }}>v2 — Enterprise (2026 H2) — IN PROGRESS</span>
               </div>
@@ -737,9 +737,9 @@ function RoadmapSection() {
           </div>
           <div>
             <Reveal>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, paddingBottom: 14, borderBottom: '1px solid rgba(241,245,249,0.07)' }}>
-                <div style={{ width: 13, height: 13, borderRadius: '50%', border: '1px solid rgba(241,245,249,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(241,245,249,0.18)' }}/></div>
-                <span className="cd" style={{ fontSize: 14, fontWeight: 600, color: 'rgba(241,245,249,0.38)' }}>v3 — Platform (2027) — PLANNED</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, paddingBottom: 14, borderBottom: '1px solid rgba(189,212,232,0.07)' }}>
+                <div style={{ width: 13, height: 13, borderRadius: '50%', border: '1px solid rgba(189,212,232,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(189,212,232,0.18)' }}/></div>
+                <span className="cd" style={{ fontSize: 14, fontWeight: 600, color: 'rgba(189,212,232,0.38)' }}>v3 — Platform (2027) — PLANNED</span>
               </div>
             </Reveal>
             {V3.map((item, i) => <RoadItem key={item.text} {...item} done={false} delay={i * 0.05}/>)}
@@ -772,24 +772,24 @@ function EnterpriseSection() {
   ];
 
   return (
-    <section style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', background: '#0D1A2E', borderTop: '1px solid rgba(241,245,249,0.05)' }}>
+    <section style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', background: '#0A0A18', borderTop: '1px solid rgba(189,212,232,0.05)' }}>
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'clamp(140px,18vw,220px) 1fr', gap: 'clamp(32px,5vw,72px)', alignItems: 'start' }}>
           <Reveal><span className="cg" style={{ fontSize: 10, color: GOLD, letterSpacing: '0.22em', textTransform: 'uppercase', fontWeight: 600, paddingTop: 6, display: 'block' }}>Who It's For</span></Reveal>
           <div>
             <Reveal><h2 className="cd" style={{ fontSize: 'clamp(26px,3.5vw,48px)', fontWeight: 700, color: INK, margin: '0 0 22px', letterSpacing: '-0.025em', lineHeight: 1.04 }}>Self-Hostable. Multi-Tenant. Built for Regulated Industries.</h2></Reveal>
             <Reveal delay={0.07}>
-              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 600 }}>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(189,212,232,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 600 }}>
                 AegisTrace is self-hostable. Your data never leaves your network.
               </p>
-              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 600 }}>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(189,212,232,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 600 }}>
                 This isn't a deployment option. It's a conviction.
               </p>
-              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 600 }}>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(189,212,232,0.56)', lineHeight: 1.78, marginBottom: 18, maxWidth: 600 }}>
                 The teams defending critical infrastructure — financial services, healthcare,
                 government, energy — deserve platforms they can audit, modify, and trust.
               </p>
-              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(241,245,249,0.56)', lineHeight: 1.78, marginBottom: 28, maxWidth: 600 }}>
+              <p className="cg" style={{ fontSize: 'clamp(14px,1.3vw,16px)', color: 'rgba(189,212,232,0.56)', lineHeight: 1.78, marginBottom: 28, maxWidth: 600 }}>
                 We fund development through enterprise contracts, consulting, and the goodwill
                 of a community that believes in the mission.
               </p>
@@ -800,10 +800,10 @@ function EnterpriseSection() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px,1fr))', gap: 2 }}>
               {AUDIENCE.map(({ icon: Icon, label, body }, i) => (
                 <Reveal key={label} delay={i * 0.06} y={20}>
-                  <div style={{ padding: 'clamp(18px,2vw,26px)', background: 'rgba(241,245,249,0.02)', border: '1px solid rgba(241,245,249,0.07)', height: '100%' }}>
+                  <div style={{ padding: 'clamp(18px,2vw,26px)', background: 'rgba(189,212,232,0.02)', border: '1px solid rgba(189,212,232,0.07)', height: '100%' }}>
                     <Icon size={18} color={GOLD} style={{ marginBottom: 14, opacity: 0.8 }}/>
                     <div className="cd" style={{ fontSize: 15, fontWeight: 600, color: INK, marginBottom: 8, letterSpacing: '-0.01em' }}>{label}</div>
-                    <div className="cg" style={{ fontSize: 13, color: 'rgba(241,245,249,0.44)', lineHeight: 1.68 }}>{body}</div>
+                    <div className="cg" style={{ fontSize: 13, color: 'rgba(189,212,232,0.44)', lineHeight: 1.68 }}>{body}</div>
                   </div>
                 </Reveal>
               ))}
@@ -818,7 +818,7 @@ function EnterpriseSection() {
 /* ─── NAV ────────────────────────────────────────────────────────────────── */
 function Nav() {
   const { scrollY } = useScroll();
-  const navBg     = useTransform(scrollY, [0, 80], ['rgba(10,22,40,0)', 'rgba(10,22,40,0.96)']);
+  const navBg     = useTransform(scrollY, [0, 80], ['rgba(5,5,5,0)', 'rgba(5,5,5,0.96)']);
   const navBlur   = useTransform(scrollY, [0, 80], [0, 18]);
   const navFilter = useTransform(navBlur, v => `blur(${v}px)`);
 
@@ -829,7 +829,10 @@ function Nav() {
       padding: '0 clamp(20px,4vw,48px)', height: 64,
       background: navBg, backdropFilter: navFilter, WebkitBackdropFilter: navFilter,
     }}>
-      <Link to="/" className="cd" style={{ color: INK, textDecoration: 'none', fontSize: 16, fontWeight: 700, letterSpacing: '0.1em' }}>AEGISTRACE</Link>
+      <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+        <img src="/assets/brand/aegistrace-icon.png" alt="AegisTrace" style={{ width: 26, height: 26, objectFit: 'contain', filter: 'drop-shadow(0 0 5px rgba(74,126,200,0.5))' }}/>
+        <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, fontWeight: 600, color: '#BDD4E8', letterSpacing: '0.18em' }}>AEGISTRACE</span>
+      </Link>
       <div style={{ display: 'flex', gap: 'clamp(18px,3vw,36px)', alignItems: 'center' }}>
         <Link to="/portfolio" className="nav-link">Portfolio</Link>
         <Link to="/platform" className="nav-link">Platform</Link>
@@ -842,22 +845,22 @@ function Nav() {
 /* ─── Builder Section ────────────────────────────────────────────────────── */
 function BuilderSection() {
   return (
-    <section style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', background: BG, borderTop: '1px solid rgba(241,245,249,0.05)' }}>
+    <section style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', background: BG, borderTop: '1px solid rgba(189,212,232,0.05)' }}>
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'clamp(140px,18vw,220px) 1fr', gap: 'clamp(32px,5vw,72px)', alignItems: 'start' }}>
           <Reveal><span className="cg" style={{ fontSize: 10, color: GOLD, letterSpacing: '0.22em', textTransform: 'uppercase', fontWeight: 600, paddingTop: 6, display: 'block' }}>The Builder</span></Reveal>
           <div>
             <Reveal><h2 className="cd" style={{ fontSize: 'clamp(26px,3.5vw,48px)', fontWeight: 700, color: INK, margin: '0 0 28px', letterSpacing: '-0.025em', lineHeight: 1.04 }}>Built by a SOC Analyst. For SOC Analysts.</h2></Reveal>
             <Reveal delay={0.08}>
-              <div style={{ background: 'rgba(241,245,249,0.02)', border: '1px solid rgba(241,245,249,0.08)', padding: 'clamp(24px,3vw,36px)', maxWidth: 580 }}>
+              <div style={{ background: 'rgba(189,212,232,0.02)', border: '1px solid rgba(189,212,232,0.08)', padding: 'clamp(24px,3vw,36px)', maxWidth: 580 }}>
                 <div className="cd" style={{ fontSize: 17, fontWeight: 700, color: INK, marginBottom: 4 }}>Prasanna Kumar Surendran</div>
                 <div className="cg" style={{ fontSize: 13, color: GOLD, marginBottom: 18 }}>Blue Team SOC Analyst · Dublin, Ireland</div>
-                <p className="cg" style={{ fontSize: 14, color: 'rgba(241,245,249,0.56)', lineHeight: 1.72, marginBottom: 16 }}>
+                <p className="cg" style={{ fontSize: 14, color: 'rgba(189,212,232,0.56)', lineHeight: 1.72, marginBottom: 16 }}>
                   MSc Information Systems & Computing, Dublin Business School (2025)
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 18 }}>
                   {['SC-200', 'Security+', 'TCM PEH', 'BTL1', 'eJPT', 'SC-300'].map(cert => (
-                    <span key={cert} className="mono" style={{ fontSize: 11, color: 'rgba(241,245,249,0.45)', background: 'rgba(241,245,249,0.04)', border: '1px solid rgba(241,245,249,0.1)', padding: '3px 8px' }}>{cert}</span>
+                    <span key={cert} className="mono" style={{ fontSize: 11, color: 'rgba(241,245,249,0.45)', background: 'rgba(189,212,232,0.04)', border: '1px solid rgba(189,212,232,0.1)', padding: '3px 8px' }}>{cert}</span>
                   ))}
                 </div>
                 <p className="cg" style={{ fontSize: 14, color: 'rgba(241,245,249,0.52)', lineHeight: 1.72, margin: 0 }}>
@@ -882,7 +885,7 @@ function CTASection() {
   const ctaOp    = useTransform(p, [0.1, 0.45], [0, 1], { clamp: true });
 
   return (
-    <section ref={ref} style={{ position: 'relative', overflow: 'hidden', padding: 'clamp(100px,14vw,160px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(241,245,249,0.05)', textAlign: 'center' }}>
+    <section ref={ref} style={{ position: 'relative', overflow: 'hidden', padding: 'clamp(100px,14vw,160px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(189,212,232,0.05)', textAlign: 'center' }}>
       <div aria-hidden style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 600, height: 380, background: 'radial-gradient(ellipse, rgba(245,158,11,0.07) 0%, transparent 70%)', pointerEvents: 'none' }}/>
       {[0, 1, 2].map(i => (
         <div key={i} aria-hidden style={{ position: 'absolute', top: '50%', left: '50%', width: 480, height: 480, border: '1px solid rgba(245,158,11,0.055)', borderRadius: '50%', pointerEvents: 'none', animation: `ripple-ring ${4.2 + i * 1.6}s cubic-bezier(0,0,.8,1) ${i * 1.4}s infinite` }}/>
@@ -892,7 +895,7 @@ function CTASection() {
           <h2 className="cd" style={{ fontSize: 'clamp(30px,4.5vw,60px)', fontWeight: 700, color: INK, letterSpacing: '-0.03em', lineHeight: 0.96, marginBottom: 20 }}>
             Autonomous AI needs<br/>accountable security.
           </h2>
-          <p className="cg" style={{ fontSize: 15, color: 'rgba(241,245,249,0.44)', lineHeight: 1.72, maxWidth: 440, margin: '0 auto 40px' }}>
+          <p className="cg" style={{ fontSize: 15, color: 'rgba(189,212,232,0.44)', lineHeight: 1.72, maxWidth: 440, margin: '0 auto 40px' }}>
             Book a private demo with the founder. See the full platform in a live environment.
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -939,16 +942,16 @@ export default function Mission() {
           display: inline-flex; align-items: center; gap: 8px;
           background: transparent; color: rgba(241,245,249,0.7);
           font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 500;
-          padding: 11px 22px; border: 1px solid rgba(241,245,249,0.18);
+          padding: 11px 22px; border: 1px solid rgba(189,212,232,0.18);
           cursor: pointer; text-decoration: none; letter-spacing: 0.02em;
           transition: border-color 140ms, color 140ms, transform 100ms;
         }
-        .ghost-btn:hover  { border-color: rgba(241,245,249,0.4); color: ${INK}; transform: translateY(-2px); }
+        .ghost-btn:hover  { border-color: rgba(189,212,232,0.4); color: ${INK}; transform: translateY(-2px); }
         .ghost-btn:active { transform: scale(0.97); }
 
         .nav-link {
           font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 500;
-          color: rgba(241,245,249,0.58); text-decoration: none;
+          color: rgba(189,212,232,0.58); text-decoration: none;
           position: relative; transition: color 140ms;
         }
         .nav-link:hover { color: ${INK}; }
@@ -973,12 +976,12 @@ export default function Mission() {
 
       {(isMobile || reduced) ? (
         <section style={{ minHeight: '70vh', display: 'flex', alignItems: 'flex-end', position: 'relative', overflow: 'hidden', paddingTop: 64 }}>
-          <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, #060E1C 0%, #0A1628 40%, #0D2240 70%, #1048A0 100%)' }}/>
+          <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, #050505 0%, #080818 35%, #0A1428 65%, #0F1E3E 100%)' }}/>
           <Reveal style={{ position: 'relative', zIndex: 2, padding: '0 24px 60px' }}>
             <h1 className="cd" style={{ fontSize: 'clamp(38px,10vw,56px)', fontWeight: 700, lineHeight: 1.0, letterSpacing: '-0.02em', color: INK, margin: '0 0 16px' }}>
               Autonomous systems deserve<br/><span style={{ color: GOLD }}>accountable security.</span>
             </h1>
-            <p className="cg" style={{ fontSize: 15.5, color: 'rgba(241,245,249,0.54)', lineHeight: 1.68, maxWidth: 440, margin: 0 }}>
+            <p className="cg" style={{ fontSize: 15.5, color: 'rgba(189,212,232,0.54)', lineHeight: 1.68, maxWidth: 440, margin: 0 }}>
               We believe every identity must be scored, every decision explained, every action reversible.
             </p>
           </Reveal>
@@ -1000,15 +1003,18 @@ export default function Mission() {
       <BuilderSection/>
       <CTASection/>
 
-      <footer style={{ borderTop: '1px solid rgba(241,245,249,0.05)', padding: '28px clamp(24px,5vw,72px)' }}>
+      <footer style={{ borderTop: '1px solid rgba(189,212,232,0.05)', padding: '28px clamp(24px,5vw,72px)' }}>
         <div style={{ maxWidth: 1240, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
-          <span className="cd" style={{ color: 'rgba(241,245,249,0.2)', fontSize: 12, letterSpacing: '0.08em' }}>AEGISTRACE</span>
-          <div style={{ display: 'flex', gap: 24 }}>
-            <Link to="/" className="cg" style={{ color: 'rgba(241,245,249,0.25)', fontSize: 12, textDecoration: 'none' }}>Home</Link>
-            <Link to="/portfolio" className="cg" style={{ color: 'rgba(241,245,249,0.25)', fontSize: 12, textDecoration: 'none' }}>Portfolio</Link>
-            <Link to="/app/login" className="cg" style={{ color: 'rgba(241,245,249,0.25)', fontSize: 12, textDecoration: 'none' }}>Platform</Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <img src="/assets/brand/aegistrace-icon.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain', opacity: 0.6 }}/>
+            <span style={{ fontFamily: "'IBM Plex Mono',monospace", color: 'rgba(189,212,232,0.3)', fontSize: 11, letterSpacing: '0.16em' }}>AEGISTRACE</span>
           </div>
-          <span className="cg" style={{ color: 'rgba(241,245,249,0.15)', fontSize: 11 }}>© 2026 Prasanna Kumar</span>
+          <div style={{ display: 'flex', gap: 24 }}>
+            <Link to="/" className="cg" style={{ color: 'rgba(189,212,232,0.25)', fontSize: 12, textDecoration: 'none' }}>Home</Link>
+            <Link to="/portfolio" className="cg" style={{ color: 'rgba(189,212,232,0.25)', fontSize: 12, textDecoration: 'none' }}>Portfolio</Link>
+            <Link to="/app/login" className="cg" style={{ color: 'rgba(189,212,232,0.25)', fontSize: 12, textDecoration: 'none' }}>Platform</Link>
+          </div>
+          <span className="cg" style={{ color: 'rgba(189,212,232,0.15)', fontSize: 11 }}>© 2026 Prasanna Kumar</span>
         </div>
       </footer>
     </div>

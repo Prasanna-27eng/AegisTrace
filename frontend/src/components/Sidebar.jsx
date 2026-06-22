@@ -7,7 +7,6 @@ import {
   Radar, ShieldAlert, ScanEye, BookOpen,
   Plug, KeyRound, FlaskConical, Wrench,
   Settings2, ScrollText, Lock, ClipboardList,
-  Shield,
 } from 'lucide-react';
 import useStore from '../store/useStore';
 
@@ -127,7 +126,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         left: 0,
         bottom: 0,
         width: collapsed ? 'var(--sidebar-w-collapsed, 56px)' : 'var(--sidebar-w, 240px)',
-        background: 'var(--sidebar-bg, #070B14)',
+        background: 'var(--sidebar-bg, #030308)',
         borderRight: '1px solid var(--border)',
         display: 'flex',
         flexDirection: 'column',
@@ -146,38 +145,18 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           flexShrink: 0,
           height: 52,
         }}>
+          {/* Logo in expanded sidebar */}
           {!collapsed && (
-            <div
-              onClick={() => navigate('/')}
-              title="Back to home"
-              style={{
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                borderRadius: 6,
-                padding: '3px 6px',
-                transition: 'background 140ms ease-out',
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(37,99,235,0.08)'}
+            <div onClick={() => navigate('/')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 9, borderRadius: 6, padding: '3px 6px', transition: 'background 140ms ease-out' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(74,126,200,0.1)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <Shield size={16} color="#2563EB" />
-              <span style={{
-                fontFamily: 'var(--font-display)',
-                fontWeight: 700,
-                fontSize: 13,
-                color: 'var(--text-primary)',
-                letterSpacing: '0.06em',
-              }}>
-                AEGISTRACE
-              </span>
+              <img src="/assets/brand/aegistrace-icon.png" alt="" style={{ width: 22, height: 22, objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(74,126,200,0.5))' }}/>
+              <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 12, color: 'var(--text-primary)', letterSpacing: '0.16em' }}>AEGISTRACE</span>
             </div>
           )}
           {collapsed && (
-            <div title="AegisTrace" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-              <Shield size={18} color="#2563EB" />
-            </div>
+            <img src="/assets/brand/aegistrace-icon.png" alt="AegisTrace" title="AegisTrace" onClick={() => navigate('/')} style={{ width: 24, height: 24, objectFit: 'contain', cursor: 'pointer', filter: 'drop-shadow(0 0 4px rgba(74,126,200,0.5))' }}/>
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
@@ -195,9 +174,9 @@ export default function Sidebar({ collapsed, setCollapsed }) {
               flexShrink: 0,
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.background = 'rgba(37,99,235,0.10)';
-              e.currentTarget.style.color = '#60A5FA';
-              e.currentTarget.style.borderColor = 'rgba(37,99,235,0.3)';
+              e.currentTarget.style.background = 'rgba(74,126,200,0.10)';
+              e.currentTarget.style.color = '#8BB8E8';
+              e.currentTarget.style.borderColor = 'rgba(74,126,200,0.3)';
             }}
             onMouseLeave={e => {
               e.currentTarget.style.background = 'none';
@@ -231,7 +210,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                   outline: 'none',
                   transition: 'border-color 140ms, background 140ms',
                 }}
-                onFocus={e => { e.target.style.borderColor = 'rgba(37,99,235,0.4)'; e.target.style.background = 'rgba(37,99,235,0.04)'; }}
+                onFocus={e => { e.target.style.borderColor = 'rgba(74,126,200,0.4)'; e.target.style.background = 'rgba(74,126,200,0.04)'; }}
                 onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.background = 'rgba(255,255,255,0.04)'; }}
               />
             </div>
@@ -269,7 +248,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                       fontFamily: 'var(--font-mono)',
                       fontSize: 10,
                       letterSpacing: '0.1em',
-                      color: hasActiveItem ? 'rgba(96,165,250,0.7)' : 'var(--text-muted)',
+                      color: hasActiveItem ? 'rgba(139,184,232,0.7)' : 'var(--text-muted)',
                       textTransform: 'uppercase',
                       transition: 'color 140ms ease-out',
                     }}>
@@ -308,9 +287,9 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                           fontFamily: 'var(--font-ui)',
                           fontSize: 13,
                           fontWeight: isActive ? 500 : 400,
-                          color: isActive ? '#60A5FA' : 'var(--text-secondary)',
-                          background: isActive ? 'rgba(37,99,235,0.10)' : 'transparent',
-                          borderLeft: isActive ? '2px solid #2563EB' : '2px solid transparent',
+                          color: isActive ? 'var(--accent-light)' : 'var(--text-secondary)',
+                          background: isActive ? 'rgba(74,126,200,0.10)' : 'transparent',
+                          borderLeft: isActive ? '2px solid #4A7EC8' : '2px solid transparent',
                           transition: 'background 140ms ease-out, color 140ms ease-out',
                           cursor: 'pointer',
                         })}
@@ -329,7 +308,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                       >
                         {({ isActive }) => (
                           <>
-                            <Icon size={15} style={{ flexShrink: 0, color: isActive ? '#60A5FA' : 'var(--text-muted)', transition: 'color 140ms' }} />
+                            <Icon size={15} style={{ flexShrink: 0, color: isActive ? 'var(--accent-light)' : 'var(--text-muted)', transition: 'color 140ms' }} />
                             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {label}
                             </span>
@@ -353,8 +332,8 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                         margin: '1px 6px',
                         borderRadius: 6,
                         textDecoration: 'none',
-                        background: isActive ? 'rgba(37,99,235,0.10)' : 'transparent',
-                        borderLeft: isActive ? '2px solid #2563EB' : '2px solid transparent',
+                        background: isActive ? 'rgba(74,126,200,0.10)' : 'transparent',
+                        borderLeft: isActive ? '2px solid #4A7EC8' : '2px solid transparent',
                         transition: 'background 140ms ease-out',
                         cursor: 'pointer',
                       })}
@@ -370,7 +349,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                       }}
                     >
                       {({ isActive }) => (
-                        <Icon size={15} style={{ color: isActive ? '#60A5FA' : 'var(--text-muted)' }} />
+                        <Icon size={15} style={{ color: isActive ? 'var(--accent-light)' : 'var(--text-muted)' }} />
                       )}
                     </NavLink>
                   ))
@@ -393,10 +372,10 @@ export default function Sidebar({ collapsed, setCollapsed }) {
             }}>
               <div style={{
                 width: 28, height: 28, borderRadius: '50%',
-                background: 'rgba(37,99,235,0.18)',
-                border: '1px solid rgba(37,99,235,0.3)',
+                background: 'rgba(74,126,200,0.18)',
+                border: '1px solid rgba(74,126,200,0.3)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 11, fontWeight: 700, color: '#60A5FA',
+                fontSize: 11, fontWeight: 700, color: '#8BB8E8',
                 fontFamily: 'var(--font-mono)', flexShrink: 0,
               }}>
                 {initials}
@@ -413,7 +392,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           )}
           {collapsed && user && (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '4px 0' }}>
-              <div title={user.name} style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(37,99,235,0.18)', border: '1px solid rgba(37,99,235,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#60A5FA', fontFamily: 'var(--font-mono)' }}>
+              <div title={user.name} style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(37,99,235,0.18)', border: '1px solid rgba(37,99,235,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#8BB8E8', fontFamily: 'var(--font-mono)' }}>
                 {initials}
               </div>
             </div>

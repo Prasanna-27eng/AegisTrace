@@ -8,7 +8,7 @@ import useStore from '../store/useStore';
 /* ─── Tokens ─────────────────────────────────────────────────────────────── */
 const E    = [0.23, 1, 0.32, 1];
 const GOLD = '#F59E0B';
-const BG   = '#050405';
+const BG   = '#050505';
 const INK  = '#F5F0E8';
 
 /* ════════════════════════════════════════════════════════════════════════════
@@ -77,8 +77,8 @@ export default function Login() {
         }
         .login-input {
           display: block; width: 100%; box-sizing: border-box;
-          background: #0A0908;
-          border: 1px solid rgba(245,240,232,0.12);
+          background: #0A0A18;
+          border: 1px solid rgba(74,126,200,0.15);
           color: ${INK};
           font-family: 'Cabinet Grotesk', sans-serif;
           font-size: 15px; font-weight: 500;
@@ -89,12 +89,12 @@ export default function Login() {
         }
         .login-input::placeholder { color: rgba(245,240,232,0.22); }
         .login-input:focus {
-          border-color: rgba(245,158,11,0.5);
-          background: rgba(245,158,11,0.03);
-          box-shadow: 0 0 0 1px ${GOLD};
+          border-color: rgba(74,126,200,0.6);
+          background: rgba(74,126,200,0.04);
+          box-shadow: 0 0 0 1px #4A7EC8;
         }
         .login-input:hover:not(:focus) {
-          border-color: rgba(245,240,232,0.22);
+          border-color: rgba(74,126,200,0.25);
         }
         .login-input.has-error {
           border-color: rgba(248,113,113,0.45);
@@ -103,7 +103,7 @@ export default function Login() {
 
         .sign-btn {
           width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
-          background: ${GOLD}; color: #050405;
+          background: #4A7EC8; color: #fff;
           font-family: 'Cabinet Grotesk', sans-serif;
           font-size: 15px; font-weight: 700;
           padding: 14px 24px; border: none; cursor: pointer;
@@ -112,9 +112,9 @@ export default function Login() {
           -webkit-font-smoothing: antialiased;
         }
         .sign-btn:hover:not(:disabled) {
-          background: #FBBF24;
+          background: #3A6AB8;
           transform: translateY(-1px);
-          box-shadow: 0 4px 24px rgba(245,158,11,0.28);
+          box-shadow: 0 4px 24px rgba(74,126,200,0.3);
         }
         .sign-btn:active:not(:disabled) { transform: scale(0.98); }
         .sign-btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -157,18 +157,18 @@ export default function Login() {
         {/* Dark overlay */}
         <div aria-hidden style={{
           position: 'absolute', inset: 0,
-          background: 'linear-gradient(135deg, rgba(5,4,5,0.92) 0%, rgba(5,4,5,0.70) 100%)',
+          background: 'linear-gradient(135deg, #050505 0%, #080818 60%, #0F1428 100%)',
           zIndex: 1,
         }}/>
 
-        {/* Gold accent line — left edge, vertically centered */}
+        {/* Blue accent line — left edge, vertically centered */}
         <div aria-hidden style={{
           position: 'absolute', left: 0, top: '50%',
           width: 2, height: 60,
-          background: GOLD,
+          background: '#4A7EC8',
           transform: 'translateY(-50%)',
           zIndex: 3,
-          boxShadow: `0 0 16px rgba(245,158,11,0.5)`,
+          boxShadow: `0 0 16px rgba(74,126,200,0.5)`,
         }}/>
 
         {/* Content */}
@@ -183,14 +183,19 @@ export default function Login() {
             padding: 'clamp(48px,6vw,80px)',
           }}
         >
-          {/* Brand label */}
-          <span style={{
-            fontFamily: "'Clash Display', sans-serif",
-            fontSize: 13, fontWeight: 600,
-            letterSpacing: '0.2em',
-            color: 'rgba(245,240,232,0.5)',
-            marginBottom: 28,
-          }}>AEGISTRACE</span>
+          {/* Aether Seal logo */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12, marginBottom: 28 }}>
+            <img
+              src="/assets/brand/aegistrace-logo.png"
+              alt="AegisTrace Aether Seal"
+              style={{
+                width: 120, height: 120, objectFit: 'contain',
+                filter: 'drop-shadow(0 0 20px rgba(74,126,200,0.5)) drop-shadow(0 0 40px rgba(74,126,200,0.25))',
+                marginBottom: 8,
+              }}
+            />
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, color: '#4A7EC8', letterSpacing: '0.24em' }}>AEGISTRACE · AETHER SEAL</div>
+          </div>
 
           {/* Large quote */}
           <h2 style={{
@@ -229,7 +234,7 @@ export default function Login() {
               <React.Fragment key={stat}>
                 <span style={{ color: 'rgba(245,240,232,0.35)' }}>{stat}</span>
                 {i < 2 && (
-                  <span style={{ color: 'rgba(245,158,11,0.4)', margin: '0 10px' }}>·</span>
+                  <span style={{ color: 'rgba(74,126,200,0.5)', margin: '0 10px' }}>·</span>
                 )}
               </React.Fragment>
             ))}
@@ -250,7 +255,7 @@ export default function Login() {
       {/* ── RIGHT PANEL: form 45% ────────────────────────────────────────── */}
       <div style={{
         flex: 1,
-        background: BG,
+        background: '#050505',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -262,7 +267,7 @@ export default function Login() {
         {/* Subtle ambient glow */}
         <div aria-hidden style={{
           position: 'absolute', top: '30%', right: 0, width: '60%', height: '40%',
-          background: 'radial-gradient(ellipse at right, rgba(245,158,11,0.04) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse at right, rgba(74,126,200,0.06) 0%, transparent 70%)',
           pointerEvents: 'none',
         }}/>
 
@@ -393,8 +398,8 @@ export default function Login() {
                     {loading
                       ? <span style={{
                           display: 'inline-block', width: 16, height: 16, borderRadius: '50%',
-                          border: '2px solid rgba(0,0,0,0.25)',
-                          borderTopColor: '#050405',
+                          border: '2px solid rgba(255,255,255,0.25)',
+                          borderTopColor: '#fff',
                           animation: 'spin-ring 0.65s linear infinite',
                         }}/>
                       : <>Sign in <ArrowRight size={14}/></>
@@ -406,7 +411,7 @@ export default function Login() {
                 <div style={{
                   marginTop: 28,
                   paddingTop: 20,
-                  borderTop: '1px solid rgba(245,240,232,0.07)',
+                  borderTop: '1px solid rgba(74,126,200,0.1)',
                 }}>
                   <p style={{
                     fontFamily: "'JetBrains Mono', monospace",
@@ -481,8 +486,8 @@ export default function Login() {
                     {loading
                       ? <span style={{
                           display: 'inline-block', width: 16, height: 16, borderRadius: '50%',
-                          border: '2px solid rgba(0,0,0,0.25)',
-                          borderTopColor: '#050405',
+                          border: '2px solid rgba(255,255,255,0.25)',
+                          borderTopColor: '#fff',
                           animation: 'spin-ring 0.65s linear infinite',
                         }}/>
                       : <>Verify <ArrowRight size={14}/></>

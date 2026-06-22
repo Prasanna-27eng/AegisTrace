@@ -1,168 +1,130 @@
-/* ═══════════════════════════════════════════════════════════════════════════
-   AegisTrace Design Tokens — Enterprise Edition v2.0
-   Inspired by: Microsoft Sentinel (app chrome) · IBM QRadar (dark surfaces)
-                IBM QRadar website (gradient sections)
-   Fonts: Plus Jakarta Sans (display) · IBM Plex Sans (UI) · IBM Plex Mono (data)
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════
+   AegisTrace Design Tokens — Aether Seal Edition
+   Brand: Aether Seal orbital mark · Electric Steel Blue · Pure Black
+   ═══════════════════════════════════════════════════════════════════ */
 
-/* ── Font Faces ──────────────────────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-/* ── App tokens (QRadar-dark + Sentinel chrome) ─────────────────────────── */
 :root {
-  /* ── Fonts ─────────────────────────────────────────────────────────────── */
-  --font-display: 'Plus Jakarta Sans', 'IBM Plex Sans', system-ui, sans-serif;
+  /* ── Fonts ─────────────────────────────────────────────────────── */
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
   --font-ui:      'IBM Plex Sans', system-ui, sans-serif;
-  --font-mono:    'IBM Plex Mono', 'JetBrains Mono', ui-monospace, monospace;
+  --font-mono:    'IBM Plex Mono', ui-monospace, monospace;
 
-  /* ── App Background hierarchy (QRadar-inspired deep navy) ──────────────── */
-  --bg:            #0B0F1A;   /* Page background — deep navy                  */
-  --surface:       #111827;   /* Primary card surface                         */
-  --card:          #1A2235;   /* Raised cards                                 */
-  --card-hover:    #1F2940;   /* Card hover state                             */
-  --elevated:      #242E45;   /* Modals, dropdowns                            */
-  --surface-2:     #2A3550;   /* Highest elevation                            */
-  --inset:         #090D16;   /* Insets, code wells                           */
-  --sidebar-bg:    #070B14;   /* Sidebar — darkest layer                      */
+  /* ── Brand Colors (from Aether Seal logo) ──────────────────────── */
+  --brand-blue:       #4A7EC8;   /* icon steel blue */
+  --brand-blue-bright:#8BB8E8;   /* icon highlight edge */
+  --brand-blue-deep:  #2A5A9E;   /* deeper shade */
+  --brand-glow:       rgba(74,126,200,0.35);
+  --brand-glow-soft:  rgba(74,126,200,0.15);
+  --brand-black:      #050505;   /* logo bg */
+  --brand-gunmetal:   #1C1C24;   /* outer ring */
+  --brand-steel:      #BDD4E8;   /* wordmark */
 
-  /* ── Sentinel topbar (Microsoft blue gradient) ──────────────────────────── */
-  --topbar-bg:     linear-gradient(135deg, #0A1628 0%, #0E2044 50%, #0A4DA6 100%);
-  --topbar-solid:  #0A1628;
+  /* ── App Background hierarchy ──────────────────────────────────── */
+  --bg:            #050505;   /* pure black — logo background */
+  --surface:       #0E0E16;   /* primary card surface */
+  --card:          #141420;   /* raised card */
+  --card-hover:    #1A1A28;   /* card hover */
+  --elevated:      #1C1C2E;   /* modals, dropdowns */
+  --surface-2:     #222236;   /* highest elevation */
+  --inset:         #030308;   /* insets, code wells */
+  --sidebar-bg:    #030308;   /* sidebar — deepest */
 
-  /* ── Blue accent (Microsoft blue) ──────────────────────────────────────── */
-  --accent:        #2563EB;   /* Primary action blue                          */
-  --accent-hover:  #1D4ED8;   /* Hover deeper                                 */
-  --accent-light:  #60A5FA;   /* Labels on dark                               */
-  --accent-soft:   rgba(37, 99, 235, 0.12);
-  --accent-border: rgba(37, 99, 235, 0.25);
-  --accent-glow:   0 0 20px rgba(37, 99, 235, 0.25);
+  /* ── Topbar ─────────────────────────────────────────────────────── */
+  --topbar-bg: linear-gradient(135deg, #050505 0%, #0A0A18 50%, #0F1428 100%);
+  --topbar-solid: #050505;
 
-  /* ── Purple accent (QRadar charts) ─────────────────────────────────────── */
-  --accent2:        #7C3AED;
-  --accent2-light:  #A78BFA;
-  --accent2-soft:   rgba(124, 58, 237, 0.12);
-  --accent2-border: rgba(124, 58, 237, 0.25);
+  /* ── Blue accent (Aether Seal electric blue) ───────────────────── */
+  --accent:        #4A7EC8;
+  --accent-hover:  #3A6AB8;
+  --accent-light:  #8BB8E8;
+  --accent-soft:   rgba(74,126,200,0.12);
+  --accent-border: rgba(74,126,200,0.25);
+  --accent-glow:   0 0 24px rgba(74,126,200,0.35);
 
-  /* ── Teal accent (QRadar secondary) ─────────────────────────────────────── */
-  --teal:           #0891B2;
-  --teal-light:     #22D3EE;
-  --teal-soft:      rgba(8, 145, 178, 0.12);
+  /* ── Secondary accent (deeper blue) ────────────────────────────── */
+  --accent2:        #2A5A9E;
+  --accent2-light:  #5A8EC8;
+  --accent2-soft:   rgba(42,90,158,0.12);
+  --accent2-border: rgba(42,90,158,0.25);
 
-  /* ── Status ─────────────────────────────────────────────────────────────── */
+  /* ── Teal (tertiary) ────────────────────────────────────────────── */
+  --teal:           #3A8EC8;
+  --teal-light:     #6AAEE8;
+  --teal-soft:      rgba(58,142,200,0.12);
+
+  /* ── Status ─────────────────────────────────────────────────────── */
   --success:        #10B981;
-  --success-soft:   rgba(16, 185, 129, 0.12);
-  --success-border: rgba(16, 185, 129, 0.25);
-
+  --success-soft:   rgba(16,185,129,0.12);
+  --success-border: rgba(16,185,129,0.25);
   --warning:        #F59E0B;
-  --warning-soft:   rgba(245, 158, 11, 0.12);
-  --warning-border: rgba(245, 158, 11, 0.25);
-
+  --warning-soft:   rgba(245,158,11,0.12);
+  --warning-border: rgba(245,158,11,0.25);
   --error:          #EF4444;
-  --error-soft:     rgba(239, 68, 68, 0.12);
-  --error-border:   rgba(239, 68, 68, 0.25);
+  --error-soft:     rgba(239,68,68,0.12);
+  --error-border:   rgba(239,68,68,0.25);
+  --info:           #4A7EC8;
+  --info-soft:      rgba(74,126,200,0.12);
 
-  --info:           #3B82F6;
-  --info-soft:      rgba(59, 130, 246, 0.12);
-
-  /* ── Severity palette (QRadar-style) ───────────────────────────────────── */
+  /* ── Severity ────────────────────────────────────────────────────── */
   --sev-critical:   #EF4444;
   --sev-high:       #F97316;
   --sev-medium:     #F59E0B;
   --sev-low:        #10B981;
   --sev-info:       #6B7280;
 
-  /* ── Text ───────────────────────────────────────────────────────────────── */
-  --text-primary:   #F1F5F9;   /* Headings — bright                          */
-  --text-secondary: #94A3B8;   /* Body — cool slate                          */
-  --text-muted:     #475569;   /* Labels — dim                               */
-  --text-disabled:  #334155;   /* Disabled                                   */
-  --text-inverse:   #0F172A;   /* Text on light surfaces                     */
+  /* ── Text (steel white hierarchy) ──────────────────────────────── */
+  --text-primary:   #BDD4E8;   /* wordmark color — main text */
+  --text-secondary: #7A9DB8;   /* muted steel — secondary */
+  --text-muted:     #4A6A8A;   /* dim — labels */
+  --text-disabled:  #2A3A4A;
+  --text-inverse:   #050505;
 
-  /* ── Borders ────────────────────────────────────────────────────────────── */
-  --border:         rgba(148, 163, 184, 0.1);
-  --border-light:   rgba(148, 163, 184, 0.15);
-  --border-medium:  rgba(148, 163, 184, 0.22);
-  --border-strong:  rgba(148, 163, 184, 0.35);
+  /* ── Borders ─────────────────────────────────────────────────────── */
+  --border:         rgba(74,126,200,0.1);
+  --border-light:   rgba(74,126,200,0.07);
+  --border-medium:  rgba(74,126,200,0.18);
+  --border-strong:  rgba(74,126,200,0.3);
 
-  /* ── Shadows ────────────────────────────────────────────────────────────── */
-  --shadow-sm:   0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
-  --shadow-md:   0 4px 16px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3);
-  --shadow-lg:   0 10px 40px rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4);
-  --shadow-card: 0 0 0 1px rgba(148,163,184,0.08), 0 4px 16px rgba(0,0,0,0.4);
-  --shadow-blue: 0 4px 20px rgba(37,99,235,0.25);
-  --shadow-xl:   0 20px 60px rgba(0,0,0,0.7);
+  /* ── Shadows ─────────────────────────────────────────────────────── */
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.6), 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md:   0 4px 16px rgba(0,0,0,0.7), 0 2px 4px rgba(0,0,0,0.5);
+  --shadow-lg:   0 10px 40px rgba(0,0,0,0.8), 0 4px 8px rgba(0,0,0,0.6);
+  --shadow-card: 0 0 0 1px rgba(74,126,200,0.1), 0 4px 16px rgba(0,0,0,0.6);
+  --shadow-blue: 0 4px 20px rgba(74,126,200,0.3);
+  --shadow-glow: 0 0 40px rgba(74,126,200,0.2), 0 0 80px rgba(74,126,200,0.1);
 
-  /* ── Radius ─────────────────────────────────────────────────────────────── */
-  --radius-sm:  4px;
-  --radius-md:  8px;
-  --radius-lg:  12px;
-  --radius-xl:  16px;
-  --radius-2xl: 24px;
+  /* ── Layout ──────────────────────────────────────────────────────── */
+  --radius-sm:  4px;   --radius-md:  8px;
+  --radius-lg: 12px;   --radius-xl: 16px;  --radius-2xl: 24px;
+  --sidebar-w:   240px;  --sidebar-w-collapsed: 56px;
+  --topbar-h:     52px;
 
-  /* ── Spacing scale ──────────────────────────────────────────────────────── */
-  --space-1: 4px;   --space-2: 8px;   --space-3: 12px;  --space-4: 16px;
-  --space-5: 20px;  --space-6: 24px;  --space-8: 32px;  --space-10: 40px;
-  --space-12: 48px; --space-16: 64px; --space-20: 80px;
+  /* ── Spacing ─────────────────────────────────────────────────────── */
+  --space-1:4px; --space-2:8px;  --space-3:12px; --space-4:16px;
+  --space-5:20px; --space-6:24px; --space-8:32px; --space-10:40px;
 
-  /* ── Z-index scale ──────────────────────────────────────────────────────── */
-  --z-below:   -1;
-  --z-base:     0;
-  --z-raised:  10;
-  --z-dropdown: 100;
-  --z-sticky:   200;
-  --z-overlay:  300;
-  --z-modal:    400;
-  --z-toast:    500;
-  --z-tooltip:  600;
+  /* ── Z-index ─────────────────────────────────────────────────────── */
+  --z-dropdown:100; --z-sticky:200; --z-overlay:300;
+  --z-modal:400; --z-toast:500; --z-tooltip:600;
 
-  /* ── Motion ─────────────────────────────────────────────────────────────── */
-  --ease-out:      cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-in-out:   cubic-bezier(0.77, 0, 0.175, 1);
-  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
-  --ease-back:     cubic-bezier(0.36, 0, 0.66, -0.56);
+  /* ── Motion ──────────────────────────────────────────────────────── */
+  --ease-out:    cubic-bezier(0.23,1,0.32,1);
+  --ease-in-out: cubic-bezier(0.77,0,0.175,1);
+  --dur-fast:120ms; --dur-normal:200ms; --dur-slow:350ms;
 
-  --dur-fast:   120ms;
-  --dur-normal: 200ms;
-  --dur-slow:   350ms;
-  --dur-slower: 600ms;
-
-  /* ── Sidebar dimensions ─────────────────────────────────────────────────── */
-  --sidebar-w:        240px;
-  --sidebar-w-collapsed: 56px;
-  --topbar-h:         52px;
-}
-
-/* ── Website tokens (override on public pages) ──────────────────────────── */
-.website-theme {
-  /* Light enterprise surface like IBM QRadar marketing site */
-  --bg:             #F0F4F9;
-  --surface:        #FFFFFF;
-  --card:           #FFFFFF;
-  --card-hover:     #F8FAFC;
-  --elevated:       #FFFFFF;
-  --surface-2:      #F1F5FB;
-  --border:         rgba(15, 23, 42, 0.1);
-  --border-light:   rgba(15, 23, 42, 0.07);
-  --border-medium:  rgba(15, 23, 42, 0.14);
-
-  --text-primary:   #0F172A;
-  --text-secondary: #334155;
-  --text-muted:     #64748B;
-
-  --shadow-sm:   0 1px 3px rgba(15,23,42,0.08), 0 1px 2px rgba(15,23,42,0.04);
-  --shadow-md:   0 4px 16px rgba(15,23,42,0.1), 0 2px 4px rgba(15,23,42,0.06);
-  --shadow-lg:   0 10px 40px rgba(15,23,42,0.12), 0 4px 8px rgba(15,23,42,0.06);
-  --shadow-card: 0 0 0 1px rgba(15,23,42,0.08), 0 4px 16px rgba(15,23,42,0.06);
-}
-
-/* ── Sentinel sidebar override (for app sidebar specifically) ───────────── */
-.sentinel-sidebar {
-  --sidebar-text:        #1E293B;
-  --sidebar-text-muted:  #64748B;
-  --sidebar-bg:          #FFFFFF;
-  --sidebar-border:      rgba(15, 23, 42, 0.08);
-  --sidebar-hover:       rgba(37, 99, 235, 0.06);
-  --sidebar-active-bg:   rgba(37, 99, 235, 0.08);
-  --sidebar-active-text: #1D4ED8;
-  --sidebar-group-text:  #94A3B8;
+  /* ── Legacy shorthands ───────────────────────────────────────────── */
+  --fast:  150ms cubic-bezier(0.4,0,0.2,1);
+  --base:  200ms cubic-bezier(0.4,0,0.2,1);
+  --slow:  350ms cubic-bezier(0.4,0,0.2,1);
+  --emil:  cubic-bezier(0.16,1,0.3,1);
+  --glass-bg:    rgba(14,14,22,0.92);
+  --glass-border: rgba(74,126,200,0.1);
+  --accent-cyan:      var(--teal);
+  --accent-cyan-soft: var(--teal-soft);
+  --glow-blue:   0 0 24px rgba(74,126,200,0.35);
+  --glow-purple: 0 0 24px rgba(74,126,200,0.2);
+  --glow-cyan:   0 0 24px rgba(58,142,200,0.25);
+  --shadow-soft: 0 10px 30px rgba(0,0,0,0.6);
 }

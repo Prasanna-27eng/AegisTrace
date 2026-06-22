@@ -13,8 +13,8 @@ import {
 const E    = [0.16, 1, 0.3, 1];
 const EOUT = [0.23, 1, 0.32, 1];
 const GOLD = '#F59E0B';
-const BG   = '#0A1628';
-const INK  = '#F1F5F9';
+const BG   = '#050505';
+const INK  = '#BDD4E8';
 
 /* ─── Lenis smooth scroll ───────────────────────────────────────────────── */
 function useLenis() {
@@ -78,7 +78,7 @@ function AmbientEmbers() {
         if (!still) { e.y -= e.v / h; if (e.y < -0.01) { e.y = 1.01; e.x = Math.random(); } }
         const x = e.x * w + Math.sin(t * 0.5 + e.ph) * 14;
         const a = still ? 0.18 : 0.06 + 0.14 * (0.5 + 0.5 * Math.sin(t * 1.1 + e.ph));
-        ctx.fillStyle = e.gold ? `rgba(245,158,11,${a * 1.3})` : `rgba(241,245,249,${a})`;
+        ctx.fillStyle = e.gold ? `rgba(245,158,11,${a * 1.3})` : `rgba(189,212,232,${a})`;
         ctx.beginPath(); ctx.arc(x, e.y * h, e.r, 0, Math.PI * 2); ctx.fill();
       });
     };
@@ -158,7 +158,7 @@ function HeroScene() {
       {/* Background — CSS gradient dolly (no image) */}
       <motion.div aria-hidden style={{
         position: 'absolute', inset: '-14%',
-        background: 'linear-gradient(135deg, #060E1C 0%, #0A1628 25%, #0D2240 55%, #0F3470 80%, #1048A0 100%)',
+        background: 'linear-gradient(135deg, #050505 0%, #080818 35%, #0A1428 65%, #0F1E3E 100%)',
         scale: bgDollyScale,
         x: bgDriftX, y: bgDriftY,
         filter: bgDollyFilter,
@@ -168,7 +168,7 @@ function HeroScene() {
       {/* Mid depth layer — slightly different rate for parallax */}
       <motion.div aria-hidden style={{
         position: 'absolute', inset: 0,
-        background: 'radial-gradient(ellipse 80% 60% at 50% 100%, rgba(37,99,235,0.15) 0%, transparent 70%)',
+        background: 'radial-gradient(ellipse 80% 60% at 50% 100%, rgba(74,126,200,0.15) 0%, transparent 70%)',
         x: useTransform(bgDriftX, v => v * 0.4),
         y: useTransform(bgDriftY, v => v * 0.4),
       }}/>
@@ -214,7 +214,7 @@ function HeroScene() {
         opacity: b3Op, willChange: 'opacity',
       }}>
         <div style={{ textAlign: 'center' }}>
-          <div className="mono" style={{ fontSize: 10, letterSpacing: '0.3em', color: 'rgba(241,245,249,0.4)', marginBottom: 8 }}>CREDENTIALS</div>
+          <div className="mono" style={{ fontSize: 10, letterSpacing: '0.3em', color: 'rgba(189,212,232,0.4)', marginBottom: 8 }}>CREDENTIALS</div>
           <div className="cd" style={{ fontSize: 'clamp(20px,2.5vw,32px)', fontWeight: 600, color: INK }}>Earned in the field.</div>
         </div>
         {BADGES.map((b, i) => (
@@ -232,7 +232,7 @@ function HeroScene() {
               animation: `float-badge ${3 + i * 0.4}s ease-in-out ${i * 0.4}s infinite`,
             }}>
             <div className="cd" style={{ fontSize: 13, fontWeight: 600, color: INK }}>{b.label}</div>
-            <div className="cg" style={{ fontSize: 10, color: 'rgba(241,245,249,0.4)', marginTop: 2 }}>{b.sub}</div>
+            <div className="cg" style={{ fontSize: 10, color: 'rgba(189,212,232,0.4)', marginTop: 2 }}>{b.sub}</div>
           </motion.div>
         ))}
       </motion.div>
@@ -243,10 +243,10 @@ function HeroScene() {
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
         opacity: kickOp, y: kickY,
       }}>
-        <p className="cg" style={{ fontSize: 17, fontWeight: 500, color: 'rgba(241,245,249,0.56)', maxWidth: 460, textAlign: 'center', margin: 0 }}>
+        <p className="cg" style={{ fontSize: 17, fontWeight: 500, color: 'rgba(189,212,232,0.56)', maxWidth: 460, textAlign: 'center', margin: 0 }}>
           SOC analyst who builds the tools he wishes existed.
         </p>
-        <span className="mono" style={{ fontSize: 10, letterSpacing: '0.32em', color: 'rgba(241,245,249,0.3)' }}>SCROLL</span>
+        <span className="mono" style={{ fontSize: 10, letterSpacing: '0.32em', color: 'rgba(189,212,232,0.3)' }}>SCROLL</span>
       </motion.div>
     </PinnedScene>
   );
@@ -316,7 +316,7 @@ function FlythroughStat({ p, stat, depth }) {
           background: GOLD, opacity: lineOp, scaleX: lineOp, transformOrigin: 'left',
         }}/>
       </div>
-      <div className="cg" style={{ fontSize: 'clamp(13px,1.4vw,18px)', color: 'rgba(241,245,249,0.55)', marginTop: 12 }}>
+      <div className="cg" style={{ fontSize: 'clamp(13px,1.4vw,18px)', color: 'rgba(189,212,232,0.55)', marginTop: 12 }}>
         {stat.label}
       </div>
     </motion.div>
@@ -338,7 +338,7 @@ function FlythroughScene() {
       {/* Far: dot grid parallax layer */}
       <motion.div aria-hidden style={{
         position: 'absolute', inset: '-80px',
-        backgroundImage: 'radial-gradient(circle, rgba(241,245,249,0.12) 1px, transparent 1px)',
+        backgroundImage: 'radial-gradient(circle, rgba(74,126,200,0.14) 1px, transparent 1px)',
         backgroundSize: '32px 32px',
         opacity: gridOp, scale: gridScale, willChange: 'transform, opacity',
       }}/>
@@ -347,7 +347,7 @@ function FlythroughScene() {
 
       {/* Section label */}
       <motion.div style={{ position: 'absolute', top: '7vh', left: 0, right: 0, display: 'flex', justifyContent: 'center', opacity: labelOp }}>
-        <span className="mono" style={{ fontSize: 10, letterSpacing: '0.28em', color: 'rgba(241,245,249,0.3)' }}>BY THE NUMBERS</span>
+        <span className="mono" style={{ fontSize: 10, letterSpacing: '0.28em', color: 'rgba(189,212,232,0.3)' }}>BY THE NUMBERS</span>
       </motion.div>
 
       {/* Stats flythrough */}
@@ -403,21 +403,21 @@ function ToolRackCard({ tool, p }) {
       }}/>
       <div style={{
         padding: 'clamp(20px,2.5vw,32px)',
-        background: 'rgba(241,245,249,0.025)',
-        border: '1px solid rgba(241,245,249,0.07)',
+        background: 'rgba(189,212,232,0.025)',
+        border: '1px solid rgba(189,212,232,0.07)',
         height: '100%',
       }}>
-        <div className="mono" style={{ fontSize: 10, color: 'rgba(241,245,249,0.36)', marginBottom: 14, letterSpacing: '0.16em' }}>{tool.layer}</div>
+        <div className="mono" style={{ fontSize: 10, color: 'rgba(189,212,232,0.36)', marginBottom: 14, letterSpacing: '0.16em' }}>{tool.layer}</div>
         <div className="mono" style={{ fontSize: 'clamp(18px,2vw,26px)', fontWeight: 700, color: INK, marginBottom: 10 }}>{tool.name}</div>
-        <p className="cg" style={{ fontSize: 13.5, lineHeight: 1.62, color: 'rgba(241,245,249,0.52)', margin: '0 0 18px' }}>{tool.desc}</p>
+        <p className="cg" style={{ fontSize: 13.5, lineHeight: 1.62, color: 'rgba(189,212,232,0.52)', margin: '0 0 18px' }}>{tool.desc}</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <code className="mono" style={{ fontSize: 11.5, color: GOLD, background: 'rgba(245,158,11,0.08)', padding: '5px 10px', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tool.cmd}</code>
           <button onClick={copy} className="cg" style={{
-            background: 'none', border: '1px solid rgba(241,245,249,0.15)', color: 'rgba(241,245,249,0.5)',
+            background: 'none', border: '1px solid rgba(189,212,232,0.15)', color: 'rgba(189,212,232,0.5)',
             fontSize: 11, padding: '5px 10px', cursor: 'pointer', flexShrink: 0,
             transition: 'border-color 140ms, color 140ms',
           }}>{copied ? '✓' : 'copy'}</button>
-          <a href={tool.href} target="_blank" rel="noopener noreferrer" className="mono" style={{ fontSize: 11, color: 'rgba(241,245,249,0.35)', textDecoration: 'none' }}>
+          <a href={tool.href} target="_blank" rel="noopener noreferrer" className="mono" style={{ fontSize: 11, color: 'rgba(189,212,232,0.35)', textDecoration: 'none' }}>
             PyPI ↗
           </a>
         </div>
@@ -452,7 +452,7 @@ function ToolsRackScene() {
         opacity: labelOp, zIndex: 4,
       }}>
         <div>
-          <div className="mono" style={{ fontSize: 10, letterSpacing: '0.26em', color: 'rgba(241,245,249,0.3)', marginBottom: 4 }}>THE EXPANSION PACK</div>
+          <div className="mono" style={{ fontSize: 10, letterSpacing: '0.26em', color: 'rgba(189,212,232,0.3)', marginBottom: 4 }}>THE EXPANSION PACK</div>
           <div className="cd" style={{ fontSize: 'clamp(18px,2vw,26px)', fontWeight: 600, color: INK }}>Four tools. Four attack layers.</div>
         </div>
         {/* Active tool name */}
@@ -498,7 +498,7 @@ function FlagshipSection() {
   const bgY = useTransform(p, [0, 1], ['-6%', '6%']);
 
   return (
-    <section ref={ref} style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', position: 'relative', overflow: 'hidden', borderTop: '1px solid rgba(241,245,249,0.06)' }}>
+    <section ref={ref} style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', position: 'relative', overflow: 'hidden', borderTop: '1px solid rgba(189,212,232,0.06)' }}>
       {/* Parallax depth layers */}
       <motion.div aria-hidden style={{
         position: 'absolute', inset: '-10%',
@@ -511,10 +511,10 @@ function FlagshipSection() {
             <div>
               <div className="mono" style={{ fontSize: 10, letterSpacing: '0.24em', color: GOLD, marginBottom: 16 }}>FLAGSHIP — v10.1</div>
               <h2 className="cd" style={{ fontSize: 'clamp(30px,3.5vw,52px)', fontWeight: 600, letterSpacing: '-0.025em', margin: '0 0 18px', lineHeight: 1.04 }}>AegisTrace</h2>
-              <p className="cg" style={{ fontSize: 16, lineHeight: 1.68, color: 'rgba(241,245,249,0.58)', maxWidth: 480, margin: '0 0 18px' }}>
+              <p className="cg" style={{ fontSize: 16, lineHeight: 1.68, color: 'rgba(189,212,232,0.58)', maxWidth: 480, margin: '0 0 18px' }}>
                 Free, open Accountability Infrastructure for the AI-agent era: identity-first detection, explainable AI triage, kill-chain reconstruction, SOAR playbooks with human approval gates, SHA-256 hash chain on every AI decision, and a production endpoint agent with a formally verified secure protocol — all on free-tier infrastructure.
               </p>
-              <p className="cg" style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(241,245,249,0.36)', maxWidth: 480, margin: '0 0 28px' }}>
+              <p className="cg" style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(189,212,232,0.36)', maxWidth: 480, margin: '0 0 28px' }}>
                 React 18 · FastAPI · SQLite · Groq · NVIDIA NIM · Docker · Render
               </p>
               <div style={{ display: 'flex', gap: 24 }}>
@@ -523,12 +523,12 @@ function FlagshipSection() {
               </div>
             </div>
           </Reveal>
-          <div style={{ background: 'rgba(241,245,249,0.02)', border: '1px solid rgba(241,245,249,0.08)', padding: 'clamp(20px,3vw,32px)' }}>
-            <div className="mono" style={{ fontSize: 10, letterSpacing: '0.2em', color: 'rgba(241,245,249,0.3)', marginBottom: 18 }}>WHAT IT SHIPS</div>
+          <div style={{ background: 'rgba(189,212,232,0.02)', border: '1px solid rgba(189,212,232,0.08)', padding: 'clamp(20px,3vw,32px)' }}>
+            <div className="mono" style={{ fontSize: 10, letterSpacing: '0.2em', color: 'rgba(189,212,232,0.3)', marginBottom: 18 }}>WHAT IT SHIPS</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {FLAGSHIP_POINTS.map((pt, i) => (
                 <Reveal key={pt} delay={i * 0.05} y={10}>
-                  <div className="cg" style={{ display: 'flex', gap: 10, fontSize: 14, lineHeight: 1.55, color: 'rgba(241,245,249,0.62)' }}>
+                  <div className="cg" style={{ display: 'flex', gap: 10, fontSize: 14, lineHeight: 1.55, color: 'rgba(189,212,232,0.62)' }}>
                     <span className="mono" style={{ color: GOLD, flexShrink: 0 }}>▸</span><span>{pt}</span>
                   </div>
                 </Reveal>
@@ -547,16 +547,16 @@ function BackgroundSection() {
   const lineW = useTransform(p, [0.2, 0.8], ['0%', '100%']);
 
   return (
-    <section ref={ref} style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', position: 'relative', borderTop: '1px solid rgba(241,245,249,0.06)' }}>
+    <section ref={ref} style={{ padding: 'clamp(80px,10vw,130px) clamp(24px,5vw,72px)', position: 'relative', borderTop: '1px solid rgba(189,212,232,0.06)' }}>
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
         {/* Animated horizontal rule */}
-        <div style={{ position: 'relative', height: 1, background: 'rgba(241,245,249,0.06)', marginBottom: 'clamp(40px,5vw,64px)' }}>
+        <div style={{ position: 'relative', height: 1, background: 'rgba(189,212,232,0.06)', marginBottom: 'clamp(40px,5vw,64px)' }}>
           <motion.div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, background: GOLD, opacity: 0.5, width: lineW }}/>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(160px,240px) 1fr', gap: 'clamp(32px,5vw,64px)' }}>
           <Reveal>
-            <div className="mono" style={{ fontSize: 10, letterSpacing: '0.22em', color: 'rgba(241,245,249,0.36)' }}>BACKGROUND</div>
+            <div className="mono" style={{ fontSize: 10, letterSpacing: '0.22em', color: 'rgba(189,212,232,0.36)' }}>BACKGROUND</div>
           </Reveal>
           <div>
             <Reveal>
@@ -565,27 +565,27 @@ function BackgroundSection() {
               </div>
             </Reveal>
             <Reveal delay={0.06}>
-              <p className="cg" style={{ fontSize: 15.5, lineHeight: 1.68, color: 'rgba(241,245,249,0.52)', maxWidth: 680, margin: '0 0 28px' }}>
+              <p className="cg" style={{ fontSize: 15.5, lineHeight: 1.68, color: 'rgba(189,212,232,0.52)', maxWidth: 680, margin: '0 0 28px' }}>
                 Case triage, threat hunting, identity threat detection and incident response — plus designing, building, red-teaming and shipping the tooling that does it. Every feature in AegisTrace exists because a real gap in production tooling needed it.
               </p>
             </Reveal>
             <Reveal delay={0.1}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px,1fr))', gap: 20 }}>
                 <div>
-                  <div className="mono" style={{ fontSize: 10, letterSpacing: '0.2em', color: 'rgba(241,245,249,0.3)', marginBottom: 12 }}>CERTIFICATIONS</div>
+                  <div className="mono" style={{ fontSize: 10, letterSpacing: '0.2em', color: 'rgba(189,212,232,0.3)', marginBottom: 12 }}>CERTIFICATIONS</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                     {CERTS_EARNED.map(c => (
                       <span key={c} className="mono" style={{ fontSize: 12, border: '1px solid rgba(245,158,11,0.35)', color: INK, borderRadius: 100, padding: '7px 14px' }}>{c}</span>
                     ))}
                     {CERTS_PENDING.map(c => (
-                      <span key={c} className="mono" style={{ fontSize: 12, border: '1px solid rgba(241,245,249,0.14)', color: 'rgba(241,245,249,0.42)', borderRadius: 100, padding: '7px 14px' }}>{c}</span>
+                      <span key={c} className="mono" style={{ fontSize: 12, border: '1px solid rgba(189,212,232,0.14)', color: 'rgba(189,212,232,0.42)', borderRadius: 100, padding: '7px 14px' }}>{c}</span>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <div className="mono" style={{ fontSize: 10, letterSpacing: '0.2em', color: 'rgba(241,245,249,0.3)', marginBottom: 12 }}>EDUCATION</div>
+                  <div className="mono" style={{ fontSize: 10, letterSpacing: '0.2em', color: 'rgba(189,212,232,0.3)', marginBottom: 12 }}>EDUCATION</div>
                   <div className="cd" style={{ fontSize: 18, fontWeight: 600, color: INK, marginBottom: 4 }}>MSc Information Systems</div>
-                  <div className="cg" style={{ fontSize: 14, color: 'rgba(241,245,249,0.44)' }}>Dublin Business School · 2025</div>
+                  <div className="cg" style={{ fontSize: 14, color: 'rgba(189,212,232,0.44)' }}>Dublin Business School · 2025</div>
                 </div>
               </div>
             </Reveal>
@@ -610,14 +610,14 @@ function CTASection() {
     <section ref={ref} style={{
       padding: 'clamp(100px,14vw,160px) clamp(24px,5vw,72px)',
       textAlign: 'center', position: 'relative', overflow: 'hidden',
-      borderTop: '1px solid rgba(241,245,249,0.06)',
+      borderTop: '1px solid rgba(189,212,232,0.06)',
     }}>
       <div aria-hidden style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 640, height: 420, background: 'radial-gradient(ellipse, rgba(245,158,11,0.07) 0%, transparent 68%)', pointerEvents: 'none' }}/>
       <motion.div style={{ scale: ctaScale, opacity: ctaOp, willChange: 'transform, opacity' }}>
         <h2 className="cd" style={{ fontSize: 'clamp(36px,5.5vw,80px)', fontWeight: 600, letterSpacing: '-0.025em', margin: '0 0 28px', lineHeight: 1.0, color: INK }}>
           Let&apos;s <span style={{ color: GOLD }}>talk shop.</span>
         </h2>
-        <p className="cg" style={{ fontSize: 16, color: 'rgba(241,245,249,0.44)', lineHeight: 1.7, maxWidth: 440, margin: '0 auto 40px' }}>
+        <p className="cg" style={{ fontSize: 16, color: 'rgba(189,212,232,0.44)', lineHeight: 1.7, maxWidth: 440, margin: '0 auto 40px' }}>
           Open to blue team roles, security engineering, and product work at the intersection of AI and security.
         </p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -635,8 +635,8 @@ function CTASection() {
 ════════════════════════════════════════════════════════════════════════════ */
 function Nav() {
   const { scrollY } = useScroll();
-  const navBg = useTransform(scrollY, [0, 80], ['rgba(10,22,40,0)', 'rgba(10,22,40,0.92)']);
-  const navBorder = useTransform(scrollY, [60, 100], ['rgba(241,245,249,0)', 'rgba(241,245,249,0.08)']);
+  const navBg = useTransform(scrollY, [0, 80], ['rgba(5,5,5,0)', 'rgba(5,5,5,0.92)']);
+  const navBorder = useTransform(scrollY, [60, 100], ['rgba(189,212,232,0)', 'rgba(189,212,232,0.08)']);
   const navBlur = useTransform(scrollY, [0, 80], [0, 18]);
   const navFilter = useTransform(navBlur, v => `blur(${v}px)`);
 
@@ -650,7 +650,10 @@ function Nav() {
       borderColor: navBorder,
       transition: 'border-color 300ms',
     }}>
-      <Link to="/" className="cd" style={{ color: INK, textDecoration: 'none', fontSize: 16, fontWeight: 700, letterSpacing: '0.1em' }}>AEGISTRACE</Link>
+      <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+        <img src="/assets/brand/aegistrace-icon.png" alt="AegisTrace" style={{ width: 26, height: 26, objectFit: 'contain', filter: 'drop-shadow(0 0 5px rgba(74,126,200,0.5))' }}/>
+        <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, fontWeight: 600, color: '#BDD4E8', letterSpacing: '0.18em' }}>AEGISTRACE</span>
+      </Link>
       <div style={{ display: 'flex', gap: 'clamp(16px,3vw,36px)', alignItems: 'center' }}>
         <Link to="/" className="nav-link">Home</Link>
         <Link to="/mission" className="nav-link">Mission</Link>
@@ -693,18 +696,18 @@ export default function Portfolio() {
 
         .ghost-btn {
           display: inline-flex; align-items: center; gap: 8px;
-          background: transparent; color: rgba(241,245,249,0.7);
+          background: transparent; color: rgba(189,212,232,0.7);
           font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 500;
-          padding: 11px 22px; border: 1px solid rgba(241,245,249,0.18);
+          padding: 11px 22px; border: 1px solid rgba(189,212,232,0.18);
           cursor: pointer; text-decoration: none; letter-spacing: 0.02em;
           transition: border-color 140ms, color 140ms, transform 100ms;
         }
-        .ghost-btn:hover  { border-color: rgba(241,245,249,0.4); color: ${INK}; transform: translateY(-2px); }
+        .ghost-btn:hover  { border-color: rgba(189,212,232,0.4); color: ${INK}; transform: translateY(-2px); }
         .ghost-btn:active { transform: scale(0.97) translateY(0); }
 
         .nav-link {
           font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 500;
-          color: rgba(241,245,249,0.58); text-decoration: none; letter-spacing: 0.02em;
+          color: rgba(189,212,232,0.58); text-decoration: none; letter-spacing: 0.02em;
           position: relative; transition: color 140ms;
         }
         .nav-link:hover { color: ${INK}; }
@@ -739,19 +742,19 @@ export default function Portfolio() {
         /* ── Mobile / reduced-motion fallback ── */
         <div style={{ paddingTop: 64 }}>
           <section style={{ minHeight: '80vh', display: 'flex', alignItems: 'flex-end', position: 'relative', overflow: 'hidden' }}>
-            <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, #060E1C 0%, #0A1628 30%, #0D2240 65%, #1048A0 100%)' }}/>
+            <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, #050505 0%, #080818 35%, #0A1428 65%, #0F1E3E 100%)' }}/>
             <Reveal style={{ position: 'relative', zIndex: 2, padding: '0 24px 60px' }}>
               <div className="mono" style={{ fontSize: 11, letterSpacing: '0.26em', color: GOLD, marginBottom: 16 }}>BLUE TEAM · DUBLIN, IRELAND</div>
               <h1 className="cd" style={{ fontSize: 'clamp(36px,10vw,56px)', fontWeight: 600, lineHeight: 1.04, letterSpacing: '-0.02em', color: INK, margin: '0 0 16px' }}>Prasanna Kumar Surendran</h1>
-              <p className="cg" style={{ fontSize: 16, fontWeight: 500, color: 'rgba(241,245,249,0.56)', maxWidth: 420, margin: 0 }}>One analyst. An entire SOC.</p>
+              <p className="cg" style={{ fontSize: 16, fontWeight: 500, color: 'rgba(189,212,232,0.56)', maxWidth: 420, margin: 0 }}>One analyst. An entire SOC.</p>
             </Reveal>
           </section>
           <section style={{ padding: '48px 24px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px,1fr))', gap: 1, borderTop: '1px solid rgba(241,245,249,0.08)', borderBottom: '1px solid rgba(241,245,249,0.08)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px,1fr))', gap: 1, borderTop: '1px solid rgba(189,212,232,0.08)', borderBottom: '1px solid rgba(189,212,232,0.08)' }}>
               {STATS_DATA.map(s => (
                 <div key={s.label} style={{ padding: '28px 16px 28px 0' }}>
                   <div className="mono" style={{ fontSize: 34, fontWeight: 700, color: GOLD, lineHeight: 1 }}>{s.n}</div>
-                  <div className="cg" style={{ fontSize: 12.5, color: 'rgba(241,245,249,0.48)', marginTop: 6 }}>{s.label}</div>
+                  <div className="cg" style={{ fontSize: 12.5, color: 'rgba(189,212,232,0.48)', marginTop: 6 }}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -775,12 +778,12 @@ export default function Portfolio() {
             <Reveal style={{ marginBottom: 32 }}>
               <h2 className="cd" style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 600, letterSpacing: '-0.02em', margin: 0 }}>The expansion pack.</h2>
             </Reveal>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 2, background: 'rgba(241,245,249,0.08)', border: '1px solid rgba(241,245,249,0.08)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 2, background: 'rgba(189,212,232,0.08)', border: '1px solid rgba(189,212,232,0.08)' }}>
               {TOOLS.map(t => (
                 <div key={t.name} style={{ padding: '26px 22px', background: BG }}>
-                  <div className="mono" style={{ fontSize: 10, color: 'rgba(241,245,249,0.32)', marginBottom: 12 }}>{t.layer}</div>
+                  <div className="mono" style={{ fontSize: 10, color: 'rgba(189,212,232,0.32)', marginBottom: 12 }}>{t.layer}</div>
                   <div className="mono" style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: INK }}>{t.name}</div>
-                  <p className="cg" style={{ fontSize: 13.5, lineHeight: 1.6, color: 'rgba(241,245,249,0.5)', margin: '0 0 14px' }}>{t.desc}</p>
+                  <p className="cg" style={{ fontSize: 13.5, lineHeight: 1.6, color: 'rgba(189,212,232,0.5)', margin: '0 0 14px' }}>{t.desc}</p>
                   <a className="mono" href={t.href} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11.5, color: GOLD, textDecoration: 'none' }}>{t.cmd} ↗</a>
                 </div>
               ))}
@@ -792,13 +795,16 @@ export default function Portfolio() {
       <BackgroundSection/>
       <CTASection/>
 
-      <footer style={{ borderTop: '1px solid rgba(241,245,249,0.05)', padding: '28px clamp(24px,5vw,72px)' }}>
+      <footer style={{ borderTop: '1px solid rgba(189,212,232,0.05)', padding: '28px clamp(24px,5vw,72px)' }}>
         <div style={{ maxWidth: 1240, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
-          <span className="mono" style={{ color: 'rgba(241,245,249,0.36)', fontSize: 11, letterSpacing: '0.18em' }}>PRASANNA KUMAR SURENDRAN — DUBLIN, IRELAND</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <img src="/assets/brand/aegistrace-icon.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain', opacity: 0.6 }}/>
+            <span style={{ fontFamily: "'IBM Plex Mono',monospace", color: 'rgba(189,212,232,0.3)', fontSize: 11, letterSpacing: '0.16em' }}>AEGISTRACE</span>
+          </div>
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-            <Link to="/" className="cg" style={{ color: 'rgba(241,245,249,0.26)', fontSize: 12, textDecoration: 'none' }}>Home</Link>
-            <Link to="/mission" className="cg" style={{ color: 'rgba(241,245,249,0.26)', fontSize: 12, textDecoration: 'none' }}>Mission</Link>
-            <Link to="/app/login" className="cg" style={{ color: 'rgba(241,245,249,0.26)', fontSize: 12, textDecoration: 'none' }}>Platform</Link>
+            <Link to="/" className="cg" style={{ color: 'rgba(189,212,232,0.26)', fontSize: 12, textDecoration: 'none' }}>Home</Link>
+            <Link to="/mission" className="cg" style={{ color: 'rgba(189,212,232,0.26)', fontSize: 12, textDecoration: 'none' }}>Mission</Link>
+            <Link to="/app/login" className="cg" style={{ color: 'rgba(189,212,232,0.26)', fontSize: 12, textDecoration: 'none' }}>Platform</Link>
           </div>
         </div>
       </footer>

@@ -6,8 +6,8 @@ import { ArrowRight, Copy, Check, Github } from 'lucide-react';
 /* ─── Tokens ─────────────────────────────────────────────────────────────── */
 const E    = [0.16, 1, 0.3, 1];
 const GOLD = '#F59E0B';
-const BG   = '#0A1628';
-const INK  = '#F1F5F9';
+const BG   = '#050505';
+const INK  = '#BDD4E8';
 
 /* ─── Scroll state for nav ───────────────────────────────────────────────── */
 function useScrolled(threshold = 40) {
@@ -93,15 +93,15 @@ function CopyBtn({ text }) {
       onClick={copy}
       aria-label="Copy command"
       style={{
-        background: 'none', border: '1px solid rgba(241,245,249,0.15)',
+        background: 'none', border: '1px solid rgba(189,212,232,0.15)',
         cursor: 'pointer', padding: '6px 10px', borderRadius: 4,
-        color: copied ? GOLD : 'rgba(241,245,249,0.4)',
+        color: copied ? GOLD : 'rgba(189,212,232,0.4)',
         display: 'flex', alignItems: 'center', gap: 5,
         fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
         transition: 'color 200ms, border-color 200ms',
       }}
-      onMouseEnter={e => { if (!copied) e.currentTarget.style.color = 'rgba(241,245,249,0.8)'; }}
-      onMouseLeave={e => { if (!copied) e.currentTarget.style.color = 'rgba(241,245,249,0.4)'; }}
+      onMouseEnter={e => { if (!copied) e.currentTarget.style.color = 'rgba(189,212,232,0.8)'; }}
+      onMouseLeave={e => { if (!copied) e.currentTarget.style.color = 'rgba(189,212,232,0.4)'; }}
     >
       {copied ? <Check size={12}/> : <Copy size={12}/>}
       {copied ? 'Copied' : 'Copy'}
@@ -229,7 +229,6 @@ function HeroSection() {
       padding: 'clamp(120px,14vw,160px) clamp(24px,6vw,80px) clamp(72px,8vw,110px)',
       maxWidth: 1100, margin: '0 auto',
     }}>
-      {/* Heading — char stagger */}
       <CharStagger
         text="The complete SOC, without the procurement cycle."
         style={{
@@ -249,7 +248,7 @@ function HeroSection() {
         <p style={{
           fontFamily: "'IBM Plex Sans', sans-serif",
           fontSize: 'clamp(16px,1.8vw,20px)',
-          color: 'rgba(241,245,249,0.55)',
+          color: 'rgba(189,212,232,0.55)',
           maxWidth: '58ch',
           lineHeight: 1.6,
           margin: '0 0 40px',
@@ -261,7 +260,7 @@ function HeroSection() {
       <Reveal delay={0.45} style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
         <Link to="/app/login" style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
-          background: GOLD, color: '#0F172A',
+          background: GOLD, color: '#BDD4E8',
           fontFamily: "'IBM Plex Sans', sans-serif",
           fontSize: 14, fontWeight: 700,
           padding: '12px 22px', borderRadius: 5,
@@ -276,16 +275,16 @@ function HeroSection() {
         <a href="https://github.com/prasannakumar-s/aegistrace" target="_blank" rel="noopener noreferrer" style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
           background: 'transparent',
-          border: '1px solid rgba(241,245,249,0.2)',
-          color: 'rgba(241,245,249,0.75)',
+          border: '1px solid rgba(189,212,232,0.2)',
+          color: 'rgba(189,212,232,0.75)',
           fontFamily: "'IBM Plex Sans', sans-serif",
           fontSize: 14, fontWeight: 500,
           padding: '12px 22px', borderRadius: 5,
           textDecoration: 'none', letterSpacing: '0.01em',
           transition: 'border-color 200ms, color 200ms, transform 120ms',
         }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(241,245,249,0.4)'; e.currentTarget.style.color = INK; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(241,245,249,0.2)'; e.currentTarget.style.color = 'rgba(241,245,249,0.75)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(189,212,232,0.4)'; e.currentTarget.style.color = INK; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(189,212,232,0.2)'; e.currentTarget.style.color = 'rgba(189,212,232,0.75)'; e.currentTarget.style.transform = 'translateY(0)'; }}
         >
           <Github size={14}/> View on GitHub
         </a>
@@ -346,7 +345,7 @@ function CapabilityMatrix() {
       </Reveal>
 
       <div style={{
-        border: '1px solid rgba(241,245,249,0.08)',
+        border: '1px solid rgba(74,126,200,0.12)',
         borderRadius: 8, overflow: 'hidden',
       }}>
         {CAT_ORDER.flatMap(cat =>
@@ -365,7 +364,7 @@ function CapabilityMatrix() {
                       display: 'grid',
                       gridTemplateColumns: '130px 1fr',
                       gap: 0,
-                      borderBottom: isLast ? 'none' : '1px solid rgba(241,245,249,0.055)',
+                      borderBottom: isLast ? 'none' : '1px solid rgba(74,126,200,0.07)',
                       background: isHovered ? 'rgba(245,158,11,0.035)' : 'transparent',
                       transition: 'background 140ms ease',
                       cursor: 'default',
@@ -375,14 +374,14 @@ function CapabilityMatrix() {
                     <div style={{
                       padding: '16px 20px',
                       display: 'flex', alignItems: 'center',
-                      borderRight: '1px solid rgba(241,245,249,0.055)',
+                      borderRight: '1px solid rgba(74,126,200,0.07)',
                     }}>
                       {i === 0 && (
                         <span style={{
                           fontFamily: "'IBM Plex Mono', monospace",
                           fontSize: 9.5, fontWeight: 600,
                           letterSpacing: '0.14em',
-                          color: CAT_COLORS[cat] || 'rgba(241,245,249,0.4)',
+                          color: CAT_COLORS[cat] || 'rgba(189,212,232,0.4)',
                           textTransform: 'uppercase',
                         }}>
                           {cat}
@@ -397,7 +396,6 @@ function CapabilityMatrix() {
                       transform: isHovered ? 'translateX(4px)' : 'translateX(0)',
                       transition: 'transform 140ms ease',
                     }}>
-                      {/* Gold accent shown on hover */}
                       <div style={{
                         width: 2, height: 22, flexShrink: 0,
                         background: GOLD,
@@ -416,7 +414,7 @@ function CapabilityMatrix() {
                         <div style={{
                           fontFamily: "'IBM Plex Sans', sans-serif",
                           fontSize: 12.5,
-                          color: 'rgba(241,245,249,0.45)',
+                          color: 'rgba(189,212,232,0.45)',
                           lineHeight: 1.5,
                           maxWidth: '70ch',
                         }}>
@@ -466,14 +464,13 @@ function ArchitectureSection() {
           transition={{ duration: 0.72, ease: E }}
           style={{
             position: 'relative',
-            background: '#111827',
+            background: '#0F1428',
             border: '1px solid rgba(245,158,11,0.18)',
             borderRadius: 8,
             padding: 'clamp(24px,4vw,40px) clamp(20px,3vw,36px)',
             overflow: 'hidden',
           }}
         >
-          {/* Corner glow */}
           <div aria-hidden style={{
             position: 'absolute', top: 0, left: 0, right: 0, height: 2,
             background: `linear-gradient(90deg, transparent, rgba(245,158,11,0.4), transparent)`,
@@ -482,18 +479,17 @@ function ArchitectureSection() {
           <pre style={{
             fontFamily: "'IBM Plex Mono', monospace",
             fontSize: 'clamp(10px,1.2vw,13px)',
-            color: 'rgba(241,245,249,0.75)',
+            color: 'rgba(189,212,232,0.75)',
             lineHeight: 1.7,
             margin: 0,
             overflowX: 'auto',
             whiteSpace: 'pre',
           }}>
             {ASCII_DIAGRAM.split('\n').map((line, i) => {
-              // Gold-tint the box-drawing lines
               const isBox = /[┌┐└┘├┤┬┴┼─│]/.test(line);
               return (
-                <div key={i} style={{ color: isBox ? 'rgba(245,158,11,0.55)' : undefined }}>
-                  {line || ' '}
+                <div key={i} style={{ color: isBox ? 'rgba(74,126,200,0.7)' : undefined }}>
+                  {line || ' '}
                 </div>
               );
             })}
@@ -525,7 +521,7 @@ function AIModelsSection() {
         </h2>
         <p style={{
           fontFamily: "'IBM Plex Sans', sans-serif",
-          fontSize: 16, color: 'rgba(241,245,249,0.45)',
+          fontSize: 16, color: 'rgba(189,212,232,0.45)',
           margin: '0 0 48px', lineHeight: 1.6, maxWidth: '52ch',
         }}>
           Not one general-purpose model doing everything poorly. Four specialists, each chosen for its specific task.
@@ -541,8 +537,8 @@ function AIModelsSection() {
           <Reveal key={model.name} delay={i * 0.07}>
             <TiltCard style={{ height: '100%' }}>
               <div style={{
-                background: '#111827',
-                border: '1px solid rgba(241,245,249,0.09)',
+                background: '#141420',
+                border: '1px solid rgba(74,126,200,0.12)',
                 borderRadius: 8,
                 padding: '24px 22px',
                 height: '100%',
@@ -551,7 +547,6 @@ function AIModelsSection() {
                 flexDirection: 'column',
                 gap: 12,
               }}>
-                {/* Model name */}
                 <div style={{
                   fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 13, fontWeight: 600,
@@ -560,7 +555,6 @@ function AIModelsSection() {
                   {model.name}
                 </div>
 
-                {/* Role */}
                 <div style={{
                   fontFamily: "'IBM Plex Sans', sans-serif",
                   fontSize: 15, fontWeight: 700,
@@ -569,16 +563,14 @@ function AIModelsSection() {
                   {model.role}
                 </div>
 
-                {/* Description */}
                 <p style={{
                   fontFamily: "'IBM Plex Sans', sans-serif",
-                  fontSize: 13, color: 'rgba(241,245,249,0.48)',
+                  fontSize: 13, color: 'rgba(189,212,232,0.48)',
                   lineHeight: 1.6, margin: 0, flex: 1,
                 }}>
                   {model.desc}
                 </p>
 
-                {/* Badge */}
                 <div style={{
                   display: 'inline-flex', alignItems: 'center',
                   background: 'rgba(245,158,11,0.08)',
@@ -625,12 +617,21 @@ function EndpointSection() {
           </h2>
           <p style={{
             fontFamily: "'IBM Plex Sans', sans-serif",
-            fontSize: 16, color: 'rgba(241,245,249,0.45)',
+            fontSize: 16, color: 'rgba(189,212,232,0.45)',
             margin: '0 0 40px', lineHeight: 1.6, maxWidth: '48ch',
           }}>
             The endpoint agent installs in under 10 seconds on any Linux or macOS host. No configuration files. No vendor accounts.
           </p>
         </Reveal>
+
+        {/* Logo + label above terminal */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+          <img src="/assets/brand/aegistrace-icon.png" alt="" style={{ width: 36, height: 36, objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(74,126,200,0.6))' }}/>
+          <div>
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: '#4A7EC8', letterSpacing: '0.2em' }}>ENDPOINT AGENT</div>
+            <div style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 18, fontWeight: 700, color: '#BDD4E8' }}>Deploy in one command</div>
+          </div>
+        </div>
 
         {/* Terminal */}
         <motion.div
@@ -639,8 +640,8 @@ function EndpointSection() {
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.65, ease: E }}
           style={{
-            background: '#111827',
-            border: '1px solid rgba(241,245,249,0.1)',
+            background: '#030308',
+            border: '1px solid rgba(74,126,200,0.18)',
             borderRadius: 10,
             overflow: 'hidden',
             maxWidth: 680,
@@ -651,7 +652,7 @@ function EndpointSection() {
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '12px 16px',
             background: 'rgba(255,255,255,0.04)',
-            borderBottom: '1px solid rgba(241,245,249,0.07)',
+            borderBottom: '1px solid rgba(189,212,232,0.07)',
           }}>
             <div style={{ display: 'flex', gap: 6 }}>
               {['#F87171', '#FBBF24', '#34D399'].map(c => (
@@ -660,7 +661,7 @@ function EndpointSection() {
             </div>
             <span style={{
               fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: 11, color: 'rgba(241,245,249,0.25)',
+              fontSize: 11, color: 'rgba(189,212,232,0.25)',
             }}>
               bash
             </span>
@@ -685,8 +686,8 @@ function EndpointSection() {
                   <span style={{
                     fontFamily: "'IBM Plex Mono', monospace",
                     fontSize: 12,
-                    color: line.prompt === '$' ? GOLD
-                          : line.prompt === '#' ? 'rgba(241,245,249,0.28)'
+                    color: line.prompt === '$' ? '#4A7EC8'
+                          : line.prompt === '#' ? 'rgba(189,212,232,0.28)'
                           : '#34D399',
                     flexShrink: 0, marginTop: 1,
                     minWidth: line.gold ? 24 : undefined,
@@ -697,9 +698,9 @@ function EndpointSection() {
                 <span style={{
                   fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 12,
-                  color: line.gold ? 'rgba(241,245,249,0.75)'
-                        : line.prompt === '#' ? 'rgba(241,245,249,0.35)'
-                        : 'rgba(241,245,249,0.65)',
+                  color: line.gold ? 'rgba(189,212,232,0.75)'
+                        : line.prompt === '#' ? 'rgba(189,212,232,0.35)'
+                        : 'rgba(189,212,232,0.65)',
                   lineHeight: 1.6,
                   wordBreak: 'break-all',
                 }}>
@@ -749,19 +750,19 @@ function ComparisonSection() {
                   textAlign: 'left', padding: '14px 20px',
                   fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 10.5, fontWeight: 500,
-                  color: 'rgba(241,245,249,0.35)', letterSpacing: '0.14em',
+                  color: 'rgba(189,212,232,0.35)', letterSpacing: '0.14em',
                   textTransform: 'uppercase',
-                  borderBottom: '1px solid rgba(241,245,249,0.08)',
+                  borderBottom: '1px solid rgba(74,126,200,0.12)',
                 }}>Feature</th>
                 {COLS.map((col, ci) => (
                   <th key={col} style={{
                     textAlign: 'center', padding: '14px 20px',
                     fontFamily: "'IBM Plex Mono', monospace",
                     fontSize: 10.5, fontWeight: ci === 0 ? 700 : 500,
-                    color: ci === 0 ? GOLD : 'rgba(241,245,249,0.35)',
+                    color: ci === 0 ? '#4A7EC8' : 'rgba(189,212,232,0.35)',
                     letterSpacing: '0.1em', textTransform: 'uppercase',
-                    borderBottom: '1px solid rgba(241,245,249,0.08)',
-                    background: ci === 0 ? 'rgba(245,158,11,0.05)' : 'transparent',
+                    borderBottom: '1px solid rgba(74,126,200,0.12)',
+                    background: ci === 0 ? 'rgba(74,126,200,0.05)' : 'transparent',
                   }}>{col}</th>
                 ))}
               </tr>
@@ -769,22 +770,22 @@ function ComparisonSection() {
             <tbody>
               {COMPARISON.map((row, ri) => (
                 <tr key={row.feature} style={{
-                  borderBottom: ri < COMPARISON.length - 1 ? '1px solid rgba(241,245,249,0.045)' : 'none',
+                  borderBottom: ri < COMPARISON.length - 1 ? '1px solid rgba(74,126,200,0.06)' : 'none',
                 }}>
                   <td style={{
                     padding: '14px 20px',
                     fontSize: 14, fontWeight: 500,
-                    color: 'rgba(241,245,249,0.7)',
+                    color: 'rgba(189,212,232,0.7)',
                   }}>{row.feature}</td>
                   {[row.aegis, row.siem, row.soar].map((val, ci) => (
                     <td key={ci} style={{
                       padding: '14px 20px', textAlign: 'center',
-                      background: ci === 0 ? 'rgba(245,158,11,0.04)' : 'transparent',
+                      background: ci === 0 ? 'rgba(74,126,200,0.04)' : 'transparent',
                       fontSize: 14,
-                      color: ci === 0 ? GOLD
-                            : val === false ? 'rgba(241,245,249,0.22)'
-                            : val === 'Partial' ? 'rgba(241,245,249,0.45)'
-                            : 'rgba(241,245,249,0.6)',
+                      color: ci === 0 ? '#8BB8E8'
+                            : val === false ? 'rgba(189,212,232,0.22)'
+                            : val === 'Partial' ? 'rgba(189,212,232,0.45)'
+                            : 'rgba(189,212,232,0.6)',
                       fontWeight: ci === 0 ? 700 : 400,
                     }}>
                       {val === true  ? '✓'
@@ -826,7 +827,7 @@ function CTASection() {
           </h2>
           <p style={{
             fontFamily: "'IBM Plex Sans', sans-serif",
-            fontSize: 16, color: 'rgba(241,245,249,0.45)',
+            fontSize: 16, color: 'rgba(189,212,232,0.45)',
             margin: '0 0 32px', lineHeight: 1.6,
           }}>
             No vendor negotiations. No 90-day implementations. No $100k invoices.
@@ -835,8 +836,8 @@ function CTASection() {
 
         <Reveal delay={0.1}>
           <div style={{
-            background: '#111827',
-            border: '1px solid rgba(241,245,249,0.1)',
+            background: '#030308',
+            border: '1px solid rgba(74,126,200,0.18)',
             borderRadius: 6,
             padding: '14px 20px',
             marginBottom: 28,
@@ -857,7 +858,7 @@ function CTASection() {
         <Reveal delay={0.2}>
           <Link to="/app/login" style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
-            background: GOLD, color: '#0F172A',
+            background: GOLD, color: '#BDD4E8',
             fontFamily: "'IBM Plex Sans', sans-serif",
             fontSize: 15, fontWeight: 700,
             padding: '14px 28px', borderRadius: 5,
@@ -892,10 +893,10 @@ export default function Platform() {
   return (
     <div style={{ background: BG, minHeight: '100vh', color: INK }}>
       <style>{`
-        ::selection { background: rgba(245,158,11,0.3); color: ${INK}; }
+        ::selection { background: rgba(74,126,200,0.3); color: ${INK}; }
         .plat-nav-link {
           font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 500;
-          color: rgba(241,245,249,0.7); text-decoration: none; letter-spacing: 0.03em;
+          color: rgba(189,212,232,0.7); text-decoration: none; letter-spacing: 0.03em;
           transition: color 140ms; position: relative;
         }
         .plat-nav-link:hover { color: ${INK}; }
@@ -922,19 +923,18 @@ export default function Platform() {
           position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '0 clamp(20px,4vw,56px)', height: 64,
-          background: scrolled ? 'rgba(10,22,40,0.96)' : 'rgba(10,22,40,1)',
+          background: scrolled ? 'rgba(5,5,5,0.96)' : 'rgba(5,5,5,1)',
           backdropFilter: scrolled ? 'blur(20px) saturate(160%)' : 'none',
           WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(160%)' : 'none',
-          borderBottom: scrolled ? '1px solid rgba(241,245,249,0.06)' : 'none',
+          borderBottom: scrolled ? '1px solid rgba(74,126,200,0.12)' : 'none',
           transition: 'background 300ms, backdrop-filter 300ms, border-color 300ms',
         }}
       >
-        <Link to="/" style={{
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
-          color: INK, textDecoration: 'none',
-          fontSize: 17, fontWeight: 700, letterSpacing: '0.1em',
-        }}>
-          AEGISTRACE
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+          <img src="/assets/brand/aegistrace-icon.png" alt="AegisTrace"
+            style={{ width: 26, height: 26, objectFit: 'contain', filter: 'drop-shadow(0 0 5px rgba(74,126,200,0.5))' }}/>
+          <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, fontWeight: 600,
+            color: '#BDD4E8', letterSpacing: '0.18em' }}>AEGISTRACE</span>
         </Link>
         <div style={{ display: 'flex', gap: 'clamp(16px,3vw,36px)', alignItems: 'center' }}>
           <Link to="/mission"  className="plat-nav-link">Mission</Link>
@@ -942,7 +942,7 @@ export default function Platform() {
           <Link to="/portfolio" className="plat-nav-link">Builder</Link>
           <Link to="/app/login" style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
-            background: GOLD, color: '#0F172A',
+            background: GOLD, color: '#BDD4E8',
             fontFamily: "'IBM Plex Sans', sans-serif",
             fontSize: 12, fontWeight: 700,
             padding: '9px 18px', borderRadius: 5,
@@ -969,24 +969,28 @@ export default function Platform() {
       {/* Footer */}
       <footer style={{
         padding: '28px clamp(24px,6vw,80px)',
-        borderTop: '1px solid rgba(241,245,249,0.06)',
+        borderTop: '1px solid rgba(74,126,200,0.08)',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         flexWrap: 'wrap', gap: 12,
       }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <img src="/assets/brand/aegistrace-icon.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain', opacity: 0.5 }}/>
+          <span style={{ fontFamily: "'IBM Plex Mono',monospace", color: 'rgba(189,212,232,0.28)', fontSize: 11, letterSpacing: '0.16em' }}>AEGISTRACE</span>
+        </div>
         <span style={{
           fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: 11, color: 'rgba(241,245,249,0.2)',
+          fontSize: 11, color: 'rgba(189,212,232,0.2)',
           letterSpacing: '0.08em',
         }}>
           AegisTrace · v10.1 · 2026
         </span>
         <Link to="/" style={{
           fontFamily: "'IBM Plex Sans', sans-serif",
-          fontSize: 12, color: 'rgba(241,245,249,0.28)',
+          fontSize: 12, color: 'rgba(189,212,232,0.28)',
           textDecoration: 'none', transition: 'color 140ms',
         }}
-          onMouseEnter={e => (e.currentTarget.style.color = 'rgba(241,245,249,0.6)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(241,245,249,0.28)')}
+          onMouseEnter={e => (e.currentTarget.style.color = 'rgba(189,212,232,0.6)')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(189,212,232,0.28)')}
         >
           Back to site
         </Link>

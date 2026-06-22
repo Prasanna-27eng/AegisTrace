@@ -252,13 +252,13 @@ export default function AppShell() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--bg)', overflow: 'hidden' }}>
 
-      {/* ── TOPBAR — Sentinel blue gradient ── */}
+      {/* ── TOPBAR — Aether Seal dark gradient ── */}
       <header style={{
         position: 'fixed',
         top: 0, left: 0, right: 0,
         height: 52,
-        background: 'linear-gradient(135deg, #0A1628 0%, #0E2044 50%, #0A4DA6 100%)',
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        background: 'linear-gradient(135deg, #050505 0%, #0A0A18 50%, #0F1428 100%)',
+        borderBottom: '1px solid rgba(74,126,200,0.12)',
         display: 'flex',
         alignItems: 'center',
         gap: 12,
@@ -276,22 +276,24 @@ export default function AppShell() {
           <Menu size={18} />
         </button>
 
-        {/* Logo text — left aligned */}
+        {/* Logo in topbar */}
         <div style={{
-          fontFamily: 'var(--font-display)',
-          fontWeight: 700,
-          fontSize: 15,
-          color: '#FFFFFF',
-          letterSpacing: '0.04em',
           display: 'flex',
           alignItems: 'center',
-          gap: 8,
           flexShrink: 0,
           width: sidebarW - 16,
           transition: 'width 220ms cubic-bezier(0.23,1,0.32,1)',
         }}>
-          <span style={{ fontSize: 16 }}>🛡️</span>
-          {!collapsed && <span>AegisTrace</span>}
+          <div onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', textDecoration: 'none' }}>
+            <img
+              src="/assets/brand/aegistrace-icon.png"
+              alt="AegisTrace"
+              style={{ width: 28, height: 28, objectFit: 'contain', filter: 'drop-shadow(0 0 6px rgba(74,126,200,0.6))' }}
+            />
+            {!collapsed && (
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '0.18em' }}>AEGISTRACE</span>
+            )}
+          </div>
         </div>
 
         {/* Search — centered */}

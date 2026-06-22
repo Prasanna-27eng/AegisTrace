@@ -11,14 +11,14 @@ import LoadingScreen, { useLoading } from '../components/LoadingScreen';
 
 /* ─── Constants ─────────────────────────────────────────────────────────────── */
 const GOLD    = '#F59E0B';
-const NAVY    = '#0A1628';
-const BLUE    = '#2563EB';
-const BLUE_L  = '#60A5FA';
-const INK     = '#F1F5F9';
-const MUTED   = '#94A3B8';
-const WS_BG   = '#F0F4F9';
-const WS_TEXT = '#0F172A';
-const WS_BODY = '#334155';
+const NAVY    = '#050505';
+const BLUE    = '#4A7EC8';
+const BLUE_L  = '#8BB8E8';
+const INK     = '#BDD4E8';
+const MUTED   = '#7A9DB8';
+const WS_BG   = '#0E0E16';
+const WS_TEXT = '#BDD4E8';
+const WS_BODY = '#7A9DB8';
 const E       = [0.23, 1, 0.32, 1];
 
 /* ─── Hooks ─────────────────────────────────────────────────────────────────── */
@@ -91,10 +91,10 @@ function DashboardMockup() {
   return (
     <div style={{
       background: '#111827',
-      border: '1px solid rgba(255,255,255,0.1)',
+      border: '1px solid rgba(74,126,200,0.12)',
       borderRadius: 12,
       overflow: 'hidden',
-      boxShadow: '0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(37,99,235,0.2)',
+      boxShadow: '0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(74,126,200,0.2)',
       width: '100%',
       maxWidth: 460,
     }}>
@@ -102,8 +102,8 @@ function DashboardMockup() {
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '12px 16px',
-        background: 'rgba(255,255,255,0.04)',
-        borderBottom: '1px solid rgba(255,255,255,0.07)',
+        background: 'rgba(74,126,200,0.04)',
+        borderBottom: '1px solid rgba(74,126,200,0.07)',
       }}>
         <div style={{ display: 'flex', gap: 6 }}>
           {['#F87171', '#FBBF24', '#34D399'].map(c => (
@@ -112,7 +112,7 @@ function DashboardMockup() {
         </div>
         <span style={{
           fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: 11, color: 'rgba(241,245,249,0.35)',
+          fontSize: 11, color: 'rgba(189,212,232,0.35)',
           letterSpacing: '0.1em',
         }}>
           AEGISTRACE · SOC CONSOLE
@@ -121,7 +121,7 @@ function DashboardMockup() {
       </div>
 
       {/* Case header */}
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(74,126,200,0.06)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
           <span style={{
             fontFamily: "'IBM Plex Mono', monospace",
@@ -177,11 +177,11 @@ function DashboardMockup() {
         <svg width="100%" height="48" viewBox="0 0 420 48" preserveAspectRatio="none">
           <defs>
             <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#2563EB" stopOpacity="0.3"/>
-              <stop offset="100%" stopColor="#2563EB" stopOpacity="0"/>
+              <stop offset="0%" stopColor="#4A7EC8" stopOpacity="0.3"/>
+              <stop offset="100%" stopColor="#4A7EC8" stopOpacity="0"/>
             </linearGradient>
           </defs>
-          <path d="M0,38 L40,36 L80,34 L120,30 L160,28 L200,22 L240,18 L280,12 L320,8 L360,6 L400,4 L420,2" stroke="#2563EB" strokeWidth="2" fill="none" opacity="0.9"/>
+          <path d="M0,38 L40,36 L80,34 L120,30 L160,28 L200,22 L240,18 L280,12 L320,8 L360,6 L400,4 L420,2" stroke="#4A7EC8" strokeWidth="2" fill="none" opacity="0.9"/>
           <path d="M0,38 L40,36 L80,34 L120,30 L160,28 L200,22 L240,18 L280,12 L320,8 L360,6 L400,4 L420,2 L420,48 L0,48 Z" fill="url(#chart-grad)"/>
           <circle cx="420" cy="2" r="3" fill="#EF4444">
             <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>
@@ -192,8 +192,8 @@ function DashboardMockup() {
       {/* Status bar */}
       <div style={{
         padding: '10px 20px',
-        background: 'rgba(37,99,235,0.08)',
-        borderTop: '1px solid rgba(37,99,235,0.15)',
+        background: 'rgba(74,126,200,0.08)',
+        borderTop: '1px solid rgba(74,126,200,0.15)',
         display: 'flex', alignItems: 'center', gap: 8,
       }}>
         <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#34D399' }}>
@@ -244,13 +244,13 @@ function HeroScene() {
       {/* Hero gradient background */}
       <div aria-hidden style={{
         position: 'absolute', inset: 0,
-        background: 'linear-gradient(135deg, #0A1628 0%, #0D2240 35%, #0F3470 65%, #1048A0 85%, #2563EB 100%)',
+        background: 'linear-gradient(135deg, #050505 0%, #080818 40%, #0A1428 70%, #0F1E3E 100%)',
       }}/>
 
       {/* Subtle dot grid overlay */}
       <div aria-hidden style={{
         position: 'absolute', inset: 0,
-        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)',
+        backgroundImage: 'radial-gradient(circle, rgba(74,126,200,0.04) 1px, transparent 1px)',
         backgroundSize: '40px 40px',
       }}/>
 
@@ -341,7 +341,7 @@ function HeroScene() {
                   textDecoration: 'none', letterSpacing: '0.01em', borderRadius: 4,
                   transition: 'background 140ms, transform 100ms',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#1D4ED8'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#3A6AB8'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = BLUE; e.currentTarget.style.transform = 'translateY(0)'; }}
               >
                 Book a Private Demo <ArrowRight size={14}/>
@@ -349,22 +349,22 @@ function HeroScene() {
               <Link to="/mission"
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 8,
-                  background: 'transparent', color: 'rgba(241,245,249,0.8)',
+                  background: 'transparent', color: 'rgba(189,212,232,0.8)',
                   fontFamily: "'IBM Plex Sans', sans-serif",
                   fontSize: 14, fontWeight: 500,
-                  padding: '12px 22px', border: '1px solid rgba(241,245,249,0.25)',
+                  padding: '12px 22px', border: '1px solid rgba(189,212,232,0.25)',
                   cursor: 'pointer', textDecoration: 'none', letterSpacing: '0.01em', borderRadius: 4,
                   transition: 'border-color 140ms, color 140ms',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(241,245,249,0.5)'; e.currentTarget.style.color = INK; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(241,245,249,0.25)'; e.currentTarget.style.color = 'rgba(241,245,249,0.8)'; }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(189,212,232,0.5)'; e.currentTarget.style.color = INK; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(189,212,232,0.25)'; e.currentTarget.style.color = 'rgba(189,212,232,0.8)'; }}
               >
                 Our Mission
               </Link>
             </div>
             <div style={{
               fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: 11, color: 'rgba(148,163,184,0.7)',
+              fontSize: 11, color: 'rgba(122,157,184,0.7)',
               letterSpacing: '0.08em',
             }}>
               Self-Hosted · Multi-Tenant · Built in Dublin, Ireland
@@ -386,13 +386,13 @@ function HeroScene() {
       }}>
         <span style={{
           fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: 10, letterSpacing: '0.3em', color: 'rgba(241,245,249,0.3)',
+          fontSize: 10, letterSpacing: '0.3em', color: 'rgba(189,212,232,0.3)',
         }}>SCROLL TO EXPLORE</span>
         <motion.div
           animate={{ y: [0, 5, 0] }}
           transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
         >
-          <ChevronDown size={16} color="rgba(241,245,249,0.3)"/>
+          <ChevronDown size={16} color="rgba(189,212,232,0.3)"/>
         </motion.div>
       </motion.div>
     </PinnedScene>
@@ -404,11 +404,11 @@ function MobileHero() {
     <section style={{
       position: 'relative', minHeight: '100vh',
       display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
-      background: 'linear-gradient(135deg, #0A1628 0%, #0D2240 35%, #0F3470 65%, #1048A0 85%, #2563EB 100%)',
+      background: 'linear-gradient(135deg, #050505 0%, #080818 40%, #0A1428 70%, #0F1E3E 100%)',
     }}>
       <div aria-hidden style={{
         position: 'absolute', inset: 0,
-        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)',
+        backgroundImage: 'radial-gradient(circle, rgba(74,126,200,0.04) 1px, transparent 1px)',
         backgroundSize: '40px 40px',
       }}/>
       <div style={{
@@ -450,10 +450,10 @@ function MobileHero() {
           <Link to="/mission"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
-              background: 'transparent', color: 'rgba(241,245,249,0.8)',
+              background: 'transparent', color: 'rgba(189,212,232,0.8)',
               fontFamily: "'IBM Plex Sans', sans-serif",
               fontSize: 14, fontWeight: 500, padding: '11px 20px',
-              border: '1px solid rgba(241,245,249,0.25)', textDecoration: 'none', borderRadius: 4,
+              border: '1px solid rgba(189,212,232,0.25)', textDecoration: 'none', borderRadius: 4,
             }}>
             Our Mission
           </Link>
@@ -481,8 +481,8 @@ function StatStrip() {
   return (
     <section style={{
       background: WS_BG,
-      borderTop: 'rgba(15,23,42,0.1) 1px solid',
-      borderBottom: 'rgba(15,23,42,0.1) 1px solid',
+      borderTop: 'rgba(14,14,22,0.1) 1px solid',
+      borderBottom: 'rgba(14,14,22,0.1) 1px solid',
       padding: '0 clamp(24px,5vw,72px)',
     }}>
       <div style={{
@@ -493,7 +493,7 @@ function StatStrip() {
         {STATS.map((stat, i) => (
           <div key={stat.label} style={{
             padding: 'clamp(24px,4vw,40px) clamp(16px,2vw,24px)',
-            borderRight: i < STATS.length - 1 ? 'rgba(15,23,42,0.1) 1px solid' : 'none',
+            borderRight: i < STATS.length - 1 ? 'rgba(14,14,22,0.1) 1px solid' : 'none',
             textAlign: 'center',
           }}>
             <div style={{
@@ -532,8 +532,8 @@ function TrustBar() {
   return (
     <div style={{
       background: NAVY,
-      borderTop: '1px solid rgba(255,255,255,0.06)',
-      borderBottom: '1px solid rgba(255,255,255,0.06)',
+      borderTop: '1px solid rgba(74,126,200,0.06)',
+      borderBottom: '1px solid rgba(74,126,200,0.06)',
       padding: '14px clamp(24px,5vw,72px)',
       overflowX: 'auto',
     }}>
@@ -622,11 +622,11 @@ function ProblemSection() {
           {PROBLEM_STATS.map((stat, i) => (
             <Reveal key={stat.value} delay={i * 0.08}>
               <div style={{
-                background: '#fff',
-                border: '1px solid rgba(15,23,42,0.08)',
+                background: '#0E0E16',
+                border: '1px solid rgba(14,14,22,0.08)',
                 borderRadius: 10,
                 padding: 'clamp(24px,3vw,36px)',
-                boxShadow: '0 1px 4px rgba(15,23,42,0.06)',
+                boxShadow: '0 1px 4px rgba(14,14,22,0.06)',
               }}>
                 <div style={{
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -721,16 +721,16 @@ function SolutionSection() {
             <Reveal key={pillar.title} delay={i * 0.07}>
               <div
                 style={{
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'rgba(74,126,200,0.04)',
+                  border: '1px solid rgba(74,126,200,0.12)',
                   borderRadius: 10,
                   padding: 'clamp(24px,3vw,32px)',
                   height: '100%', boxSizing: 'border-box',
                   transition: 'border-color 160ms ease-out',
                   cursor: 'default',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(37,99,235,0.4)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(74,126,200,0.4)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(74,126,200,0.12)'; }}
               >
                 <h3 style={{
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -808,8 +808,8 @@ function ModulesSection() {
             <Reveal key={mod.n} delay={i * 0.04}>
               <div
                 style={{
-                  background: '#fff',
-                  border: '1px solid #E2E8F0',
+                  background: '#0E0E16',
+                  border: '1px solid rgba(74,126,200,0.12)',
                   borderRadius: 10,
                   padding: '20px 22px',
                   height: '100%', boxSizing: 'border-box',
@@ -819,11 +819,11 @@ function ModulesSection() {
                 onMouseEnter={e => {
                   e.currentTarget.style.transform = 'translateY(-2px)';
                   e.currentTarget.style.borderColor = BLUE;
-                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(37,99,235,0.1)';
+                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(74,126,200,0.1)';
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.borderColor = '#E2E8F0';
+                  e.currentTarget.style.borderColor = 'rgba(74,126,200,0.12)';
                   e.currentTarget.style.boxShadow = 'none';
                 }}
               >
@@ -838,7 +838,7 @@ function ModulesSection() {
                 }}>{mod.name}</div>
                 <div style={{
                   fontFamily: "'IBM Plex Sans', sans-serif",
-                  fontSize: 12, color: '#64748B', lineHeight: 1.55,
+                  fontSize: 12, color: '#7A9DB8', lineHeight: 1.55,
                 }}>{mod.desc}</div>
               </div>
             </Reveal>
@@ -900,8 +900,8 @@ function GrassrootsSection() {
           {GRASSROOTS_TOOLS.map((tool, i) => (
             <Reveal key={tool.name} delay={i * 0.07}>
               <div style={{
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.08)',
+                background: 'rgba(74,126,200,0.05)',
+                border: '1px solid rgba(74,126,200,0.08)',
                 borderRadius: 8, padding: '24px',
                 height: '100%', boxSizing: 'border-box',
                 display: 'flex', flexDirection: 'column', gap: 12,
@@ -918,12 +918,12 @@ function GrassrootsSection() {
                   <code style={{
                     fontFamily: "'IBM Plex Mono', monospace",
                     fontSize: 11.5, color: BLUE_L,
-                    background: 'rgba(37,99,235,0.12)',
+                    background: 'rgba(74,126,200,0.12)',
                     padding: '5px 10px', flex: 1,
                     borderRadius: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>{tool.cmd}</code>
                   <button onClick={() => copy(i, tool.cmd)} style={{
-                    background: 'none', border: '1px solid rgba(255,255,255,0.15)',
+                    background: 'none', border: '1px solid rgba(74,126,200,0.15)',
                     color: copiedIdx === i ? GOLD : MUTED,
                     fontFamily: "'IBM Plex Mono', monospace",
                     fontSize: 11, padding: '5px 10px', cursor: 'pointer', borderRadius: 4,
@@ -938,8 +938,8 @@ function GrassrootsSection() {
         {/* Callout box */}
         <Reveal delay={0.2} style={{ marginTop: 40 }}>
           <div style={{
-            background: 'rgba(37,99,235,0.08)',
-            border: '1px solid rgba(37,99,235,0.25)',
+            background: 'rgba(74,126,200,0.08)',
+            border: '1px solid rgba(74,126,200,0.25)',
             borderRadius: 10,
             padding: 'clamp(20px,3vw,32px)',
           }}>
@@ -1000,14 +1000,14 @@ function ComparisonSection() {
     fontFamily: "'IBM Plex Sans', sans-serif",
     fontSize: 12, fontWeight: 600,
     padding: '10px 16px', textAlign: 'center',
-    background: 'rgba(15,23,42,0.04)',
-    borderBottom: '1px solid rgba(15,23,42,0.08)',
+    background: 'rgba(14,14,22,0.04)',
+    borderBottom: '1px solid rgba(14,14,22,0.08)',
     color: WS_TEXT,
   };
 
   const cellStyle = {
     padding: '12px 16px', textAlign: 'center',
-    borderBottom: '1px solid rgba(15,23,42,0.06)',
+    borderBottom: '1px solid rgba(14,14,22,0.06)',
     fontFamily: "'IBM Plex Sans', sans-serif",
     fontSize: 13,
   };
@@ -1040,15 +1040,15 @@ function ComparisonSection() {
         <Reveal delay={0.1} style={{ marginBottom: 48, overflowX: 'auto' }}>
           <table style={{
             width: '100%', borderCollapse: 'collapse',
-            background: '#fff', borderRadius: 10, overflow: 'hidden',
-            border: '1px solid rgba(15,23,42,0.08)',
-            boxShadow: '0 1px 4px rgba(15,23,42,0.06)',
+            background: '#0E0E16', borderRadius: 10, overflow: 'hidden',
+            border: '1px solid rgba(14,14,22,0.08)',
+            boxShadow: '0 1px 4px rgba(14,14,22,0.06)',
             minWidth: 640,
           }}>
             <thead>
               <tr>
                 <th style={{ ...headerStyle, textAlign: 'left', minWidth: 220 }}>Capability</th>
-                <th style={{ ...headerStyle, background: 'rgba(37,99,235,0.08)', color: BLUE }}>AegisTrace</th>
+                <th style={{ ...headerStyle, background: 'rgba(74,126,200,0.1)', color: BLUE }}>AegisTrace</th>
                 <th style={headerStyle}>CrowdStrike</th>
                 <th style={headerStyle}>Sentinel</th>
                 <th style={headerStyle}>Lakera</th>
@@ -1057,9 +1057,9 @@ function ComparisonSection() {
             </thead>
             <tbody>
               {COMPARISON_ROWS.map((row, i) => (
-                <tr key={row.cap} style={{ background: i % 2 === 0 ? '#fff' : 'rgba(240,244,249,0.5)' }}>
+                <tr key={row.cap} style={{ background: i % 2 === 0 ? '#0E0E16' : 'rgba(14,14,22,0.5)' }}>
                   <td style={{ ...cellStyle, textAlign: 'left', color: WS_BODY, fontWeight: 500 }}>{row.cap}</td>
-                  <td style={{ ...cellStyle, background: 'rgba(37,99,235,0.06)' }}>{renderCell(row.at)}</td>
+                  <td style={{ ...cellStyle, background: 'rgba(74,126,200,0.06)' }}>{renderCell(row.at)}</td>
                   <td style={cellStyle}>{renderCell(row.cs)}</td>
                   <td style={cellStyle}>{renderCell(row.sen)}</td>
                   <td style={cellStyle}>{renderCell(row.lak)}</td>
@@ -1075,11 +1075,11 @@ function ComparisonSection() {
           {DIFF_CARDS.map((card, i) => (
             <Reveal key={card.vs} delay={i * 0.08}>
               <div style={{
-                background: '#fff',
-                border: '1px solid #E2E8F0',
+                background: '#0E0E16',
+                border: '1px solid rgba(74,126,200,0.12)',
                 borderRadius: 10,
                 padding: 'clamp(20px,3vw,28px)',
-                boxShadow: '0 1px 4px rgba(15,23,42,0.05)',
+                boxShadow: '0 1px 4px rgba(14,14,22,0.05)',
               }}>
                 <div style={{
                   fontFamily: "'IBM Plex Mono', monospace",
@@ -1166,16 +1166,16 @@ function TrustSection() {
             <Reveal key={pillar.title} delay={i * 0.07}>
               <div
                 style={{
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'rgba(74,126,200,0.04)',
+                  border: '1px solid rgba(74,126,200,0.12)',
                   borderRadius: 10,
                   padding: 'clamp(22px,3vw,32px)',
                   height: '100%', boxSizing: 'border-box',
                   transition: 'border-color 160ms',
                   cursor: 'default',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(37,99,235,0.4)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(74,126,200,0.4)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(74,126,200,0.12)'; }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                   <h3 style={{
@@ -1214,7 +1214,7 @@ function TrustSection() {
 function CTABand() {
   return (
     <section style={{
-      background: 'linear-gradient(135deg, #0A1628, #0F3470)',
+      background: 'linear-gradient(135deg, #050505, #0F1428)',
       padding: 'clamp(80px,10vw,120px) clamp(24px,5vw,72px)',
       textAlign: 'center',
     }}>
@@ -1246,7 +1246,7 @@ function CTABand() {
                 borderRadius: 4, textDecoration: 'none',
                 transition: 'background 140ms, transform 100ms',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#1D4ED8'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#3A6AB8'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = BLUE; e.currentTarget.style.transform = 'translateY(0)'; }}
             >
               Book a Private Demo <ArrowRight size={16}/>
@@ -1254,22 +1254,22 @@ function CTABand() {
             <a href="mailto:Prasanna80564@gmail.com"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
-                background: 'transparent', color: 'rgba(241,245,249,0.75)',
+                background: 'transparent', color: 'rgba(189,212,232,0.75)',
                 fontFamily: "'IBM Plex Sans', sans-serif",
                 fontSize: 15, fontWeight: 500, padding: '13px 26px',
-                border: '1px solid rgba(241,245,249,0.2)',
+                border: '1px solid rgba(189,212,232,0.2)',
                 borderRadius: 4, textDecoration: 'none',
                 transition: 'border-color 140ms, color 140ms',
               }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(241,245,249,0.4)'; e.currentTarget.style.color = INK; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(241,245,249,0.2)'; e.currentTarget.style.color = 'rgba(241,245,249,0.75)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(189,212,232,0.2)'; e.currentTarget.style.color = 'rgba(189,212,232,0.75)'; }}
             >
               Talk to the Founder &rarr;
             </a>
           </div>
           <div style={{
             fontFamily: "'IBM Plex Mono', monospace",
-            fontSize: 11, color: 'rgba(148,163,184,0.55)',
+            fontSize: 11, color: 'rgba(122,157,184,0.55)',
             letterSpacing: '0.08em',
           }}>
             Self-hosted &middot; Multi-tenant &middot; Built in Dublin, Ireland &middot; No data leaves your network
@@ -1329,14 +1329,14 @@ function Ticker() {
 ════════════════════════════════════════════════════════════════════════════ */
 function Footer() {
   return (
-    <footer style={{ background: '#070D1A', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '40px clamp(24px,5vw,72px)' }}>
+    <footer style={{ background: '#050505', borderTop: '1px solid rgba(74,126,200,0.06)', padding: '40px clamp(24px,5vw,72px)' }}>
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px,1fr))', gap: 40, marginBottom: 48 }}>
           <div>
-            <div style={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontSize: 14, fontWeight: 800, color: INK, letterSpacing: '0.1em', marginBottom: 12,
-            }}>AEGISTRACE</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <img src="/assets/brand/aegistrace-icon.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain', opacity: 0.6 }}/>
+              <span style={{ fontFamily: "'IBM Plex Mono',monospace", color: 'rgba(189,212,232,0.3)', fontSize: 11, letterSpacing: '0.16em' }}>AEGISTRACE</span>
+            </div>
             <p style={{
               fontFamily: "'IBM Plex Sans', sans-serif",
               fontSize: 13, color: MUTED, lineHeight: 1.65, margin: 0, maxWidth: 220,
@@ -1347,7 +1347,7 @@ function Footer() {
           <div>
             <div style={{
               fontFamily: "'IBM Plex Sans', sans-serif",
-              fontSize: 11, color: 'rgba(148,163,184,0.5)', letterSpacing: '0.14em',
+              fontSize: 11, color: 'rgba(122,157,184,0.5)', letterSpacing: '0.14em',
               textTransform: 'uppercase', marginBottom: 16, fontWeight: 600,
             }}>Platform</div>
             {[
@@ -1371,7 +1371,7 @@ function Footer() {
           <div>
             <div style={{
               fontFamily: "'IBM Plex Sans', sans-serif",
-              fontSize: 11, color: 'rgba(148,163,184,0.5)', letterSpacing: '0.14em',
+              fontSize: 11, color: 'rgba(122,157,184,0.5)', letterSpacing: '0.14em',
               textTransform: 'uppercase', marginBottom: 16, fontWeight: 600,
             }}>Contact</div>
             <a href="mailto:prasanna80564@gmail.com" style={{
@@ -1389,16 +1389,16 @@ function Footer() {
           </div>
         </div>
         <div style={{
-          borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 24,
+          borderTop: '1px solid rgba(74,126,200,0.06)', paddingTop: 24,
           display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12,
         }}>
           <span style={{
             fontFamily: "'IBM Plex Mono', monospace",
-            color: 'rgba(148,163,184,0.4)', fontSize: 11, letterSpacing: '0.18em',
+            color: 'rgba(189,212,232,0.3)', fontSize: 11, letterSpacing: '0.18em',
           }}>AEGISTRACE</span>
           <span style={{
             fontFamily: "'IBM Plex Sans', sans-serif",
-            color: 'rgba(148,163,184,0.4)', fontSize: 12,
+            color: 'rgba(122,157,184,0.4)', fontSize: 12,
           }}>Built in Dublin, Ireland &middot; Self-hosted &middot; No data leaves your network</span>
         </div>
       </div>
@@ -1420,15 +1420,12 @@ function Nav() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 clamp(20px,4vw,56px)', height: 56,
         background: NAVY,
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        borderBottom: '1px solid rgba(74,126,200,0.08)',
       }}
     >
-      <Link to="/" style={{
-        fontFamily: "'Plus Jakarta Sans', sans-serif",
-        color: INK, textDecoration: 'none',
-        fontSize: 15, fontWeight: 800, letterSpacing: '0.1em',
-      }}>
-        AEGISTRACE
+      <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+        <img src="/assets/brand/aegistrace-icon.png" alt="AegisTrace" style={{ width: 28, height: 28, objectFit: 'contain', filter: 'drop-shadow(0 0 6px rgba(74,126,200,0.5))' }}/>
+        <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, fontWeight: 600, color: '#BDD4E8', letterSpacing: '0.18em' }}>AEGISTRACE</span>
       </Link>
       <div style={{ display: 'flex', gap: 'clamp(16px,2.5vw,32px)', alignItems: 'center' }}>
         {[
@@ -1440,11 +1437,11 @@ function Nav() {
           <Link key={label} to={to} style={{
             fontFamily: "'IBM Plex Sans', sans-serif",
             fontSize: 13, fontWeight: 500,
-            color: 'rgba(241,245,249,0.7)', textDecoration: 'none', letterSpacing: '0.02em',
+            color: 'rgba(189,212,232,0.7)', textDecoration: 'none', letterSpacing: '0.02em',
             transition: 'color 140ms',
           }}
             onMouseEnter={e => (e.target.style.color = INK)}
-            onMouseLeave={e => (e.target.style.color = 'rgba(241,245,249,0.7)')}>
+            onMouseLeave={e => (e.target.style.color = 'rgba(189,212,232,0.7)')}>
             {label}
           </Link>
         ))}
@@ -1458,7 +1455,7 @@ function Nav() {
             textDecoration: 'none', letterSpacing: '0.02em',
             transition: 'background 140ms',
           }}
-          onMouseEnter={e => (e.currentTarget.style.background = '#1D4ED8')}
+          onMouseEnter={e => (e.currentTarget.style.background = '#3A6AB8')}
           onMouseLeave={e => (e.currentTarget.style.background = BLUE)}
         >
           Book a Demo <ArrowRight size={12}/>
@@ -1506,7 +1503,7 @@ export default function Landing() {
             *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
           }
 
-          ::selection { background: rgba(37,99,235,0.3); color: #F1F5F9; }
+          ::selection { background: rgba(74,126,200,0.3); color: #BDD4E8; }
         `}</style>
 
         {/* HERO */}
