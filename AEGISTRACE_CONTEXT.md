@@ -1,5 +1,5 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v10.6 | **Last updated:** June 2026 (v10.6 = ATSP Standard completion: Agent Identity Attestation (delegation tokens + HMAC signatures) + Regulatory Evidence Package (EU AI Act/DORA/DPDPA one-click export with chain integrity proof))
+**Version:** v10.7 | **Last updated:** June 2026 (v10.7 = Frontend visual overhaul: MetallicPaint logo animation in loading screen, PillNav shared navigation across all public pages, InfiniteMenu 3D background on all public routes, dolly zoom removed from all hero scenes)
 **Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files. **This is the single master doc for this project — all other planning/session/deploy docs have been folded into this file and removed.**
 
 ---
@@ -19,7 +19,7 @@ You are working on AegisTrace, a security product built by Prasanna. Here is exa
 - Fonts: **Plus Jakarta Sans** (display headings) + **IBM Plex Sans** (UI/body) + **IBM Plex Mono** (data/code). Clash Display + Cabinet Grotesk are GONE from all pages.
 - Design tokens in `frontend/src/styles/tokens.css` — ALWAYS import first. Never re-declare `:root` color vars in other files.
 - App accent: `#2563EB` (Microsoft blue) + `#7C3AED` (QRadar purple). Gold `#F59E0B` is brand-only for dark hero sections.
-- New micro-interaction components: `ApprovalQueue.jsx` (swipe cards, spring physics), `FocusRing.css` (blue glow `:focus-visible`), `Toast.jsx` (bottom-right slide-up, auto-dismiss progress bar), `PageTransition.jsx` (navy curtain on route change), `LoadingScreen.jsx` (letter-stagger + gold bar)
+- New micro-interaction components: `ApprovalQueue.jsx` (swipe cards, spring physics), `FocusRing.css` (blue glow `:focus-visible`), `Toast.jsx` (bottom-right slide-up, auto-dismiss progress bar), `PageTransition.jsx` (navy curtain on route change), `LoadingScreen.jsx` (MetallicPaint logo animation + letter-stagger + progress bar), `PillNav.jsx` (shared pill navigation for all public pages — sliding framer-motion layoutId pill), `InfiniteMenu.jsx` (3D rotating cylinder background for all public routes, pointer-events: none, opacity 0.065), `MetallicPaint.jsx` (canvas per-pixel metallic animation component — fbm noise + sweeping specular band, works with both transparent PNG and black-bg PNG logos)
 - Sidebar: collapsible groups (click group header to expand/collapse), Lucide icons only (no emoji), active item = `#2563EB` left border + `rgba(37,99,235,0.1)` bg
 - All "Access Platform" / "Book a Demo" CTAs use `<Link to="/app/login">` — never `<a href="https://aegistrace-7qvn.onrender.com">` 
 - Positioning: "Accountability Infrastructure for the AI-agent era" (NOT "Trust Operating System" — that's retired)
@@ -38,6 +38,26 @@ You are working on AegisTrace, a security product built by Prasanna. Here is exa
 
 **When Prasanna says "what's next?":**
 → Read the backlog, summarise the top 3 options with time estimates, let him choose.
+
+---
+
+## TABLE OF CONTENTS
+1. [Instructions for Claude](#instructions-for-claude) — Read first every session
+2. [What is AegisTrace?](#what-is-aegistrace) — Product description + positioning
+3. [The Vision](#the-vision) — Three convictions + strategic direction
+4. [Architecture](#architecture) — File tree, backend routers table
+5. [Database Models](#database-models) — All SQLModel tables
+6. [Frontend Pages](#frontend-pages) — Public pages, app pages, CaseDetail tabs, gotchas
+7. [Key Features](#key-features) — 12 feature modules
+8. [Deployment](#deployment) — VPS, env vars, Docker
+9. [Frontend Dependencies](#frontend-dependencies) — package.json packages
+10. [Components](#new-components) — Reusable UI components (v10.7)
+11. [Website Narrative](#website-narrative) — Messaging, hero copy, nav links
+12. [Security Audit Log](#security-fixes) — All completed security fixes
+13. [Changelog](#changelog) — Version history newest-first
+14. [Future Work Backlog](#full-future-work-backlog) — Priorities + PyPI companion projects
+15. [How to Resume](#how-to-resume-building) — Quick start for new sessions
+16. [Builder Profile](#builder-profile) — Prasanna Kumar Surendran
 
 ---
 
@@ -191,7 +211,7 @@ backend/agents/
 ### Public (no auth)
 | Route | File | Purpose |
 |-------|------|---------|
-| / | Landing.jsx | Accountability Infrastructure landing — hero dolly zoom, 12-module grid, comparison table |
+| / | Landing.jsx | Accountability Infrastructure landing — scroll-driven hero (fade/blur, no dolly zoom), 12-module grid, comparison table |
 | /mission | Mission.jsx | Three Convictions, SOC analyst origin story, 5-phase roadmap |
 | /portfolio | Portfolio.jsx | Prasanna's portfolio — flythrough stats, rack focus tool cards |
 | /platform | Platform.jsx | Deep-dive: capability matrix, ASCII architecture, AI models, terminal demo |
@@ -338,7 +358,11 @@ Shareable via token, PDF downloadable, AI summary callout at top
 
 ---
 
-## WHAT'S NEXT (v4.3 → v5.0)
+## CHANGELOG
+
+> **Current version: v10.7** — Newest entries at the top. All listed items are ✅ complete unless marked [ ].
+
+---
 
 ### v4.3 Completed (this session)
 - [x] bcrypt password hashing + transparent SHA-256 upgrade
@@ -417,10 +441,10 @@ Shareable via token, PDF downloadable, AI summary callout at top
 - [x] SQL injection: confirmed safe throughout — all queries use SQLModel ORM parameterized selectors. No raw string interpolation anywhere in the codebase.
 - [x] Rate limiting: confirmed already live — VT 10/min, enrichment 20/min, global 200/min (slowapi v4.3). No changes needed.
 
-### v4.3 Remaining (still to do)
+### v4.3 Remaining
 - [x] Shadow AI Detection dashboard UI — `/app/shadow-ai` — stats, filter tabs (All/Unreviewed/Reviewed), event rows with expand detail, Mark Reviewed + Create Case actions, AI service labels, explainer panel
 - [x] ITDR analytics page — completed in v5.1 above
-- [ ] DPDPA Compliance Report — India market accelerator
+- [ ] DPDPA Compliance Report — India market accelerator (still pending)
 
 ### v7.0 Completed (June 2026 session — NVIDIA NIM Integration)
 
@@ -677,6 +701,26 @@ Key design decisions:
 4. **Adaptive Thresholds dashboard** (~1 day) — `/app/adaptive` page surfacing `AdaptiveThresholdLog`: threshold time-series, FP/FN trending, manual lock/override.
 5. **SQL Console saved queries + export** (~0.5 day) — `SavedHuntQuery` model, CSV/JSON export from ThreatHunt SQL Console.
 
+### Frontend Visual Overhaul (June 2026 — v10.7)
+
+**Dolly Zoom Removed** ✅
+- `SceneController.jsx`: `DollyZoom` component removed entirely (was Hitchcock/vertigo scale effect)
+- `Landing.jsx` hero: Beat 1 scale(1→3) removed → pure opacity+blur fade. Beat 2 scale(0.4→1) removed → replaced with y-translate(28→0) rise.
+- `Portfolio.jsx` hero: `bgDollyScale` background rush removed → static gradient. Beat 1/2 scale removed → fade + y rise.
+- `Mission.jsx` hero: Same treatment — `bgDollyScale`, `b1Scale`, `b2Scale` all removed.
+
+**MetallicPaint Logo Animation (LoadingScreen)** ✅
+- `frontend/src/components/MetallicPaint.jsx`: New canvas component — fbm noise (4-octave hash-based), 7-stop metallic palette (deep navy→steel blue→aegis blue→sky silver→bright silver→electric blue→gold flash), sweeping specular highlight band. Works with both transparent PNG and black-bg PNG logos via luminance×alpha masking. Respects `prefers-reduced-motion`.
+- `LoadingScreen.jsx`: Rotating `<motion.img>` replaced with `<MetallicPaint imageUrl="/assets/brand/aegistrace-icon-transparent.png" size={120}/>` + orbital ring + dashed rotation ring.
+
+**PillNav — Shared Navigation** ✅
+- `frontend/src/components/PillNav.jsx`: New shared nav component — frosted glass header (backdrop-filter blur/saturate), framer-motion `layoutId="pill-indicator"` for smooth active-item sliding, links: Platform/Mission/Features/Tools/Portfolio, CTA: "Book a Demo" → `/app/login`.
+- Replaces all 6 inline `Nav()` functions: Landing, Mission, Portfolio, Features, Platform, Tools — all now import and use `<PillNav/>`.
+
+**InfiniteMenu 3D Background** ✅
+- `frontend/src/components/InfiniteMenu.jsx`: CSS 3D cylinder — 12 AegisTrace module cards (Identity Threat, Zero Trust, Agent Security, Memory Forensics, MITRE ATT&CK, Behavioural AI, Non-Human Identity, Prompt Shield, Shadow AI, Regulatory Pack, Attack Graph, Trust Timeline), 440px cylinder radius, 0.10°/frame auto-rotation. Global opacity 0.065, pointer-events: none. Respects `prefers-reduced-motion`.
+- `App.jsx`: `PublicLayout` component wraps all public routes (`/`, `/platform`, `/tools`, `/mission`, `/portfolio`, `/public`, `/agent-setup`, `/features`, `/app/login`) — renders `<InfiniteMenu/>` fixed behind `<Outlet/>`. App routes unchanged.
+
 ### New files to know about (v10.3–v10.4)
 | File | Purpose |
 |------|---------|
@@ -755,17 +799,48 @@ framer-motion, gsap, three, @studio-freight/lenis
 ```
 **Removed in v4.2:** react-hook-form, @hookform/resolvers, zod (were unused, ~60KB saved)
 
-## NEW COMPONENTS (v10.2 UI overhaul — June 2026)
+## REUSABLE COMPONENTS (current — v10.7)
+
+### UI Shell & Navigation
 | File | Purpose |
 |------|---------|
-| `src/styles/tokens.css` | Design tokens: QRadar navy palette, IBM Plex Sans/Plus Jakarta Sans, z-index scale, motion easings |
+| `src/components/Sidebar.jsx` | Collapsible groups (click header to expand), Lucide icons, active #2563EB left border, 56px collapse |
+| `src/components/PillNav.jsx` | **NEW v10.7** — Frosted-glass fixed header, framer-motion `layoutId="pill-indicator"` sliding active pill, links: Platform/Mission/Features/Tools/Portfolio, CTA → /app/login. Used by ALL public pages. |
+| `src/components/InfiniteMenu.jsx` | **NEW v10.7** — 3D rotating cylinder (CSS perspective + `transform-style: preserve-3d`), 12 AegisTrace module cards, 440px radius, 0.10°/frame auto-rotation. Fixed z-index:0, opacity:0.065, pointer-events:none. Background for all public routes via App.jsx PublicLayout. |
+| `src/components/PageTransition.jsx` | Navy #0A1628 curtain on every route change, 0.52s ease-out |
 | `src/components/Toast.jsx` | Bottom-right slide-up, auto-dismiss countdown bar (scaleX 1→0), stacked with AnimatePresence |
+| `src/components/CommandPalette.jsx` | Keyboard command palette (Cmd+K) |
+
+### Loading & Branding
+| File | Purpose |
+|------|---------|
+| `src/components/LoadingScreen.jsx` | **v10.7**: MetallicPaint logo animation + letter-stagger AEGISTRACE reveal + blue progress bar on first load. Replaced rotating logo with MetallicPaint canvas. |
+| `src/components/MetallicPaint.jsx` | **NEW v10.7** — Canvas per-pixel metallic animation: fbm noise (4-octave hash-based), 7-stop palette (deep navy→electric blue→gold flash), sweeping specular band. Works with transparent PNG and black-bg PNG. Respects `prefers-reduced-motion`. |
+| `src/components/AppLogo.jsx` | variant='icon' (orbital knot PNG) or 'seal' (full emblem in dark circle). Use this in app shell. |
+| `src/components/Logo.jsx` | Legacy SVG logo — network graph nodes. Used in sidebar only. |
+
+### Scroll & Scene Animations (public pages)
+| File | Purpose |
+|------|---------|
+| `src/components/SceneController.jsx` | `useSceneCamera`, `PinnedScene`, `RackFocus`, `DepthLayer`, `useSectionParallax`, `ScrollProgressBar` — **DollyZoom REMOVED v10.7** |
+| `src/components/ParticleCanvas.jsx` | Canvas particle system for ambient backgrounds |
+| `src/components/WireframeBackground.jsx` | Wireframe mesh background |
+
+### App Features
+| File | Purpose |
+|------|---------|
 | `src/components/ApprovalQueue.jsx` | Swipeable card stack — drag x>100px=approve (green), x<-100px=dismiss (red), 3-card depth |
 | `src/components/FocusRing.css` | Enterprise focus rings — 2px #2563EB + 4px glow on :focus-visible |
-| `src/components/PageTransition.jsx` | Navy #0A1628 curtain on every route change, 0.52s ease-out |
-| `src/components/LoadingScreen.jsx` | Letter-stagger AEGISTRACE reveal + gold progress bar on first load |
-| `src/components/Sidebar.jsx` | Collapsible groups (click header to expand), Lucide icons, active #2563EB left border, 56px collapse |
-| `src/components/SceneController.jsx` | useSceneCamera, PinnedScene, RackFocus, DepthLayer, DollyZoom, useSectionParallax |
+| `src/components/ThreatStream.jsx` | Live threat event stream component |
+| `src/components/SeverityBadge.jsx` | Severity badge (critical/high/medium/low) |
+| `src/components/InvestigationTemplates.jsx` | 6 pre-built case scaffolds |
+| `src/components/Dock.jsx` | macOS-style dock |
+| `src/components/MagicRings.jsx` | Orbital ring animation |
+
+### Design Tokens
+| File | Purpose |
+|------|---------|
+| `src/styles/tokens.css` | Design tokens: QRadar navy palette, IBM Plex Sans/Plus Jakarta Sans, z-index scale, motion easings. Import first in any new component. |
 
 ## SKILLS INSTALLED
 - **gstack** at `~/.claude/skills/gstack` — /review, /cso, /ship, /qa, /autoplan, /office-hours and 30+ more
@@ -1337,12 +1412,14 @@ Start a new Claude session and paste this file. Then say:
 
 > "Read AEGISTRACE_CONTEXT.md — I want to work on [task from backlog above]"
 
-**Highest priority items (as of v7.0):**
-- NVIDIA Phase 6: Swap to Hermes-3 in triage_agent.py (10 min, one-line change, big reliability gain)
-- NVIDIA Phase 7: Add NV-RerankQA reranker to embeddings.py (30 min)
-- NVIDIA Phase 8: Llama 3.2 Vision screenshot analysis tab in CaseDetail
-- NVIDIA Phase 9: Codestral YARA/Sigma/KQL rule generation
-- SOAR Playbooks engine, email notifications on ITDR anomaly, Trust score trending, DPDPA Compliance Report
+**Current version: v10.7** — Highest priority next items:
+1. **Ollama local AI integration** — `backend/core/ollama_client.py`, fallback chain: Ollama → Groq → NVIDIA NIM. Enables air-gap claim for regulated industries.
+2. **Auto-Rule Generation Trigger** (Priority 4 in backlog) — nightly job auto-generates detection rules when 3+ cases share a MITRE technique within 7 days.
+3. **Agent Verified Boot Chain** — agent hashes own binary on startup, refuses to run if tampered, fires CRITICAL ITDRAlert.
+4. **DPDPA Compliance Report** — India market accelerator (only remaining item from v4.3).
+5. **Native Python Embedding Engine** — replace NVIDIA NV-EmbedQA with TF-IDF + cosine for air-gapped operation.
+
+**Deploy after changes:** `git push origin main` → SSH `root@2.24.131.243` → `cd /opt/aegistrace && bash deploy/update.sh`
 
 ### v5.2 Completed (this session)
 

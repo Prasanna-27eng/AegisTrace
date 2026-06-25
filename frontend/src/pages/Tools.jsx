@@ -3,6 +3,7 @@ import { motion, useInView } from 'framer-motion';
 import { ArrowRight, ArrowUpRight, Copy, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ScrollProgressBar } from '../components/SceneController';
+import PillNav from '../components/PillNav';
 
 const E    = [0.16, 1, 0.3, 1];
 const GOLD = '#F59E0B';
@@ -727,28 +728,7 @@ export default function Tools() {
       `}</style>
 
       {/* ── NAV ── */}
-      <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 clamp(20px,4vw,48px)', height: 64,
-        background: 'rgba(5,5,5,0.96)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgba(74,126,200,0.08)',
-      }}>
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <img src="/assets/brand/aegistrace-icon-transparent.png" alt="AegisTrace"
-            style={{ width: 26, height: 26, objectFit: 'contain', filter: 'drop-shadow(0 0 5px rgba(74,126,200,0.5))' }}/>
-          <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, fontWeight: 600,
-            color: '#BDD4E8', letterSpacing: '0.18em' }}>AEGISTRACE</span>
-        </Link>
-        <div style={{ display: 'flex', gap: 'clamp(16px,3vw,32px)', alignItems: 'center' }}>
-          <Link to="/mission"   className="nav-link">Mission</Link>
-          <Link to="/features"  className="nav-link">Features</Link>
-          <Link to="/platform"  className="nav-link">Platform</Link>
-          <Link to="/app/login" className="gold-btn" style={{ padding: '8px 18px', fontSize: 12 }}>Book a Demo <ArrowRight size={12}/></Link>
-        </div>
-      </nav>
+      <PillNav/>
 
       {/* ── HERO ── */}
       <section style={{

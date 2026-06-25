@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import {
-  motion, useScroll, useSpring, useTransform,
+  motion, useSpring, useTransform,
   useMotionValueEvent, useInView, useReducedMotion, useMotionValue,
 } from 'framer-motion';
 import {
@@ -13,6 +13,7 @@ import {
   useSceneCamera, useSectionParallax,
   PinnedScene, RackFocus, ScrollProgressBar,
 } from '../components/SceneController';
+import PillNav from '../components/PillNav';
 
 const E    = [0.16, 1, 0.3, 1];
 const EOUT = [0.23, 1, 0.32, 1];
@@ -128,25 +129,18 @@ function HeroScene() {
     return () => window.removeEventListener('mousemove', fn);
   }, [mouseX, mouseY]);
 
-  /* Dolly zoom layers */
-  const bgDollyScale  = useTransform(p, [0, 0.46], [1.08, 3.8]);
-  const bgDollyBlur   = useTransform(p, [0.28, 0.48], [0, 22], { clamp: true });
-  const bgDollyFilt   = useTransform(bgDollyBlur, v => `blur(${v}px)`);
-  const bgDollyOp     = useTransform(p, [0.36, 0.54], [1, 0], { clamp: true });
-
-  /* Beat 1: heading — camera rushes through it */
+  /* Beat 1: heading fades out */
   const b1Op    = useTransform(p, [0.26, 0.46], [1, 0], { clamp: true });
-  const b1Scale = useTransform(p, [0, 0.46], [1, 1.38]);
   const b1BPx   = useTransform(p, [0.30, 0.46], [0, 14], { clamp: true });
   const b1Filt  = useTransform(b1BPx, v => `blur(${v}px)`);
 
-  /* Beat 2: new headline zooms from depth */
+  /* Beat 2: new headline rises in */
   const b2CombOp = useTransform(p, v => {
     const i = Math.min(1, Math.max(0, (v - 0.44) / 0.18));
     const o = Math.min(1, Math.max(0, 1 - (v - 0.84) / 0.12));
     return i * o;
   });
-  const b2Scale = useTransform(p, [0.42, 0.70], [0.48, 1], { clamp: true });
+  const b2Y     = useTransform(p, [0.42, 0.70], [28, 0], { clamp: true });
   const b2BPx   = useTransform(p, [0.44, 0.64], [16, 0], { clamp: true });
   const b2Filt  = useTransform(b2BPx, v => `blur(${v}px)`);
 
@@ -160,13 +154,12 @@ function HeroScene() {
 
   return (
     <PinnedScene vh="320vh" sceneRef={ref}>
-      {/* Far background — CSS gradient dolly (no image) */}
+      {/* Background */}
       <motion.div aria-hidden style={{
-        position: 'absolute', inset: '-16%',
+        position: 'absolute', inset: 0,
         background: 'linear-gradient(135deg, #050505 0%, #080818 35%, #0A1428 65%, #0F1E3E 100%)',
-        scale: bgDollyScale, x: bgDX, y: bgDY,
-        filter: bgDollyFilt, opacity: bgDollyOp,
-        willChange: 'transform, opacity, filter',
+        x: bgDX, y: bgDY,
+        willChange: 'transform',
       }}/>
       {/* Mid overlay — moves at different rate (depth) */}
       <motion.div aria-hidden style={{
@@ -182,7 +175,7 @@ function HeroScene() {
       <motion.div style={{
         position: 'absolute', inset: 0, zIndex: 10,
         display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-        opacity: b1Op, scale: b1Scale, filter: b1Filt, willChange: 'transform, opacity, filter',
+        opacity: b1Op, filter: b1Filt, willChange: 'opacity, filter',
         padding: '0 clamp(24px,5vw,72px) clamp(52px,8vh,90px)',
       }}>
         <motion.p
@@ -209,7 +202,7 @@ function HeroScene() {
       <motion.div style={{
         position: 'absolute', inset: 0, zIndex: 10,
         display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
-        opacity: b2CombOp, scale: b2Scale, filter: b2Filt, willChange: 'transform, opacity, filter',
+        opacity: b2CombOp, y: b2Y, filter: b2Filt, willChange: 'transform, opacity, filter',
       }}>
         <h1 className="cd" style={{ fontSize: 'clamp(40px,6.5vw,92px)', fontWeight: 700, lineHeight: 0.96, letterSpacing: '-0.03em', color: INK, margin: 0, padding: '0 24px' }}>
           The trust layer for<br/><span style={{ color: GOLD, textShadow: '0 0 36px rgba(245,158,11,0.25)' }}>the AI-agent era.</span>
@@ -800,32 +793,6 @@ function EnterpriseSection() {
   );
 }
 
-/* ─── NAV ────────────────────────────────────────────────────────────────── */
-function Nav() {
-  const { scrollY } = useScroll();
-  const navBg     = useTransform(scrollY, [0, 80], ['rgba(5,5,5,0)', 'rgba(5,5,5,0.96)']);
-  const navBlur   = useTransform(scrollY, [0, 80], [0, 18]);
-  const navFilter = useTransform(navBlur, v => `blur(${v}px)`);
-
-  return (
-    <motion.nav style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '0 clamp(20px,4vw,48px)', height: 64,
-      background: navBg, backdropFilter: navFilter, WebkitBackdropFilter: navFilter,
-    }}>
-      <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-        <img src="/assets/brand/aegistrace-icon-transparent.png" alt="AegisTrace" style={{ width: 26, height: 26, objectFit: 'contain', filter: 'drop-shadow(0 0 5px rgba(74,126,200,0.5))' }}/>
-        <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, fontWeight: 600, color: '#BDD4E8', letterSpacing: '0.18em' }}>AEGISTRACE</span>
-      </Link>
-      <div style={{ display: 'flex', gap: 'clamp(18px,3vw,36px)', alignItems: 'center' }}>
-        <Link to="/portfolio" className="nav-link">Portfolio</Link>
-        <Link to="/platform" className="nav-link">Platform</Link>
-        <Link to="/app/login" className="gold-btn" style={{ padding: '9px 18px', fontSize: 12 }}>Platform <ArrowRight size={12}/></Link>
-      </div>
-    </motion.nav>
-  );
-}
 
 /* ─── Builder Section ────────────────────────────────────────────────────── */
 function BuilderSection() {
@@ -904,7 +871,7 @@ export default function Mission() {
     <div style={{ background: BG, color: INK, overflowX: 'clip', position: 'relative', isolation: 'isolate' }}>
       <AmbientEmbers/>
       <ScrollProgressBar/>
-      <Nav/>
+      <PillNav/>
 
       <style>{`
         .cd  { font-family: 'Plus Jakarta Sans', sans-serif; }

@@ -9,6 +9,7 @@ import {
   useSceneCamera, useSectionParallax,
   PinnedScene, RackFocus, ScrollProgressBar,
 } from '../components/SceneController';
+import PillNav from '../components/PillNav';
 
 const E    = [0.16, 1, 0.3, 1];
 const EOUT = [0.23, 1, 0.32, 1];
@@ -101,25 +102,18 @@ function HeroScene() {
     return () => window.removeEventListener('mousemove', fn);
   }, [mouseX, mouseY]);
 
-  /* Dolly zoom — bg rushes, text floats */
-  const bgDollyScale  = useTransform(p, [0, 0.44], [1.08, 3.6]);
-  const bgDollyBlurPx = useTransform(p, [0.24, 0.46], [0, 20], { clamp: true });
-  const bgDollyFilter = useTransform(bgDollyBlurPx, v => `blur(${v}px)`);
-  const bgDollyOp     = useTransform(p, [0.36, 0.52], [1, 0], { clamp: true });
-
   /* Beat 1: name */
   const b1Op    = useTransform(p, [0.20, 0.42], [1, 0], { clamp: true });
-  const b1Scale = useTransform(p, [0, 0.42], [1, 1.36]);
   const b1BPx   = useTransform(p, [0.22, 0.42], [0, 14], { clamp: true });
   const b1Filt  = useTransform(b1BPx, v => `blur(${v}px)`);
 
-  /* Beat 2: tagline zooms in from depth */
+  /* Beat 2: tagline fades in from below */
   const b2CombOp = useTransform(p, v => {
     const i = Math.min(1, Math.max(0, (v - 0.40) / 0.18));
     const o = Math.min(1, Math.max(0, 1 - (v - 0.80) / 0.14));
     return i * o;
   });
-  const b2Scale = useTransform(p, [0.38, 0.64], [0.46, 1], { clamp: true });
+  const b2Y     = useTransform(p, [0.38, 0.64], [30, 0], { clamp: true });
   const b2BPx   = useTransform(p, [0.40, 0.60], [16, 0], { clamp: true });
   const b2Filt  = useTransform(b2BPx, v => `blur(${v}px)`);
 
@@ -140,15 +134,12 @@ function HeroScene() {
 
   return (
     <PinnedScene vh="360vh" sceneRef={ref}>
-      {/* Background — CSS gradient dolly (no image) */}
+      {/* Background */}
       <motion.div aria-hidden style={{
-        position: 'absolute', inset: '-14%',
+        position: 'absolute', inset: 0,
         background: 'linear-gradient(135deg, #050505 0%, #080818 35%, #0A1428 65%, #0F1E3E 100%)',
-        scale: bgDollyScale,
         x: bgDriftX, y: bgDriftY,
-        filter: bgDollyFilter,
-        opacity: bgDollyOp,
-        willChange: 'transform, opacity, filter',
+        willChange: 'transform',
       }}/>
       {/* Mid depth layer — slightly different rate for parallax */}
       <motion.div aria-hidden style={{
@@ -159,12 +150,12 @@ function HeroScene() {
       }}/>
       <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 50% 40% at 50% 105%, rgba(245,158,11,0.12) 0%, transparent 60%)' }}/>
 
-      {/* Beat 1 — name dolly-zooms toward camera */}
+      {/* Beat 1 — name fades out */}
       <motion.div style={{
         position: 'absolute', inset: 0, zIndex: 4,
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         textAlign: 'center', padding: '0 clamp(20px,5vw,60px)',
-        opacity: b1Op, scale: b1Scale, filter: b1Filt, willChange: 'transform, opacity, filter',
+        opacity: b1Op, filter: b1Filt, willChange: 'opacity, filter',
       }}>
         <div className="mono" style={{ fontSize: 11, letterSpacing: '0.28em', color: GOLD, marginBottom: 22 }}>
           BLUE TEAM · DUBLIN, IRELAND
@@ -177,11 +168,11 @@ function HeroScene() {
         </h1>
       </motion.div>
 
-      {/* Beat 2 — tagline zooms in from depth */}
+      {/* Beat 2 — tagline rises in */}
       <motion.div style={{
         position: 'absolute', inset: 0, zIndex: 4,
         display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
-        opacity: b2CombOp, scale: b2Scale, filter: b2Filt, willChange: 'transform, opacity, filter',
+        opacity: b2CombOp, y: b2Y, filter: b2Filt, willChange: 'transform, opacity, filter',
         padding: '0 clamp(20px,5vw,60px)',
       }}>
         <h1 className="cd" style={{
@@ -616,40 +607,6 @@ function CTASection() {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   NAV
-════════════════════════════════════════════════════════════════════════════ */
-function Nav() {
-  const { scrollY } = useScroll();
-  const navBg = useTransform(scrollY, [0, 80], ['rgba(5,5,5,0)', 'rgba(5,5,5,0.92)']);
-  const navBorder = useTransform(scrollY, [60, 100], ['rgba(189,212,232,0)', 'rgba(189,212,232,0.08)']);
-  const navBlur = useTransform(scrollY, [0, 80], [0, 18]);
-  const navFilter = useTransform(navBlur, v => `blur(${v}px)`);
-
-  return (
-    <motion.nav style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '0 clamp(20px,4vw,56px)', height: 64,
-      background: navBg, backdropFilter: navFilter, WebkitBackdropFilter: navFilter,
-      borderBottom: `1px solid`,
-      borderColor: navBorder,
-      transition: 'border-color 300ms',
-    }}>
-      <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-        <img src="/assets/brand/aegistrace-icon-transparent.png" alt="AegisTrace" style={{ width: 26, height: 26, objectFit: 'contain', filter: 'drop-shadow(0 0 5px rgba(74,126,200,0.5))' }}/>
-        <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, fontWeight: 600, color: '#BDD4E8', letterSpacing: '0.18em' }}>AEGISTRACE</span>
-      </Link>
-      <div style={{ display: 'flex', gap: 'clamp(16px,3vw,36px)', alignItems: 'center' }}>
-        <Link to="/" className="nav-link">Home</Link>
-        <Link to="/mission" className="nav-link">Mission</Link>
-        <Link to="/platform" className="nav-link">Platform</Link>
-        <Link to="/app/login" className="gold-btn" style={{ padding: '9px 18px', fontSize: 12 }}>Platform <ArrowRight size={12}/></Link>
-      </div>
-    </motion.nav>
-  );
-}
-
-/* ════════════════════════════════════════════════════════════════════════════
    ROOT
 ════════════════════════════════════════════════════════════════════════════ */
 export default function Portfolio() {
@@ -660,7 +617,7 @@ export default function Portfolio() {
     <div style={{ background: BG, color: INK, overflowX: 'clip', minHeight: '100vh', position: 'relative', isolation: 'isolate' }}>
       <AmbientEmbers/>
       <ScrollProgressBar/>
-      <Nav/>
+      <PillNav/>
 
       <style>{`
         .cd   { font-family: 'Plus Jakarta Sans', sans-serif; }

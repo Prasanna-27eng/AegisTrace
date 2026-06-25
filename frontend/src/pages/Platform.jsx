@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, useInView, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Copy, Check, Github } from 'lucide-react';
+import PillNav from '../components/PillNav';
 
 /* ─── Tokens ─────────────────────────────────────────────────────────────── */
 const E    = [0.16, 1, 0.3, 1];
@@ -915,47 +916,7 @@ export default function Platform() {
       `}</style>
 
       {/* ── NAV ─────────────────────────────────────────────────────────── */}
-      <motion.nav
-        initial={{ opacity: 0, y: -14 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.75, ease: E }}
-        style={{
-          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0 clamp(20px,4vw,56px)', height: 64,
-          background: scrolled ? 'rgba(5,5,5,0.96)' : 'rgba(5,5,5,1)',
-          backdropFilter: scrolled ? 'blur(20px) saturate(160%)' : 'none',
-          WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(160%)' : 'none',
-          borderBottom: scrolled ? '1px solid rgba(74,126,200,0.12)' : 'none',
-          transition: 'background 300ms, backdrop-filter 300ms, border-color 300ms',
-        }}
-      >
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <img src="/assets/brand/aegistrace-icon-transparent.png" alt="AegisTrace"
-            style={{ width: 26, height: 26, objectFit: 'contain', filter: 'drop-shadow(0 0 5px rgba(74,126,200,0.5))' }}/>
-          <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, fontWeight: 600,
-            color: '#BDD4E8', letterSpacing: '0.18em' }}>AEGISTRACE</span>
-        </Link>
-        <div style={{ display: 'flex', gap: 'clamp(16px,3vw,36px)', alignItems: 'center' }}>
-          <Link to="/mission"  className="plat-nav-link">Mission</Link>
-          <Link to="/platform" className="plat-nav-link" style={{ color: GOLD }}>Platform</Link>
-          <Link to="/portfolio" className="plat-nav-link">Builder</Link>
-          <Link to="/app/login" style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            background: GOLD, color: '#BDD4E8',
-            fontFamily: "'IBM Plex Sans', sans-serif",
-            fontSize: 12, fontWeight: 700,
-            padding: '9px 18px', borderRadius: 5,
-            textDecoration: 'none', letterSpacing: '0.02em',
-            transition: 'background 200ms, transform 100ms',
-          }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#FBBF24'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = GOLD; e.currentTarget.style.transform = 'translateY(0)'; }}
-          >
-            Sign In <ArrowRight size={12}/>
-          </Link>
-        </div>
-      </motion.nav>
+      <PillNav/>
 
       {/* ── CONTENT ─────────────────────────────────────────────────────── */}
       <HeroSection/>

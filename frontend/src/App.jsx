@@ -1,7 +1,17 @@
 import React, { Suspense, lazy, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
 import Toasts from './components/Toast';
 import PageCurtain from './components/PageTransition';
+import InfiniteMenu from './components/InfiniteMenu';
+
+function PublicLayout() {
+  return (
+    <>
+      <InfiniteMenu />
+      <Outlet />
+    </>
+  );
+}
 
 /* ─── Branded Suspense fallback ─────────────────────────────────────────────
    Shown during lazy-chunk loading. Matches the site's #050405 dark theme.   */
@@ -100,17 +110,19 @@ export default function App() {
       <Suspense fallback={<PageLoader />}>
         <ScrollReset />
         <Routes>
-          {/* ── Public ── */}
-          <Route path="/"              element={<Landing />} />
-          <Route path="/platform"      element={<Platform />} />
-          <Route path="/tools"         element={<Tools />} />
-          <Route path="/mission"       element={<Mission />} />
-          <Route path="/portfolio"     element={<Portfolio />} />
-          <Route path="/public"        element={<PublicGallery />} />
-          <Route path="/public/:token" element={<PublicCaseDetail />} />
-          <Route path="/agent-setup"   element={<AgentSetup />} />
-          <Route path="/features"      element={<Features />} />
-          <Route path="/app/login"     element={<Login />} />
+          {/* ── Public (with InfiniteMenu background) ── */}
+          <Route element={<PublicLayout />}>
+            <Route path="/"              element={<Landing />} />
+            <Route path="/platform"      element={<Platform />} />
+            <Route path="/tools"         element={<Tools />} />
+            <Route path="/mission"       element={<Mission />} />
+            <Route path="/portfolio"     element={<Portfolio />} />
+            <Route path="/public"        element={<PublicGallery />} />
+            <Route path="/public/:token" element={<PublicCaseDetail />} />
+            <Route path="/agent-setup"   element={<AgentSetup />} />
+            <Route path="/features"      element={<Features />} />
+            <Route path="/app/login"     element={<Login />} />
+          </Route>
 
           {/* ── Protected app ── */}
           <Route path="/app" element={<AppShell />}>

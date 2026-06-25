@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { useSceneCamera, PinnedScene, ScrollProgressBar } from '../components/SceneController';
 import LoadingScreen, { useLoading } from '../components/LoadingScreen';
+import PillNav from '../components/PillNav';
 
 /* ─── Constants ─────────────────────────────────────────────────────────────── */
 const GOLD    = '#F59E0B';
@@ -218,13 +219,12 @@ function HeroScene() {
 
   /* Beat 1 — p 0→0.30 */
   const b1Opacity = useTransform(p, [0, 0.22, 0.30], [1, 1, 0], { clamp: true });
-  const b1Scale   = useTransform(p, [0, 0.30], [1, 3], { clamp: true });
   const b1BlurPx  = useTransform(p, [0.18, 0.30], [0, 18], { clamp: true });
   const b1Filter  = useTransform(b1BlurPx, v => `blur(${v}px)`);
 
   /* Beat 2 — p 0.28→0.54 */
   const b2Opacity = useTransform(p, [0.28, 0.38], [0, 1], { clamp: true });
-  const b2Scale   = useTransform(p, [0.28, 0.54], [0.4, 1], { clamp: true });
+  const b2Y       = useTransform(p, [0.28, 0.54], [28, 0], { clamp: true });
   const b2BlurPx  = useTransform(p, [0.28, 0.42], [6, 0], { clamp: true });
   const b2Filter  = useTransform(b2BlurPx, v => `blur(${v}px)`);
   const b2ExitOp  = useTransform(p, [0.50, 0.58], [1, 0], { clamp: true });
@@ -258,8 +258,8 @@ function HeroScene() {
         position: 'absolute', inset: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '0 clamp(20px,5vw,60px)',
-        opacity: b1Opacity, scale: b1Scale, filter: b1Filter,
-        willChange: 'transform, opacity, filter',
+        opacity: b1Opacity, filter: b1Filter,
+        willChange: 'opacity, filter',
         pointerEvents: 'none',
       }}>
         <h1 style={{
@@ -277,7 +277,7 @@ function HeroScene() {
         position: 'absolute', inset: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '0 clamp(20px,5vw,60px)',
-        opacity: b2FinalOp, scale: b2Scale, filter: b2Filter,
+        opacity: b2FinalOp, y: b2Y, filter: b2Filter,
         willChange: 'transform, opacity, filter',
         pointerEvents: 'none',
       }}>
@@ -1406,65 +1406,6 @@ function Footer() {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   NAV — always dark, fixed 56px
-════════════════════════════════════════════════════════════════════════════ */
-function Nav() {
-  return (
-    <motion.nav
-      initial={{ opacity: 0, y: -14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.75, ease: E }}
-      style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 clamp(20px,4vw,56px)', height: 56,
-        background: NAVY,
-        borderBottom: '1px solid rgba(74,126,200,0.08)',
-      }}
-    >
-      <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-        <img src="/assets/brand/aegistrace-icon-transparent.png" alt="AegisTrace" style={{ width: 28, height: 28, objectFit: 'contain', filter: 'drop-shadow(0 0 6px rgba(74,126,200,0.5))' }}/>
-        <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, fontWeight: 600, color: '#BDD4E8', letterSpacing: '0.18em' }}>AEGISTRACE</span>
-      </Link>
-      <div style={{ display: 'flex', gap: 'clamp(16px,2.5vw,32px)', alignItems: 'center' }}>
-        {[
-          { label: 'Platform', to: '/platform' },
-          { label: 'Mission',  to: '/mission' },
-          { label: 'Features', to: '/features' },
-          { label: 'Tools',    to: '/tools' },
-        ].map(({ label, to }) => (
-          <Link key={label} to={to} style={{
-            fontFamily: "'IBM Plex Sans', sans-serif",
-            fontSize: 13, fontWeight: 500,
-            color: 'rgba(189,212,232,0.7)', textDecoration: 'none', letterSpacing: '0.02em',
-            transition: 'color 140ms',
-          }}
-            onMouseEnter={e => (e.target.style.color = INK)}
-            onMouseLeave={e => (e.target.style.color = 'rgba(189,212,232,0.7)')}>
-            {label}
-          </Link>
-        ))}
-        <Link to="/app/login"
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            background: BLUE, color: '#fff',
-            fontFamily: "'IBM Plex Sans', sans-serif",
-            fontSize: 12, fontWeight: 600,
-            padding: '8px 18px', borderRadius: 4, border: 'none', cursor: 'pointer',
-            textDecoration: 'none', letterSpacing: '0.02em',
-            transition: 'background 140ms',
-          }}
-          onMouseEnter={e => (e.currentTarget.style.background = '#3A6AB8')}
-          onMouseLeave={e => (e.currentTarget.style.background = BLUE)}
-        >
-          Book a Demo <ArrowRight size={12}/>
-        </Link>
-      </div>
-    </motion.nav>
-  );
-}
-
-/* ════════════════════════════════════════════════════════════════════════════
    ROOT
 ════════════════════════════════════════════════════════════════════════════ */
 export default function Landing() {
@@ -1482,7 +1423,7 @@ export default function Landing() {
         minHeight: '100vh', position: 'relative', isolation: 'isolate',
       }}>
         <ScrollProgressBar/>
-        <Nav/>
+        <PillNav/>
 
         <style>{`
           @keyframes ticker-march  { from { transform: translateX(0); } to { transform: translateX(-50%); } }

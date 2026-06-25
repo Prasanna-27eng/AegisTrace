@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle } from 'lucide-react';
+import PillNav from '../components/PillNav';
 
 const GOLD  = '#F59E0B';
 const DARK  = '#050505';
@@ -134,51 +135,6 @@ function Body({ children, dark = false }) {
   );
 }
 
-/* ─── Nav ────────────────────────────────────────────────────────────────── */
-function Nav() {
-  const { scrollY } = useScroll();
-  const navBg     = useTransform(scrollY, [0, 80], ['rgba(5,5,5,0)', 'rgba(5,5,5,0.96)']);
-  const navBlur   = useTransform(scrollY, [0, 80], [0, 18]);
-  const navFilter = useTransform(navBlur, v => `blur(${v}px)`);
-
-  return (
-    <motion.nav style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '0 clamp(20px,4vw,48px)', height: 52,
-      background: navBg, backdropFilter: navFilter, WebkitBackdropFilter: navFilter,
-    }}>
-      <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-        <img src="/assets/brand/aegistrace-icon-transparent.png" alt="AegisTrace"
-          style={{ width: 26, height: 26, objectFit: 'contain', filter: 'drop-shadow(0 0 5px rgba(74,126,200,0.5))' }}/>
-        <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, fontWeight: 600,
-          color: '#BDD4E8', letterSpacing: '0.18em' }}>AEGISTRACE</span>
-      </Link>
-      <div style={{ display: 'flex', gap: 'clamp(16px,2.5vw,32px)', alignItems: 'center' }}>
-        {[
-          { label: 'Mission',  to: '/mission'  },
-          { label: 'Platform', to: '/platform' },
-          { label: 'Tools',    to: '/tools'    },
-        ].map(({ label, to }) => (
-          <Link key={to} to={to} style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 13, fontWeight: 500, color: 'rgba(189,212,232,0.58)', textDecoration: 'none', transition: 'color 140ms' }}
-            onMouseEnter={e => e.currentTarget.style.color = INK}
-            onMouseLeave={e => e.currentTarget.style.color = 'rgba(189,212,232,0.58)'}
-          >{label}</Link>
-        ))}
-        <Link to="/app/login" style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
-          background: '#4A7EC8', color: '#fff', fontWeight: 700,
-          fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 12,
-          padding: '8px 18px', textDecoration: 'none', borderRadius: 4,
-          transition: 'background 140ms',
-        }}
-          onMouseEnter={e => e.currentTarget.style.background = '#3A6AB8'}
-          onMouseLeave={e => e.currentTarget.style.background = '#4A7EC8'}
-        >Book a Demo <ArrowRight size={11}/></Link>
-      </div>
-    </motion.nav>
-  );
-}
 
 /* ════════════════════════════════════════════════════════════════════════════
    PAGE
@@ -186,7 +142,7 @@ function Nav() {
 export default function Features() {
   return (
     <div style={{ background: DARK, color: INK, overflowX: 'clip' }}>
-      <Nav />
+      <PillNav />
 
       <style>{`
         * { box-sizing: border-box; }

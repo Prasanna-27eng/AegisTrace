@@ -91,23 +91,6 @@ export function RackFocus({ p, focusAt, window: win = 0.2, maxBlur = 10, minOp =
   );
 }
 
-/* ─── DollyZoom ──────────────────────────────────────────────────────────────
-   Vertigo / Hitchcock effect: background rushes toward camera while
-   foreground moves gently. Pass bgRate and fgRate for the scale differentials.
-   The ratio between them IS the effect — bg should be 2-4× the fg rate.     */
-export function DollyZoom({ p, bgRate = 3.5, fgRate = 1.3, children, bgStyle = {}, fgStyle = {} }) {
-  const bgScale = useTransform(p, [0, 1], [1, bgRate]);
-  const fgScale = useTransform(p, [0, 1], [1, fgRate]);
-  return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      <motion.div style={{ ...bgStyle, scale: bgScale, willChange: 'transform' }}/>
-      <motion.div style={{ ...fgStyle, scale: fgScale, willChange: 'transform' }}>
-        {children}
-      </motion.div>
-    </div>
-  );
-}
-
 /* ─── ScrollProgressBar ──────────────────────────────────────────────────────
    Gold hairline across the top that fills as the page scrolls.              */
 export function ScrollProgressBar() {

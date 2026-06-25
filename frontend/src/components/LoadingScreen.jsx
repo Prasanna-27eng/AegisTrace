@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import MetallicPaint from './MetallicPaint';
 
 const EOUT   = [0.23, 1, 0.32, 1];
 const SPRING = { type: 'spring', stiffness: 260, damping: 22, mass: 0.8 };
@@ -73,33 +74,33 @@ export default function LoadingScreen() {
           pointerEvents: 'none' }}
       />
 
-      {/* Seal + ring */}
-      <div style={{ position: 'relative', width: 130, height: 130, marginBottom: 38 }}>
-        <SealRing progress={ring} />
-        <motion.div
-          initial={{ scale: 0.45, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-          transition={{ ...SPRING, delay: 0.12 }}
-          style={{ position: 'absolute', inset: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-        >
-          <motion.img
-            src="/assets/brand/aegistrace-icon-transparent.png" alt="AegisTrace" draggable={false}
-            animate={{ rotate: 360 }}
-            transition={{ duration: 18, ease: 'linear', repeat: Infinity }}
-            style={{ width: '100%', height: '100%', objectFit: 'contain',
-              filter: 'drop-shadow(0 0 14px rgba(74,126,200,0.75)) drop-shadow(0 0 32px rgba(74,126,200,0.4))' }}
-          />
-        </motion.div>
-        {/* Corner dots — Remotion Sequence timing */}
-        {[0, 90, 180, 270].map((angle, i) => (
-          <motion.div key={angle} aria-hidden
-            initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5 + i * 0.09, duration: 0.28, ease: EOUT }}
-            style={{ position: 'absolute', width: 4, height: 4, borderRadius: '50%', background: '#4A7EC8',
-              top: '50%', left: '50%', boxShadow: '0 0 8px rgba(74,126,200,0.9)',
-              transform: `rotate(${angle}deg) translateX(63px) translateY(-50%)` }}
-          />
-        ))}
-      </div>
+      {/* MetallicPaint logo */}
+      <motion.div
+        initial={{ scale: 0.55, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+        transition={{ ...SPRING, delay: 0.10 }}
+        style={{ position: 'relative', marginBottom: 38,
+          filter: 'drop-shadow(0 0 18px rgba(74,126,200,0.65)) drop-shadow(0 0 36px rgba(74,126,200,0.3))' }}
+      >
+        <MetallicPaint
+          imageUrl="/assets/brand/aegistrace-icon-transparent.png"
+          size={120}
+        />
+        {/* Orbital ring around the metallic logo */}
+        <div style={{
+          position: 'absolute', inset: -8, borderRadius: '50%',
+          border: '1px solid rgba(74,126,200,0.18)',
+          pointerEvents: 'none',
+        }}/>
+        <motion.div aria-hidden
+          animate={{ rotate: 360 }}
+          transition={{ duration: 8, ease: 'linear', repeat: Infinity }}
+          style={{
+            position: 'absolute', inset: -12, borderRadius: '50%',
+            border: '1px dashed rgba(74,126,200,0.12)',
+            pointerEvents: 'none',
+          }}
+        />
+      </motion.div>
 
       {/* Letter stagger — Remotion interpolate timing model */}
       <div style={{ display: 'flex', marginBottom: 20 }}>
