@@ -2,7 +2,8 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, useInView, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Copy, Check, Github } from 'lucide-react';
-import PillNav from '../components/PillNav';
+import CardNav from '../components/CardNav';
+import BorderGlow from '../components/BorderGlow';
 
 /* ─── Tokens ─────────────────────────────────────────────────────────────── */
 const E    = [0.16, 1, 0.3, 1];
@@ -537,17 +538,8 @@ function AIModelsSection() {
         {AI_MODELS.map((model, i) => (
           <Reveal key={model.name} delay={i * 0.07}>
             <TiltCard style={{ height: '100%' }}>
-              <div style={{
-                background: '#141420',
-                border: '1px solid rgba(74,126,200,0.12)',
-                borderRadius: 8,
-                padding: '24px 22px',
-                height: '100%',
-                boxSizing: 'border-box',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 12,
-              }}>
+              <BorderGlow severity="normal" radius={8} innerStyle={{ padding: '24px 22px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 12 }} style={{ height: '100%' }}>
+              <div style={{ display: 'contents' }}>
                 <div style={{
                   fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 13, fontWeight: 600,
@@ -585,6 +577,7 @@ function AIModelsSection() {
                   {model.badge}
                 </div>
               </div>
+              </BorderGlow>
             </TiltCard>
           </Reveal>
         ))}
@@ -916,7 +909,7 @@ export default function Platform() {
       `}</style>
 
       {/* ── NAV ─────────────────────────────────────────────────────────── */}
-      <PillNav/>
+      <CardNav/>
 
       {/* ── CONTENT ─────────────────────────────────────────────────────── */}
       <HeroSection/>

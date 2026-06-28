@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, ArrowRight, ArrowLeft } from 'lucide-react';
 import api from '../api/client';
 import useStore from '../store/useStore';
+import LaserFlow from '../components/LaserFlow';
 
 /* ─── Tokens ─────────────────────────────────────────────────────────────── */
 const E    = [0.23, 1, 0.32, 1];
@@ -69,7 +70,7 @@ export default function Login() {
     }}>
       <style>{`
         .login-label {
-          font-family: 'JetBrains Mono', monospace;
+          font-family: 'IBM Plex Mono', monospace;
           font-size: 10.5px; font-weight: 500;
           color: rgba(245,240,232,0.38);
           letter-spacing: 0.2em; text-transform: uppercase;
@@ -80,7 +81,7 @@ export default function Login() {
           background: #0A0A18;
           border: 1px solid rgba(74,126,200,0.15);
           color: ${INK};
-          font-family: 'Cabinet Grotesk', sans-serif;
+          font-family: 'IBM Plex Sans', sans-serif;
           font-size: 15px; font-weight: 500;
           padding: 13px 16px; outline: none;
           border-radius: 6px;
@@ -104,7 +105,7 @@ export default function Login() {
         .sign-btn {
           width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
           background: #4A7EC8; color: #fff;
-          font-family: 'Cabinet Grotesk', sans-serif;
+          font-family: 'IBM Plex Sans', sans-serif;
           font-size: 15px; font-weight: 700;
           padding: 14px 24px; border: none; cursor: pointer;
           border-radius: 6px; letter-spacing: 0.01em;
@@ -141,23 +142,13 @@ export default function Login() {
       <div className="login-left-panel" style={{
         flex: '0 0 55%', position: 'relative', overflow: 'hidden',
       }}>
-        {/* Background image — Ken Burns */}
-        <div
-          className="login-bg-img"
-          aria-hidden
-          style={{
-            position: 'absolute', inset: 0,
-            backgroundImage: `url('/assets/pages/login-bg.jpg')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            animation: 'ken-burns 8s ease-out both',
-          }}
-        />
+        {/* LaserFlow animated beam background */}
+        <LaserFlow />
 
         {/* Dark overlay */}
         <div aria-hidden style={{
           position: 'absolute', inset: 0,
-          background: 'linear-gradient(135deg, #050505 0%, #080818 60%, #0F1428 100%)',
+          background: 'linear-gradient(135deg, rgba(5,5,5,0.55) 0%, rgba(8,8,24,0.35) 60%, rgba(15,20,40,0.25) 100%)',
           zIndex: 1,
         }}/>
 
@@ -199,7 +190,7 @@ export default function Login() {
 
           {/* Large quote */}
           <h2 style={{
-            fontFamily: "'Clash Display', sans-serif",
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
             fontSize: 'clamp(28px,3vw,38px)',
             fontWeight: 600,
             color: INK,
@@ -214,7 +205,7 @@ export default function Login() {
 
           {/* Subtitle */}
           <p style={{
-            fontFamily: "'Cabinet Grotesk', sans-serif",
+            fontFamily: "'IBM Plex Sans', sans-serif",
             fontSize: 14,
             color: 'rgba(245,240,232,0.48)',
             margin: '0 0 36px',
@@ -227,7 +218,7 @@ export default function Login() {
           {/* Micro-stats row */}
           <div style={{
             display: 'flex', gap: 0,
-            fontFamily: "'JetBrains Mono', monospace",
+            fontFamily: "'IBM Plex Mono', monospace",
             fontSize: 11,
           }}>
             {['21 detectors', '35 API routers', '4 PyPI tools'].map((stat, i) => (
@@ -244,7 +235,7 @@ export default function Login() {
         {/* Version badge — bottom left */}
         <div style={{
           position: 'absolute', bottom: 28, left: 'clamp(48px,6vw,80px)', zIndex: 3,
-          fontFamily: "'JetBrains Mono', monospace",
+          fontFamily: "'IBM Plex Mono', monospace",
           fontSize: 10.5, color: 'rgba(245,240,232,0.25)',
           letterSpacing: '0.1em',
         }}>
@@ -280,7 +271,7 @@ export default function Login() {
         >
           <Link to="/" style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
-            fontFamily: "'Cabinet Grotesk', sans-serif",
+            fontFamily: "'IBM Plex Sans', sans-serif",
             fontSize: 12, color: 'rgba(245,240,232,0.35)',
             textDecoration: 'none', letterSpacing: '0.04em',
             transition: 'color 140ms',
@@ -309,7 +300,7 @@ export default function Login() {
               >
                 {/* Heading */}
                 <h1 style={{
-                  fontFamily: "'Clash Display', sans-serif",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontSize: 28, fontWeight: 700,
                   color: INK, margin: '0 0 6px',
                   letterSpacing: '-0.02em',
@@ -317,7 +308,7 @@ export default function Login() {
                   Sign in
                 </h1>
                 <p style={{
-                  fontFamily: "'Cabinet Grotesk', sans-serif",
+                  fontFamily: "'IBM Plex Sans', sans-serif",
                   fontSize: 13, color: 'rgba(245,240,232,0.38)',
                   margin: '0 0 36px', lineHeight: 1.5,
                 }}>
@@ -383,7 +374,7 @@ export default function Login() {
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.4, ease: E }}
                         style={{
-                          fontFamily: "'Cabinet Grotesk', sans-serif",
+                          fontFamily: "'IBM Plex Sans', sans-serif",
                           fontSize: 12.5, color: '#F87171', lineHeight: 1.4,
                           marginTop: -6,
                         }}
@@ -414,7 +405,7 @@ export default function Login() {
                   borderTop: '1px solid rgba(74,126,200,0.1)',
                 }}>
                   <p style={{
-                    fontFamily: "'JetBrains Mono', monospace",
+                    fontFamily: "'IBM Plex Mono', monospace",
                     fontSize: 11, color: 'rgba(245,240,232,0.22)',
                     margin: 0, lineHeight: 1.6,
                   }}>
@@ -431,7 +422,7 @@ export default function Login() {
                 transition={{ duration: 0.32, ease: E }}
               >
                 <h1 style={{
-                  fontFamily: "'Clash Display', sans-serif",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontSize: 28, fontWeight: 700,
                   color: INK, margin: '0 0 6px',
                   letterSpacing: '-0.02em',
@@ -439,7 +430,7 @@ export default function Login() {
                   Two-factor auth
                 </h1>
                 <p style={{
-                  fontFamily: "'Cabinet Grotesk', sans-serif",
+                  fontFamily: "'IBM Plex Sans', sans-serif",
                   fontSize: 13, color: 'rgba(245,240,232,0.38)',
                   margin: '0 0 36px', lineHeight: 1.5,
                 }}>
@@ -472,7 +463,7 @@ export default function Login() {
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.4, ease: E }}
                         style={{
-                          fontFamily: "'Cabinet Grotesk', sans-serif",
+                          fontFamily: "'IBM Plex Sans', sans-serif",
                           fontSize: 12.5, color: '#F87171', lineHeight: 1.4,
                           marginTop: -6,
                         }}
@@ -500,7 +491,7 @@ export default function Login() {
                   style={{
                     display: 'block', width: '100%', marginTop: 20,
                     background: 'none', border: 'none', cursor: 'pointer',
-                    fontFamily: "'Cabinet Grotesk', sans-serif",
+                    fontFamily: "'IBM Plex Sans', sans-serif",
                     fontSize: 12, color: 'rgba(245,240,232,0.28)',
                     transition: 'color 140ms', textAlign: 'center', padding: '8px 0',
                   }}
@@ -520,7 +511,7 @@ export default function Login() {
           left: 'clamp(24px,4vw,40px)', right: 'clamp(24px,4vw,40px)',
         }}>
           <span style={{
-            fontFamily: "'JetBrains Mono', monospace",
+            fontFamily: "'IBM Plex Mono', monospace",
             fontSize: 10.5, color: 'rgba(245,240,232,0.18)',
             letterSpacing: '0.05em',
           }}>

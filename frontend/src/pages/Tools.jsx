@@ -3,7 +3,7 @@ import { motion, useInView } from 'framer-motion';
 import { ArrowRight, ArrowUpRight, Copy, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ScrollProgressBar } from '../components/SceneController';
-import PillNav from '../components/PillNav';
+import CardNav from '../components/CardNav';
 
 const E    = [0.16, 1, 0.3, 1];
 const GOLD = '#F59E0B';
@@ -67,7 +67,7 @@ function CopyButton({ text, style = {} }) {
         color: copied ? GOLD : 'rgba(189,212,232,0.55)',
         padding: '6px 12px', cursor: 'pointer',
         display: 'inline-flex', alignItems: 'center', gap: 6,
-        fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
+        fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
         transition: 'all 160ms ease',
         ...style,
       }}
@@ -134,7 +134,7 @@ function Terminal({ lines, delay = 0, title = 'terminal' }) {
     <div ref={ref} style={{
       background: '#030308',
       border: '1px solid rgba(74,126,200,0.18)',
-      fontFamily: "'JetBrains Mono', monospace",
+      fontFamily: "'IBM Plex Mono', monospace",
       fontSize: 12.5,
       lineHeight: 1.7,
       position: 'relative',
@@ -193,7 +193,7 @@ function InstallBox({ cmd, pypiUrl, githubUrl }) {
       flexWrap: 'wrap', gap: 12,
       padding: '14px 20px',
     }}>
-      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, color: INK }}>
+      <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 13, color: INK }}>
         <span style={{ color: '#4A7EC8' }}>$ </span>{cmd}
       </span>
       <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -201,7 +201,7 @@ function InstallBox({ cmd, pypiUrl, githubUrl }) {
         {pypiUrl && (
           <a href={pypiUrl} target="_blank" rel="noopener noreferrer"
             data-cursor="link"
-            style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: 'rgba(189,212,232,0.45)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'color 140ms' }}
+            style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: 'rgba(189,212,232,0.45)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'color 140ms' }}
             onMouseEnter={e => e.currentTarget.style.color = GOLD}
             onMouseLeave={e => e.currentTarget.style.color = 'rgba(189,212,232,0.45)'}
           >
@@ -211,7 +211,7 @@ function InstallBox({ cmd, pypiUrl, githubUrl }) {
         {githubUrl && (
           <a href={githubUrl} target="_blank" rel="noopener noreferrer"
             data-cursor="link"
-            style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: 'rgba(189,212,232,0.45)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'color 140ms' }}
+            style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: 'rgba(189,212,232,0.45)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'color 140ms' }}
             onMouseEnter={e => e.currentTarget.style.color = INK}
             onMouseLeave={e => e.currentTarget.style.color = 'rgba(189,212,232,0.45)'}
           >
@@ -227,7 +227,7 @@ function InstallBox({ cmd, pypiUrl, githubUrl }) {
 function ModulePill({ label }) {
   return (
     <span style={{
-      fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
+      fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
       color: 'rgba(189,212,232,0.65)',
       border: '1px solid rgba(74,126,200,0.16)',
       padding: '5px 12px',
@@ -255,7 +255,7 @@ function ToolSection({ tool, flip = false, idx }) {
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, delay: 0.05, ease: E }}
           style={{
-            fontFamily: "'JetBrains Mono', monospace",
+            fontFamily: "'IBM Plex Mono', monospace",
             fontSize: 10, letterSpacing: '0.28em',
             color: 'rgba(189,212,232,0.28)',
             marginBottom: 14,
@@ -278,7 +278,7 @@ function ToolSection({ tool, flip = false, idx }) {
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.1, ease: E }}
               style={{
-                fontFamily: "'JetBrains Mono', monospace",
+                fontFamily: "'IBM Plex Mono', monospace",
                 fontSize: 'clamp(32px,4vw,48px)',
                 fontWeight: 700,
                 color: INK,
@@ -630,14 +630,14 @@ function InstallAllSection() {
                 {['#f87171','#fbbf24','#4ade80'].map((c, i) => (
                   <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: c, opacity: 0.7 }}/>
                 ))}
-                <span style={{ marginLeft: 8, fontFamily: "'JetBrains Mono', monospace", color: 'rgba(189,212,232,0.3)', fontSize: 11 }}>install-all.sh</span>
+                <span style={{ marginLeft: 8, fontFamily: "'IBM Plex Mono', monospace", color: 'rgba(189,212,232,0.3)', fontSize: 11 }}>install-all.sh</span>
               </div>
               <CopyAllButton text={ALL_INSTALLS}/>
             </div>
             <div style={{ padding: '20px 24px' }}>
               {ALL_INSTALLS.split('\n').map((line, i) => (
                 <div key={i} style={{
-                  fontFamily: "'JetBrains Mono', monospace", fontSize: 13,
+                  fontFamily: "'IBM Plex Mono', monospace", fontSize: 13,
                   color: INK, lineHeight: 2,
                 }}>
                   <span style={{ color: '#4A7EC8', userSelect: 'none' }}>$ </span>{line}
@@ -656,7 +656,7 @@ function InstallAllSection() {
               { label: 'PyPI verified', note: 'published packages' },
             ].map(tag => (
               <span key={tag.label} style={{
-                fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
+                fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
                 color: 'rgba(189,212,232,0.45)',
                 border: '1px solid rgba(74,126,200,0.12)',
                 padding: '5px 12px',
@@ -683,7 +683,7 @@ export default function Tools() {
       <style>{`
         .cd   { font-family: 'Plus Jakarta Sans', sans-serif; }
         .cg   { font-family: 'IBM Plex Sans', sans-serif; }
-        .mono { font-family: 'JetBrains Mono', monospace; }
+        .mono { font-family: 'IBM Plex Mono', monospace; }
 
         .gold-btn {
           display: inline-flex; align-items: center; gap: 9px;
@@ -728,7 +728,7 @@ export default function Tools() {
       `}</style>
 
       {/* ── NAV ── */}
-      <PillNav/>
+      <CardNav/>
 
       {/* ── HERO ── */}
       <section style={{
@@ -757,7 +757,7 @@ export default function Tools() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1, ease: E }}
             style={{
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: "'IBM Plex Mono', monospace",
               fontSize: 10, letterSpacing: '0.3em',
               color: GOLD, marginBottom: 20,
             }}

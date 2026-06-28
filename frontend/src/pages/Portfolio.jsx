@@ -9,7 +9,7 @@ import {
   useSceneCamera, useSectionParallax,
   PinnedScene, RackFocus, ScrollProgressBar,
 } from '../components/SceneController';
-import PillNav from '../components/PillNav';
+import CardNav from '../components/CardNav';
 
 const E    = [0.16, 1, 0.3, 1];
 const EOUT = [0.23, 1, 0.32, 1];
@@ -617,7 +617,7 @@ export default function Portfolio() {
     <div style={{ background: BG, color: INK, overflowX: 'clip', minHeight: '100vh', position: 'relative', isolation: 'isolate' }}>
       <AmbientEmbers/>
       <ScrollProgressBar/>
-      <PillNav/>
+      <CardNav/>
 
       <style>{`
         .cd   { font-family: 'Plus Jakarta Sans', sans-serif; }

@@ -35,12 +35,18 @@ from nvidia_client import (
 )
 from ai_router import call_ai_json
 from agents.tools import TOOL_DEFINITIONS, execute_tool
+from core.prompt_shield import shield as _shield, AI_HARDENING_SUFFIX
 
 
 # ── Shared helper ─────────────────────────────────────────────────────────────
 
 def _nvidia_or_groq_json(prompt: str, groq_task: str = "analysis") -> dict:
     """Try NVIDIA first, fall back to Groq. Always returns a dict."""
+    # call_ai_json (Groq path) sanitises via PromptShield internally; the
+    # NVIDIA path calls nvidia_chat directly and must be sanitised here too.
+    # max_len is generous so the JSON schema appended after the user-content
+    # portion of the prompt (already individually truncated) isn't cut off.
+    prompt = _shield.sanitise(prompt, groq_task, max_len=4000).cleaned
     if is_nvidia_available():
         resp = nvidia_chat(
             model=LLAMA_70B,
@@ -127,7 +133,7 @@ Final JSON schema:
   "agent": "EndpointAgent"
 }
 
-SECURITY: Never fabricate tool results. Actions are recommendations for human approval only."""
+SECURITY: Never fabricate tool results. Actions are recommendations for human approval only.""" + AI_HARDENING_SUFFIX
 
 _ENDPOINT_TOOL_NAMES = {
     "get_endpoint_data",
@@ -165,14 +171,22 @@ async def _run_endpoint_agent_loop(case, session) -> dict:
     batch_summary = await _get_reranked_log_batches(case, session)
 
     # ── Build initial user message ────────────────────────────────────────────
-    user_message = f"""Investigate endpoint evidence for case {case.case_number}: {case.title}
+    # Case fields, log verdicts, and vision output are user/log-controlled and
+    # reach Hermes-3 directly (no ai_router shield here) — sanitise first.
+    safe_title       = _shield.sanitise(case.title or "", "case_title").cleaned
+    safe_affected    = _shield.sanitise(case.affected_systems or "", "generic").cleaned
+    safe_description = _shield.sanitise((case.description or "")[:600], "case_description").cleaned
+    safe_findings    = _shield.sanitise((case.findings or "")[:400], "case_findings").cleaned
+    safe_vision      = _shield.sanitise(vision_context, "generic").cleaned if vision_context else ""
+
+    user_message = f"""Investigate endpoint evidence for case {case.case_number}: {safe_title}
 
 Severity: {case.severity} | Type: {case.incident_type}
-Affected systems: {case.affected_systems or 'unspecified'}
-Description: {(case.description or '')[:600]}
-Existing findings: {(case.findings or '')[:400]}
+Affected systems: {safe_affected or 'unspecified'}
+Description: {safe_description}
+Existing findings: {safe_findings}
 Log batch verdicts: {json.dumps(batch_summary)}
-{f'Visual evidence from screenshots: {vision_context}' if vision_context else ''}
+{f'Visual evidence from screenshots: {safe_vision}' if safe_vision else ''}
 
 For each affected hostname ({', '.join(affected_hostnames) or 'check case description'}):
 1. Call get_endpoint_data to get risk score and vulnerabilities
@@ -405,11 +419,14 @@ async def _generate_endpoint_sigma(case, analysis: dict) -> str:
             indent=2
         )
 
+        safe_title      = _shield.sanitise(case.title or "", "case_title").cleaned
+        safe_top_threat = _shield.sanitise(str(top_threat), "generic").cleaned
+
         prompt = f"""Generate a Sigma detection rule for the following endpoint security finding.
 
-Case: {case.case_number} — {case.title}
+Case: {case.case_number} — {safe_title}
 Incident type: {case.incident_type}
-Top threat finding: {top_threat}
+Top threat finding: {safe_top_threat}
 Suspicious processes:
 {proc_context}
 

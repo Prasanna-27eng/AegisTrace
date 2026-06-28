@@ -15,6 +15,7 @@ from routers.auth import get_current_user, require_admin
 from models import User
 from core.events import event_bus, Events
 from core.encryption import enc   # v5.4: field-level encryption for tokens at rest
+from core.ssrf_guard import validate_external_host, SSRFBlockedError
 
 logger = logging.getLogger("aegistrace.connectors")
 router = APIRouter(prefix="/api/connectors", tags=["connectors"])
@@ -120,6 +121,10 @@ async def okta_connect(
     api_token   = (data.get("api_token") or "").strip()
     if not okta_domain or not api_token:
         raise HTTPException(400, "okta_domain and api_token required")
+    try:
+        okta_domain = validate_external_host(okta_domain)
+    except SSRFBlockedError as e:
+        raise HTTPException(400, f"Invalid okta_domain: {e}")
 
     from core.connectors.okta import OktaConnector
     connector_obj = OktaConnector(okta_domain=okta_domain, api_token=api_token)

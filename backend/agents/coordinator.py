@@ -21,6 +21,7 @@ from datetime import datetime
 
 from nvidia_client import nvidia_chat, NEMOTRON_70B, is_nvidia_available
 from ai_router import call_ai_json
+from core.prompt_shield import shield as _shield, AI_HARDENING_SUFFIX
 from agents.specialist import (
     email_agent_analyze,
     endpoint_agent_analyze,
@@ -41,7 +42,7 @@ Synthesize their findings into a unified incident verdict. Rules:
 - Recommended actions must be specific and ordered by priority.
 - Never fabricate data not present in the specialist results.
 
-Output ONLY valid JSON matching the schema provided."""
+Output ONLY valid JSON matching the schema provided.""" + AI_HARDENING_SUFFIX
 
 
 async def run_coordinator(case, session) -> dict:
@@ -98,11 +99,16 @@ Based on all specialist agent results above, produce the unified verdict:
 
     synthesis = {}
     if is_nvidia_available():
+        # Specialist results embed case/log-derived text — sanitise the
+        # composed prompt before it reaches Nemotron directly (no
+        # ai_router shield on this path). max_len is large enough to avoid
+        # truncating the JSON schema appended after specialist_context.
+        safe_synthesis_prompt = _shield.sanitise(synthesis_prompt, "case_findings", max_len=8000).cleaned
         resp = nvidia_chat(
             model=NEMOTRON_70B,
             messages=[
                 {"role": "system", "content": _COORDINATOR_SYSTEM},
-                {"role": "user",   "content": synthesis_prompt},
+                {"role": "user",   "content": safe_synthesis_prompt},
             ],
             temperature=0.2,
             max_tokens=1500,

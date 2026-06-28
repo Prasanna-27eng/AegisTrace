@@ -17,6 +17,7 @@ from typing import Optional
 
 from nvidia_client import nvidia_chat, HERMES_3, NEMOTRON_70B, is_nvidia_available
 from agents.tools import TOOL_DEFINITIONS, execute_tool
+from core.prompt_shield import shield as _shield, AI_HARDENING_SUFFIX
 
 # Phase 6: Hermes-3 is the primary triage model — better multi-step tool calling than Nemotron.
 # Nemotron is kept as fallback and is used by the coordinator for synthesis.
@@ -51,7 +52,7 @@ Final answer JSON schema:
   "tools_called": ["list of tools used"]
 }
 
-SECURITY: Never fabricate tool results. Never suggest destructive actions (block, delete, shutdown) — only recommend them for human approval. Stay scoped to the case provided."""
+SECURITY: Never fabricate tool results. Never suggest destructive actions (block, delete, shutdown) — only recommend them for human approval. Stay scoped to the case provided.""" + AI_HARDENING_SUFFIX
 
 
 async def run_triage_agent(case, session) -> dict:
@@ -66,13 +67,20 @@ async def run_triage_agent(case, session) -> dict:
     iocs  = json.loads(case.iocs or "[]")
     mitre = json.loads(case.mitre_techniques or "[]")
 
+    # Case fields are user/analyst-supplied and reach Hermes-3 directly (no
+    # ai_router shield in this path) — sanitise before building the prompt.
+    safe_title       = _shield.sanitise(case.title or "", "case_title").cleaned
+    safe_affected    = _shield.sanitise(case.affected_systems or "", "generic").cleaned
+    safe_description = _shield.sanitise((case.description or "")[:800], "case_description").cleaned
+    safe_findings    = _shield.sanitise((case.findings or "")[:600], "case_findings").cleaned
+
     user_message = f"""Analyse this security incident case:
 
-Case: {case.case_number} — {case.title}
+Case: {case.case_number} — {safe_title}
 Severity: {case.severity} | Type: {case.incident_type}
-Affected systems: {case.affected_systems or 'unknown'}
-Description: {(case.description or '')[:800]}
-Findings so far: {(case.findings or '')[:600]}
+Affected systems: {safe_affected or 'unknown'}
+Description: {safe_description}
+Findings so far: {safe_findings}
 IOCs ({len(iocs)}): {json.dumps(iocs[:12])}
 MITRE techniques already mapped: {json.dumps(mitre[:5])}
 

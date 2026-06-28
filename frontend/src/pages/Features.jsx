@@ -2,7 +2,8 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle } from 'lucide-react';
-import PillNav from '../components/PillNav';
+import CardNav from '../components/CardNav';
+import BorderGlow from '../components/BorderGlow';
 
 const GOLD  = '#F59E0B';
 const DARK  = '#050505';
@@ -142,7 +143,7 @@ function Body({ children, dark = false }) {
 export default function Features() {
   return (
     <div style={{ background: DARK, color: INK, overflowX: 'clip' }}>
-      <PillNav />
+      <CardNav />
 
       <style>{`
         * { box-sizing: border-box; }
@@ -184,12 +185,12 @@ export default function Features() {
         <Reveal delay={0.08}>
           <div style={{ marginBottom: 20 }}>
             <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 13, fontWeight: 600, color: '#BDD4E8', marginBottom: 10 }}>SLA Tiers</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 2 }}>
-              {[['Critical', '4h', '#EF4444'], ['High', '8h', '#F97316'], ['Medium', '48h', '#EAB308'], ['Low', '168h', '#22C55E']].map(([tier, time, col]) => (
-                <div key={tier} style={{ background: '#1C1C24', border: '1px solid rgba(74,126,200,0.12)', padding: '12px 16px', borderLeft: `3px solid ${col}` }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 }}>
+              {[['Critical', '4h', 'critical', '#EF4444'], ['High', '8h', 'high', '#F97316'], ['Medium', '48h', 'info', '#EAB308'], ['Low', '168h', 'info', '#22C55E']].map(([tier, time, sev, col]) => (
+                <BorderGlow key={tier} severity={sev} radius={6} speed={sev === 'critical' ? 2.5 : 4} innerStyle={{ padding: '12px 16px' }}>
                   <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: col, marginBottom: 4 }}>{tier}</div>
                   <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 18, fontWeight: 700, color: '#BDD4E8' }}>{time}</div>
-                </div>
+                </BorderGlow>
               ))}
             </div>
           </div>

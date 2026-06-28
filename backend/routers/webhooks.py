@@ -262,7 +262,7 @@ def _send_webhook(wh: WebhookConfig, payload: dict) -> Optional[int]:
                 f"Severity: `{payload.get('severity', 'N/A').upper()}`"
             )})
 
-        with httpx.Client(timeout=8) as client:
+        with httpx.Client(timeout=8, follow_redirects=False) as client:
             resp = client.post(wh.url, content=body, headers=headers)
             return resp.status_code
     except Exception as e:

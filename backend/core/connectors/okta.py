@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Optional
 import httpx
 from .base import BaseConnector
+from core.ssrf_guard import validate_external_host, resolve_and_check, SSRFBlockedError
 
 logger = logging.getLogger("aegistrace.connectors.okta")
 
@@ -24,8 +25,14 @@ class OktaConnector(BaseConnector):
         return {"Authorization": f"SSWS {self.api_token}", "Accept": "application/json"}
 
     async def _get(self, path: str, params: dict = None) -> dict:
+        try:
+            validate_external_host(self.okta_domain)
+        except SSRFBlockedError as e:
+            raise ValueError(f"Refusing to contact okta_domain: {e}")
+        if not resolve_and_check(self.okta_domain):
+            raise ValueError("Refusing to contact okta_domain: resolves to a blocked address")
         url = f"https://{self.okta_domain}{path}"
-        async with httpx.AsyncClient(timeout=30) as client:
+        async with httpx.AsyncClient(timeout=30, follow_redirects=False) as client:
             resp = await client.get(url, headers=self._headers(), params=params or {})
             resp.raise_for_status()
             return resp.json()

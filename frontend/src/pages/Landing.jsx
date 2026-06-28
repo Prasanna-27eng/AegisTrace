@@ -7,7 +7,8 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { useSceneCamera, PinnedScene, ScrollProgressBar } from '../components/SceneController';
 import LoadingScreen, { useLoading } from '../components/LoadingScreen';
-import PillNav from '../components/PillNav';
+import CardNav from '../components/CardNav';
+import LaserFlow from '../components/LaserFlow';
 
 /* ─── Constants ─────────────────────────────────────────────────────────────── */
 const GOLD    = '#F59E0B';
@@ -240,18 +241,8 @@ function HeroScene() {
 
   return (
     <PinnedScene vh="340vh" sceneRef={ref}>
-      {/* Hero gradient background */}
-      <div aria-hidden style={{
-        position: 'absolute', inset: 0,
-        background: 'linear-gradient(135deg, #050505 0%, #080818 40%, #0A1428 70%, #0F1E3E 100%)',
-      }}/>
-
-      {/* Subtle dot grid overlay */}
-      <div aria-hidden style={{
-        position: 'absolute', inset: 0,
-        backgroundImage: 'radial-gradient(circle, rgba(74,126,200,0.04) 1px, transparent 1px)',
-        backgroundSize: '40px 40px',
-      }}/>
+      {/* LaserFlow animated hero background */}
+      <LaserFlow />
 
       {/* Beat 1 */}
       <motion.div style={{
@@ -1423,7 +1414,7 @@ export default function Landing() {
         minHeight: '100vh', position: 'relative', isolation: 'isolate',
       }}>
         <ScrollProgressBar/>
-        <PillNav/>
+        <CardNav/>
 
         <style>{`
           @keyframes ticker-march  { from { transform: translateX(0); } to { transform: translateX(-50%); } }
