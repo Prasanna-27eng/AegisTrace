@@ -20,7 +20,7 @@ function CopyButton({ text }) {
     setTimeout(() => setCopied(false), 2000);
   };
   return (
-    <button onClick={copy} style={{ background: 'none', border: '1px solid rgba(26,22,18,0.1)', borderRadius: 4, color: '#787878', cursor: 'pointer', padding: '3px 8px', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: 4 }}>
+    <button onClick={copy} style={{ background: 'none', border: '1px solid rgba(26,22,18,0.1)', borderRadius: 4, color: 'rgba(26,22,18,0.5)', cursor: 'pointer', padding: '3px 8px', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: 4 }}>
       {copied ? <><Check size={11} style={{ color: '#22C55E' }}/> Copied</> : <><Copy size={11}/> Copy</>}
     </button>
   );
@@ -45,7 +45,7 @@ function RuleBlock({ label, code, color, note }) {
           borderRadius: 6,
           padding: '14px 16px',
           fontSize: '0.72rem',
-          color: '#7A9DB8',
+          color: 'rgba(26,22,18,0.55)',
           overflowX: 'auto',
           margin: 0,
           lineHeight: 1.6,
@@ -85,7 +85,7 @@ export default function RulesTab({ caseData, caseId }) {
           <FileCode size={18} style={{ color: 'rgba(26,22,18,0.7)' }} />
           <div>
             <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>Detection Rule Generator</div>
-            <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 1 }}>
+            <div style={{ fontSize: '0.72rem', color: 'rgba(26,22,18,0.5)', marginTop: 1 }}>
               Codestral 22B · NVIDIA NIM · YARA + Sigma + KQL + Splunk
             </div>
           </div>
@@ -100,15 +100,15 @@ export default function RulesTab({ caseData, caseId }) {
 
       {/* Pre-conditions notice */}
       {!hasContent && (
-        <div className="at-card" style={{ padding: 24, textAlign: 'center', color: '#787878', fontSize: '0.85rem' }}>
-          <Code2 size={28} style={{ margin: '0 auto 10px', color: 'rgba(143,175,192,0.2)', display: 'block' }}/>
+        <div className="at-card" style={{ padding: 24, textAlign: 'center', color: 'rgba(26,22,18,0.5)', fontSize: '0.85rem' }}>
+          <Code2 size={28} style={{ margin: '0 auto 10px', color: 'rgba(26,22,18,0.12)', display: 'block' }}/>
           Add IOCs, MITRE techniques, or a description to the case first — the rule generator uses those as its input.
         </div>
       )}
 
       {/* Empty state */}
       {hasContent && !result && !loading && (
-        <div className="at-card" style={{ padding: 36, textAlign: 'center', color: '#787878' }}>
+        <div className="at-card" style={{ padding: 36, textAlign: 'center', color: 'rgba(26,22,18,0.5)' }}>
           <FileCode size={32} style={{ margin: '0 auto 12px', color: 'rgba(143,175,192,0.25)', display: 'block' }}/>
           <div style={{ fontSize: '0.85rem', marginBottom: 6 }}>Generates 4 rule types from case IOCs and MITRE techniques.</div>
           <div style={{ fontSize: '0.75rem' }}>YARA · Sigma (SIEM-universal) · Microsoft Sentinel KQL · Splunk SPL</div>
@@ -122,7 +122,7 @@ export default function RulesTab({ caseData, caseId }) {
           <div className="at-card" style={{ padding: '14px 18px', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
             <div>
               <div style={{ fontSize: '0.82rem', fontWeight: 600, ...MONO, color: '#F59E0B' }}>{result.rule_name}</div>
-              <div style={{ fontSize: '0.78rem', color: '#787878', marginTop: 3 }}>{result.description}</div>
+              <div style={{ fontSize: '0.78rem', color: 'rgba(26,22,18,0.5)', marginTop: 3 }}>{result.description}</div>
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
               {(result.platforms || []).map(p => (

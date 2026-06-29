@@ -3,8 +3,8 @@ import React from 'react';
 const PALETTES = {
   critical: ['#EF4444', '#F97316'],
   high:     ['#F97316', '#FBBF24'],
-  normal:   ['#4A7EC8', 'rgba(26,22,18,0.7)'],
-  info:     ['#22C55E', '#4A7EC8'],
+  normal:   ['#2563EB', 'rgba(26,22,18,0.7)'],
+  info:     ['#22C55E', '#2563EB'],
   gold:     ['#F59E0B', '#FBBF24'],
 };
 
@@ -46,7 +46,7 @@ export default function BorderGlow({
       <div aria-hidden style={{
         position: 'absolute', inset: 0,
         borderRadius: radius + 1.5,
-        border: `1px solid rgba(74,126,200,0.14)`,
+        border: `1px solid rgba(26,22,18,0.084)`,
         opacity: .7,
       }} />
 

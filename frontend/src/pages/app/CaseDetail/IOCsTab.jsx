@@ -63,14 +63,14 @@ export default function IOCsTab({ caseData, updateCase, caseId }) {
     } catch (e) { addToast(e.response?.data?.detail || 'VT lookup failed', 'error'); }
   };
 
-  const verdictColor = { malicious: '#EF4444', suspicious: '#EAB308', clean: '#22C55E', '': '#787878' };
+  const verdictColor = { malicious: '#EF4444', suspicious: '#EAB308', clean: '#22C55E', '': 'rgba(26,22,18,0.5)' };
 
   return (
     <div style={{ padding: '20px 24px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
           <h3 style={{ fontSize: '0.92rem', fontWeight: 600 }}>Indicators of Compromise</h3>
-          <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 2 }}>{iocs.length} IOC{iocs.length !== 1 ? 's' : ''}</div>
+          <div style={{ fontSize: '0.72rem', color: 'rgba(26,22,18,0.5)', marginTop: 2 }}>{iocs.length} IOC{iocs.length !== 1 ? 's' : ''}</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn-ghost" style={{ fontSize: '0.78rem', padding: '6px 12px' }} onClick={() => {
@@ -84,10 +84,10 @@ export default function IOCsTab({ caseData, updateCase, caseId }) {
 
       {/* Add form */}
       {showAdd && (
-        <div className="at-card" style={{ padding: 14, marginBottom: 16, borderColor: 'rgba(90,138,159,0.25)' }}>
+        <div className="at-card" style={{ padding: 14, marginBottom: 16, borderColor: 'rgba(26,22,18,0.138)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
             <div className="section-label" style={{ margin: 0 }}>Add IOC</div>
-            <button onClick={() => setShowAdd(false)} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={14} /></button>
+            <button onClick={() => setShowAdd(false)} style={{ background: 'none', border: 'none', color: 'rgba(26,22,18,0.5)', cursor: 'pointer' }}><X size={14} /></button>
           </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <input className="at-input" placeholder="IOC value…" value={newIOC.ioc} onChange={e => setNewIOC(p => ({ ...p, ioc: e.target.value }))} style={{ flex: 2, fontSize: '0.8rem', fontFamily: 'JetBrains Mono' }} onKeyDown={e => e.key === 'Enter' && addIOC()} />
@@ -107,7 +107,7 @@ export default function IOCsTab({ caseData, updateCase, caseId }) {
 
       {/* IOC table */}
       {iocs.length === 0 ? (
-        <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#787878', fontSize: '0.85rem' }}>
+        <div className="at-card" style={{ padding: 40, textAlign: 'center', color: 'rgba(26,22,18,0.5)', fontSize: '0.85rem' }}>
           No IOCs yet. Add your first indicator.
         </div>
       ) : (
@@ -115,7 +115,7 @@ export default function IOCsTab({ caseData, updateCase, caseId }) {
           {iocs.map((item, i) => (
             <div key={i}>
               <div className="at-card" style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono', color: '#787878', background: 'rgba(26,22,18,0.05)', padding: '2px 6px', borderRadius: 3, flexShrink: 0 }}>{item.type}</span>
+                <span style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono', color: 'rgba(26,22,18,0.5)', background: 'rgba(26,22,18,0.05)', padding: '2px 6px', borderRadius: 3, flexShrink: 0 }}>{item.type}</span>
                 <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.8rem', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', color: defanged[i] ? '#EAB308' : 'rgba(26,22,18,0.7)' }}>
                   {defanged[i] || item.ioc}
                 </span>
@@ -131,7 +131,7 @@ export default function IOCsTab({ caseData, updateCase, caseId }) {
                 </div>
               </div>
               {correlations[item.ioc]?.found && correlations[item.ioc].case_count > 1 && (
-                <div style={{ marginTop: 3, marginLeft: 8, padding: '6px 10px', background: 'rgba(74,126,200,0.06)', border: '1px solid rgba(74,126,200,0.15)', borderRadius: 5, fontSize: '0.72rem', color: '#4A7EC8' }}>
+                <div style={{ marginTop: 3, marginLeft: 8, padding: '6px 10px', background: 'rgba(26,22,18,0.036)', border: '1px solid rgba(26,22,18,0.090)', borderRadius: 5, fontSize: '0.72rem', color: '#2563EB' }}>
                   ⚠ Campaign alert: this IOC appears in {correlations[item.ioc].case_count} cases (IDs: {correlations[item.ioc].case_ids?.join(', ')})
                 </div>
               )}

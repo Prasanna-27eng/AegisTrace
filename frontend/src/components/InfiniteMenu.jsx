@@ -76,15 +76,15 @@ export default function InfiniteMenu() {
               top: -(ITEM_H / 2),
               transform: `rotateY(${i * STEP}deg) translateZ(${RADIUS}px)`,
               padding: '12px 18px',
-              background: 'rgba(74,126,200,0.06)',
-              border: '1px solid rgba(74,126,200,0.14)',
+              background: 'rgba(26,22,18,0.036)',
+              border: '1px solid rgba(26,22,18,0.084)',
               borderRadius: 8,
             }}
           >
             <div style={{
               fontFamily: "'IBM Plex Mono', monospace",
               fontSize: 9, letterSpacing: '0.14em',
-              color: 'rgba(74,126,200,0.9)',
+              color: 'rgba(26,22,18,0.540)',
               textTransform: 'uppercase', marginBottom: 4,
             }}>
               {item.sub}

@@ -40,10 +40,10 @@ const SQL_EXAMPLES = [
 ];
 
 const TACTIC_COLOR = {
-  'Initial Access': '#4A7EC8', 'Execution': '#EF4444', 'Persistence': '#EAB308',
+  'Initial Access': '#2563EB', 'Execution': '#EF4444', 'Persistence': '#EAB308',
   'Privilege Escalation': '#F97316', 'Defense Evasion': 'rgba(26,22,18,0.7)',
   'Credential Access': '#EC4899', 'Discovery': '#22C55E',
-  'Lateral Movement': '#06B6D4', 'Collection': '#4A7EC8',
+  'Lateral Movement': '#06B6D4', 'Collection': '#2563EB',
   'Command and Control': '#8B5CF6', 'Exfiltration': '#F59E0B',
   'Impact': '#EF4444',
 };
@@ -156,7 +156,7 @@ export default function ThreatHunt() {
           <button key={t.id} className={`tab-btn ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id)}>
             {t.label}
             {t.id === 'campaigns' && campaigns.length > 0 && (
-              <span style={{ marginLeft: 6, background: 'rgba(90,138,159,0.2)', color: 'var(--accent)', borderRadius: 10, fontSize: '0.6rem', fontWeight: 700, padding: '1px 6px', fontFamily: 'JetBrains Mono' }}>{campaigns.length}</span>
+              <span style={{ marginLeft: 6, background: 'rgba(26,22,18,0.110)', color: 'var(--accent)', borderRadius: 10, fontSize: '0.6rem', fontWeight: 700, padding: '1px 6px', fontFamily: 'JetBrains Mono' }}>{campaigns.length}</span>
             )}
           </button>
         ))}
@@ -207,9 +207,9 @@ export default function ThreatHunt() {
                         <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.82rem', color: 'rgba(26,22,18,0.7)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{ioc.ioc}</span>
                         <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono', background: 'rgba(26,22,18,0.05)', padding: '2px 6px', borderRadius: 3 }}>{ioc.ioc_type}</span>
                         {ioc.is_campaign && (
-                          <span style={{ fontSize: '0.65rem', color: 'var(--accent)', fontFamily: 'JetBrains Mono', background: 'rgba(90,138,159,0.1)', border: '1px solid rgba(204,120,92,0.25)', padding: '2px 6px', borderRadius: 3 }}>⚠ CAMPAIGN</span>
+                          <span style={{ fontSize: '0.65rem', color: 'var(--accent)', fontFamily: 'JetBrains Mono', background: 'rgba(26,22,18,0.055)', border: '1px solid rgba(204,120,92,0.25)', padding: '2px 6px', borderRadius: 3 }}>⚠ CAMPAIGN</span>
                         )}
-                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: ioc.case_count > 1 ? '#4A7EC8' : '#787878' }}>{ioc.case_count} case{ioc.case_count !== 1 ? 's' : ''}</span>
+                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: ioc.case_count > 1 ? '#2563EB' : 'rgba(26,22,18,0.5)' }}>{ioc.case_count} case{ioc.case_count !== 1 ? 's' : ''}</span>
                       </div>
                       {ioc.cases?.length > 0 && (
                         <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
@@ -241,7 +241,7 @@ export default function ThreatHunt() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px,1fr))', gap: 10 }}>
                   {mitre.map(m => {
                     const pct = Math.round((m.count / maxMitreCount) * 100);
-                    const color = TACTIC_COLOR[m.tactic] || '#787878';
+                    const color = TACTIC_COLOR[m.tactic] || 'rgba(26,22,18,0.5)';
                     return (
                       <div key={m.technique_id} className="at-card" style={{ padding: '14px 16px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
@@ -329,7 +329,7 @@ export default function ThreatHunt() {
                           <div key={i} className="at-card" style={{ padding: '10px 14px', display: 'flex', gap: 12, alignItems: 'center' }}>
                             <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.8rem', color: 'rgba(26,22,18,0.7)', flex: 1 }}>{ioc.ioc}</span>
                             <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono', background: 'rgba(26,22,18,0.05)', padding: '2px 6px', borderRadius: 3 }}>{ioc.ioc_type}</span>
-                            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: ioc.case_count > 1 ? '#4A7EC8' : '#787878' }}>{ioc.case_count} case{ioc.case_count !== 1 ? 's' : ''}</span>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: ioc.case_count > 1 ? '#2563EB' : 'rgba(26,22,18,0.5)' }}>{ioc.case_count} case{ioc.case_count !== 1 ? 's' : ''}</span>
                           </div>
                         ))}
                       </div>
@@ -373,7 +373,7 @@ export default function ThreatHunt() {
               <div className="at-card" style={{ padding: 0, marginBottom: 14 }}>
                 <div
                   onClick={() => setSchemaOpen(o => !o)}
-                  style={{ padding: '10px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', color: '#7A9DB8' }}
+                  style={{ padding: '10px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', color: 'rgba(26,22,18,0.55)' }}
                 >
                   {schemaOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
                   <Database size={13} style={{ color: 'var(--accent)' }} />
@@ -464,7 +464,7 @@ export default function ThreatHunt() {
                         {sqlResult.rows.map((row, i) => (
                           <tr key={i} style={{ borderBottom: '1px solid rgba(26,22,18,0.05)' }}>
                             {row.map((v, j) => (
-                              <td key={j} style={{ padding: '6px 12px', color: '#7A9DB8', whiteSpace: 'nowrap', maxWidth: 360, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <td key={j} style={{ padding: '6px 12px', color: 'rgba(26,22,18,0.55)', whiteSpace: 'nowrap', maxWidth: 360, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {v === null || v === undefined ? <span style={{ color: '#444' }}>—</span> : String(v)}
                               </td>
                             ))}

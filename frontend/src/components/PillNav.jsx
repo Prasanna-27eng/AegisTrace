@@ -12,7 +12,7 @@ const NAV_ITEMS = [
 ];
 
 const BLUE = '#2563EB';
-const INK  = '#BDD4E8';
+const INK  = 'rgba(26,22,18,0.6)';
 
 export default function PillNav() {
   const { pathname } = useLocation();
@@ -37,7 +37,7 @@ export default function PillNav() {
         <img
           src="/assets/brand/aegistrace-icon-transparent.png"
           alt="AegisTrace"
-          style={{ width: 28, height: 28, objectFit: 'contain', filter: 'drop-shadow(0 0 6px rgba(74,126,200,0.55))' }}
+          style={{ width: 28, height: 28, objectFit: 'contain', filter: 'drop-shadow(0 0 6px rgba(26,22,18,0.330))' }}
         />
         <span style={{
           fontFamily: "'IBM Plex Mono', monospace",
@@ -53,7 +53,7 @@ export default function PillNav() {
         style={{
           display: 'flex', alignItems: 'center', gap: 2,
           background: 'rgba(26,22,18,0.035)',
-          border: '1px solid rgba(74,126,200,0.1)',
+          border: '1px solid rgba(26,22,18,0.060)',
           borderRadius: 100,
           padding: '4px',
         }}
@@ -71,8 +71,8 @@ export default function PillNav() {
                   layoutId="pill-indicator"
                   style={{
                     position: 'absolute', inset: 0,
-                    background: 'rgba(74,126,200,0.18)',
-                    border: '1px solid rgba(74,126,200,0.28)',
+                    background: 'rgba(26,22,18,0.108)',
+                    border: '1px solid rgba(26,22,18,0.168)',
                     borderRadius: 100,
                     zIndex: 0,
                   }}

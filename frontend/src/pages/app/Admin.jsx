@@ -17,11 +17,11 @@ const TABS = [
   { id: 'system',       label: 'System',           Icon: Activity },
 ];
 
-const ROLE_COLOR = { admin: '#4A7EC8', analyst: 'rgba(26,22,18,0.7)', viewer: '#787878' };
+const ROLE_COLOR = { admin: '#2563EB', analyst: 'rgba(26,22,18,0.7)', viewer: 'rgba(26,22,18,0.5)' };
 const ACTION_COLOR = {
   login: '#22C55E', case_created: 'rgba(26,22,18,0.7)', case_closed: '#22C55E',
   case_deleted: '#EF4444', user_created: 'rgba(26,22,18,0.7)', user_deleted: '#EF4444',
-  ai_generated: '#EAB308', alert_imported: '#4A7EC8', share_toggled: '#888888',
+  ai_generated: '#EAB308', alert_imported: '#2563EB', share_toggled: 'rgba(26,22,18,0.35)',
   password_changed: '#EAB308', status_changed: '#FFFFFF',
 };
 
@@ -84,10 +84,10 @@ function MFAPanel({ addToast }) {
     <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(26,22,18,0.07)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: step !== 'idle' ? 16 : 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-          <Smartphone size={14} style={{ color: mfaEnabled ? '#22C55E' : '#787878' }} />
+          <Smartphone size={14} style={{ color: mfaEnabled ? '#22C55E' : 'rgba(26,22,18,0.5)' }} />
           <div>
             <div style={{ fontSize: '0.82rem', fontWeight: 500 }}>Two-Factor Authentication</div>
-            <div style={{ fontSize: '0.68rem', color: mfaEnabled ? '#22C55E' : '#787878', ...MONO }}>
+            <div style={{ fontSize: '0.68rem', color: mfaEnabled ? '#22C55E' : 'rgba(26,22,18,0.5)', ...MONO }}>
               {mfaEnabled ? '● ENABLED — TOTP authenticator active' : '○ DISABLED — adds extra login security'}
             </div>
           </div>
@@ -104,7 +104,7 @@ function MFAPanel({ addToast }) {
       {/* ── Setup: show secret ── */}
       {step === 'setup' && (
         <div style={{ background: 'rgba(26,22,18,0.04)', border: '1px solid rgba(26,22,18,0.09)', borderRadius: 8, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ fontSize: '0.76rem', color: '#7A9DB8', lineHeight: 1.6 }}>
+          <div style={{ fontSize: '0.76rem', color: 'rgba(26,22,18,0.55)', lineHeight: 1.6 }}>
             Open your authenticator app (Google Authenticator, Authy, or any TOTP app) and add a new account. Choose <strong style={{ color: 'var(--text-primary)' }}>Enter setup key</strong> and paste the secret below, or scan the QR code if your app supports otpauth:// links.
           </div>
           <div>
@@ -126,7 +126,7 @@ function MFAPanel({ addToast }) {
             </div>
           </div>
           <div style={{ borderTop: '1px solid rgba(26,22,18,0.07)', paddingTop: 12 }}>
-            <div style={{ fontSize: '0.72rem', color: '#7A9DB8', marginBottom: 8 }}>Enter the 6-digit code your app shows to confirm setup:</div>
+            <div style={{ fontSize: '0.72rem', color: 'rgba(26,22,18,0.55)', marginBottom: 8 }}>Enter the 6-digit code your app shows to confirm setup:</div>
             <div style={{ display: 'flex', gap: 8 }}>
               <input className="at-input" type="text" inputMode="numeric" maxLength={7}
                 placeholder="000 000" value={code} onChange={e => setCode(e.target.value)}
@@ -143,7 +143,7 @@ function MFAPanel({ addToast }) {
       {/* ── Disable: confirm with code ── */}
       {step === 'disable' && (
         <div style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: 8, padding: 14 }}>
-          <div style={{ fontSize: '0.76rem', color: '#7A9DB8', marginBottom: 10 }}>
+          <div style={{ fontSize: '0.76rem', color: 'rgba(26,22,18,0.55)', marginBottom: 10 }}>
             Enter your current authenticator code to confirm disabling 2FA:
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -220,7 +220,7 @@ function UsersTab({ user, addToast }) {
       <div className="at-card" style={{ padding:16 }}>
         <div className="section-label">Your Account</div>
         <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:12 }}>
-          <div style={{ width:40, height:40, borderRadius:'50%', background:'rgba(90,138,159,0.15)', border:'1px solid rgba(204,120,92,0.25)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:600, color:'#4A7EC8' }}>{user?.name?.[0]}</div>
+          <div style={{ width:40, height:40, borderRadius:'50%', background:'rgba(26,22,18,0.083)', border:'1px solid rgba(204,120,92,0.25)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:600, color:'#2563EB' }}>{user?.name?.[0]}</div>
           <div>
             <div style={{ fontWeight:600, fontSize:'0.88rem' }}>{user?.name}</div>
             <div style={{ fontSize:'0.72rem', color:'var(--text-muted)' }}>{user?.email}</div>
@@ -390,7 +390,7 @@ function WebhooksTab({ addToast }) {
 
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
-      <div className="at-card" style={{ padding:16, borderColor:'rgba(90,138,159,0.15)' }}>
+      <div className="at-card" style={{ padding:16, borderColor:'rgba(26,22,18,0.083)' }}>
         <div style={{ fontSize:'0.78rem', color:'var(--text-muted)', lineHeight:1.65, marginBottom:8 }}>
           Webhooks fire HTTP POST requests to your URL when SOC events occur. Supports Slack, Microsoft Teams, and any generic JSON endpoint. HMAC-SHA256 signed if secret is configured.
         </div>
@@ -398,7 +398,7 @@ function WebhooksTab({ addToast }) {
       </div>
 
       {showAdd && (
-        <div className="at-card" style={{ padding:16, borderColor:'rgba(90,138,159,0.2)' }}>
+        <div className="at-card" style={{ padding:16, borderColor:'rgba(26,22,18,0.110)' }}>
           <div style={{ display:'flex', justifyContent:'space-between', marginBottom:12 }}>
             <div className="section-label" style={{ margin:0 }}>New Webhook</div>
             <button onClick={() => setShowAdd(false)} style={{ background:'none', border:'none', color:'var(--text-muted)', cursor:'pointer' }}><X size={14}/></button>
@@ -412,7 +412,7 @@ function WebhooksTab({ addToast }) {
             <label className="at-label">Events to trigger</label>
             <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
               {EVENTS.map(ev => (
-                <button key={ev} onClick={() => toggleEvent(ev)} style={{ fontSize:'0.7rem', padding:'4px 10px', borderRadius:4, fontFamily:'JetBrains Mono', border:`1px solid ${form.events.includes(ev) ? 'rgba(204,120,92,0.35)' : 'rgba(26,22,18,0.1)'}`, background: form.events.includes(ev) ? 'rgba(204,120,92,0.1)' : 'transparent', color: form.events.includes(ev) ? '#4A7EC8' : '#787878', cursor:'pointer' }}>
+                <button key={ev} onClick={() => toggleEvent(ev)} style={{ fontSize:'0.7rem', padding:'4px 10px', borderRadius:4, fontFamily:'JetBrains Mono', border:`1px solid ${form.events.includes(ev) ? 'rgba(204,120,92,0.35)' : 'rgba(26,22,18,0.1)'}`, background: form.events.includes(ev) ? 'rgba(204,120,92,0.1)' : 'transparent', color: form.events.includes(ev) ? '#2563EB' : 'rgba(26,22,18,0.5)', cursor:'pointer' }}>
                   {ev}
                 </button>
               ))}
@@ -431,7 +431,7 @@ function WebhooksTab({ addToast }) {
             return (
               <div key={wh.id} className="at-card" style={{ padding:'14px 16px' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:8 }}>
-                  <div style={{ width:8, height:8, borderRadius:'50%', background: wh.is_active ? '#22C55E' : '#888888', flexShrink:0 }}/>
+                  <div style={{ width:8, height:8, borderRadius:'50%', background: wh.is_active ? '#22C55E' : 'rgba(26,22,18,0.35)', flexShrink:0 }}/>
                   <div style={{ flex:1 }}>
                     <div style={{ fontWeight:600, fontSize:'0.84rem' }}>{wh.name}</div>
                     <div style={{ fontSize:'0.7rem', color:'var(--text-muted)', fontFamily:'JetBrains Mono', marginTop:2 }}>{wh.url.slice(0,60)}{wh.url.length>60?'…':''}</div>
@@ -448,7 +448,7 @@ function WebhooksTab({ addToast }) {
                 </div>
                 <div style={{ display:'flex', gap:6, flexWrap:'wrap', alignItems:'center' }}>
                   {events.map(ev => (
-                    <span key={ev} style={{ fontSize:'0.65rem', background:'rgba(90,138,159,0.08)', border:'1px solid rgba(90,138,159,0.2)', color:'#4A7EC8', padding:'2px 7px', borderRadius:3, fontFamily:'JetBrains Mono' }}>{ev}</span>
+                    <span key={ev} style={{ fontSize:'0.65rem', background:'rgba(26,22,18,0.044)', border:'1px solid rgba(26,22,18,0.110)', color:'#2563EB', padding:'2px 7px', borderRadius:3, fontFamily:'JetBrains Mono' }}>{ev}</span>
                   ))}
                   {wh.last_fired_at && (
                     <span style={{ fontSize:'0.68rem', color:'var(--text-muted)', marginLeft:'auto', fontFamily:'JetBrains Mono' }}>
@@ -507,10 +507,10 @@ function AuditTab() {
       ) : (
         <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
           {logs.map(l => (
-            <div key={l.id} style={{ display:'flex', gap:12, alignItems:'center', padding:'8px 12px', background:'var(--surface)', borderRadius:6, borderLeft:`2px solid ${ACTION_COLOR[l.action]||'#888888'}` }}>
+            <div key={l.id} style={{ display:'flex', gap:12, alignItems:'center', padding:'8px 12px', background:'var(--surface)', borderRadius:6, borderLeft:`2px solid ${ACTION_COLOR[l.action]||'rgba(26,22,18,0.35)'}` }}>
               <div style={{ flex:1 }}>
                 <div style={{ fontSize:'0.78rem', fontWeight:500, color:'var(--text-primary)', display:'flex', gap:8, alignItems:'center' }}>
-                  <span style={{ color:ACTION_COLOR[l.action]||'#787878', fontFamily:'JetBrains Mono', fontSize:'0.7rem' }}>{l.action}</span>
+                  <span style={{ color:ACTION_COLOR[l.action]||'rgba(26,22,18,0.5)', fontFamily:'JetBrains Mono', fontSize:'0.7rem' }}>{l.action}</span>
                   <span style={{ color:'var(--text-muted)' }}>·</span>
                   <span>{l.entity_type} {l.entity_id}</span>
                   {l.new_value && l.entity_type !== 'user_pw' && <span style={{ color:'var(--text-muted)', fontSize:'0.7rem' }}>{l.new_value.slice(0,60)}</span>}
@@ -731,7 +731,7 @@ function SchedulesTab({ addToast }) {
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:6 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                   <span style={{ fontWeight:600, fontSize:'0.84rem' }}>{s.name}</span>
-                  <span style={{ fontSize:'0.65rem', fontFamily:'JetBrains Mono', padding:'2px 6px', borderRadius:3, background:s.is_active?'rgba(34,197,94,0.12)':'rgba(136,136,136,0.12)', color:s.is_active?'#22C55E':'#787878' }}>
+                  <span style={{ fontSize:'0.65rem', fontFamily:'JetBrains Mono', padding:'2px 6px', borderRadius:3, background:s.is_active?'rgba(34,197,94,0.12)':'rgba(136,136,136,0.12)', color:s.is_active?'#22C55E':'rgba(26,22,18,0.5)' }}>
                     {s.is_active ? 'ACTIVE' : 'PAUSED'}
                   </span>
                 </div>
@@ -856,7 +856,7 @@ function IntegrationsTab({ addToast }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 860 }}>
 
       {/* Intro banner */}
-      <div className="at-card" style={{ padding: '14px 18px', borderColor: 'rgba(143,175,192,0.2)', background: 'rgba(143,175,192,0.04)' }}>
+      <div className="at-card" style={{ padding: '14px 18px', borderColor: 'rgba(26,22,18,0.12)', background: 'rgba(143,175,192,0.04)' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
           <Terminal size={15} style={{ color: 'rgba(26,22,18,0.7)', marginTop: 2, flexShrink: 0 }} />
           <div>
@@ -886,10 +886,10 @@ function IntegrationsTab({ addToast }) {
         const status = edrStatus?.platforms?.[platform.id];
         const isOpen = expanded[platform.id];
 
-        const statusColor = !status ? '#787878'
+        const statusColor = !status ? 'rgba(26,22,18,0.5)'
           : status.connected ? '#22C55E'
           : status.configured ? '#EF4444'
-          : '#888888';
+          : 'rgba(26,22,18,0.35)';
 
         const statusLabel = loading ? 'Checking…'
           : !status ? 'Unknown'
@@ -1000,7 +1000,7 @@ export default function Admin() {
             style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 16px', borderRadius:6, fontSize:'0.8rem', cursor:'pointer', border:'1px solid', fontFamily:'Inter', transition:'all 0.15s',
               background: tab === id ? 'rgba(204,120,92,0.1)' : 'rgba(26,22,18,0.04)',
               borderColor: tab === id ? 'rgba(204,120,92,0.3)' : 'rgba(26,22,18,0.09)',
-              color: tab === id ? '#BDD4E8' : '#787878',
+              color: tab === id ? 'rgba(26,22,18,0.6)' : 'rgba(26,22,18,0.5)',
             }}>
             <Icon size={14}/> {label}
           </button>

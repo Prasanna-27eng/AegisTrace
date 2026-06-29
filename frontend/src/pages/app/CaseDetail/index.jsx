@@ -149,7 +149,7 @@ export default function CaseDetail() {
       </div>
     </div>
   );
-  if (!caseData && !isNew) return <div style={{ padding: 40, color: '#787878' }}>Case not found.</div>;
+  if (!caseData && !isNew) return <div style={{ padding: 40, color: 'rgba(26,22,18,0.5)' }}>Case not found.</div>;
 
   const tabProps = { caseData, updateCase, reload: loadCase, caseId: id };
 
@@ -158,14 +158,14 @@ export default function CaseDetail() {
       {/* Case header */}
       <div style={{ background: 'var(--surface)', borderBottom: '1px solid rgba(26,22,18,0.07)', padding: '12px 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-          <button onClick={() => navigate('/app/cases')} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.78rem' }}>
+          <button onClick={() => navigate('/app/cases')} style={{ background: 'none', border: 'none', color: 'rgba(26,22,18,0.5)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.78rem' }}>
             <ChevronLeft size={14} /> Cases
           </button>
           <span style={{ color: 'rgba(26,22,18,0.2)' }}>/</span>
-          <span style={{ fontSize: '0.78rem', color: '#787878', fontFamily: 'JetBrains Mono' }}>{caseData?.case_number}</span>
+          <span style={{ fontSize: '0.78rem', color: 'rgba(26,22,18,0.5)', fontFamily: 'JetBrains Mono' }}>{caseData?.case_number}</span>
 
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 6, alignItems: 'center' }}>
-            {autosaveStatus === 'saving' && <span style={{ fontSize: '0.7rem', color: '#787878', display: 'flex', alignItems: 'center', gap: 4 }}><Loader2 size={11} className="spinner" /> Saving…</span>}
+            {autosaveStatus === 'saving' && <span style={{ fontSize: '0.7rem', color: 'rgba(26,22,18,0.5)', display: 'flex', alignItems: 'center', gap: 4 }}><Loader2 size={11} className="spinner" /> Saving…</span>}
             {autosaveStatus === 'saved' && <span style={{ fontSize: '0.7rem', color: '#22C55E' }}>✓ Saved</span>}
             <button className="btn-ghost" onClick={saveNow} disabled={saving} style={{ padding: '5px 10px', fontSize: '0.75rem' }}>
               {saving ? <Loader2 size={12} className="spinner" /> : <Save size={12} />}
@@ -218,12 +218,12 @@ export default function CaseDetail() {
         {tab === 'report'        && <ReportTab {...tabProps} />}
         {tab === 'edr'           && (
           <div style={{ padding: '24px 28px' }}>
-            <div style={{ fontSize: '0.78rem', color: '#787878', fontFamily: 'var(--font-mono)', marginBottom: 16 }}>
+            <div style={{ fontSize: '0.78rem', color: 'rgba(26,22,18,0.5)', fontFamily: 'var(--font-mono)', marginBottom: 16 }}>
               Showing all endpoints — filter by case hostname in the endpoint list.
             </div>
             <button
               onClick={() => navigate('/app/edr')}
-              style={{ padding: '8px 18px', background: 'rgba(74,126,200,0.12)', border: '1px solid rgba(74,126,200,0.3)', borderRadius: 8, color: 'rgba(26,22,18,0.7)', fontSize: '0.82rem', cursor: 'pointer', fontFamily: 'var(--font-mono)' }}
+              style={{ padding: '8px 18px', background: 'rgba(26,22,18,0.072)', border: '1px solid rgba(26,22,18,0.180)', borderRadius: 8, color: 'rgba(26,22,18,0.7)', fontSize: '0.82rem', cursor: 'pointer', fontFamily: 'var(--font-mono)' }}
             >
               Open Full EDR Console →
             </button>

@@ -92,7 +92,7 @@ const TEMPLATES = [
 ];
 
 const IDENTITY_TYPE_COLORS = {
-  user:            '#4A7EC8',
+  user:            '#2563EB',
   service_account: '#F59E0B',
   api_key:         '#22C55E',
   machine:         '#8B5CF6',
@@ -127,7 +127,7 @@ function KnowledgeCard({ entry }) {
       {entry.tags?.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
           {entry.tags.map(t => (
-            <span key={t} style={{ fontSize: '0.6rem', ...MONO, padding: '1px 6px', borderRadius: 3, background: 'rgba(74,126,200,0.1)', color: 'var(--accent)', border: '1px solid rgba(26,22,18,0.14)' }}>{t}</span>
+            <span key={t} style={{ fontSize: '0.6rem', ...MONO, padding: '1px 6px', borderRadius: 3, background: 'rgba(26,22,18,0.060)', color: 'var(--accent)', border: '1px solid rgba(26,22,18,0.14)' }}>{t}</span>
           ))}
         </div>
       )}
@@ -162,8 +162,8 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 24 }}>
-      <div style={{ background: 'rgba(26,22,18,0.12)', border: '1px solid rgba(148,163,184,0.1)', borderRadius: 16, width: '100%', maxWidth: 900, maxHeight: '90vh', overflow: 'auto', boxShadow: '0 24px 64px rgba(0,0,0,0.7)' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(26,22,18,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 24 }}>
+      <div style={{ background: 'rgba(26,22,18,0.12)', border: '1px solid rgba(26,22,18,0.120)', borderRadius: 16, width: '100%', maxWidth: 900, maxHeight: '90vh', overflow: 'auto', boxShadow: '0 24px 64px rgba(0,0,0,0.7)' }}>
         {/* Header */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(26,22,18,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
@@ -174,7 +174,7 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
             {/* Tab switcher */}
             <div style={{ display: 'flex', gap: 2, background: 'rgba(26,22,18,0.05)', borderRadius: 7, padding: 3 }}>
               {[{ id: 'templates', label: 'Templates' }, { id: 'knowledge', label: 'Knowledge Base' }].map(t => (
-                <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ padding: '4px 12px', borderRadius: 5, border: 'none', background: activeTab === t.id ? 'rgba(26,22,18,0.14)' : 'none', color: activeTab === t.id ? 'rgba(26,22,18,0.7)' : '#787878', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer' }}>
+                <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ padding: '4px 12px', borderRadius: 5, border: 'none', background: activeTab === t.id ? 'rgba(26,22,18,0.14)' : 'none', color: activeTab === t.id ? 'rgba(26,22,18,0.7)' : 'rgba(26,22,18,0.5)', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer' }}>
                   {t.label}
                 </button>
               ))}

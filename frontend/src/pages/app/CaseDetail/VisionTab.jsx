@@ -9,7 +9,7 @@ const SEVERITY_COLOR = {
   Malware:   '#EF4444',
   Suspicious:'#EAB308',
   Benign:    '#22C55E',
-  Unknown:   '#787878',
+  Unknown:   'rgba(26,22,18,0.5)',
 };
 
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };
@@ -59,7 +59,7 @@ export default function VisionTab({ caseData, caseId, reload }) {
     setLoading(false);
   };
 
-  const verdictColor = result ? (SEVERITY_COLOR[result.verdict] || '#787878') : '#787878';
+  const verdictColor = result ? (SEVERITY_COLOR[result.verdict] || 'rgba(26,22,18,0.5)') : 'rgba(26,22,18,0.5)';
 
   return (
     <div style={{ padding: '20px 24px', maxWidth: 920 }}>
@@ -68,7 +68,7 @@ export default function VisionTab({ caseData, caseId, reload }) {
         <Eye size={18} style={{ color: 'rgba(26,22,18,0.7)' }} />
         <div>
           <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>Vision Analysis</div>
-          <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 1 }}>
+          <div style={{ fontSize: '0.72rem', color: 'rgba(26,22,18,0.5)', marginTop: 1 }}>
             Llama 3.2 Vision 11B · NVIDIA NIM
           </div>
         </div>
@@ -100,7 +100,7 @@ export default function VisionTab({ caseData, caseId, reload }) {
         ) : (
           <>
             <Upload size={28} style={{ color: 'rgba(26,22,18,0.2)', margin: '0 auto 12px', display: 'block' }}/>
-            <div style={{ fontSize: '0.85rem', color: '#787878' }}>Drop a screenshot or click to upload</div>
+            <div style={{ fontSize: '0.85rem', color: 'rgba(26,22,18,0.5)' }}>Drop a screenshot or click to upload</div>
             <div style={{ fontSize: '0.72rem', color: '#555', marginTop: 6 }}>JPEG, PNG, WebP — max 5 MB</div>
           </>
         )}
@@ -112,7 +112,7 @@ export default function VisionTab({ caseData, caseId, reload }) {
         value={context}
         onChange={e => setContext(e.target.value)}
         placeholder="Optional: add context about what this screenshot shows (e.g. 'from infected host', 'phishing email body')"
-        style={{ width: '100%', background: 'var(--card)', border: '1px solid rgba(26,22,18,0.08)', borderRadius: 6, color: '#BDD4E8', padding: '10px 12px', fontSize: '0.82rem', resize: 'vertical', minHeight: 56, marginBottom: 14, boxSizing: 'border-box' }}
+        style={{ width: '100%', background: 'var(--card)', border: '1px solid rgba(26,22,18,0.08)', borderRadius: 6, color: 'rgba(26,22,18,0.6)', padding: '10px 12px', fontSize: '0.82rem', resize: 'vertical', minHeight: 56, marginBottom: 14, boxSizing: 'border-box' }}
       />
 
       <button
@@ -135,13 +135,13 @@ export default function VisionTab({ caseData, caseId, reload }) {
                 : <ShieldAlert size={18} color={verdictColor}/>
               }
               <span style={{ fontSize: '1rem', fontWeight: 700, color: verdictColor }}>{result.verdict}</span>
-              <span style={{ fontSize: '0.78rem', color: '#787878' }}>{result.confidence}% confidence</span>
+              <span style={{ fontSize: '0.78rem', color: 'rgba(26,22,18,0.5)' }}>{result.confidence}% confidence</span>
             </div>
             <span style={{ fontSize: '0.72rem', color: '#555', ...MONO }}>{result.model}</span>
           </div>
 
           {/* Summary */}
-          <p style={{ fontSize: '0.85rem', color: '#7A9DB8', lineHeight: 1.65, marginBottom: 16 }}>{result.summary}</p>
+          <p style={{ fontSize: '0.85rem', color: 'rgba(26,22,18,0.55)', lineHeight: 1.65, marginBottom: 16 }}>{result.summary}</p>
 
           {/* Key indicators */}
           {result.key_indicators?.length > 0 && (
@@ -163,7 +163,7 @@ export default function VisionTab({ caseData, caseId, reload }) {
                 {result.iocs_detected.map((ioc, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem' }}>
                     <span style={{ background: 'rgba(139,184,232,0.1)', borderRadius: 3, padding: '2px 6px', color: 'rgba(26,22,18,0.7)', ...MONO, textTransform: 'uppercase', fontSize: '0.65rem' }}>{ioc.type}</span>
-                    <span style={{ color: '#BDD4E8', ...MONO }}>{ioc.value}</span>
+                    <span style={{ color: 'rgba(26,22,18,0.6)', ...MONO }}>{ioc.value}</span>
                   </div>
                 ))}
               </div>
@@ -188,7 +188,7 @@ export default function VisionTab({ caseData, caseId, reload }) {
               <div style={{ fontSize: '0.72rem', color: '#555', marginBottom: 8, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Recommended Actions</div>
               <ol style={{ margin: 0, paddingLeft: 18 }}>
                 {result.recommended_actions.map((a, i) => (
-                  <li key={i} style={{ fontSize: '0.82rem', color: '#7A9DB8', lineHeight: 1.65, marginBottom: 4 }}>{a}</li>
+                  <li key={i} style={{ fontSize: '0.82rem', color: 'rgba(26,22,18,0.55)', lineHeight: 1.65, marginBottom: 4 }}>{a}</li>
                 ))}
               </ol>
             </div>

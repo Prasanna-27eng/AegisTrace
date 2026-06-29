@@ -95,7 +95,7 @@ export default function ToolResult() {
           <>
             <div style={{ marginBottom: 24 }}>
               <h1 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: 4 }}>{run.tool_name?.replace(/_/g, ' ')}</h1>
-              {run.case_id && <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.72rem', background: 'rgba(90,138,159,0.1)', border: '1px solid rgba(90,138,159,0.25)', color: '#5A8A9F', padding: '2px 8px', borderRadius: 3 }}>Linked to Case #{run.case_id}</span>}
+              {run.case_id && <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.72rem', background: 'rgba(26,22,18,0.055)', border: '1px solid rgba(26,22,18,0.138)', color: '#5A8A9F', padding: '2px 8px', borderRadius: 3 }}>Linked to Case #{run.case_id}</span>}
             </div>
             <ResultRenderer toolKey={run.tool_name} result={run.result} />
           </>

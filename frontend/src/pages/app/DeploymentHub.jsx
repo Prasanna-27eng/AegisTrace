@@ -13,12 +13,12 @@ const UI   = { fontFamily: "'IBM Plex Sans', system-ui, sans-serif" };
 const FADE = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 } };
 const EASE = { duration: 0.3, ease: [0.23, 1, 0.32, 1] };
 
-const BLUE  = '#4A7EC8';
+const BLUE  = '#2563EB';
 const BLUE_L = 'rgba(26,22,18,0.7)';
 const GREEN = '#10B981';
 const AMBER = '#F59E0B';
 const RED   = '#EF4444';
-const MUTED = 'rgba(148,163,184,0.55)';
+const MUTED = 'rgba(26,22,18,0.660)';
 
 /* ── Copy button ─────────────────────────────────────────────────────────── */
 function CopyBtn({ text }) {
@@ -61,7 +61,7 @@ function CodeBlock({ code, label }) {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '8px 14px', borderBottom: '1px solid rgba(26,22,18,0.08)',
-          background: 'rgba(74,126,200,0.03)' }}>
+          background: 'rgba(26,22,18,0.018)' }}>
           <div style={{ display: 'flex', gap: 5 }}>
             {['#F87171','#FBBF24','#34D399'].map(c => (
               <div key={c} style={{ width: 8, height: 8, borderRadius: '50%', background: c, opacity: 0.6 }}/>
@@ -126,7 +126,7 @@ function Step({ n, title, children }) {
     <div style={{ marginBottom: 12, border: '1px solid rgba(26,22,18,0.07)', borderRadius: 8, overflow: 'hidden' }}>
       <button
         onClick={() => setOpen(o => !o)}
-        style={{ width: '100%', background: open ? 'rgba(74,126,200,0.06)' : 'rgba(26,22,18,0.03)',
+        style={{ width: '100%', background: open ? 'rgba(26,22,18,0.036)' : 'rgba(26,22,18,0.03)',
           border: 'none', cursor: 'pointer', padding: '12px 16px',
           display: 'flex', alignItems: 'center', gap: 12, transition: 'background 0.15s' }}
       >
@@ -474,7 +474,7 @@ sudo -u postgres psql aegistrace_db -c "SELECT COUNT(*) FROM \\"case\\";"`} />
               padding: '10px 14px', background: 'rgba(26,22,18,0.03)',
               border: '1px solid rgba(26,22,18,0.08)', borderRadius: 8,
               textDecoration: 'none', transition: 'border-color 150ms, background 150ms' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(74,126,200,0.25)'; e.currentTarget.style.background = 'rgba(74,126,200,0.05)'; }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(26,22,18,0.150)'; e.currentTarget.style.background = 'rgba(26,22,18,0.030)'; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(26,22,18,0.08)'; e.currentTarget.style.background = 'rgba(26,22,18,0.03)'; }}
             >
               <Icon size={14} color={color} />

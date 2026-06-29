@@ -6,12 +6,12 @@ import useStore from '../../../store/useStore';
 const EVENT_TYPES = ['detection','action','escalation','closure','intel','remediation'];
 
 const TYPE_CONFIG = {
-  detection:   { color: '#4A7EC8', bg: 'rgba(74,126,200,0.12)',   Icon: AlertCircle,  label: 'Detection'   },
+  detection:   { color: '#2563EB', bg: 'rgba(26,22,18,0.072)',   Icon: AlertCircle,  label: 'Detection'   },
   action:      { color: 'rgba(26,22,18,0.7)', bg: 'rgba(139,184,232,0.12)', Icon: Wrench,        label: 'Action'      },
   escalation:  { color: '#EF4444', bg: 'rgba(239,68,68,0.12)',   Icon: TrendingUp,    label: 'Escalation'  },
   closure:     { color: '#22C55E', bg: 'rgba(34,197,94,0.12)',   Icon: CheckCircle,   label: 'Closure'     },
   intel:       { color: '#EAB308', bg: 'rgba(234,179,8,0.12)',   Icon: Search,        label: 'Intel'       },
-  remediation: { color: '#787878', bg: 'rgba(136,136,136,0.12)', Icon: Shield,        label: 'Remediation' },
+  remediation: { color: 'rgba(26,22,18,0.5)', bg: 'rgba(136,136,136,0.12)', Icon: Shield,        label: 'Remediation' },
 };
 
 function timeDiff(a, b) {
@@ -51,7 +51,7 @@ export default function TimelineTab({ caseId }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22 }}>
         <div>
           <h3 style={{ fontSize: '0.92rem', fontWeight: 600 }}>Investigation Timeline</h3>
-          <div style={{ fontSize: '0.7rem', color: '#787878', marginTop: 2 }}>
+          <div style={{ fontSize: '0.7rem', color: 'rgba(26,22,18,0.5)', marginTop: 2 }}>
             {events.length} event{events.length !== 1 ? 's' : ''}
             {events.length > 1 && (() => { const d = timeDiff(events[0]?.timestamp, events[events.length-1]?.timestamp); return d ? <span style={{ marginLeft: 8, fontFamily: 'JetBrains Mono' }}>· span {d}</span> : null; })()}
           </div>
@@ -62,10 +62,10 @@ export default function TimelineTab({ caseId }) {
       </div>
 
       {showAdd && (
-        <div className="at-card" style={{ padding: 14, marginBottom: 24, borderColor: 'rgba(90,138,159,0.25)' }}>
+        <div className="at-card" style={{ padding: 14, marginBottom: 24, borderColor: 'rgba(26,22,18,0.138)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
             <div className="section-label" style={{ margin: 0 }}>New Timeline Event</div>
-            <button onClick={() => setShowAdd(false)} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={14} /></button>
+            <button onClick={() => setShowAdd(false)} style={{ background: 'none', border: 'none', color: 'rgba(26,22,18,0.5)', cursor: 'pointer' }}><X size={14} /></button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 10, marginBottom: 10 }}>
             <div>
@@ -98,7 +98,7 @@ export default function TimelineTab({ caseId }) {
         <div className="at-card" style={{ padding: '40px 20px', textAlign: 'center' }}>
           <Clock size={28} style={{ color: 'rgba(143,175,192,0.25)', margin: '0 auto 12px', display: 'block' }} />
           <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 6 }}>No timeline events yet</div>
-          <div style={{ fontSize: '0.78rem', color: '#787878', marginBottom: 16 }}>
+          <div style={{ fontSize: '0.78rem', color: 'rgba(26,22,18,0.5)', marginBottom: 16 }}>
             Document detections, actions taken, escalations, and findings as the investigation unfolds.
           </div>
           <button className="btn-ghost" onClick={() => setShowAdd(true)} style={{ fontSize: '0.8rem' }}>
@@ -108,7 +108,7 @@ export default function TimelineTab({ caseId }) {
       ) : (
         <div style={{ position: 'relative', paddingLeft: 36 }}>
           {/* Spine */}
-          <div style={{ position: 'absolute', left: 11, top: 16, bottom: 20, width: 2, background: 'linear-gradient(180deg, rgba(90,138,159,0.5) 0%, rgba(90,138,159,0.05) 100%)', borderRadius: 1 }} />
+          <div style={{ position: 'absolute', left: 11, top: 16, bottom: 20, width: 2, background: 'linear-gradient(180deg, rgba(26,22,18,0.275) 0%, rgba(26,22,18,0.028) 100%)', borderRadius: 1 }} />
 
           {events.map((ev, i) => {
             const cfg = TYPE_CONFIG[ev.event_type] || TYPE_CONFIG.action;
@@ -139,11 +139,11 @@ export default function TimelineTab({ caseId }) {
                     <span style={{ fontSize: '0.62rem', fontWeight: 700, color: cfg.color, fontFamily: 'JetBrains Mono', padding: '1px 7px', background: cfg.bg, borderRadius: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                       {cfg.label}
                     </span>
-                    <span style={{ fontSize: '0.67rem', color: '#787878', fontFamily: 'JetBrains Mono', marginLeft: 'auto' }}>
+                    <span style={{ fontSize: '0.67rem', color: 'rgba(26,22,18,0.5)', fontFamily: 'JetBrains Mono', marginLeft: 'auto' }}>
                       {new Date(ev.timestamp).toLocaleString('en-IE', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })}
                     </span>
                   </div>
-                  <div style={{ fontSize: '0.84rem', color: '#7A9DB8', lineHeight: 1.65 }}>{ev.description}</div>
+                  <div style={{ fontSize: '0.84rem', color: 'rgba(26,22,18,0.55)', lineHeight: 1.65 }}>{ev.description}</div>
                   <div style={{ marginTop: 5, fontSize: '0.6rem', color: 'rgba(136,136,136,0.35)', fontFamily: 'JetBrains Mono' }}>Event {i+1} of {events.length}</div>
                 </div>
               </div>
@@ -153,7 +153,7 @@ export default function TimelineTab({ caseId }) {
           {/* End cap */}
           <div style={{ position: 'relative' }}>
             <div style={{ position: 'absolute', left: -36, top: 0, width: 24, height: 24, borderRadius: '50%', background: 'rgba(136,136,136,0.08)', border: '2px solid rgba(136,136,136,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#888888', opacity: 0.4 }} />
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(26,22,18,0.35)', opacity: 0.4 }} />
             </div>
             <div style={{ paddingTop: 4, fontSize: '0.68rem', color: 'rgba(136,136,136,0.4)', fontFamily: 'JetBrains Mono' }}>
               Last: {new Date(events[events.length-1]?.timestamp).toLocaleString('en-IE')}

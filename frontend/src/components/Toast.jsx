@@ -33,7 +33,7 @@ function ToastItem({ toast, onRemove }) {
         position: 'relative',
         overflow: 'hidden',
         background: 'var(--surface, #111827)',
-        border: '1px solid var(--border-medium, rgba(148,163,184,0.22))',
+        border: '1px solid var(--border-medium, rgba(26,22,18,0.264))',
         borderRadius: 10,
         cursor: 'pointer',
         boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)',

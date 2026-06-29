@@ -30,7 +30,7 @@ function StatusDot({ ok }) {
   return (
     <span style={{
       display: 'inline-block', width: 7, height: 7, borderRadius: '50%',
-      background: ok ? '#22C55E' : '#888888',
+      background: ok ? '#22C55E' : 'rgba(26,22,18,0.35)',
       boxShadow: ok ? '0 0 6px #22C55E55' : 'none',
       flexShrink: 0,
     }} />
@@ -38,7 +38,7 @@ function StatusDot({ ok }) {
 }
 
 function PlatformBadge({ platform }) {
-  const color = PLATFORM_COLORS[platform] || '#787878';
+  const color = PLATFORM_COLORS[platform] || 'rgba(26,22,18,0.5)';
   return (
     <span style={{
       fontSize: '0.62rem', fontFamily: 'JetBrains Mono', fontWeight: 600,
@@ -247,7 +247,7 @@ export default function EDRTab({ caseData }) {
               }}>
                 <StatusDot ok={info.connected} />
                 <span style={{ fontSize: '0.72rem', fontWeight: 500 }}>{PLATFORM_LABELS[name]}</span>
-                <span style={{ fontSize: '0.62rem', color: '#787878', fontFamily: 'JetBrains Mono' }}>
+                <span style={{ fontSize: '0.62rem', color: 'rgba(26,22,18,0.5)', fontFamily: 'JetBrains Mono' }}>
                   {!info.configured ? 'not configured' : info.connected ? 'online' : 'unreachable'}
                 </span>
               </div>
@@ -259,7 +259,7 @@ export default function EDRTab({ caseData }) {
             )}
           </>
         ) : (
-          <div style={{ fontSize: '0.72rem', color: '#787878', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ fontSize: '0.72rem', color: 'rgba(26,22,18,0.5)', display: 'flex', alignItems: 'center', gap: 6 }}>
             <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> Checking EDR connections…
           </div>
         )}
@@ -277,7 +277,7 @@ export default function EDRTab({ caseData }) {
             style={{
               flex: 1, padding: '7px 10px', background: 'var(--surface)',
               border: '1px solid rgba(26,22,18,0.08)', borderRadius: 6,
-              color: '#BDD4E8', fontSize: '0.82rem', fontFamily: 'JetBrains Mono',
+              color: 'rgba(26,22,18,0.6)', fontSize: '0.82rem', fontFamily: 'JetBrains Mono',
             }}
           />
           <button
@@ -302,18 +302,18 @@ export default function EDRTab({ caseData }) {
                   display: 'flex', alignItems: 'center', gap: 10,
                   padding: '9px 12px', borderRadius: 6, cursor: 'pointer',
                   background: selected?.endpoint_id === ep.endpoint_id
-                    ? 'rgba(74,126,200,0.08)' : 'var(--surface)',
+                    ? 'rgba(26,22,18,0.048)' : 'var(--surface)',
                   border: `1px solid ${selected?.endpoint_id === ep.endpoint_id
-                    ? 'rgba(90,138,159,0.25)' : 'transparent'}`,
+                    ? 'rgba(26,22,18,0.138)' : 'transparent'}`,
                   transition: 'all 0.15s',
                 }}
                 onMouseEnter={e => { if (selected?.endpoint_id !== ep.endpoint_id) e.currentTarget.style.background = 'rgba(26,22,18,0.04)'; }}
                 onMouseLeave={e => { if (selected?.endpoint_id !== ep.endpoint_id) e.currentTarget.style.background = 'var(--surface)'; }}
               >
-                <Cpu size={13} style={{ color: PLATFORM_COLORS[ep.platform] || '#787878', flexShrink: 0 }} />
+                <Cpu size={13} style={{ color: PLATFORM_COLORS[ep.platform] || 'rgba(26,22,18,0.5)', flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>{ep.hostname}</div>
-                  <div style={{ fontSize: '0.67rem', color: '#787878', fontFamily: 'JetBrains Mono', marginTop: 1 }}>
+                  <div style={{ fontSize: '0.67rem', color: 'rgba(26,22,18,0.5)', fontFamily: 'JetBrains Mono', marginTop: 1 }}>
                     {ep.ip} · {ep.os_version || ep.os} · last seen {ep.last_seen ? new Date(ep.last_seen).toLocaleDateString() : '—'}
                   </div>
                 </div>
@@ -326,7 +326,7 @@ export default function EDRTab({ caseData }) {
           </div>
         )}
         {endpoints.length === 0 && !searching && searchQuery && (
-          <div style={{ marginTop: 10, fontSize: '0.78rem', color: '#787878', textAlign: 'center', padding: '12px 0' }}>
+          <div style={{ marginTop: 10, fontSize: '0.78rem', color: 'rgba(26,22,18,0.5)', textAlign: 'center', padding: '12px 0' }}>
             No endpoints found for "{searchQuery}"
           </div>
         )}
@@ -343,7 +343,7 @@ export default function EDRTab({ caseData }) {
                 <PlatformBadge platform={selected.platform} />
                 <IsolationBadge status={selected.isolation_status} />
               </div>
-              <div style={{ fontSize: '0.67rem', color: '#787878', fontFamily: 'JetBrains Mono' }}>
+              <div style={{ fontSize: '0.67rem', color: 'rgba(26,22,18,0.5)', fontFamily: 'JetBrains Mono' }}>
                 {selected.ip} · {selected.os_version || selected.os} · Agent {selected.agent_version}
               </div>
             </div>
@@ -413,7 +413,7 @@ export default function EDRTab({ caseData }) {
                   style={{
                     padding: '3px 8px', background: 'var(--surface)',
                     border: '1px solid rgba(26,22,18,0.08)', borderRadius: 4,
-                    color: '#BDD4E8', fontSize: '0.72rem', fontFamily: 'JetBrains Mono',
+                    color: 'rgba(26,22,18,0.6)', fontSize: '0.72rem', fontFamily: 'JetBrains Mono',
                   }}
                 />
               </div>
@@ -422,7 +422,7 @@ export default function EDRTab({ caseData }) {
                   <thead>
                     <tr style={{ background: 'var(--surface)', borderBottom: '1px solid rgba(26,22,18,0.06)' }}>
                       {['PID', 'Name', 'User', 'Kill'].map(h => (
-                        <th key={h} style={{ padding: '5px 8px', color: '#787878', textAlign: 'left', fontWeight: 500, fontFamily: 'Inter, sans-serif', fontSize: '0.65rem' }}>{h}</th>
+                        <th key={h} style={{ padding: '5px 8px', color: 'rgba(26,22,18,0.5)', textAlign: 'left', fontWeight: 500, fontFamily: 'Inter, sans-serif', fontSize: '0.65rem' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -431,7 +431,7 @@ export default function EDRTab({ caseData }) {
                       <tr key={i} style={{ borderBottom: '1px solid rgba(26,22,18,0.04)', background: i % 2 ? 'transparent' : 'rgba(26,22,18,0.01)' }}>
                         <td style={{ padding: '4px 8px', color: 'rgba(26,22,18,0.7)' }}>{p.pid}</td>
                         <td style={{ padding: '4px 8px', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name || p.command || '—'}</td>
-                        <td style={{ padding: '4px 8px', color: '#787878' }}>{p.user || '—'}</td>
+                        <td style={{ padding: '4px 8px', color: 'rgba(26,22,18,0.5)' }}>{p.user || '—'}</td>
                         <td style={{ padding: '4px 8px' }}>
                           <button
                             onClick={() => setPidInput(String(p.pid))}
@@ -449,7 +449,7 @@ export default function EDRTab({ caseData }) {
 
               {/* Kill Process */}
               <div style={{ display: 'flex', gap: 6, marginTop: 8, alignItems: 'center' }}>
-                <span style={{ fontSize: '0.72rem', color: '#787878' }}>Kill PID:</span>
+                <span style={{ fontSize: '0.72rem', color: 'rgba(26,22,18,0.5)' }}>Kill PID:</span>
                 <input
                   value={pidInput}
                   onChange={e => setPidInput(e.target.value)}
@@ -457,7 +457,7 @@ export default function EDRTab({ caseData }) {
                   style={{
                     width: 80, padding: '4px 8px', background: 'var(--surface)',
                     border: '1px solid rgba(26,22,18,0.1)', borderRadius: 4,
-                    color: '#BDD4E8', fontSize: '0.75rem', fontFamily: 'JetBrains Mono',
+                    color: 'rgba(26,22,18,0.6)', fontSize: '0.75rem', fontFamily: 'JetBrains Mono',
                   }}
                 />
                 <button
@@ -467,7 +467,7 @@ export default function EDRTab({ caseData }) {
                     display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px',
                     background: pidInput.trim() ? 'rgba(239,68,68,0.15)' : 'rgba(26,22,18,0.04)',
                     border: `1px solid ${pidInput.trim() ? 'rgba(239,68,68,0.3)' : 'rgba(26,22,18,0.06)'}`,
-                    borderRadius: 4, color: pidInput.trim() ? '#EF4444' : '#787878',
+                    borderRadius: 4, color: pidInput.trim() ? '#EF4444' : 'rgba(26,22,18,0.5)',
                     fontSize: '0.75rem', cursor: pidInput.trim() ? 'pointer' : 'not-allowed',
                   }}
                 >
@@ -481,7 +481,7 @@ export default function EDRTab({ caseData }) {
           {/* Forensic Command Runner */}
           <div>
             <div className="section-label">Forensic Command (RTR / Live Response)</div>
-            <div style={{ fontSize: '0.68rem', color: '#787878', marginBottom: 6 }}>
+            <div style={{ fontSize: '0.68rem', color: 'rgba(26,22,18,0.5)', marginBottom: 6 }}>
               CrowdStrike: ls, cat, ps, netstat, reg query, get, filehash, memdump &nbsp;|&nbsp;
               SentinelOne: script execution &nbsp;|&nbsp; Carbon Black: Live Response commands
             </div>
@@ -494,7 +494,7 @@ export default function EDRTab({ caseData }) {
                 style={{
                   flex: 1, padding: '6px 10px', background: 'var(--surface)',
                   border: '1px solid rgba(26,22,18,0.08)', borderRadius: 6,
-                  color: '#BDD4E8', fontSize: '0.78rem', fontFamily: 'JetBrains Mono',
+                  color: 'rgba(26,22,18,0.6)', fontSize: '0.78rem', fontFamily: 'JetBrains Mono',
                 }}
               />
               <button
@@ -528,7 +528,7 @@ export default function EDRTab({ caseData }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {actionLog.map((l, i) => (
               <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: '0.72rem' }}>
-                <span style={{ color: '#787878', fontFamily: 'JetBrains Mono', flexShrink: 0, fontSize: '0.62rem' }}>
+                <span style={{ color: 'rgba(26,22,18,0.5)', fontFamily: 'JetBrains Mono', flexShrink: 0, fontSize: '0.62rem' }}>
                   {new Date(l.ts).toLocaleTimeString()}
                 </span>
                 <span style={{ color: l.type === 'success' ? '#22C55E' : l.type === 'error' ? '#EF4444' : '#EAB308' }}>
@@ -548,7 +548,7 @@ export default function EDRTab({ caseData }) {
             onClick={() => setShowHistory(v => !v)}
           >
             <div className="section-label" style={{ margin: 0 }}>EDR Actions on this Case ({history.length})</div>
-            {showHistory ? <ChevronDown size={13} style={{ color: '#787878' }} /> : <ChevronRight size={13} style={{ color: '#787878' }} />}
+            {showHistory ? <ChevronDown size={13} style={{ color: 'rgba(26,22,18,0.5)' }} /> : <ChevronRight size={13} style={{ color: 'rgba(26,22,18,0.5)' }} />}
           </div>
           {showHistory && (
             <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -559,9 +559,9 @@ export default function EDRTab({ caseData }) {
                   </span>
                   <PlatformBadge platform={a.platform} />
                   <span style={{ fontFamily: 'JetBrains Mono', color: 'rgba(26,22,18,0.7)' }}>{a.action}</span>
-                  <span style={{ color: '#BDD4E8', fontWeight: 500 }}>{a.hostname || a.endpoint_id}</span>
-                  {a.target && <span style={{ color: '#787878', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>{a.target}</span>}
-                  <span style={{ marginLeft: 'auto', color: '#787878', fontFamily: 'JetBrains Mono', fontSize: '0.62rem', flexShrink: 0 }}>
+                  <span style={{ color: 'rgba(26,22,18,0.6)', fontWeight: 500 }}>{a.hostname || a.endpoint_id}</span>
+                  {a.target && <span style={{ color: 'rgba(26,22,18,0.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>{a.target}</span>}
+                  <span style={{ marginLeft: 'auto', color: 'rgba(26,22,18,0.5)', fontFamily: 'JetBrains Mono', fontSize: '0.62rem', flexShrink: 0 }}>
                     {new Date(a.created_at).toLocaleString()}
                   </span>
                 </div>

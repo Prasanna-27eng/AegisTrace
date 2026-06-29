@@ -26,17 +26,17 @@ function PolicyCard({ policy, onEdit, onDelete, onToggle }) {
 
   return (
     <div style={{
-      background: 'rgba(8,8,8,0.7)', border: `1px solid ${policy.is_active ? 'rgba(78,122,142,0.15)' : 'rgba(148,163,184,0.06)'}`,
+      background: 'rgba(232,224,212,0.95)', border: `1px solid ${policy.is_active ? 'rgba(26,22,18,0.083)' : 'rgba(26,22,18,0.072)'}`,
       borderRadius: 12, padding: '16px 18px', backdropFilter: 'blur(8px)',
       opacity: policy.is_active ? 1 : 0.65, transition: 'all 0.2s',
     }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <div style={{ width: 7, height: 7, borderRadius: '50%', background: policy.is_active ? '#22C55E' : '#888888', boxShadow: policy.is_active ? '0 0 6px #22C55E' : 'none' }} />
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: policy.is_active ? '#22C55E' : 'rgba(26,22,18,0.35)', boxShadow: policy.is_active ? '0 0 6px #22C55E' : 'none' }} />
             <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{policy.name}</span>
             {policy.identity_type && (
-              <span style={{ fontSize: '0.62rem', ...MONO, background: 'rgba(74,126,200,0.1)', color: 'var(--accent)', padding: '1px 7px', borderRadius: 3 }}>
+              <span style={{ fontSize: '0.62rem', ...MONO, background: 'rgba(26,22,18,0.060)', color: 'var(--accent)', padding: '1px 7px', borderRadius: 3 }}>
                 {policy.identity_type}
               </span>
             )}
@@ -195,7 +195,7 @@ function ValidationPanel() {
   };
 
   return (
-    <div style={{ background: 'rgba(8,8,8,0.7)', border: '1px solid rgba(148,163,184,0.08)', borderRadius: 12, padding: 20 }}>
+    <div style={{ background: 'rgba(232,224,212,0.95)', border: '1px solid rgba(26,22,18,0.096)', borderRadius: 12, padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
         <Zap size={14} style={{ color: '#EAB308' }} />
         <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', ...MONO }}>Test Policy Validation</span>

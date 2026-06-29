@@ -8,14 +8,14 @@ import api from '../../api/client';
 import useStore from '../../store/useStore';
 
 const VERDICT_COLOR = {
-  Malicious:   '#4A7EC8',
+  Malicious:   '#2563EB',
   Suspicious:  '#EAB308',
   Clean:       '#22C55E',
-  Unknown:     '#888888',
+  Unknown:     'rgba(26,22,18,0.35)',
 };
 
 function ScoreBar({ score }) {
-  const color = score > 70 ? '#4A7EC8' : score > 40 ? '#EAB308' : '#22C55E';
+  const color = score > 70 ? '#2563EB' : score > 40 ? '#EAB308' : '#22C55E';
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       <div style={{ flex: 1, height: 6, background: 'rgba(26,22,18,0.07)', borderRadius: 3, overflow: 'hidden' }}>
@@ -116,7 +116,7 @@ export default function PcapAnalysis() {
             style={{
               border: `2px dashed ${dragging ? 'rgba(204,120,92,0.35)' : 'rgba(26,22,18,0.1)'}`,
               borderRadius: 10, padding: '28px 20px', textAlign: 'center', cursor: 'pointer',
-              background: dragging ? 'rgba(90,138,159,0.04)' : 'rgba(26,22,18,0.03)',
+              background: dragging ? 'rgba(26,22,18,0.022)' : 'rgba(26,22,18,0.03)',
               transition: 'all 0.2s',
             }}
           >
@@ -157,13 +157,13 @@ export default function PcapAnalysis() {
               {/* Verdict banner */}
               <div style={{
                 padding: '14px 18px', borderRadius: 8,
-                background: `${VERDICT_COLOR[result.ai_verdict] || '#888888'}11`,
-                border: `1px solid ${VERDICT_COLOR[result.ai_verdict] || '#888888'}33`,
+                background: `${VERDICT_COLOR[result.ai_verdict] || 'rgba(26,22,18,0.35)'}11`,
+                border: `1px solid ${VERDICT_COLOR[result.ai_verdict] || 'rgba(26,22,18,0.35)'}33`,
                 display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap',
               }}>
                 <div>
                   <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>Verdict</div>
-                  <div style={{ fontSize: '1.3rem', fontWeight: 700, color: VERDICT_COLOR[result.ai_verdict] || '#BDD4E8', fontFamily: 'JetBrains Mono' }}>
+                  <div style={{ fontSize: '1.3rem', fontWeight: 700, color: VERDICT_COLOR[result.ai_verdict] || 'rgba(26,22,18,0.6)', fontFamily: 'JetBrains Mono' }}>
                     {result.ai_verdict}
                   </div>
                 </div>
@@ -173,7 +173,7 @@ export default function PcapAnalysis() {
                 </div>
                 <div style={{ flex: 2, minWidth: 200 }}>
                   <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: 3 }}>AI Summary</div>
-                  <div style={{ fontSize: '0.78rem', color: '#7A9DB8', lineHeight: 1.5 }}>{result.ai_summary}</div>
+                  <div style={{ fontSize: '0.78rem', color: 'rgba(26,22,18,0.55)', lineHeight: 1.5 }}>{result.ai_summary}</div>
                 </div>
               </div>
 
@@ -189,7 +189,7 @@ export default function PcapAnalysis() {
                 ].map(s => (
                   <div key={s.label} className="at-card" style={{ padding: '10px 12px' }}>
                     <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 4 }}>{s.label}</div>
-                    <div style={{ fontSize: '1.3rem', fontWeight: 700, fontFamily: 'JetBrains Mono', color: s.color || '#BDD4E8' }}>{s.value}</div>
+                    <div style={{ fontSize: '1.3rem', fontWeight: 700, fontFamily: 'JetBrains Mono', color: s.color || 'rgba(26,22,18,0.6)' }}>{s.value}</div>
                   </div>
                 ))}
               </div>
@@ -205,7 +205,7 @@ export default function PcapAnalysis() {
                       </div>
                     ))}
                     {result.ai_likely_attack && result.ai_likely_attack !== 'None' && (
-                      <div style={{ marginTop: 4, fontSize: '0.75rem', padding: '5px 10px', background: 'rgba(90,138,159,0.06)', borderRadius: 4, color: '#EF4444' }}>
+                      <div style={{ marginTop: 4, fontSize: '0.75rem', padding: '5px 10px', background: 'rgba(26,22,18,0.033)', borderRadius: 4, color: '#EF4444' }}>
                         Likely attack: <strong>{result.ai_likely_attack}</strong>
                       </div>
                     )}
@@ -220,8 +220,8 @@ export default function PcapAnalysis() {
                     {result.suspicious_flows.map((f, i) => (
                       <div key={i} style={{
                         padding: '8px 10px', borderRadius: 5, fontSize: '0.75rem',
-                        background: f.severity === 'high' ? 'rgba(90,138,159,0.07)' : 'rgba(234,179,8,0.06)',
-                        border: `1px solid ${f.severity === 'high' ? 'rgba(90,138,159,0.2)' : 'rgba(234,179,8,0.2)'}`,
+                        background: f.severity === 'high' ? 'rgba(26,22,18,0.039)' : 'rgba(234,179,8,0.06)',
+                        border: `1px solid ${f.severity === 'high' ? 'rgba(26,22,18,0.110)' : 'rgba(234,179,8,0.2)'}`,
                       }}>
                         <div style={{ fontWeight: 600, color: f.severity === 'high' ? '#EF4444' : '#EAB308', marginBottom: 3 }}>
                           [{f.type.toUpperCase()}] {f.description}
@@ -255,7 +255,7 @@ export default function PcapAnalysis() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {result.top_talkers.slice(0, 10).map((t, i) => (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.72rem' }}>
-                        <span style={{ fontFamily: 'JetBrains Mono', color: t.is_private ? '#787878' : '#EF4444', minWidth: 120 }}>{t.ip}</span>
+                        <span style={{ fontFamily: 'JetBrains Mono', color: t.is_private ? 'rgba(26,22,18,0.5)' : '#EF4444', minWidth: 120 }}>{t.ip}</span>
                         <div style={{ flex: 1, height: 4, background: 'rgba(26,22,18,0.07)', borderRadius: 2, overflow: 'hidden' }}>
                           <div style={{ width: `${Math.min((t.bytes / (result.top_talkers[0]?.bytes || 1)) * 100, 100)}%`, height: '100%', background: t.is_private ? 'rgba(26,22,18,0.7)' : '#EF4444', borderRadius: 2 }} />
                         </div>
@@ -334,8 +334,8 @@ export default function PcapAnalysis() {
                     <span style={{ fontSize: '0.72rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 150 }}>{h.filename}</span>
                     <span style={{
                       fontSize: '0.62rem', fontFamily: 'JetBrains Mono', padding: '1px 5px', borderRadius: 3,
-                      background: `${VERDICT_COLOR[h.ai_verdict] || '#888888'}22`,
-                      color: VERDICT_COLOR[h.ai_verdict] || '#787878',
+                      background: `${VERDICT_COLOR[h.ai_verdict] || 'rgba(26,22,18,0.35)'}22`,
+                      color: VERDICT_COLOR[h.ai_verdict] || 'rgba(26,22,18,0.5)',
                     }}>{h.ai_verdict}</span>
                   </div>
                   <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono', marginTop: 2 }}>

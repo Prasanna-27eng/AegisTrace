@@ -12,7 +12,7 @@ import React from 'react';
  */
 export default function AppLogo({ variant = 'icon', size = 28, glow = true, style = {} }) {
   const glowFilter = glow
-    ? 'drop-shadow(0 0 6px rgba(74,126,200,0.6)) drop-shadow(0 0 14px rgba(204,120,92,0.25))'
+    ? 'drop-shadow(0 0 6px rgba(26,22,18,0.360)) drop-shadow(0 0 14px rgba(204,120,92,0.25))'
     : 'none';
 
   /* Icon — orbital knot on black bg, blend mode removes the black */

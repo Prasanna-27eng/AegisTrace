@@ -31,7 +31,7 @@ export default function AIAnalysisTab({ caseData, updateCase, caseId, reload }) 
 
   const severityColor = (score) => {
   if (!caseData) return null;
-    if (!score) return '#888888';
+    if (!score) return 'rgba(26,22,18,0.35)';
     if (score >= 80) return '#EF4444';
     if (score >= 60) return '#EAB308';
     if (score >= 40) return 'rgba(26,22,18,0.7)';
@@ -45,7 +45,7 @@ export default function AIAnalysisTab({ caseData, updateCase, caseId, reload }) 
           <Brain size={18} style={{ color: 'rgba(26,22,18,0.7)' }} />
           <div>
             <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>AI-Powered Analysis</div>
-            <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 1 }}>Hermes-3 · NVIDIA NIM · Groq fallback</div>
+            <div style={{ fontSize: '0.72rem', color: 'rgba(26,22,18,0.5)', marginTop: 1 }}>Hermes-3 · NVIDIA NIM · Groq fallback</div>
           </div>
         </div>
         <button className="btn-accent" onClick={generate} disabled={loading} style={{ fontSize: '0.8rem' }}>
@@ -54,7 +54,7 @@ export default function AIAnalysisTab({ caseData, updateCase, caseId, reload }) 
       </div>
 
       {!caseData?.ai_executive_summary && !loading && (
-        <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#787878' }}>
+        <div className="at-card" style={{ padding: 40, textAlign: 'center', color: 'rgba(26,22,18,0.5)' }}>
           <Brain size={32} style={{ margin: '0 auto 12px', color: 'rgba(143,175,192,0.3)' }} />
           <div>Click "Generate Analysis" to have AI analyse the case evidence.</div>
           <div style={{ fontSize: '0.78rem', marginTop: 6 }}>Requires: description, findings, or IOCs to be present.</div>
@@ -99,7 +99,7 @@ export default function AIAnalysisTab({ caseData, updateCase, caseId, reload }) 
                 catch { chain = caseData.ai_severity_reasoning.split('\n').filter(Boolean); }
                 return (
                   <div style={{ marginBottom: 14 }}>
-                    <div style={{ fontSize: '0.62rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6, ...MONO }}>Reasoning Steps</div>
+                    <div style={{ fontSize: '0.62rem', color: 'rgba(26,22,18,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6, ...MONO }}>Reasoning Steps</div>
                     {chain.map((step, i) => (
                       <div key={i} style={{ display: 'flex', gap: 8, padding: '5px 0', borderBottom: '1px solid rgba(26,22,18,0.04)', fontSize: '0.78rem', color: 'rgba(240,240,248,0.75)', lineHeight: 1.5 }}>
                         <span style={{ color: 'rgba(26,22,18,0.7)', ...MONO, flexShrink: 0, minWidth: 18 }}>{i + 1}.</span>
@@ -112,7 +112,7 @@ export default function AIAnalysisTab({ caseData, updateCase, caseId, reload }) 
 
               {/* Evidence used */}
               <div style={{ marginBottom: 14 }}>
-                <div style={{ fontSize: '0.62rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6, ...MONO, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <div style={{ fontSize: '0.62rem', color: 'rgba(26,22,18,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6, ...MONO, display: 'flex', alignItems: 'center', gap: 5 }}>
                   <Database size={10} /> Evidence That Drove This Analysis
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
@@ -140,7 +140,7 @@ export default function AIAnalysisTab({ caseData, updateCase, caseId, reload }) 
               </div>
 
               {/* Model provenance */}
-              <div style={{ marginTop: 10, display: 'flex', gap: 16, fontSize: '0.65rem', color: '#787878', ...MONO }}>
+              <div style={{ marginTop: 10, display: 'flex', gap: 16, fontSize: '0.65rem', color: 'rgba(26,22,18,0.5)', ...MONO }}>
                 <span>Model: <span style={{ color: 'rgba(26,22,18,0.7)' }}>Hermes-3 70B</span></span>
                 <span>Provider: <span style={{ color: 'rgba(26,22,18,0.7)' }}>NVIDIA NIM</span></span>
                 <span>Confidence: <span style={{ color: caseData.ai_severity_score >= 80 ? '#22C55E' : caseData.ai_severity_score >= 50 ? '#EAB308' : '#EF4444' }}>{caseData.ai_severity_score || 0}%</span></span>
@@ -178,7 +178,7 @@ export default function AIAnalysisTab({ caseData, updateCase, caseId, reload }) 
               <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                 <div style={{ fontSize: '3rem', fontWeight: 700, color: severityColor(caseData.ai_severity_score) }}>{caseData.ai_severity_score}</div>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: '#787878' }}>out of 100</div>
+                  <div style={{ fontSize: '0.75rem', color: 'rgba(26,22,18,0.5)' }}>out of 100</div>
                   <div style={{ height: 6, width: 200, background: 'rgba(26,22,18,0.08)', borderRadius: 3, marginTop: 6, overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${caseData.ai_severity_score}%`, background: severityColor(caseData.ai_severity_score), borderRadius: 3, transition: 'width 0.6s ease' }} />
                   </div>
@@ -199,7 +199,7 @@ export default function AIAnalysisTab({ caseData, updateCase, caseId, reload }) 
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px', background: 'var(--surface)', borderRadius: 6 }}>
                     <span style={{ fontSize: '0.75rem', color: 'rgba(26,22,18,0.7)', fontFamily: 'JetBrains Mono', minWidth: 80 }}>{m.id}</span>
                     <span style={{ fontSize: '0.82rem', fontWeight: 500, flex: 1 }}>{m.name}</span>
-                    <span style={{ fontSize: '0.7rem', color: '#787878' }}>{m.tactic}</span>
+                    <span style={{ fontSize: '0.7rem', color: 'rgba(26,22,18,0.5)' }}>{m.tactic}</span>
                   </div>
                 ))}
               </div>

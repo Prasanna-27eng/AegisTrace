@@ -84,7 +84,7 @@ export default function ReportTab({ caseId, caseData }) {
 
   const reports = [
     {
-      icon: <File size={28} style={{ color: '#4A7EC8', marginBottom: 12 }} />,
+      icon: <File size={28} style={{ color: '#2563EB', marginBottom: 12 }} />,
       title: 'Standard PDF Report',
       desc: 'Full case report with executive summary, findings, IOC table, MITRE mapping, timeline, and commands.',
       url: `/api/reports/${caseId}/pdf`,
@@ -127,7 +127,7 @@ export default function ReportTab({ caseId, caseData }) {
               {r.title}
               {r.badge && <span style={{ marginLeft: 8, fontSize: '0.62rem', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', color: '#22C55E', padding: '1px 6px', borderRadius: 3, fontFamily: 'JetBrains Mono', verticalAlign: 'middle' }}>{r.badge}</span>}
             </div>
-            <div style={{ fontSize: '0.78rem', color: '#787878', marginBottom: 16, lineHeight: 1.65 }}>
+            <div style={{ fontSize: '0.78rem', color: 'rgba(26,22,18,0.5)', marginBottom: 16, lineHeight: 1.65 }}>
               {r.desc}
               {r.warn && <div style={{ color: '#EAB308', marginTop: 6 }}>{r.warn}</div>}
             </div>
@@ -155,7 +155,7 @@ export default function ReportTab({ caseId, caseData }) {
                 DPDPA 2023 Compliance Report
                 <span style={{ fontSize: '0.62rem', background: 'rgba(37,99,235,0.12)', border: '1px solid rgba(37,99,235,0.3)', color: '#60A5FA', padding: '1px 6px', borderRadius: 3, fontFamily: 'JetBrains Mono', verticalAlign: 'middle' }}>IN</span>
               </div>
-              <div style={{ fontSize: '0.78rem', color: '#787878', marginBottom: 16, lineHeight: 1.65 }}>
+              <div style={{ fontSize: '0.78rem', color: 'rgba(26,22,18,0.5)', marginBottom: 16, lineHeight: 1.65 }}>
                 Digital Personal Data Protection Act 2023. Maps this investigation to DPDPA obligations including breach notification (Section 8(6)), data retention (Section 8(5)), and DPIA requirements (Section 10). Required for organisations processing personal data of Indian residents.
               </div>
               <button
@@ -182,14 +182,14 @@ export default function ReportTab({ caseId, caseData }) {
               </div>
             </div>
             <div style={{ padding: '16px 20px' }}>
-              <p style={{ fontSize: 14, color: '#7A9DB8', lineHeight: 1.7, marginBottom: 20 }}>
+              <p style={{ fontSize: 14, color: 'rgba(26,22,18,0.55)', lineHeight: 1.7, marginBottom: 20 }}>
                 {dpdpaReport.executive_summary}
               </p>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(26,22,18,0.08)' }}>
                     {['Section', 'Title', 'Status', 'Evidence'].map(h => (
-                      <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#787878', textTransform: 'uppercase' }}>{h}</th>
+                      <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: 'rgba(26,22,18,0.5)', textTransform: 'uppercase' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -197,7 +197,7 @@ export default function ReportTab({ caseId, caseData }) {
                   {dpdpaReport.dpdpa_obligations.map((o, i) => (
                     <tr key={i} style={{ borderBottom: '1px solid rgba(26,22,18,0.04)' }}>
                       <td style={{ padding: '10px 12px', color: '#60A5FA', fontFamily: 'JetBrains Mono, monospace', fontSize: 11 }}>{o.section}</td>
-                      <td style={{ padding: '10px 12px', color: '#BDD4E8' }}>{o.title}</td>
+                      <td style={{ padding: '10px 12px', color: 'rgba(26,22,18,0.6)' }}>{o.title}</td>
                       <td style={{ padding: '10px 12px' }}>
                         <span style={{
                           fontFamily: 'JetBrains Mono, monospace', fontSize: 10, padding: '2px 8px',
@@ -208,7 +208,7 @@ export default function ReportTab({ caseId, caseData }) {
                           {o.status}
                         </span>
                       </td>
-                      <td style={{ padding: '10px 12px', color: '#787878', fontSize: 12 }}>{o.evidence}</td>
+                      <td style={{ padding: '10px 12px', color: 'rgba(26,22,18,0.5)', fontSize: 12 }}>{o.evidence}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -221,7 +221,7 @@ export default function ReportTab({ caseId, caseData }) {
       {/* ── Regulatory Evidence Package ── */}
       <div style={{ marginTop: 24, marginBottom: 28, border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
         {/* Header */}
-        <div style={{ padding: '16px 20px', background: 'rgba(74,126,200,0.06)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ padding: '16px 20px', background: 'rgba(26,22,18,0.036)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
               Regulatory Evidence Package
@@ -240,7 +240,7 @@ export default function ReportTab({ caseId, caseData }) {
               <option value="dpdpa">DPDPA</option>
             </select>
             <button onClick={generateRegPackage} disabled={regLoading}
-              style={{ background: '#4A7EC8', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', fontFamily: 'var(--font-ui)', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: regLoading ? 0.6 : 1 }}>
+              style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', fontFamily: 'var(--font-ui)', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: regLoading ? 0.6 : 1 }}>
               {regLoading ? 'Generating...' : 'Generate Package'}
             </button>
             {regPackage && (
@@ -370,7 +370,7 @@ export default function ReportTab({ caseId, caseData }) {
                   {s.done
                     ? <CheckCircle size={13} style={{ color: '#22C55E', flexShrink: 0 }} />
                     : <XCircle size={13} style={{ color: '#EF4444', opacity: 0.5, flexShrink: 0 }} />}
-                  <span style={{ flex: 1, fontSize: '0.78rem', color: s.done ? '#7A9DB8' : '#787878' }}>{s.label}</span>
+                  <span style={{ flex: 1, fontSize: '0.78rem', color: s.done ? 'rgba(26,22,18,0.55)' : 'rgba(26,22,18,0.5)' }}>{s.label}</span>
                   {!s.done && <span style={{ fontSize: '0.65rem', color: '#404040', ...MONO }}>{s.hint}</span>}
                 </div>
               ))}

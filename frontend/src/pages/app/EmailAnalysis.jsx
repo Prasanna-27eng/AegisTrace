@@ -28,7 +28,7 @@ export default function EmailAnalysis() {
     setLoading(false);
   };
 
-  const authColor = (v) => v === 'pass' ? '#22C55E' : v === 'fail' ? '#EF4444' : '#787878';
+  const authColor = (v) => v === 'pass' ? '#22C55E' : v === 'fail' ? '#EF4444' : 'rgba(26,22,18,0.5)';
 
   const aiData = (() => { try { return JSON.parse(result?.ai_analysis || '{}'); } catch { return {}; } })();
 
@@ -75,9 +75,9 @@ export default function EmailAnalysis() {
               <>
                 {/* AI Verdict */}
                 {aiData.verdict && (
-                  <div className="at-card" style={{ padding: 14, borderLeft: `2px solid ${aiData.verdict === 'Phishing' || aiData.verdict === 'BEC' ? '#4A7EC8' : aiData.verdict === 'Legitimate' ? '#22C55E' : '#EAB308'}` }}>
+                  <div className="at-card" style={{ padding: 14, borderLeft: `2px solid ${aiData.verdict === 'Phishing' || aiData.verdict === 'BEC' ? '#2563EB' : aiData.verdict === 'Legitimate' ? '#22C55E' : '#EAB308'}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                      <div style={{ fontWeight: 700, fontSize: '1.1rem', color: aiData.verdict === 'Phishing' || aiData.verdict === 'BEC' ? '#4A7EC8' : aiData.verdict === 'Legitimate' ? '#22C55E' : '#EAB308' }}>{aiData.verdict}</div>
+                      <div style={{ fontWeight: 700, fontSize: '1.1rem', color: aiData.verdict === 'Phishing' || aiData.verdict === 'BEC' ? '#2563EB' : aiData.verdict === 'Legitimate' ? '#22C55E' : '#EAB308' }}>{aiData.verdict}</div>
                       <span className="ai-badge">AI</span>
                       {aiData.confidence && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{aiData.confidence}% confidence</span>}
                     </div>

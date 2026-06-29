@@ -24,7 +24,7 @@ const DOTS = [
   { r: 650,  angle: 72 },
 ];
 
-export default function MagicRings({ color = '#4A7EC8', accent = 'rgba(26,22,18,0.7)', className = '' }) {
+export default function MagicRings({ color = '#2563EB', accent = 'rgba(26,22,18,0.7)', className = '' }) {
   const id = useMemo(() => `mr-${Math.random().toString(36).slice(2, 7)}`, []);
 
   return (

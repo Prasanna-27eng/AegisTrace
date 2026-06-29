@@ -148,7 +148,7 @@ function PipelineBuilder({
   // Returns the circle / glow colour for each rail node.
   const circleColor = (slot) => {
     if (slot === 'trigger') {
-      return animStep === 'trigger_fail' ? '#EF4444' : '#4DA3FF';
+      return animStep === 'trigger_fail' ? '#EF4444' : '#2563EB';
     }
     const a = form.actions[slot];
     if (!a) return '#9C7CFF';
@@ -168,7 +168,7 @@ function PipelineBuilder({
 
   const cardBorderColor = (i, a) => {
     if (overIdx === i && dragIdx !== null && dragIdx !== i)
-      return 'rgba(77,163,255,0.5)';
+      return 'rgba(26,22,18,0.300)';
     if (animStep === i) {
       if (takenTypes.includes(a.type))   return '#22C55E';
       if (pendingTypes.includes(a.type)) return '#EAB308';
@@ -235,8 +235,8 @@ function PipelineBuilder({
           flex: 1,
           background: animStep === 'trigger_fail'
             ? 'rgba(239,68,68,0.04)'
-            : 'rgba(77,163,255,0.025)',
-          border: `1px solid ${animStep === 'trigger_fail' ? '#EF4444' : 'rgba(77,163,255,0.25)'}`,
+            : 'rgba(26,22,18,0.015)',
+          border: `1px solid ${animStep === 'trigger_fail' ? '#EF4444' : 'rgba(26,22,18,0.150)'}`,
           borderRadius: 8,
           padding: '10px 14px',
           transition: 'all 0.35s ease',
@@ -245,7 +245,7 @@ function PipelineBuilder({
           {/* trigger header */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
             <span style={{
-              fontSize: '0.58rem', color: '#4DA3FF', ...MONO,
+              fontSize: '0.58rem', color: '#2563EB', ...MONO,
               fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', flexShrink: 0,
             }}>
               Trigger
@@ -262,14 +262,14 @@ function PipelineBuilder({
 
           {/* conditions */}
           <div style={{
-            fontSize: '0.58rem', color: '#4DA3FF', ...MONO,
+            fontSize: '0.58rem', color: '#2563EB', ...MONO,
             textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6, opacity: 0.65,
           }}>
             Conditions
           </div>
           {form.conditions.map((c, i) => (
             <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 5, alignItems: 'center' }}>
-              <span style={{ fontSize: '0.6rem', color: '#3D3D3D', ...MONO, width: 10, flexShrink: 0 }}>if</span>
+              <span style={{ fontSize: '0.6rem', color: 'rgba(26,22,18,0.5)', ...MONO, width: 10, flexShrink: 0 }}>if</span>
               <input
                 className="at-input"
                 style={{ flex: 1, ...MONO, fontSize: '0.74rem' }}
@@ -328,7 +328,7 @@ function PipelineBuilder({
             <div style={{
               flex: 1,
               background: overIdx === i && dragIdx !== null && dragIdx !== i
-                ? 'rgba(77,163,255,0.04)'
+                ? 'rgba(26,22,18,0.024)'
                 : 'rgba(26,22,18,0.012)',
               border: `1px solid ${cardBorderColor(i, a)}`,
               borderRadius: 8,
@@ -624,7 +624,7 @@ function PlaybookForm({ initial, onSave, onClose }) {
   );
 
   return (
-    <div className="at-card" style={{ padding: 20, borderColor: 'rgba(77,163,255,0.2)', marginBottom: 16 }}>
+    <div className="at-card" style={{ padding: 20, borderColor: 'rgba(26,22,18,0.120)', marginBottom: 16 }}>
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
@@ -678,7 +678,7 @@ function PlaybookForm({ initial, onSave, onClose }) {
             </div>
             <div style={{ gridColumn: '1/-1', display: 'flex', alignItems: 'center', gap: 8 }}>
               <input type="checkbox" id="pb-requires-approval" checked={form.requires_approval} onChange={e => setForm(p => ({ ...p, requires_approval: e.target.checked }))} />
-              <label htmlFor="pb-requires-approval" style={{ fontSize: '0.78rem', color: '#7A9DB8', cursor: 'pointer' }}>
+              <label htmlFor="pb-requires-approval" style={{ fontSize: '0.78rem', color: 'rgba(26,22,18,0.55)', cursor: 'pointer' }}>
                 Global approval gate — when off, no actions in this playbook require approval (overrides per-action settings)
               </label>
             </div>
@@ -710,7 +710,7 @@ function PlaybookForm({ initial, onSave, onClose }) {
                   <select className="at-select" value={a.type} onChange={e => updateAction(i, 'type', e.target.value)} style={{ flex: 1 }}>
                     {ACTION_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                   </select>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: '#7A9DB8', whiteSpace: 'nowrap', cursor: 'pointer' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: 'rgba(26,22,18,0.55)', whiteSpace: 'nowrap', cursor: 'pointer' }}>
                     <input type="checkbox" checked={a.requires_approval} onChange={e => updateAction(i, 'requires_approval', e.target.checked)} />
                     Requires approval
                   </label>
@@ -749,7 +749,7 @@ function PlaybookForm({ initial, onSave, onClose }) {
               </select>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: 3 }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: '0.74rem', color: '#7A9DB8', cursor: 'pointer' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: '0.74rem', color: 'rgba(26,22,18,0.55)', cursor: 'pointer' }}>
                 <input type="checkbox" checked={form.requires_approval} onChange={e => setForm(p => ({ ...p, requires_approval: e.target.checked }))} />
                 Global approval gate
               </label>
@@ -785,7 +785,7 @@ function RunHistory({ playbookId }) {
       .catch(() => { setRuns([]); setLoading(false); });
   }, [playbookId]);
 
-  if (loading) return <div style={{ padding: 14, textAlign: 'center' }}><Loader2 size={14} className="spinner" style={{ color: '#4DA3FF' }} /></div>;
+  if (loading) return <div style={{ padding: 14, textAlign: 'center' }}><Loader2 size={14} className="spinner" style={{ color: '#2563EB' }} /></div>;
   if (!runs.length) return <div style={{ padding: '10px 14px', fontSize: '0.76rem', color: 'var(--text-muted)' }}>No runs yet.</div>;
 
   return (
@@ -840,7 +840,7 @@ function PlaybookCard({ pb, onEdit, onDelete, onToggle, onTest }) {
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-              <div style={{ width: 7, height: 7, borderRadius: '50%', background: pb.is_active ? '#22C55E' : '#888888', boxShadow: pb.is_active ? '0 0 6px #22C55E' : 'none' }} />
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: pb.is_active ? '#22C55E' : 'rgba(26,22,18,0.35)', boxShadow: pb.is_active ? '0 0 6px #22C55E' : 'none' }} />
               <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{pb.name}</span>
               {pb.requires_approval && (
                 <span style={{ fontSize: '0.6rem', ...MONO, background: 'rgba(245,158,11,0.08)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.2)', padding: '1px 6px', borderRadius: 3 }}>
@@ -861,11 +861,11 @@ function PlaybookCard({ pb, onEdit, onDelete, onToggle, onTest }) {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
-          <span style={{ fontSize: '0.66rem', ...MONO, background: 'rgba(77,163,255,0.08)', color: '#4DA3FF', border: '1px solid rgba(77,163,255,0.2)', padding: '2px 7px', borderRadius: 3 }}>
+          <span style={{ fontSize: '0.66rem', ...MONO, background: 'rgba(26,22,18,0.048)', color: '#2563EB', border: '1px solid rgba(26,22,18,0.120)', padding: '2px 7px', borderRadius: 3 }}>
             IF {TRIGGER_TYPES.find(t => t.value === pb.trigger_event_type)?.label || pb.trigger_event_type}
           </span>
           {Object.entries(conditions).map(([k, v]) => (
-            <span key={k} style={{ fontSize: '0.66rem', ...MONO, background: 'rgba(26,22,18,0.05)', color: '#7A9DB8', border: '1px solid rgba(26,22,18,0.09)', padding: '2px 7px', borderRadius: 3 }}>
+            <span key={k} style={{ fontSize: '0.66rem', ...MONO, background: 'rgba(26,22,18,0.05)', color: 'rgba(26,22,18,0.55)', border: '1px solid rgba(26,22,18,0.09)', padding: '2px 7px', borderRadius: 3 }}>
               {k} = {String(v)}
             </span>
           ))}

@@ -69,11 +69,11 @@ const TOOL_MAP = {};
 CATEGORIES.forEach(cat => cat.tools.forEach(t => { TOOL_MAP[t.key] = { ...t, category: cat }; }));
 
 // ── Severity colour ───────────────────────────────────────────────────────────
-const SEV_COLOR = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'rgba(26,22,18,0.7)', info:'#787878' };
+const SEV_COLOR = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'rgba(26,22,18,0.7)', info:'rgba(26,22,18,0.5)' };
 const sevStyle = (s) => ({
-  color: SEV_COLOR[s] || '#787878',
-  background: `${SEV_COLOR[s] || '#888888'}18`,
-  border: `1px solid ${SEV_COLOR[s] || '#888888'}40`,
+  color: SEV_COLOR[s] || 'rgba(26,22,18,0.5)',
+  background: `${SEV_COLOR[s] || 'rgba(26,22,18,0.35)'}18`,
+  border: `1px solid ${SEV_COLOR[s] || 'rgba(26,22,18,0.35)'}40`,
 });
 
 function SevBadge({ s }) {
@@ -175,7 +175,7 @@ function ResultRenderer({ toolKey, result }) {
             <KVPairs data={result} skip={['client_profiles','suspicious_clients','top_probed_ssids','summary']} />
             {result.suspicious_clients?.length > 0 && (
               <div style={{margin:'14px 16px 0'}}>
-                <div style={{fontSize:'0.68rem',color:'#4A7EC8',fontWeight:700,marginBottom:6,fontFamily:'JetBrains Mono',textTransform:'uppercase',letterSpacing:'0.06em'}}>Suspicious Clients</div>
+                <div style={{fontSize:'0.68rem',color:'#2563EB',fontWeight:700,marginBottom:6,fontFamily:'JetBrains Mono',textTransform:'uppercase',letterSpacing:'0.06em'}}>Suspicious Clients</div>
                 <DataTable rows={result.suspicious_clients} />
               </div>
             )}
@@ -193,7 +193,7 @@ function ResultRenderer({ toolKey, result }) {
             <KVPairs data={result} skip={['evil_twin_suspects','summary']} />
             {result.evil_twin_suspects?.length > 0 && (
               <div style={{margin:'14px 16px 0'}}>
-                <div style={{fontSize:'0.68rem',color:'#4A7EC8',fontWeight:700,marginBottom:6,fontFamily:'JetBrains Mono',textTransform:'uppercase',letterSpacing:'0.06em'}}>Evil Twin Suspects</div>
+                <div style={{fontSize:'0.68rem',color:'#2563EB',fontWeight:700,marginBottom:6,fontFamily:'JetBrains Mono',textTransform:'uppercase',letterSpacing:'0.06em'}}>Evil Twin Suspects</div>
                 <DataTable rows={result.evil_twin_suspects} cols={['ssid','bssid_count','channels','verdict','reason']} />
               </div>
             )}

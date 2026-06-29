@@ -45,7 +45,7 @@ function highlight(text, query) {
   return (
     <>
       {text.slice(0, idx)}
-      <mark style={{ background: 'rgba(74,126,200,0.35)', color: 'var(--text-primary)', borderRadius: 2 }}>
+      <mark style={{ background: 'rgba(26,22,18,0.210)', color: 'var(--text-primary)', borderRadius: 2 }}>
         {text.slice(idx, idx + query.length)}
       </mark>
       {text.slice(idx + query.length)}
@@ -54,7 +54,7 @@ function highlight(text, query) {
 }
 
 const KBD = ({ children }) => (
-  <kbd style={{ fontSize: '0.58rem', color: '#4A6A8A', background: 'rgba(74,126,200,0.07)', border: '1px solid rgba(74,126,200,0.14)', borderRadius: 3, padding: '1px 5px', fontFamily: 'JetBrains Mono', letterSpacing: '0.04em', flexShrink: 0 }}>
+  <kbd style={{ fontSize: '0.58rem', color: '#4A6A8A', background: 'rgba(26,22,18,0.042)', border: '1px solid rgba(26,22,18,0.084)', borderRadius: 3, padding: '1px 5px', fontFamily: 'JetBrains Mono', letterSpacing: '0.04em', flexShrink: 0 }}>
     {children}
   </kbd>
 );
@@ -158,7 +158,7 @@ export default function CommandPalette({ open, onClose, recentCases = [], onOpen
       <div
         onClick={e => e.stopPropagation()}
         className="dropdown-pop"
-        style={{ width: '100%', maxWidth: 580, background: 'var(--surface)', border: '1px solid rgba(26,22,18,0.14)', borderRadius: 12, boxShadow: '0 24px 64px rgba(0,0,0,0.8)', overflow: 'hidden' }}
+        style={{ width: '100%', maxWidth: 580, background: 'var(--surface)', border: '1px solid rgba(26,22,18,0.14)', borderRadius: 12, boxShadow: '0 24px 64px rgba(26,22,18,0.78)', overflow: 'hidden' }}
       >
         {/* Search input */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderBottom: '1px solid rgba(26,22,18,0.1)' }}>
@@ -209,7 +209,7 @@ export default function CommandPalette({ open, onClose, recentCases = [], onOpen
                     >
                       <item.Icon size={15} style={{ color: isSelected ? 'rgba(26,22,18,0.7)' : '#4A6A8A', flexShrink: 0 }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: '0.84rem', color: isSelected ? '#BDD4E8' : '#7A9DB8' }}>{highlight(item.label, q)}</div>
+                        <div style={{ fontSize: '0.84rem', color: isSelected ? 'rgba(26,22,18,0.6)' : 'rgba(26,22,18,0.55)' }}>{highlight(item.label, q)}</div>
                         {item.sub && (
                           <div style={{ fontSize: '0.68rem', color: '#4A6A8A', fontFamily: 'JetBrains Mono', marginTop: 1 }}>{item.sub}</div>
                         )}
@@ -234,7 +234,7 @@ export default function CommandPalette({ open, onClose, recentCases = [], onOpen
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '8px 16px', borderTop: '1px solid rgba(74,126,200,0.1)', display: 'flex', gap: 16, fontSize: '0.62rem', color: '#4A6A8A', fontFamily: 'JetBrains Mono' }}>
+        <div style={{ padding: '8px 16px', borderTop: '1px solid rgba(26,22,18,0.060)', display: 'flex', gap: 16, fontSize: '0.62rem', color: '#4A6A8A', fontFamily: 'JetBrains Mono' }}>
           <span><KBD>↑↓</KBD> navigate</span>
           <span><KBD>↵</KBD> open</span>
           <span><KBD>esc</KBD> close</span>

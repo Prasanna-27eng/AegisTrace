@@ -50,19 +50,19 @@ export default function TerminalTab({ caseData, caseId, updateCase }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 10 }}>
             <div>
-              <label style={{ fontSize: '0.7rem', color: '#787878', display: 'block', marginBottom: 4 }}>Tool</label>
+              <label style={{ fontSize: '0.7rem', color: 'rgba(26,22,18,0.5)', display: 'block', marginBottom: 4 }}>Tool</label>
               <select className="at-select" value={tool} onChange={e => setTool(e.target.value)} style={{ width: '100%', fontSize: '0.8rem' }}>
                 {TOOLS.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
             <div>
-              <label style={{ fontSize: '0.7rem', color: '#787878', display: 'block', marginBottom: 4 }}>Command (optional)</label>
+              <label style={{ fontSize: '0.7rem', color: 'rgba(26,22,18,0.5)', display: 'block', marginBottom: 4 }}>Command (optional)</label>
               <input className="at-input" placeholder="e.g. nmap -sV 185.220.101.34" value={command} onChange={e => setCommand(e.target.value)} style={{ fontSize: '0.8rem', fontFamily: 'JetBrains Mono' }} />
             </div>
           </div>
 
           <div>
-            <label style={{ fontSize: '0.7rem', color: '#787878', display: 'block', marginBottom: 4 }}>Paste Tool Output</label>
+            <label style={{ fontSize: '0.7rem', color: 'rgba(26,22,18,0.5)', display: 'block', marginBottom: 4 }}>Paste Tool Output</label>
             <textarea className="at-textarea" rows={14} value={output} onChange={e => setOutput(e.target.value)} placeholder="Paste raw terminal output here…&#10;&#10;$ nmap -sV 185.220.101.34&#10;Starting Nmap 7.94&#10;..." style={{ fontFamily: 'JetBrains Mono', fontSize: '0.77rem' }} />
           </div>
 
@@ -81,18 +81,18 @@ export default function TerminalTab({ caseData, caseId, updateCase }) {
                   <span className="ai-badge">AI</span>
                 </div>
 
-                {result.summary && <p style={{ fontSize: '0.82rem', color: '#909090', lineHeight: 1.65, marginBottom: 12 }}>{result.summary}</p>}
+                {result.summary && <p style={{ fontSize: '0.82rem', color: 'rgba(26,22,18,0.5)', lineHeight: 1.65, marginBottom: 12 }}>{result.summary}</p>}
 
                 {result.key_findings?.length > 0 && (
                   <div style={{ marginBottom: 10 }}>
-                    <div style={{ fontSize: '0.68rem', color: '#787878', fontFamily: 'JetBrains Mono', textTransform: 'uppercase', marginBottom: 6 }}>Key Findings</div>
-                    {result.key_findings.map((f, i) => <div key={i} style={{ fontSize: '0.8rem', color: '#BDD4E8', padding: '3px 0', display: 'flex', gap: 8 }}><span style={{ color: '#4A7EC8' }}>→</span>{f}</div>)}
+                    <div style={{ fontSize: '0.68rem', color: 'rgba(26,22,18,0.5)', fontFamily: 'JetBrains Mono', textTransform: 'uppercase', marginBottom: 6 }}>Key Findings</div>
+                    {result.key_findings.map((f, i) => <div key={i} style={{ fontSize: '0.8rem', color: 'rgba(26,22,18,0.6)', padding: '3px 0', display: 'flex', gap: 8 }}><span style={{ color: '#2563EB' }}>→</span>{f}</div>)}
                   </div>
                 )}
 
                 {result.iocs_found?.length > 0 && (
                   <div style={{ marginBottom: 10 }}>
-                    <div style={{ fontSize: '0.68rem', color: '#787878', fontFamily: 'JetBrains Mono', textTransform: 'uppercase', marginBottom: 6 }}>IOCs Found</div>
+                    <div style={{ fontSize: '0.68rem', color: 'rgba(26,22,18,0.5)', fontFamily: 'JetBrains Mono', textTransform: 'uppercase', marginBottom: 6 }}>IOCs Found</div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                       {result.iocs_found.map((ioc, i) => <span key={i} className="ioc-pill">{ioc.ioc}</span>)}
                     </div>
@@ -101,7 +101,7 @@ export default function TerminalTab({ caseData, caseId, updateCase }) {
 
                 {result.mitre_techniques?.length > 0 && (
                   <div style={{ marginBottom: 10 }}>
-                    <div style={{ fontSize: '0.68rem', color: '#787878', fontFamily: 'JetBrains Mono', textTransform: 'uppercase', marginBottom: 6 }}>MITRE Techniques</div>
+                    <div style={{ fontSize: '0.68rem', color: 'rgba(26,22,18,0.5)', fontFamily: 'JetBrains Mono', textTransform: 'uppercase', marginBottom: 6 }}>MITRE Techniques</div>
                     {result.mitre_techniques.map((m, i) => (
                       <div key={i} style={{ fontSize: '0.78rem', color: 'rgba(26,22,18,0.7)', fontFamily: 'JetBrains Mono', padding: '2px 0' }}>{m.id} — {m.name}</div>
                     ))}
@@ -115,7 +115,7 @@ export default function TerminalTab({ caseData, caseId, updateCase }) {
               </div>
             </>
           ) : (
-            <div className="at-card" style={{ padding: 20, textAlign: 'center', color: '#787878', fontSize: '0.82rem' }}>
+            <div className="at-card" style={{ padding: 20, textAlign: 'center', color: 'rgba(26,22,18,0.5)', fontSize: '0.82rem' }}>
               Paste tool output and click "Analyse with AI" to extract IOCs, findings, and MITRE techniques.
             </div>
           )}
@@ -128,8 +128,8 @@ export default function TerminalTab({ caseData, caseId, updateCase }) {
                 {history.map((run, i) => (
                   <div key={run.id || i} style={{ padding: '7px 10px', background: 'var(--surface)', borderRadius: 5, cursor: 'pointer', fontSize: '0.78rem' }}
                     onClick={() => { setTool(run.tool_name); setCommand(run.command); setOutput(run.output); const p = JSON.parse(run.ai_parsed_result || '{}'); setResult(p); }}>
-                    <div style={{ fontWeight: 500, color: '#BDD4E8' }}>{run.tool_name}</div>
-                    <div style={{ fontSize: '0.7rem', color: '#787878', fontFamily: 'JetBrains Mono', marginTop: 2 }}>{new Date(run.created_at).toLocaleString()}</div>
+                    <div style={{ fontWeight: 500, color: 'rgba(26,22,18,0.6)' }}>{run.tool_name}</div>
+                    <div style={{ fontSize: '0.7rem', color: 'rgba(26,22,18,0.5)', fontFamily: 'JetBrains Mono', marginTop: 2 }}>{new Date(run.created_at).toLocaleString()}</div>
                   </div>
                 ))}
               </div>

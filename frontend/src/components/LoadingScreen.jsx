@@ -11,9 +11,9 @@ function SealRing({ progress }) {
   const offset = c - c * Math.min(progress, 1);
   return (
     <svg viewBox="0 0 120 120" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-      <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(74,126,200,0.22)" strokeWidth="1"
+      <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(26,22,18,0.132)" strokeWidth="1"
         strokeDasharray={c} strokeDashoffset={offset} strokeLinecap="round" transform="rotate(-90 60 60)"/>
-      <circle cx="60" cy="60" r="46" fill="none" stroke="rgba(74,126,200,0.1)" strokeWidth="0.5"
+      <circle cx="60" cy="60" r="46" fill="none" stroke="rgba(26,22,18,0.060)" strokeWidth="0.5"
         strokeDasharray={`${c * 0.6 * Math.min(progress, 1)} 999`} transform="rotate(-90 60 60)"/>
     </svg>
   );
@@ -59,7 +59,7 @@ export default function LoadingScreen() {
       <motion.div initial={{ opacity: 1 }} exit={{ opacity: 0 }}
         style={{ position: 'fixed', inset: 0, background: 'var(--card)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 20, zIndex: 9999 }}>
         <img src="/assets/brand/aegistrace-icon-transparent.png" alt="AegisTrace"
-          style={{ width: 72, height: 72, filter: 'drop-shadow(0 0 8px rgba(74,126,200,0.6))' }}/>
+          style={{ width: 72, height: 72, filter: 'drop-shadow(0 0 8px rgba(26,22,18,0.360))' }}/>
         <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, color: 'var(--text-primary)', letterSpacing: '0.3em' }}>AEGISTRACE</span>
       </motion.div>
     );
@@ -77,7 +77,7 @@ export default function LoadingScreen() {
         initial={{ opacity: 0, scale: 0.3 }} animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.4, ease: EOUT }}
         style={{ position: 'absolute', width: 440, height: 440, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(74,126,200,0.14) 0%, rgba(74,126,200,0.04) 45%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(26,22,18,0.084) 0%, rgba(26,22,18,0.024) 45%, transparent 70%)',
           pointerEvents: 'none' }}
       />
 
@@ -86,7 +86,7 @@ export default function LoadingScreen() {
         initial={{ scale: 0.55, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
         transition={{ ...SPRING, delay: 0.10 }}
         style={{ position: 'relative', marginBottom: 38,
-          filter: 'drop-shadow(0 0 18px rgba(74,126,200,0.65)) drop-shadow(0 0 36px rgba(204,120,92,0.25))' }}
+          filter: 'drop-shadow(0 0 18px rgba(26,22,18,0.390)) drop-shadow(0 0 36px rgba(204,120,92,0.25))' }}
       >
         <MetallicPaint
           imageUrl="/assets/brand/aegistrace-icon-transparent.png"
@@ -95,7 +95,7 @@ export default function LoadingScreen() {
         {/* Orbital ring around the metallic logo */}
         <div style={{
           position: 'absolute', inset: -8, borderRadius: '50%',
-          border: '1px solid rgba(74,126,200,0.18)',
+          border: '1px solid rgba(26,22,18,0.108)',
           pointerEvents: 'none',
         }}/>
         <motion.div aria-hidden
@@ -123,13 +123,13 @@ export default function LoadingScreen() {
       </div>
 
       {/* Progress bar with gradient sweep */}
-      <div style={{ width: 150, height: 1.5, background: 'rgba(74,126,200,0.1)', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ width: 150, height: 1.5, background: 'rgba(26,22,18,0.060)', position: 'relative', overflow: 'hidden' }}>
         <motion.div
           initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
           transition={{ duration: 1.85, delay: 0.6, ease: [0.4, 0, 0.2, 1] }}
           style={{ position: 'absolute', inset: 0, transformOrigin: 'left',
             background: 'linear-gradient(90deg, #2A5A9E 0%, #4A7EC8 50%, #8BB8E8 100%)',
-            boxShadow: '0 0 10px rgba(74,126,200,0.9), 0 0 24px rgba(204,120,92,0.35)' }}
+            boxShadow: '0 0 10px rgba(26,22,18,0.540), 0 0 24px rgba(204,120,92,0.35)' }}
         />
       </div>
     </motion.div>

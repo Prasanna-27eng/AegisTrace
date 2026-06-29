@@ -18,7 +18,7 @@ function ageColor(dateStr, severity) {
   const limit = { critical: 4, high: 8, medium: 48, low: 168 }[severity] || 48;
   if (hrs > limit) return '#EF4444';
   if (hrs > limit * 0.8) return '#EAB308';
-  return '#888888';
+  return 'rgba(26,22,18,0.35)';
 }
 
 function timeAgo(dateStr) {
@@ -44,11 +44,11 @@ function ConfirmModal({ caseNumber, onConfirm, onCancel }) {
     >
       <div
         onClick={e => e.stopPropagation()}
-        style={{ background: 'var(--card)', border: '1px solid rgba(26,22,18,0.12)', borderRadius: 12, padding: '24px 28px', maxWidth: 400, width: '90%', boxShadow: '0 24px 64px rgba(0,0,0,0.8)' }}
+        style={{ background: 'var(--card)', border: '1px solid rgba(26,22,18,0.12)', borderRadius: 12, padding: '24px 28px', maxWidth: 400, width: '90%', boxShadow: '0 24px 64px rgba(26,22,18,0.78)' }}
       >
         <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: 8, color: 'var(--text-primary)' }}>Delete case?</h3>
         <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: 24, lineHeight: 1.55 }}>
-          <span style={{ fontFamily: 'JetBrains Mono', color: '#7A9DB8' }}>{caseNumber}</span> will be permanently deleted. This cannot be undone.
+          <span style={{ fontFamily: 'JetBrains Mono', color: 'rgba(26,22,18,0.55)' }}>{caseNumber}</span> will be permanently deleted. This cannot be undone.
         </p>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button className="btn-ghost" onClick={onCancel} style={{ fontSize: '0.8rem' }}>Cancel</button>
@@ -232,9 +232,9 @@ export default function CaseList() {
             onClick={() => applyChip(idx, f)}
             style={{
               padding: '4px 12px', borderRadius: 20, fontSize: '0.72rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: activeChip === idx ? 600 : 400, transition: 'all 0.15s',
-              background: activeChip === idx ? '#4A7EC8' : 'rgba(26,22,18,0.05)',
-              color: activeChip === idx ? '#fff' : '#787878',
-              border: activeChip === idx ? '1px solid #4A7EC8' : '1px solid rgba(74,126,200,0.1)',
+              background: activeChip === idx ? '#2563EB' : 'rgba(26,22,18,0.05)',
+              color: activeChip === idx ? '#fff' : 'rgba(26,22,18,0.5)',
+              border: activeChip === idx ? '1px solid #4A7EC8' : '1px solid rgba(26,22,18,0.060)',
             }}
           >
             {f.label}
@@ -284,7 +284,7 @@ export default function CaseList() {
         </div>
       ) : cases.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <FolderOpen size={36} style={{ color: 'rgba(90,138,159,0.2)', margin: '0 auto 14px', display: 'block' }} />
+          <FolderOpen size={36} style={{ color: 'rgba(26,22,18,0.110)', margin: '0 auto 14px', display: 'block' }} />
           <div style={{ fontWeight: 600, fontSize: '0.92rem', marginBottom: 8 }}>
             {q || severity || status ? 'No cases match your filters' : 'No cases yet'}
           </div>
@@ -330,7 +330,7 @@ export default function CaseList() {
               >
                 {/* Severity left bar */}
                 {!pendingApproval && c.severity === 'critical' && (
-                  <div className="critical-pulse" style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '8px 0 0 8px', background: '#4A7EC8' }} />
+                  <div className="critical-pulse" style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '8px 0 0 8px', background: 'var(--accent)' }} />
                 )}
                 {!pendingApproval && isSlaBreached && c.severity !== 'critical' && (
                   <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '8px 0 0 8px', background: '#EF4444', opacity: 0.6 }} />
@@ -373,7 +373,7 @@ export default function CaseList() {
 
                 {/* Actions */}
                 <div style={{ display: 'flex', gap: 3, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-                  <button className="btn-ghost" style={{ padding: '3px 7px', color: c.is_public ? '#22C55E' : '#787878' }}
+                  <button className="btn-ghost" style={{ padding: '3px 7px', color: c.is_public ? '#22C55E' : 'rgba(26,22,18,0.5)' }}
                     onClick={e => handleTogglePublic(e, c.id)} title={c.is_public ? 'Public' : 'Private'}>
                     {c.is_public ? <Globe size={11} /> : <Lock size={11} />}
                   </button>

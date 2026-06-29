@@ -48,7 +48,7 @@ export default function LaserFlow({ style = {} }) {
       {/* Dot grid */}
       <div className="lf-grid" style={{
         position: 'absolute', inset: 0,
-        backgroundImage: 'radial-gradient(circle, rgba(74,126,200,0.07) 1px, transparent 1px)',
+        backgroundImage: 'radial-gradient(circle, rgba(26,22,18,0.042) 1px, transparent 1px)',
         backgroundSize: '44px 44px',
         animation: 'lfGridDrift 6s linear infinite',
       }} />
@@ -57,17 +57,17 @@ export default function LaserFlow({ style = {} }) {
       <div className="lf-beam" style={{
         position: 'absolute', left: '50%', top: 0,
         width: 1, height: '100%',
-        background: 'linear-gradient(to bottom, transparent 0%, rgba(74,126,200,.5) 28%, rgba(139,184,232,.9) 50%, rgba(74,126,200,.5) 72%, transparent 100%)',
+        background: 'linear-gradient(to bottom, transparent 0%, rgba(26,22,18,0.300) 28%, rgba(139,184,232,.9) 50%, rgba(26,22,18,0.300) 72%, transparent 100%)',
         transform: 'translateX(-50%)',
         animation: 'lfBeamPulse 3.6s ease-in-out infinite',
-        boxShadow: '0 0 22px 5px rgba(74,126,200,.28)',
+        boxShadow: '0 0 22px 5px rgba(26,22,18,0.168)',
       }} />
 
       {/* Bloom at beam center */}
       <div className="lf-bloom" style={{
         position: 'absolute', left: '50%', top: '44%',
         width: 340, height: 180,
-        background: 'radial-gradient(ellipse, rgba(74,126,200,.18) 0%, transparent 70%)',
+        background: 'radial-gradient(ellipse, rgba(26,22,18,0.108) 0%, transparent 70%)',
         transform: 'translate(-50%,-50%)',
         animation: 'lfBloom 4.5s ease-in-out infinite',
       }} />
@@ -86,14 +86,14 @@ export default function LaserFlow({ style = {} }) {
       {/* Horizontal impact line */}
       <div style={{
         position: 'absolute', left: 0, right: 0, top: '56%', height: 1,
-        background: 'linear-gradient(to right, transparent 0%, rgba(74,126,200,.25) 38%, rgba(139,184,232,.55) 50%, rgba(74,126,200,.25) 62%, transparent 100%)',
+        background: 'linear-gradient(to right, transparent 0%, rgba(26,22,18,0.150) 38%, rgba(139,184,232,.55) 50%, rgba(26,22,18,0.150) 62%, transparent 100%)',
         opacity: .55,
       }} />
 
       {/* Pointer-reactive spotlight */}
       <div style={{
         position: 'absolute', inset: 0,
-        background: 'radial-gradient(circle 300px at var(--lx) var(--ly), rgba(74,126,200,.07) 0%, transparent 70%)',
+        background: 'radial-gradient(circle 300px at var(--lx) var(--ly), rgba(26,22,18,0.042) 0%, transparent 70%)',
         pointerEvents: 'none',
         transition: 'background .08s ease',
       }} />

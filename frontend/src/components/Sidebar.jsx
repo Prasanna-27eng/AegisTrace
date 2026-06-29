@@ -149,7 +149,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           {/* Logo in expanded sidebar */}
           {!collapsed && (
             <div onClick={() => navigate('/')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 9, borderRadius: 6, padding: '3px 6px', transition: 'background 140ms ease-out' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(74,126,200,0.1)'}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(26,22,18,0.060)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
               <img src="/assets/brand/aegistrace-icon-transparent.png" alt="" style={{ width: 22, height: 22, objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(204,120,92,0.35))' }}/>
@@ -175,7 +175,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
               flexShrink: 0,
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.background = 'rgba(74,126,200,0.10)';
+              e.currentTarget.style.background = 'rgba(26,22,18,0.060)';
               e.currentTarget.style.color = 'rgba(26,22,18,0.7)';
               e.currentTarget.style.borderColor = 'rgba(204,120,92,0.25)';
             }}
@@ -211,7 +211,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                   outline: 'none',
                   transition: 'border-color 140ms, background 140ms',
                 }}
-                onFocus={e => { e.target.style.borderColor = 'rgba(204,120,92,0.3)'; e.target.style.background = 'rgba(74,126,200,0.04)'; }}
+                onFocus={e => { e.target.style.borderColor = 'rgba(204,120,92,0.3)'; e.target.style.background = 'rgba(26,22,18,0.024)'; }}
                 onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.background = 'rgba(26,22,18,0.05)'; }}
               />
             </div>
@@ -289,14 +289,14 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                           fontSize: 13,
                           fontWeight: isActive ? 500 : 400,
                           color: isActive ? 'var(--accent-light)' : 'var(--text-secondary)',
-                          background: isActive ? 'rgba(74,126,200,0.10)' : 'transparent',
+                          background: isActive ? 'rgba(26,22,18,0.060)' : 'transparent',
                           borderLeft: isActive ? '2px solid #4A7EC8' : '2px solid transparent',
                           transition: 'background 140ms ease-out, color 140ms ease-out',
                           cursor: 'pointer',
                         })}
                         onMouseEnter={e => {
                           if (!e.currentTarget.getAttribute('aria-current')) {
-                            e.currentTarget.style.background = 'rgba(148,163,184,0.06)';
+                            e.currentTarget.style.background = 'rgba(26,22,18,0.072)';
                             e.currentTarget.style.color = 'var(--text-primary)';
                           }
                         }}
@@ -333,14 +333,14 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                         margin: '1px 6px',
                         borderRadius: 6,
                         textDecoration: 'none',
-                        background: isActive ? 'rgba(74,126,200,0.10)' : 'transparent',
+                        background: isActive ? 'rgba(26,22,18,0.060)' : 'transparent',
                         borderLeft: isActive ? '2px solid #4A7EC8' : '2px solid transparent',
                         transition: 'background 140ms ease-out',
                         cursor: 'pointer',
                       })}
                       onMouseEnter={e => {
                         if (!e.currentTarget.getAttribute('aria-current')) {
-                          e.currentTarget.style.background = 'rgba(148,163,184,0.06)';
+                          e.currentTarget.style.background = 'rgba(26,22,18,0.072)';
                         }
                       }}
                       onMouseLeave={e => {
@@ -373,7 +373,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
             }}>
               <div style={{
                 width: 28, height: 28, borderRadius: '50%',
-                background: 'rgba(74,126,200,0.18)',
+                background: 'rgba(26,22,18,0.108)',
                 border: '1px solid rgba(204,120,92,0.25)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 11, fontWeight: 700, color: 'rgba(26,22,18,0.7)',

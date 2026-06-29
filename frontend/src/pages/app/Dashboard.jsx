@@ -143,7 +143,7 @@ function ITDRBars({ data }) {
           <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-ui)', width: 160, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {d.label}
           </span>
-          <div style={{ flex: 1, height: 6, background: 'rgba(148,163,184,0.1)', borderRadius: 3, overflow: 'hidden' }}>
+          <div style={{ flex: 1, height: 6, background: 'rgba(26,22,18,0.120)', borderRadius: 3, overflow: 'hidden' }}>
             <div style={{
               height: '100%',
               width: `${(d.value / max) * 100}%`,
@@ -318,11 +318,11 @@ function CasesTable({ cases, navigate }) {
                   height: 44,
                   cursor: 'pointer',
                   borderBottom: '1px solid var(--border)',
-                  background: i % 2 === 0 ? 'transparent' : 'rgba(148,163,184,0.02)',
+                  background: i % 2 === 0 ? 'transparent' : 'rgba(26,22,18,0.024)',
                   transition: 'background 140ms ease-out',
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(74,126,200,0.06)'}
-                onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? 'transparent' : 'rgba(148,163,184,0.02)'}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(26,22,18,0.036)'}
+                onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? 'transparent' : 'rgba(26,22,18,0.024)'}
               >
                 <td style={{ padding: '0 12px', fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>
                   {c.case_number}
@@ -398,12 +398,12 @@ function AlertStream({ cases, navigate }) {
               height: 44,
               borderBottom: '1px solid var(--border)',
               cursor: 'pointer',
-              background: i % 2 === 0 ? 'transparent' : 'rgba(148,163,184,0.02)',
+              background: i % 2 === 0 ? 'transparent' : 'rgba(26,22,18,0.024)',
               transition: 'background 140ms ease-out',
               overflow: 'hidden',
             }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(74,126,200,0.06)'}
-            onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? 'transparent' : 'rgba(148,163,184,0.02)'}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(26,22,18,0.036)'}
+            onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? 'transparent' : 'rgba(26,22,18,0.024)'}
           >
             {/* Severity bar */}
             <div style={{ width: 4, alignSelf: 'stretch', background: sevColor, flexShrink: 0 }} />
@@ -444,7 +444,7 @@ function EndpointActivity({ edrRecent }) {
           style={{
             display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px',
             borderBottom: '1px solid var(--border)',
-            background: i % 2 === 0 ? 'transparent' : 'rgba(148,163,184,0.02)',
+            background: i % 2 === 0 ? 'transparent' : 'rgba(26,22,18,0.024)',
           }}
         >
           <div style={{
@@ -699,7 +699,7 @@ export default function Dashboard() {
               background: kpi.alert ? 'rgba(239,68,68,0.04)' : 'transparent',
               transition: 'background 140ms ease-out',
             }}
-            onMouseEnter={e => e.currentTarget.style.background = kpi.alert ? 'rgba(239,68,68,0.07)' : 'rgba(74,126,200,0.06)'}
+            onMouseEnter={e => e.currentTarget.style.background = kpi.alert ? 'rgba(239,68,68,0.07)' : 'rgba(26,22,18,0.036)'}
             onMouseLeave={e => e.currentTarget.style.background = kpi.alert ? 'rgba(239,68,68,0.04)' : 'transparent'}
           >
             <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 700, color: kpi.color, lineHeight: 1, marginBottom: 6 }}>

@@ -11,15 +11,15 @@ import useStore from '../../store/useStore';
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 
 const ACTION_COLORS = {
-  case_create:      '#4A7EC8',
-  case_update:      '#4A7EC8',
+  case_create:      '#2563EB',
+  case_update:      '#2563EB',
   ioc_extraction:   '#EAB308',
   ai_analysis:      'rgba(26,22,18,0.7)',
   report_generate:  '#22C55E',
   threat_score:     '#F97316',
   case_close:       '#EF4444',
   auto_enrich:      '#EAB308',
-  default:          '#888888',
+  default:          'rgba(26,22,18,0.35)',
 };
 
 const ACTION_ICONS = {
@@ -186,7 +186,7 @@ function SettingsPanel({ settings, onChange }) {
           </div>
           <input type="range" min={50} max={99} value={settings.threshold}
             onChange={e => onChange({ ...settings, threshold: parseInt(e.target.value) })}
-            style={{ width: '100%', accentColor: '#4A7EC8' }} />
+            style={{ width: '100%', accentColor: '#2563EB' }} />
           <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', ...MONO, marginTop: 3 }}>
             Actions with confidence ≥ {settings.threshold}% will auto-approve without human review
           </div>
@@ -203,7 +203,7 @@ function SettingsPanel({ settings, onChange }) {
                   const types = settings.required_types || [];
                   onChange({ ...settings, required_types: e.target.checked ? [...types, type] : types.filter(t => t !== type) });
                 }}
-                style={{ accentColor: '#4A7EC8' }} />
+                style={{ accentColor: '#2563EB' }} />
               <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)', ...MONO }}>{type.replace(/_/g, ' ')}</span>
             </label>
           ))}
@@ -334,7 +334,7 @@ function DelegationTokensTab() {
           </p>
         </div>
         <button onClick={() => setShowIssue(true)} style={{
-          background: '#4A7EC8', color: '#fff', border: 'none', borderRadius: 6,
+          background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 6,
           padding: '8px 16px', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
         }}>
           + Issue Token
@@ -354,7 +354,7 @@ function DelegationTokensTab() {
       {/* Empty state */}
       {!loading && tokens.length === 0 && (
         <div style={{ padding: '40px 24px', textAlign: 'center', background: 'rgba(26,22,18,0.03)', border: '1px solid rgba(26,22,18,0.08)', borderRadius: 8 }}>
-          <Key size={28} style={{ color: 'rgba(143,175,192,0.2)', margin: '0 auto 10px', display: 'block' }} />
+          <Key size={28} style={{ color: 'rgba(26,22,18,0.12)', margin: '0 auto 10px', display: 'block' }} />
           <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
             No delegation tokens yet. Issue a token to pre-authorize an AI agent.
           </div>
@@ -375,7 +375,7 @@ function DelegationTokensTab() {
 
       {/* Issue Token Modal */}
       {showIssue && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(26,22,18,0.75)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: 'var(--surface)', border: '1px solid rgba(26,22,18,0.1)', borderRadius: 10, padding: 28, width: '90%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto' }}>
             <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 20px' }}>Issue Agent Delegation Token</h3>
 
@@ -396,11 +396,11 @@ function DelegationTokensTab() {
               <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', marginBottom: 8, letterSpacing: '0.08em', textTransform: 'uppercase', ...MONO }}>Capabilities</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
                 {DEFINED_CAPS.map(cap => (
-                  <label key={cap} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '6px 10px', background: form.capabilities.includes(cap) ? 'rgba(74,126,200,0.1)' : 'rgba(26,22,18,0.03)', border: `1px solid ${form.capabilities.includes(cap) ? 'rgba(74,126,200,0.35)' : 'rgba(26,22,18,0.08)'}`, borderRadius: 5 }}>
+                  <label key={cap} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '6px 10px', background: form.capabilities.includes(cap) ? 'rgba(26,22,18,0.060)' : 'rgba(26,22,18,0.03)', border: `1px solid ${form.capabilities.includes(cap) ? 'rgba(26,22,18,0.210)' : 'rgba(26,22,18,0.08)'}`, borderRadius: 5 }}>
                     <input type="checkbox" checked={form.capabilities.includes(cap)}
                       onChange={e => setForm(f => ({ ...f, capabilities: e.target.checked ? [...f.capabilities, cap] : f.capabilities.filter(c => c !== cap) }))}
-                      style={{ width: 13, height: 13, accentColor: '#4A7EC8' }} />
-                    <span style={{ fontSize: '0.65rem', color: form.capabilities.includes(cap) ? 'rgba(26,22,18,0.7)' : '#787878', ...MONO }}>{cap}</span>
+                      style={{ width: 13, height: 13, accentColor: '#2563EB' }} />
+                    <span style={{ fontSize: '0.65rem', color: form.capabilities.includes(cap) ? 'rgba(26,22,18,0.7)' : 'rgba(26,22,18,0.5)', ...MONO }}>{cap}</span>
                   </label>
                 ))}
               </div>
@@ -413,7 +413,7 @@ function DelegationTokensTab() {
               </div>
               <input type="range" min={1} max={720} value={form.not_after_hours}
                 onChange={e => setForm(f => ({ ...f, not_after_hours: parseInt(e.target.value) }))}
-                style={{ width: '100%', accentColor: '#4A7EC8' }} />
+                style={{ width: '100%', accentColor: '#2563EB' }} />
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6rem', color: 'var(--text-muted)', marginTop: 3, ...MONO }}>
                 <span>1h</span><span>8h</span><span>24h</span><span>7d</span><span>30d</span>
               </div>
@@ -421,7 +421,7 @@ function DelegationTokensTab() {
 
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={issueToken} disabled={!form.agent_name || !form.purpose || !form.capabilities.length}
-                style={{ flex: 1, background: '#4A7EC8', color: '#fff', border: 'none', borderRadius: 6, padding: '11px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', opacity: (!form.agent_name || !form.purpose || !form.capabilities.length) ? 0.5 : 1 }}>
+                style={{ flex: 1, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 6, padding: '11px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', opacity: (!form.agent_name || !form.purpose || !form.capabilities.length) ? 0.5 : 1 }}>
                 Issue Token
               </button>
               <button onClick={() => setShowIssue(false)}
@@ -521,7 +521,7 @@ export default function AgentSecurity() {
         {mainTab === 'queue' && (
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={() => setShowSettings(!showSettings)}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, background: showSettings ? 'rgba(90,138,159,0.1)' : 'rgba(26,22,18,0.05)', border: `1px solid ${showSettings ? 'rgba(204,120,92,0.25)' : 'rgba(26,22,18,0.1)'}`, color: showSettings ? '#4A7EC8' : '#787878', borderRadius: 7, padding: '7px 14px', fontSize: '0.78rem', cursor: 'pointer' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 6, background: showSettings ? 'rgba(26,22,18,0.055)' : 'rgba(26,22,18,0.05)', border: `1px solid ${showSettings ? 'rgba(204,120,92,0.25)' : 'rgba(26,22,18,0.1)'}`, color: showSettings ? '#2563EB' : 'rgba(26,22,18,0.5)', borderRadius: 7, padding: '7px 14px', fontSize: '0.78rem', cursor: 'pointer' }}>
               <Settings size={13} /> Settings
             </button>
             <button onClick={load} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(26,22,18,0.05)', border: '1px solid rgba(26,22,18,0.1)', color: 'var(--text-muted)', borderRadius: 7, padding: '7px 14px', fontSize: '0.78rem', cursor: 'pointer' }}>
@@ -538,7 +538,7 @@ export default function AgentSecurity() {
           { key: 'delegation', label: 'Delegation Tokens' },
         ].map(({ key, label }) => (
           <button key={key} onClick={() => setMainTab(key)}
-            style={{ padding: '8px 18px', background: 'none', border: 'none', borderBottom: mainTab === key ? '2px solid #4A7EC8' : '2px solid transparent', color: mainTab === key ? '#BDD4E8' : '#787878', cursor: 'pointer', fontSize: '0.82rem', fontWeight: mainTab === key ? 600 : 400, marginBottom: -1, transition: 'color 0.15s', whiteSpace: 'nowrap' }}>
+            style={{ padding: '8px 18px', background: 'none', border: 'none', borderBottom: mainTab === key ? '2px solid #4A7EC8' : '2px solid transparent', color: mainTab === key ? 'rgba(26,22,18,0.6)' : 'rgba(26,22,18,0.5)', cursor: 'pointer', fontSize: '0.82rem', fontWeight: mainTab === key ? 600 : 400, marginBottom: -1, transition: 'color 0.15s', whiteSpace: 'nowrap' }}>
             {label}
           </button>
         ))}
@@ -553,9 +553,9 @@ export default function AgentSecurity() {
           {/* Stats row */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: 10, marginBottom: 20 }}>
             {[
-              { label: 'Pending Review', val: pending.length,     color: pending.length ? '#EAB308' : '#787878', Icon: Clock,        onClick: () => setTab('pending') },
+              { label: 'Pending Review', val: pending.length,     color: pending.length ? '#EAB308' : 'rgba(26,22,18,0.5)', Icon: Clock,        onClick: () => setTab('pending') },
               { label: 'Approved',       val: approved.length,    color: '#22C55E',                              Icon: CheckCircle,  onClick: () => setTab('approved') },
-              { label: 'Rejected',       val: rejected.length,    color: rejected.length ? '#EF4444' : '#787878', Icon: XCircle,     onClick: () => setTab('rejected') },
+              { label: 'Rejected',       val: rejected.length,    color: rejected.length ? '#EF4444' : 'rgba(26,22,18,0.5)', Icon: XCircle,     onClick: () => setTab('rejected') },
               { label: 'Auto-Approved',  val: autoApproved.length,color: 'var(--accent)',                              Icon: Zap,          onClick: () => setTab('auto') },
             ].map(({ label, val, color, Icon, onClick }) => (
               <div key={label} className="at-card" onClick={onClick}
@@ -595,7 +595,7 @@ export default function AgentSecurity() {
               { key: 'auto',     label: `Auto-approved (${autoApproved.length})` },
             ].map(({ key, label }) => (
               <button key={key} onClick={() => setTab(key)}
-                style={{ padding: '8px 16px', background: 'none', border: 'none', borderBottom: tab === key ? '2px solid #4A7EC8' : '2px solid transparent', color: tab === key ? '#BDD4E8' : '#787878', cursor: 'pointer', fontSize: '0.78rem', fontWeight: tab === key ? 600 : 400, marginBottom: -1, ...MONO, transition: 'color 0.15s', whiteSpace: 'nowrap' }}>
+                style={{ padding: '8px 16px', background: 'none', border: 'none', borderBottom: tab === key ? '2px solid #4A7EC8' : '2px solid transparent', color: tab === key ? 'rgba(26,22,18,0.6)' : 'rgba(26,22,18,0.5)', cursor: 'pointer', fontSize: '0.78rem', fontWeight: tab === key ? 600 : 400, marginBottom: -1, ...MONO, transition: 'color 0.15s', whiteSpace: 'nowrap' }}>
                 {label}
               </button>
             ))}
@@ -606,7 +606,7 @@ export default function AgentSecurity() {
             <div style={{ padding: 60, textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.82rem' }}>Loading actions…</div>
           ) : visibleActions.length === 0 ? (
             <div style={{ padding: '48px 0', textAlign: 'center' }}>
-              <Bot size={32} style={{ color: 'rgba(143,175,192,0.2)', margin: '0 auto 12px', display: 'block' }} />
+              <Bot size={32} style={{ color: 'rgba(26,22,18,0.12)', margin: '0 auto 12px', display: 'block' }} />
               <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 6 }}>
                 {tab === 'pending' ? 'No pending actions' : `No ${tab} actions`}
               </div>

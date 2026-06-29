@@ -36,7 +36,7 @@ export default function AIChatTab({ caseId, caseData }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: 'calc(100vh - 200px)' }}>
       {/* Disclaimer */}
-      <div style={{ padding: '10px 20px', background: 'rgba(234,179,8,0.04)', borderBottom: '1px solid rgba(234,179,8,0.12)', display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.72rem', color: '#787878', flexShrink: 0 }}>
+      <div style={{ padding: '10px 20px', background: 'rgba(234,179,8,0.04)', borderBottom: '1px solid rgba(234,179,8,0.12)', display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.72rem', color: 'rgba(26,22,18,0.5)', flexShrink: 0 }}>
         <AlertTriangle size={12} style={{ color: '#EAB308', flexShrink: 0 }} />
         AI responses are scoped to case evidence only. No automatic writes without analyst approval.
       </div>
@@ -54,11 +54,11 @@ export default function AIChatTab({ caseId, caseData }) {
               maxWidth: '75%',
               padding: '10px 14px',
               borderRadius: msg.role === 'user' ? '12px 12px 4px 12px' : '12px 12px 12px 4px',
-              background: msg.role === 'user' ? 'rgba(90,138,159,0.15)' : 'rgba(26,22,18,0.04)',
-              border: `1px solid ${msg.role === 'user' ? 'rgba(90,138,159,0.25)' : 'rgba(26,22,18,0.07)'}`,
+              background: msg.role === 'user' ? 'rgba(26,22,18,0.083)' : 'rgba(26,22,18,0.04)',
+              border: `1px solid ${msg.role === 'user' ? 'rgba(26,22,18,0.138)' : 'rgba(26,22,18,0.07)'}`,
               fontSize: '0.84rem',
               lineHeight: 1.65,
-              color: '#BDD4E8',
+              color: 'rgba(26,22,18,0.6)',
               whiteSpace: 'pre-wrap',
             }}>
               {msg.content}
@@ -69,8 +69,8 @@ export default function AIChatTab({ caseId, caseData }) {
               )}
             </div>
             {msg.role === 'user' && (
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(90,138,159,0.15)', border: '1px solid rgba(90,138,159,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <User size={14} style={{ color: '#4A7EC8' }} />
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(26,22,18,0.083)', border: '1px solid rgba(26,22,18,0.165)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <User size={14} style={{ color: '#2563EB' }} />
               </div>
             )}
           </div>

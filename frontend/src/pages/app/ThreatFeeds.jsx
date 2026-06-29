@@ -109,7 +109,7 @@ function FeedSection({ feedKey, data, navigate }) {
                   <span style={{
                     fontSize: '0.6rem', padding: '1px 5px', borderRadius: 3, flexShrink: 0,
                     background: u.url_status === 'online' ? 'rgba(239,68,68,0.12)' : 'rgba(136,136,136,0.12)',
-                    color: u.url_status === 'online' ? '#EF4444' : '#787878',
+                    color: u.url_status === 'online' ? '#EF4444' : 'rgba(26,22,18,0.5)',
                     fontFamily: 'JetBrains Mono', fontWeight: 600,
                   }}>{u.url_status}</span>
                   <span style={{ fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, fontSize: '0.68rem' }}>{u.url}</span>

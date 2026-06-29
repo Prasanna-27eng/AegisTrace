@@ -12,7 +12,7 @@ const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 
 const TYPE_COLOR = {
   ip: '#EF4444', domain: '#EAB308', hash: 'rgba(26,22,18,0.7)',
-  url: '#22C55E', email: '#4A7EC8', port: '#888888',
+  url: '#22C55E', email: '#2563EB', port: 'rgba(26,22,18,0.35)',
 };
 
 const TOOL_PRESETS = [
@@ -62,7 +62,7 @@ function SessionSidebar({ sessions, activeId, onSelect, onCreate, onDelete }) {
             onClick={() => onSelect(s.id)}
             style={{
               padding: '9px 10px', borderRadius: 6, cursor: 'pointer', marginBottom: 3,
-              background: activeId === s.id ? 'rgba(90,138,159,0.1)' : 'transparent',
+              background: activeId === s.id ? 'rgba(26,22,18,0.055)' : 'transparent',
               border: `1px solid ${activeId === s.id ? 'rgba(204,120,92,0.25)' : 'transparent'}`,
               transition: 'all 0.15s',
             }}
@@ -194,8 +194,8 @@ function OutputPane({ command, onPushIOCs, onSaveToCase, caseId }) {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   {iocs.map((ioc, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 8px', background: 'var(--card)', borderRadius: 4, borderLeft: `2px solid ${TYPE_COLOR[ioc.type] || '#888888'}` }}>
-                      <span style={{ fontSize: '0.6rem', color: TYPE_COLOR[ioc.type] || '#787878', textTransform: 'uppercase', ...MONO, minWidth: 40 }}>{ioc.type}</span>
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 8px', background: 'var(--card)', borderRadius: 4, borderLeft: `2px solid ${TYPE_COLOR[ioc.type] || 'rgba(26,22,18,0.35)'}` }}>
+                      <span style={{ fontSize: '0.6rem', color: TYPE_COLOR[ioc.type] || 'rgba(26,22,18,0.5)', textTransform: 'uppercase', ...MONO, minWidth: 40 }}>{ioc.type}</span>
                       <span style={{ fontSize: '0.72rem', color: 'var(--text-primary)', ...MONO, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ioc.ioc}</span>
                       <button onClick={() => navigator.clipboard.writeText(ioc.ioc)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', marginLeft: 'auto', flexShrink: 0, padding: 2 }}>
                         <Copy size={9} />
@@ -442,7 +442,7 @@ export default function TerminalLab() {
                     style={{
                       padding: '8px 10px', marginBottom: 6, borderRadius: 6, cursor: 'pointer',
                       border: `1px solid ${activeCmd?.id === cmd.id ? 'rgba(204,120,92,0.25)' : 'rgba(26,22,18,0.05)'}`,
-                      background: activeCmd?.id === cmd.id ? 'rgba(90,138,159,0.05)' : 'transparent',
+                      background: activeCmd?.id === cmd.id ? 'rgba(26,22,18,0.028)' : 'transparent',
                       transition: 'all 0.1s',
                     }}
                   >
@@ -470,7 +470,7 @@ export default function TerminalLab() {
                 <button
                   key={p.name}
                   onClick={() => applyPreset(p)}
-                  style={{ padding: '3px 8px', borderRadius: 3, fontSize: '0.65rem', ...MONO, border: '1px solid rgba(26,22,18,0.09)', background: tool === p.name ? 'rgba(204,120,92,0.1)' : 'transparent', color: tool === p.name ? '#4A7EC8' : 'rgba(240,240,248,0.4)', cursor: 'pointer' }}
+                  style={{ padding: '3px 8px', borderRadius: 3, fontSize: '0.65rem', ...MONO, border: '1px solid rgba(26,22,18,0.09)', background: tool === p.name ? 'rgba(204,120,92,0.1)' : 'transparent', color: tool === p.name ? '#2563EB' : 'rgba(240,240,248,0.4)', cursor: 'pointer' }}
                 >
                   {p.name}
                 </button>

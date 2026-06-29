@@ -4,7 +4,7 @@ import api from '../../../api/client';
 
 const TIER_COLORS = {
   observe:         'rgba(26,22,18,0.15)',
-  recommend:       '#4A7EC8',
+  recommend:       '#2563EB',
   'auto-safe':     '#22C55E',
   'auto-veto':     '#F59E0B',
   'human-required':'#EF4444',
@@ -37,7 +37,7 @@ function TierBadge({ tier }) {
 }
 
 function BlastChip({ level }) {
-  const color = BLAST_COLORS[level] || '#787878';
+  const color = BLAST_COLORS[level] || 'rgba(26,22,18,0.5)';
   return (
     <span style={{
       display: 'inline-block',
@@ -62,10 +62,10 @@ function D3FendBadge({ id }) {
       fontSize: 10,
       fontWeight: 600,
       padding: '2px 7px',
-      background: 'rgba(74,126,200,0.15)',
+      background: 'rgba(26,22,18,0.090)',
       color: 'rgba(26,22,18,0.7)',
       borderRadius: 4,
-      border: '1px solid rgba(74,126,200,0.3)',
+      border: '1px solid rgba(26,22,18,0.180)',
     }}>
       {id}
     </span>
@@ -94,7 +94,7 @@ function RecCard({ rec, onStatusChange }) {
     }}>
       {/* Top row */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 }}>
-        <Shield size={14} style={{ color: '#4A7EC8', marginTop: 2, flexShrink: 0 }} />
+        <Shield size={14} style={{ color: '#2563EB', marginTop: 2, flexShrink: 0 }} />
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: '#E8E8F0' }}>
@@ -122,11 +122,11 @@ function RecCard({ rec, onStatusChange }) {
           textTransform: 'uppercase',
           letterSpacing: '0.05em',
           background: rec.status === 'executed' ? 'rgba(34,197,94,0.15)' :
-                      rec.status === 'approved' ? 'rgba(74,126,200,0.15)' :
+                      rec.status === 'approved' ? 'rgba(26,22,18,0.090)' :
                       rec.status === 'vetoed' || rec.status === 'rejected' ? 'rgba(239,68,68,0.15)' :
                       'rgba(26,22,18,0.08)',
           color: rec.status === 'executed' ? '#22C55E' :
-                 rec.status === 'approved' ? '#4A7EC8' :
+                 rec.status === 'approved' ? '#2563EB' :
                  rec.status === 'vetoed' || rec.status === 'rejected' ? '#EF4444' :
                  '#6B7280',
           flexShrink: 0,
@@ -176,8 +176,8 @@ function RecCard({ rec, onStatusChange }) {
             style={{
               display: 'flex', alignItems: 'center', gap: 5,
               padding: '5px 14px',
-              background: 'rgba(74,126,200,0.15)',
-              border: '1px solid rgba(74,126,200,0.35)',
+              background: 'rgba(26,22,18,0.090)',
+              border: '1px solid rgba(26,22,18,0.210)',
               borderRadius: 6, color: 'rgba(26,22,18,0.7)', fontSize: 11, fontWeight: 600,
               cursor: 'pointer',
             }}
@@ -272,8 +272,8 @@ export default function DefenseTab({ caseData }) {
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '7px 16px',
-                background: 'rgba(74,126,200,0.15)',
-                border: '1px solid rgba(74,126,200,0.4)',
+                background: 'rgba(26,22,18,0.090)',
+                border: '1px solid rgba(26,22,18,0.240)',
                 borderRadius: 7, color: 'rgba(26,22,18,0.7)', fontSize: 12, fontWeight: 600,
                 cursor: generating ? 'not-allowed' : 'pointer',
               }}
@@ -331,7 +331,7 @@ export default function DefenseTab({ caseData }) {
           <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
             {['pending','approved','executed','rejected'].map(s => {
               const count = recs.filter(r => r.status === s).length;
-              const color = s === 'executed' ? '#22C55E' : s === 'approved' ? '#4A7EC8' : s === 'rejected' ? '#EF4444' : '#6B7280';
+              const color = s === 'executed' ? '#22C55E' : s === 'approved' ? '#2563EB' : s === 'rejected' ? '#EF4444' : '#6B7280';
               return (
                 <div key={s} style={{ background: 'rgba(26,22,18,0.03)', border: '1px solid rgba(26,22,18,0.07)', borderRadius: 8, padding: '8px 14px', minWidth: 80 }}>
                   <div style={{ fontSize: 18, fontWeight: 700, color, fontFamily: 'JetBrains Mono, monospace' }}>{count}</div>

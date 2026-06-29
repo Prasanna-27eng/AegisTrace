@@ -14,7 +14,7 @@ const SEV_COLOR = {
 // Tier badge colors
 const TIER_COLORS = {
   observe:         'rgba(26,22,18,0.2)',
-  recommend:       '#4A7EC8',
+  recommend:       '#2563EB',
   'auto-safe':     '#22C55E',
   'auto-veto':     '#F59E0B',
   'human-required':'#EF4444',
@@ -75,7 +75,7 @@ function SwipeCard({ caseItem, onApprove, onDismiss, isTop, stackIndex }) {
         position: 'relative',
         overflow: 'hidden',
         background: 'var(--surface, #111827)',
-        border: '1px solid var(--border-medium, rgba(148,163,184,0.22))',
+        border: '1px solid var(--border-medium, rgba(26,22,18,0.264))',
         borderRadius: 14,
         boxShadow: isTop
           ? '0 12px 40px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.35)'
@@ -142,7 +142,7 @@ function SwipeCard({ caseItem, onApprove, onDismiss, isTop, stackIndex }) {
         </div>
 
         {isTop && (
-          <div style={{ padding: '8px 18px 10px', borderTop: '1px solid var(--border, rgba(148,163,184,0.1))', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ padding: '8px 18px 10px', borderTop: '1px solid var(--border, rgba(26,22,18,0.120))', display: 'flex', justifyContent: 'center' }}>
             <span style={{ fontSize: 10.5, color: 'var(--text-muted, #475569)', fontFamily: "var(--font-ui,'IBM Plex Sans',sans-serif)", letterSpacing: '0.02em' }}>
               Swipe right to approve · Swipe left to dismiss
             </span>
@@ -385,7 +385,7 @@ export default function ApprovalQueue({ cases = [], onApprove, onDismiss }) {
             {queue.length > 0 && (
               <div style={{ display: 'flex', gap: 2 }}>
                 {queue.slice(0, 5).map((_, i) => (
-                  <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: i === 0 ? '#F59E0B' : 'var(--border-medium, rgba(148,163,184,0.22))' }} />
+                  <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: i === 0 ? '#F59E0B' : 'var(--border-medium, rgba(26,22,18,0.264))' }} />
                 ))}
               </div>
             )}
@@ -396,7 +396,7 @@ export default function ApprovalQueue({ cases = [], onApprove, onDismiss }) {
             <AnimatePresence>
               {queue.length === 0 ? (
                 <motion.div key="empty" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-                  style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, background: 'var(--surface, #111827)', border: '1px dashed var(--border-medium, rgba(148,163,184,0.22))', borderRadius: 14 }}>
+                  style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, background: 'var(--surface, #111827)', border: '1px dashed var(--border-medium, rgba(26,22,18,0.264))', borderRadius: 14 }}>
                   <CheckCircle size={32} style={{ color: '#10B981' }} />
                   <span style={{ fontSize: 14, color: 'var(--text-secondary, #94A3B8)', fontWeight: 500 }}>All cases reviewed</span>
                 </motion.div>
@@ -427,7 +427,7 @@ export default function ApprovalQueue({ cases = [], onApprove, onDismiss }) {
           )}
 
           {queue.length > 1 && (
-            <div style={{ marginTop: 12, padding: '8px 12px', background: 'var(--surface, #111827)', border: '1px solid var(--border, rgba(148,163,184,0.1))', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ marginTop: 12, padding: '8px 12px', background: 'var(--surface, #111827)', border: '1px solid var(--border, rgba(26,22,18,0.120))', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 11, color: 'var(--text-muted, #475569)', fontWeight: 500 }}>Next:</span>
               <span style={{ fontSize: 11.5, color: 'var(--text-secondary, #94A3B8)', fontFamily: "var(--font-mono,'IBM Plex Mono',monospace)" }}>{queue[1].id}</span>
               <span style={{ fontSize: 11, color: 'var(--text-muted, #475569)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>— {queue[1].title}</span>

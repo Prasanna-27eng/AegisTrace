@@ -7,11 +7,11 @@ const CAT_COLOR = {
   auth:     '#22C55E',
   case:     'rgba(26,22,18,0.7)',
   ai:       '#EAB308',
-  evidence: '#4A7EC8',
+  evidence: '#2563EB',
   intel:    '#06B6D4',
   import:   '#F97316',
   admin:    '#EC4899',
-  system:   '#888888',
+  system:   'rgba(26,22,18,0.35)',
 };
 
 const CAT_LABELS = {
@@ -27,7 +27,7 @@ const ACTION_ICON = {
 };
 
 /* ── Stat card ────────────────────────────────────────────────────────────── */
-function StatCard({ label, value, color = '#BDD4E8', sub }) {
+function StatCard({ label, value, color = 'rgba(26,22,18,0.6)', sub }) {
   return (
     <div className="at-card" style={{ padding: '14px 16px', flex: '1 1 120px' }}>
       <div style={{ fontSize: '1.7rem', fontWeight: 700, color, fontFamily: 'JetBrains Mono' }}>{value ?? '—'}</div>
@@ -65,12 +65,12 @@ function ActivityChart({ data }) {
 
 /* ── Log entry row ───────────────────────────────────────────────────────── */
 function LogRow({ log, isNew }) {
-  const color = CAT_COLOR[log.category] || '#787878';
+  const color = CAT_COLOR[log.category] || 'rgba(26,22,18,0.5)';
   return (
     <div style={{
       display: 'flex', gap: 10, alignItems: 'flex-start',
       padding: '9px 14px',
-      background: isNew ? 'rgba(90,138,159,0.06)' : 'var(--surface)',
+      background: isNew ? 'rgba(26,22,18,0.033)' : 'var(--surface)',
       borderRadius: 6,
       borderLeft: `2px solid ${color}`,
       transition: 'background 1s ease',
@@ -102,7 +102,7 @@ function LogRow({ log, isNew }) {
       </div>
       <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono', flexShrink: 0, whiteSpace: 'nowrap' }}>
         {new Date(log.timestamp).toLocaleTimeString('en-IE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-        <div style={{ fontSize: '0.6rem', color: '#444444' }}>
+        <div style={{ fontSize: '0.6rem', color: 'rgba(26,22,18,0.6)' }}>
           {new Date(log.timestamp).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
         </div>
       </div>
@@ -195,7 +195,7 @@ export default function AuditLog() {
               </span>
             </div>
             {liveCount > 0 && (
-              <span style={{ fontSize: '0.65rem', color: 'var(--accent)', fontFamily: 'JetBrains Mono', background: 'rgba(90,138,159,0.1)', padding: '2px 8px', borderRadius: 10 }}>
+              <span style={{ fontSize: '0.65rem', color: 'var(--accent)', fontFamily: 'JetBrains Mono', background: 'rgba(26,22,18,0.055)', padding: '2px 8px', borderRadius: 10 }}>
                 +{liveCount} new
               </span>
             )}
@@ -239,9 +239,9 @@ export default function AuditLog() {
               style={{
                 fontSize: '0.72rem', padding: '5px 12px', borderRadius: 5, cursor: 'pointer',
                 fontFamily: 'JetBrains Mono', border: '1px solid',
-                background: category === cat ? `${CAT_COLOR[cat] || 'rgba(90,138,159,1)'}18` : 'transparent',
-                borderColor: category === cat ? `${CAT_COLOR[cat] || '#4A7EC8'}50` : 'rgba(26,22,18,0.09)',
-                color: category === cat ? (CAT_COLOR[cat] || '#4A7EC8') : '#787878',
+                background: category === cat ? `${CAT_COLOR[cat] || 'rgba(26,22,18,0.550)'}18` : 'transparent',
+                borderColor: category === cat ? `${CAT_COLOR[cat] || '#2563EB'}50` : 'rgba(26,22,18,0.09)',
+                color: category === cat ? (CAT_COLOR[cat] || '#2563EB') : 'rgba(26,22,18,0.5)',
               }}>
               {cat === '' ? 'All' : CAT_LABELS[cat]}
             </button>

@@ -10,12 +10,12 @@ const ACTION_META = {
   ai_summary:   { color: 'rgba(26,22,18,0.7)', label: 'AI Summary',   Icon: Brain },
   tool_run:     { color: '#EAB308', label: 'Tool Run',      Icon: Wrench },
   evidence_add: { color: '#22C55E', label: 'Evidence Added', Icon: Database },
-  ioc_enrich:   { color: '#4A7EC8', label: 'IOC Enrich',   Icon: Database },
-  manual:       { color: '#787878', label: 'Manual',        Icon: Database },
+  ioc_enrich:   { color: '#2563EB', label: 'IOC Enrich',   Icon: Database },
+  manual:       { color: 'rgba(26,22,18,0.5)', label: 'Manual',        Icon: Database },
 };
 
 const APPROVAL_COLOR = {
-  auto:     { color: '#787878', label: 'Auto' },
+  auto:     { color: 'rgba(26,22,18,0.5)', label: 'Auto' },
   approved: { color: '#22C55E', label: 'Approved' },
   rejected: { color: '#EF4444', label: 'Rejected' },
   pending:  { color: '#EAB308', label: 'Pending Review' },
@@ -61,11 +61,11 @@ function ProvenanceRow({ record, onApprove }) {
           {approval.label}
         </span>
         {record.model_used && (
-          <span style={{ fontSize: '0.62rem', color: '#787878', ...MONO, flexShrink: 0 }}>{record.model_used.split('-').slice(0, 2).join('-')}</span>
+          <span style={{ fontSize: '0.62rem', color: 'rgba(26,22,18,0.5)', ...MONO, flexShrink: 0 }}>{record.model_used.split('-').slice(0, 2).join('-')}</span>
         )}
         {confidenceBar(record.confidence)}
-        <span style={{ fontSize: '0.62rem', color: '#787878', ...MONO, flexShrink: 0 }}>{timeLabel(record.timestamp)}</span>
-        {open ? <ChevronDown size={12} style={{ color: '#787878', flexShrink: 0 }} /> : <ChevronRight size={12} style={{ color: '#787878', flexShrink: 0 }} />}
+        <span style={{ fontSize: '0.62rem', color: 'rgba(26,22,18,0.5)', ...MONO, flexShrink: 0 }}>{timeLabel(record.timestamp)}</span>
+        {open ? <ChevronDown size={12} style={{ color: 'rgba(26,22,18,0.5)', flexShrink: 0 }} /> : <ChevronRight size={12} style={{ color: 'rgba(26,22,18,0.5)', flexShrink: 0 }} />}
       </div>
 
       {open && (
@@ -80,15 +80,15 @@ function ProvenanceRow({ record, onApprove }) {
               ['Approved by', record.approved_by || '—'],
             ].map(([k, v]) => (
               <div key={k}>
-                <div style={{ fontSize: '0.6rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2, ...MONO }}>{k}</div>
-                <div style={{ fontSize: '0.75rem', color: '#BDD4E8', ...MONO }}>{v}</div>
+                <div style={{ fontSize: '0.6rem', color: 'rgba(26,22,18,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2, ...MONO }}>{k}</div>
+                <div style={{ fontSize: '0.75rem', color: 'rgba(26,22,18,0.6)', ...MONO }}>{v}</div>
               </div>
             ))}
           </div>
 
           {record.input_context && (
             <div>
-              <div style={{ fontSize: '0.62rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4, ...MONO }}>Input Context (truncated)</div>
+              <div style={{ fontSize: '0.62rem', color: 'rgba(26,22,18,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4, ...MONO }}>Input Context (truncated)</div>
               <pre style={{ margin: 0, fontSize: '0.7rem', color: 'rgba(26,22,18,0.55)', ...MONO, lineHeight: 1.5, whiteSpace: 'pre-wrap', maxHeight: 80, overflow: 'auto', background: 'rgba(26,22,18,0.02)', padding: '6px 8px', borderRadius: 4 }}>
                 {record.input_context.slice(0, 400)}{record.input_context.length > 400 ? '…' : ''}
               </pre>
@@ -169,12 +169,12 @@ export default function ProvenanceTab({ caseId }) {
         <Database size={17} style={{ color: 'rgba(26,22,18,0.7)' }} />
         <div>
           <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>Provenance Ledger</div>
-          <div style={{ fontSize: '0.7rem', color: '#787878', marginTop: 1 }}>
+          <div style={{ fontSize: '0.7rem', color: 'rgba(26,22,18,0.5)', marginTop: 1 }}>
             Every AI-generated and tool-generated action — actor, model, confidence, approval status
           </div>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
-          <span style={{ fontSize: '0.7rem', color: '#787878', ...MONO }}>{records.length} records</span>
+          <span style={{ fontSize: '0.7rem', color: 'rgba(26,22,18,0.5)', ...MONO }}>{records.length} records</span>
           {records.filter(r => r.approval_status === 'pending').length > 0 && (
             <span style={{ fontSize: '0.68rem', background: 'rgba(234,179,8,0.15)', color: '#EAB308', padding: '2px 8px', borderRadius: 4, ...MONO }}>
               {records.filter(r => r.approval_status === 'pending').length} pending review
@@ -207,9 +207,9 @@ export default function ProvenanceTab({ caseId }) {
       </div>
 
       {loading ? (
-        <div style={{ padding: 40, textAlign: 'center', color: '#787878' }}><Loader2 size={18} className="spinner" /></div>
+        <div style={{ padding: 40, textAlign: 'center', color: 'rgba(26,22,18,0.5)' }}><Loader2 size={18} className="spinner" /></div>
       ) : records.length === 0 ? (
-        <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#787878' }}>
+        <div className="at-card" style={{ padding: 40, textAlign: 'center', color: 'rgba(26,22,18,0.5)' }}>
           <Database size={28} style={{ margin: '0 auto 12px', opacity: 0.2 }} />
           <div style={{ fontSize: '0.82rem', marginBottom: 8 }}>No provenance records yet.</div>
           <div style={{ fontSize: '0.74rem', ...MONO, color: '#555', maxWidth: 400, margin: '0 auto' }}>

@@ -192,13 +192,13 @@ export default function SimulationHub() {
 
       {/* ── Header ── */}
       <div style={{ marginBottom: 32, paddingBottom: 24, borderBottom: '1px solid rgba(26,22,18,0.07)' }}>
-        <div style={{ fontSize: '0.6rem', color: '#505050', letterSpacing: '0.22em', textTransform: 'uppercase', ...MONO, marginBottom: 8 }}>
+        <div style={{ fontSize: '0.6rem', color: 'rgba(26,22,18,0.55)', letterSpacing: '0.22em', textTransform: 'uppercase', ...MONO, marginBottom: 8 }}>
           AEGISTRACE // MITRE ATT&CK SIMULATION ENGINE
         </div>
         <h1 style={{ fontSize: '2rem', fontWeight: 300, letterSpacing: '-0.04em', color: 'var(--text-primary)', lineHeight: 1, marginBottom: 8 }}>
           Detection Validation
         </h1>
-        <div style={{ fontSize: '0.7rem', color: '#505050', ...MONO, maxWidth: 620, lineHeight: 1.7 }}>
+        <div style={{ fontSize: '0.7rem', color: 'rgba(26,22,18,0.55)', ...MONO, maxWidth: 620, lineHeight: 1.7 }}>
           Injects real synthetic attack events through the live ITDR pipeline and verifies whether each detector fires correctly.
           All events use isolated simulation identities and are cleaned up after each run.
         </div>
@@ -214,7 +214,7 @@ export default function SimulationHub() {
         ].map(k => (
           <div key={k.label} style={{ background: 'var(--card)', padding: '20px 22px' }}>
             <div style={{ fontSize: '2rem', fontWeight: 300, color: k.color, letterSpacing: '-0.04em', ...MONO, marginBottom: 6 }}>{k.value}</div>
-            <div style={{ fontSize: '0.6rem', color: '#505050', textTransform: 'uppercase', letterSpacing: '0.14em' }}>{k.label}</div>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(26,22,18,0.55)', textTransform: 'uppercase', letterSpacing: '0.14em' }}>{k.label}</div>
           </div>
         ))}
       </div>
@@ -225,11 +225,11 @@ export default function SimulationHub() {
         {/* LEFT: Technique list ── */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <div style={{ fontSize: '0.6rem', color: '#505050', letterSpacing: '0.16em', textTransform: 'uppercase', ...MONO }}>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(26,22,18,0.55)', letterSpacing: '0.16em', textTransform: 'uppercase', ...MONO }}>
               5 Attack Techniques
             </div>
             <button onClick={runAll} disabled={!!running}
-              style={{ background: running ? 'rgba(26,22,18,0.05)' : '#FFFFFF', color: running ? '#505050' : 'var(--bg)', border: 'none', padding: '7px 16px', fontSize: '0.62rem', fontWeight: 700, cursor: running ? 'not-allowed' : 'pointer', letterSpacing: '0.12em', textTransform: 'uppercase', ...MONO, display: 'flex', alignItems: 'center', gap: 6, transition: 'opacity 0.2s' }}
+              style={{ background: running ? 'rgba(26,22,18,0.05)' : '#FFFFFF', color: running ? 'rgba(26,22,18,0.55)' : 'var(--bg)', border: 'none', padding: '7px 16px', fontSize: '0.62rem', fontWeight: 700, cursor: running ? 'not-allowed' : 'pointer', letterSpacing: '0.12em', textTransform: 'uppercase', ...MONO, display: 'flex', alignItems: 'center', gap: 6, transition: 'opacity 0.2s' }}
               onMouseEnter={e => !running && (e.currentTarget.style.opacity = '0.8')}
               onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
               <Play size={10} /> RUN ALL
@@ -246,13 +246,13 @@ export default function SimulationHub() {
                 <div key={t.id}
                   onClick={() => setSelected(t.id)}
                   style={{
-                    background: active ? 'rgba(74,126,200,0.06)' : 'var(--card)',
+                    background: active ? 'rgba(26,22,18,0.036)' : 'var(--card)',
                     padding: '16px 18px', cursor: 'pointer',
                     borderLeft: `2px solid ${active ? '#FFFFFF' : (res ? (res.result === 'DETECTED' ? '#059669' : '#DC2626') : 'transparent')}`,
                     transition: 'background 0.15s',
                   }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                    <span style={{ fontSize: '0.62rem', color: '#505050', ...MONO }}>{t.id}</span>
+                    <span style={{ fontSize: '0.62rem', color: 'rgba(26,22,18,0.55)', ...MONO }}>{t.id}</span>
                     <span style={{ fontSize: '0.62rem', color: SEV_COLOR[t.severity], background: `${SEV_COLOR[t.severity]}12`, padding: '1px 7px', ...MONO, letterSpacing: '0.08em' }}>{t.severity}</span>
                     <span style={{ marginLeft: 'auto' }}>
                       {res && (
@@ -261,14 +261,14 @@ export default function SimulationHub() {
                     </span>
                   </div>
                   <div style={{ fontSize: '0.84rem', fontWeight: 500, color: 'var(--text-primary)', marginBottom: 3 }}>{t.name}</div>
-                  <div style={{ fontSize: '0.65rem', color: '#505050', ...MONO }}>{t.tactic} · {t.events} event{t.events !== 1 ? 's' : ''} injected</div>
+                  <div style={{ fontSize: '0.65rem', color: 'rgba(26,22,18,0.55)', ...MONO }}>{t.tactic} · {t.events} event{t.events !== 1 ? 's' : ''} injected</div>
 
                   <button
                     onClick={e => { e.stopPropagation(); runSimulation(t.id); }}
                     disabled={!!running}
-                    style={{ marginTop: 10, background: isRun ? 'rgba(26,22,18,0.07)' : 'rgba(26,22,18,0.05)', border: '1px solid rgba(26,22,18,0.09)', color: isRun ? '#BDD4E8' : '#787878', padding: '5px 14px', fontSize: '0.62rem', cursor: running ? 'not-allowed' : 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase', ...MONO, display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.15s' }}
-                    onMouseEnter={e => !running && (e.currentTarget.style.color = '#BDD4E8')}
-                    onMouseLeave={e => !running && (e.currentTarget.style.color = '#787878')}>
+                    style={{ marginTop: 10, background: isRun ? 'rgba(26,22,18,0.07)' : 'rgba(26,22,18,0.05)', border: '1px solid rgba(26,22,18,0.09)', color: isRun ? 'rgba(26,22,18,0.6)' : 'rgba(26,22,18,0.5)', padding: '5px 14px', fontSize: '0.62rem', cursor: running ? 'not-allowed' : 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase', ...MONO, display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.15s' }}
+                    onMouseEnter={e => !running && (e.currentTarget.style.color = 'rgba(26,22,18,0.6)')}
+                    onMouseLeave={e => !running && (e.currentTarget.style.color = 'rgba(26,22,18,0.5)')}>
                     {isRun
                       ? <><RefreshCw size={9} style={{ animation: 'spin 0.8s linear infinite' }} /> RUNNING…</>
                       : <><Play size={9} /> LAUNCH SIMULATION</>}
@@ -284,14 +284,14 @@ export default function SimulationHub() {
 
           {/* Result detail */}
           <div style={{ background: 'var(--card)', border: '1px solid rgba(26,22,18,0.07)', padding: '22px' }}>
-            <div style={{ fontSize: '0.6rem', color: '#505050', letterSpacing: '0.16em', textTransform: 'uppercase', ...MONO, marginBottom: 18 }}>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(26,22,18,0.55)', letterSpacing: '0.16em', textTransform: 'uppercase', ...MONO, marginBottom: 18 }}>
               Simulation Result
             </div>
 
             {selectedTechMeta && !selectedResult && (
               <div>
                 <div style={{ fontSize: '1.1rem', color: 'var(--text-primary)', fontWeight: 400, marginBottom: 8 }}>{selectedTechMeta.name}</div>
-                <div style={{ fontSize: '0.68rem', color: '#505050', lineHeight: 1.7, ...MONO, marginBottom: 16 }}>
+                <div style={{ fontSize: '0.68rem', color: 'rgba(26,22,18,0.55)', lineHeight: 1.7, ...MONO, marginBottom: 16 }}>
                   {selectedTechMeta.description}
                 </div>
                 <div style={{ fontSize: '0.64rem', color: '#383838', ...MONO, lineHeight: 1.6 }}>
@@ -314,20 +314,20 @@ export default function SimulationHub() {
                     : <AlertTriangle size={18} style={{ color: '#DC2626' }} />}
                   <div>
                     <ResultBadge result={selectedResult.result} morphing={morphing === selectedTech} />
-                    <div style={{ fontSize: '0.64rem', color: '#505050', ...MONO, marginTop: 3 }}>
+                    <div style={{ fontSize: '0.64rem', color: 'rgba(26,22,18,0.55)', ...MONO, marginTop: 3 }}>
                       {selectedResult.technique_name} · {selectedResult.mitre_tactic}
                     </div>
                   </div>
                   {selectedResult.confidence && (
                     <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
                       <div style={{ fontSize: '1.4rem', fontWeight: 300, color: '#059669', ...MONO }}>{Math.round(selectedResult.confidence * 100)}%</div>
-                      <div style={{ fontSize: '0.58rem', color: '#505050', textTransform: 'uppercase', letterSpacing: '0.1em' }}>confidence</div>
+                      <div style={{ fontSize: '0.58rem', color: 'rgba(26,22,18,0.55)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>confidence</div>
                     </div>
                   )}
                 </div>
 
                 {/* Description */}
-                <div style={{ fontSize: '0.72rem', color: '#7A9DB8', lineHeight: 1.7, marginBottom: 16, ...MONO }}>
+                <div style={{ fontSize: '0.72rem', color: 'rgba(26,22,18,0.55)', lineHeight: 1.7, marginBottom: 16, ...MONO }}>
                   {selectedResult.description}
                 </div>
 
@@ -339,8 +339,8 @@ export default function SimulationHub() {
                     </div>
                     {Object.entries(selectedResult.evidence).map(([k, v]) => (
                       <div key={k} style={{ display: 'flex', gap: 12, padding: '4px 0', borderBottom: '1px solid rgba(26,22,18,0.04)' }}>
-                        <span style={{ fontSize: '0.64rem', color: '#505050', ...MONO, minWidth: 140, flexShrink: 0 }}>{k}</span>
-                        <span style={{ fontSize: '0.64rem', color: '#7A9DB8', ...MONO, wordBreak: 'break-all' }}>
+                        <span style={{ fontSize: '0.64rem', color: 'rgba(26,22,18,0.55)', ...MONO, minWidth: 140, flexShrink: 0 }}>{k}</span>
+                        <span style={{ fontSize: '0.64rem', color: 'rgba(26,22,18,0.55)', ...MONO, wordBreak: 'break-all' }}>
                           {typeof v === 'object' ? JSON.stringify(v) : String(v)}
                         </span>
                       </div>
@@ -360,7 +360,7 @@ export default function SimulationHub() {
           {/* Run history */}
           <div style={{ background: 'var(--card)', border: '1px solid rgba(26,22,18,0.07)', padding: '22px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <div style={{ fontSize: '0.6rem', color: '#505050', letterSpacing: '0.16em', textTransform: 'uppercase', ...MONO }}>
+              <div style={{ fontSize: '0.6rem', color: 'rgba(26,22,18,0.55)', letterSpacing: '0.16em', textTransform: 'uppercase', ...MONO }}>
                 Run History
               </div>
               <div style={{ display: 'flex', gap: 10 }}>
@@ -386,7 +386,7 @@ export default function SimulationHub() {
                 {history.slice(0, 12).map(h => (
                   <div key={h.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 12px', background: 'var(--card)' }}>
                     <div style={{ width: 5, height: 5, borderRadius: '50%', background: h.result === 'DETECTED' ? '#059669' : '#DC2626', flexShrink: 0 }} />
-                    <span style={{ fontSize: '0.62rem', color: '#505050', ...MONO, width: 72, flexShrink: 0 }}>{h.technique_id}</span>
+                    <span style={{ fontSize: '0.62rem', color: 'rgba(26,22,18,0.55)', ...MONO, width: 72, flexShrink: 0 }}>{h.technique_id}</span>
                     <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.technique_name}</span>
                     <span style={{ fontSize: '0.6rem', fontWeight: 700, color: h.result === 'DETECTED' ? '#059669' : '#DC2626', ...MONO, flexShrink: 0, letterSpacing: '0.06em' }}>
                       {h.result === 'DETECTED' ? 'DETECTED' : 'MISS'}
@@ -419,7 +419,7 @@ export default function SimulationHub() {
               <div style={{ flexShrink: 0, padding: '12px 16px', background: 'var(--card)', border: '1px solid rgba(26,22,18,0.05)', minWidth: 170 }}>
                 <div style={{ fontSize: '0.58rem', color: '#383838', ...MONO, marginBottom: 5 }}>STEP {s.step}</div>
                 <div style={{ fontSize: '0.72rem', color: 'var(--text-primary)', fontWeight: 500, marginBottom: 4 }}>{s.label}</div>
-                <div style={{ fontSize: '0.62rem', color: '#505050', lineHeight: 1.5 }}>{s.desc}</div>
+                <div style={{ fontSize: '0.62rem', color: 'rgba(26,22,18,0.55)', lineHeight: 1.5 }}>{s.desc}</div>
               </div>
               {i < 4 && (
                 <div style={{ flexShrink: 0, padding: '0 6px', color: '#383838' }}>

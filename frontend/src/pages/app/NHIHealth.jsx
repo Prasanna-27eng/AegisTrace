@@ -6,8 +6,8 @@ import useStore from '../../store/useStore';
 
 const C = {
   bg: 'var(--surface)', card: 'var(--surface)', border: 'rgba(26,22,18,0.08)',
-  blue: '#4A7EC8', purple: 'rgba(26,22,18,0.7)', green: '#34D399',
-  amber: '#FBBF24', red: '#F87171', muted: '#888888', text: '#E5E5E5',
+  blue: '#2563EB', purple: 'rgba(26,22,18,0.7)', green: '#34D399',
+  amber: '#FBBF24', red: '#F87171', muted: 'rgba(26,22,18,0.35)', text: '#E5E5E5',
 };
 
 const TYPE_COLORS = {
