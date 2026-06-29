@@ -4,7 +4,8 @@ import CardNav from '../components/CardNav';
 import {
   ArrowRight, Shield, Brain, Eye, Database, CheckCircle,
   Layers, Zap, Github, Network, ShieldCheck, Fingerprint,
-  Users, FileText, Lock, Cpu,
+  Users, FileText, Lock, Cpu, Radio, Globe, BookOpen,
+  Share2, Download, Crosshair,
 } from '../components/icons';
 
 /* ─── Design tokens ──────────────────────────────────────────────────────── */
@@ -22,7 +23,7 @@ const T = {
   darkText:   '#1A1612',
   darkMuted:  '#6B6258',
   border:     'rgba(26,22,18,0.09)',
-  borderMed:  'rgba(240,235,227,0.12)',
+  borderMed:  'rgba(26,22,18,0.18)',
   pubBorder:  'rgba(26,22,18,0.09)',
   fontD:      "'DM Serif Display', Georgia, serif",
   fontUI:     "'DM Sans', system-ui, sans-serif",
@@ -346,7 +347,7 @@ export default function Landing() {
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
           }}
         >
-          <span style={{ fontFamily: T.fontUI, fontSize: '0.68rem', color: 'rgba(240,235,227,0.28)', letterSpacing: '0.14em', textTransform: 'uppercase' }}>Scroll</span>
+          <span style={{ fontFamily: T.fontUI, fontSize: '0.68rem', color: 'rgba(26,22,18,0.28)', letterSpacing: '0.14em', textTransform: 'uppercase' }}>Scroll</span>
           <motion.div
             animate={{ y: [0, 6, 0] }}
             transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
@@ -435,6 +436,120 @@ export default function Landing() {
             <BentoCard icon={Cpu} title="Endpoint Telemetry" delay={0.30}
               desc="Lightweight agent for macOS and Linux. Correlate endpoint events with identity signals for full attack chain visibility." />
           </div>
+        </div>
+      </section>
+
+      {/* ── DEEP FEATURE DETAIL ─────────────────────────────────────────── */}
+      <section style={{
+        background: T.pubBg,
+        padding: 'clamp(80px,10vw,120px) clamp(20px,5vw,80px)',
+        position: 'relative', overflow: 'hidden',
+      }}>
+        <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.035, pointerEvents: 'none' }} />
+        <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          <Reveal>
+            <h2 style={{ fontFamily: T.fontD, fontSize: 'clamp(2rem,4vw,3.2rem)', color: T.pubText, fontWeight: 400, margin: '0 0 14px', lineHeight: 1.2 }}>
+              Every module, fully explained
+            </h2>
+            <p style={{ fontFamily: T.fontUI, fontSize: '1.05rem', color: T.pubMuted, lineHeight: 1.75, maxWidth: 540, margin: '0 0 56px' }}>
+              AegisTrace ships 30+ integrated screens across 8 security modules. Here is what each one does and why it matters.
+            </p>
+          </Reveal>
+
+          {[
+            {
+              icon: Shield,
+              title: 'ITDR Detection Engine',
+              badge: '6 Detectors',
+              detail: 'Six independent behavioral detectors run continuously against your identity event stream. Credential stuffing detector catches burst logins from multiple IPs. Impossible travel fires when a user authenticates from two geographically impossible locations within minutes. Privilege escalation watches for sudden access to high-privilege roles without approval. MFA fatigue identifies repeated push notifications designed to wear down users. Session hijacking catches token reuse from unexpected geolocations. Account takeover correlates password resets with downstream suspicious actions — all tunable with per-detector thresholds.',
+              tags: ['Credential Stuffing', 'Impossible Travel', 'Privilege Escalation', 'MFA Fatigue', 'Session Hijacking', 'Account Takeover'],
+            },
+            {
+              icon: Brain,
+              title: 'Explainable AI Analysis',
+              badge: 'Groq + NVIDIA NIM',
+              detail: 'Every AegisTrace verdict carries a full evidence chain, not just a score. When an alert fires, the AI analyst traces back the exact sequence of events that triggered it, assigns confidence (0–100%), and lists alternative explanations with their probabilities. You can ask follow-up questions in plain English: "why is this suspicious?", "what is the blast radius?", "draft a containment procedure". The system uses Groq-hosted models for sub-second response and NVIDIA NIM for on-prem deployments where data cannot leave your environment.',
+              tags: ['Evidence Chain', 'Confidence Score', 'Alternative Hypotheses', 'Plain-English Queries', 'On-Prem Option'],
+            },
+            {
+              icon: Share2,
+              title: 'Identity Graph',
+              badge: 'Force-Directed Canvas',
+              detail: 'A live, force-directed canvas renders your entire identity estate: users, devices, service accounts, API keys, groups, policies, and applications as 7 distinct node types. Risk scores propagate through edges — a compromised account spreads risk to every downstream resource it can reach. Click any node to see its full audit trail, connected accounts, and active sessions. The graph updates in real-time as events arrive and supports time-scrubbing to replay attack paths.',
+              tags: ['7 Node Types', 'Live Risk Scores', 'Blast Radius', 'Time Scrubbing', 'Attack Path Replay'],
+            },
+            {
+              icon: BookOpen,
+              title: 'SOAR Playbooks',
+              badge: 'Human-in-the-Loop',
+              detail: 'Automated response playbooks with a mandatory human approval gate. When a critical alert fires, the system can automatically disable an account, revoke sessions, block an IP, and queue an email notification — but each action is staged in an approval queue before execution. Analysts review the proposed action chain, modify it if needed, and approve with a single click. Every executed action is logged to the immutable audit trail with the approving analyst\'s name and timestamp.',
+              tags: ['Auto-Disable Account', 'Session Revoke', 'IP Block', 'Approval Queue', 'Immutable Audit Log'],
+            },
+            {
+              icon: Crosshair,
+              title: 'Hardware Attack Forensics',
+              badge: '18 Parsers',
+              detail: 'Beyond software — AegisTrace parses hardware attack artifacts. Upload a WiFi deauth PCAP and get a timeline of disconnection events. Drop a USB HID capture and see every keystroke injected by a Rubber Ducky. Paste RF sniff data to check for RFID cloning attempts. Submit an OBD-II log to detect CAN bus injection. Eighteen purpose-built parsers cover the full spectrum of physical attack artifacts so your investigation can span digital and physical evidence in one timeline.',
+              tags: ['WiFi Deauth', 'USB/HID Injection', 'RF/RFID', 'OBD-II/CAN Bus', 'Bluetooth LE', 'Network Replay'],
+            },
+            {
+              icon: Globe,
+              title: 'IOC Enrichment',
+              badge: '7 Sources',
+              detail: 'Submit any IP, domain, file hash, or URL and receive a consolidated threat intelligence report in under 2 seconds. AegisTrace fans out to VirusTotal v3, Shodan, GreyNoise Community, URLhaus, ThreatFox, AbuseIPDB, and OpenPhish in parallel. Results are normalised into a single risk verdict with source attribution — so you know which feeds called an indicator malicious and which gave it a clean bill of health. Bulk submission supports up to 500 indicators per job.',
+              tags: ['VirusTotal v3', 'Shodan', 'GreyNoise', 'URLhaus', 'ThreatFox', 'Bulk Mode'],
+            },
+          ].map(({ icon: Icon, title, badge, detail, tags }, i) => (
+            <Reveal key={title} delay={i * 0.06}>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'auto 1fr',
+                gap: 'clamp(24px,3vw,48px)',
+                padding: 'clamp(28px,3vw,40px)',
+                marginBottom: 16,
+                background: T.bg,
+                border: `1px solid ${T.border}`,
+                borderRadius: 16,
+                boxShadow: '0 2px 10px rgba(26,22,18,0.05)',
+                alignItems: 'flex-start',
+              }}>
+                {/* Left column — icon */}
+                <div style={{
+                  width: 52, height: 52, borderRadius: 14, flexShrink: 0,
+                  background: 'rgba(204,120,92,0.1)', border: '1px solid rgba(204,120,92,0.2)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Icon size={24} color={T.accent} />
+                </div>
+
+                {/* Right column */}
+                <div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                    <h3 style={{ fontFamily: T.fontD, fontSize: '1.3rem', color: T.darkText, fontWeight: 400, margin: 0 }}>
+                      {title}
+                    </h3>
+                    <span style={{
+                      fontFamily: T.fontMono, fontSize: 10, color: T.accent, letterSpacing: '0.1em',
+                      background: 'rgba(204,120,92,0.1)', border: '1px solid rgba(204,120,92,0.2)',
+                      borderRadius: 50, padding: '3px 10px',
+                    }}>{badge}</span>
+                  </div>
+                  <p style={{ fontFamily: T.fontUI, fontSize: 14.5, color: T.pubMuted, lineHeight: 1.8, margin: '0 0 16px', maxWidth: '72ch' }}>
+                    {detail}
+                  </p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {tags.map(t => (
+                      <span key={t} style={{
+                        fontFamily: T.fontMono, fontSize: 10.5, color: T.darkText,
+                        background: 'rgba(26,22,18,0.05)', border: `1px solid ${T.border}`,
+                        borderRadius: 6, padding: '3px 9px',
+                      }}>{t}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+          ))}
         </div>
       </section>
 

@@ -126,7 +126,7 @@ export default function ThreatHunt() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 }}>
         <div>
           <h1 style={{ fontSize: '1.3rem', fontWeight: 600 }}>Threat Hunting</h1>
-          <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 2, fontFamily: 'JetBrains Mono' }}>
+          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2, fontFamily: 'JetBrains Mono' }}>
             Cross-case correlation · Campaign detection · MITRE heatmap
           </div>
         </div>
@@ -136,27 +136,27 @@ export default function ThreatHunt() {
       {!loading && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 10, marginBottom: 20 }}>
           {[
-            { label: 'Total Cases',         val: stats.total_cases,        color: '#BDD4E8' },
+            { label: 'Total Cases',         val: stats.total_cases,        color: 'var(--text-primary)' },
             { label: 'IOCs Tracked',        val: stats.total_iocs_tracked, color: '#8BB8E8' },
-            { label: 'Campaign IOCs',       val: stats.campaign_iocs,      color: '#4A7EC8' },
+            { label: 'Campaign IOCs',       val: stats.campaign_iocs,      color: 'var(--accent)' },
             { label: 'Multi-Case IOCs',     val: stats.multi_case_iocs,    color: '#EAB308' },
             { label: 'Events (7 days)',     val: stats.events_last_7_days, color: '#22C55E' },
           ].map(({ label, val, color }) => (
             <div key={label} className="at-card" style={{ padding: '14px 16px' }}>
               <div style={{ fontSize: '1.6rem', fontWeight: 700, color }}>{val ?? '—'}</div>
-              <div style={{ fontSize: '0.68rem', color: '#787878', marginTop: 3 }}>{label}</div>
+              <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: 3 }}>{label}</div>
             </div>
           ))}
         </div>
       )}
 
       {/* Tabs */}
-      <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)', marginBottom: 20 }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid rgba(26,22,18,0.08)', marginBottom: 20 }}>
         {TABS.map(t => (
           <button key={t.id} className={`tab-btn ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id)}>
             {t.label}
             {t.id === 'campaigns' && campaigns.length > 0 && (
-              <span style={{ marginLeft: 6, background: 'rgba(90,138,159,0.2)', color: '#4A7EC8', borderRadius: 10, fontSize: '0.6rem', fontWeight: 700, padding: '1px 6px', fontFamily: 'JetBrains Mono' }}>{campaigns.length}</span>
+              <span style={{ marginLeft: 6, background: 'rgba(90,138,159,0.2)', color: 'var(--accent)', borderRadius: 10, fontSize: '0.6rem', fontWeight: 700, padding: '1px 6px', fontFamily: 'JetBrains Mono' }}>{campaigns.length}</span>
             )}
           </button>
         ))}
@@ -198,16 +198,16 @@ export default function ThreatHunt() {
                 </select>
               </div>
               {iocs.length === 0 ? (
-                <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#787878' }}>No IOCs tracked yet. Add IOCs to cases to see frequency analysis.</div>
+                <div className="at-card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>No IOCs tracked yet. Add IOCs to cases to see frequency analysis.</div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {iocs.map(ioc => (
-                    <div key={ioc.id} className="at-card" style={{ padding: '12px 16px', borderLeft: ioc.is_campaign ? '2px solid #C0392B' : '1px solid rgba(255,255,255,0.07)' }}>
+                    <div key={ioc.id} className="at-card" style={{ padding: '12px 16px', borderLeft: ioc.is_campaign ? '2px solid #C0392B' : '1px solid rgba(26,22,18,0.08)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.82rem', color: '#8BB8E8', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{ioc.ioc}</span>
-                        <span style={{ fontSize: '0.65rem', color: '#787878', fontFamily: 'JetBrains Mono', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: 3 }}>{ioc.ioc_type}</span>
+                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono', background: 'rgba(26,22,18,0.05)', padding: '2px 6px', borderRadius: 3 }}>{ioc.ioc_type}</span>
                         {ioc.is_campaign && (
-                          <span style={{ fontSize: '0.65rem', color: '#4A7EC8', fontFamily: 'JetBrains Mono', background: 'rgba(90,138,159,0.1)', border: '1px solid rgba(90,138,159,0.3)', padding: '2px 6px', borderRadius: 3 }}>⚠ CAMPAIGN</span>
+                          <span style={{ fontSize: '0.65rem', color: 'var(--accent)', fontFamily: 'JetBrains Mono', background: 'rgba(90,138,159,0.1)', border: '1px solid rgba(204,120,92,0.25)', padding: '2px 6px', borderRadius: 3 }}>⚠ CAMPAIGN</span>
                         )}
                         <span style={{ fontSize: '0.78rem', fontWeight: 700, color: ioc.case_count > 1 ? '#4A7EC8' : '#787878' }}>{ioc.case_count} case{ioc.case_count !== 1 ? 's' : ''}</span>
                       </div>
@@ -215,14 +215,14 @@ export default function ThreatHunt() {
                         <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
                           {ioc.cases.map(c => (
                             <button key={c.id} onClick={() => navigate(`/app/cases/${c.id}`)}
-                              style={{ fontSize: '0.7rem', fontFamily: 'JetBrains Mono', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4, padding: '3px 8px', cursor: 'pointer', color: '#BDD4E8', display: 'flex', gap: 5, alignItems: 'center' }}>
+                              style={{ fontSize: '0.7rem', fontFamily: 'JetBrains Mono', background: 'rgba(26,22,18,0.05)', border: '1px solid rgba(26,22,18,0.09)', borderRadius: 4, padding: '3px 8px', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', gap: 5, alignItems: 'center' }}>
                               <SeverityBadge severity={c.severity} />
                               {c.case_number}
                             </button>
                           ))}
                         </div>
                       )}
-                      <div style={{ fontSize: '0.68rem', color: '#787878', marginTop: 6, fontFamily: 'JetBrains Mono' }}>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: 6, fontFamily: 'JetBrains Mono' }}>
                         First seen: {new Date(ioc.first_seen).toLocaleDateString()} · Last seen: {new Date(ioc.last_seen).toLocaleDateString()}
                       </div>
                     </div>
@@ -236,7 +236,7 @@ export default function ThreatHunt() {
           {tab === 'mitre' && (
             <div>
               {mitre.length === 0 ? (
-                <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#787878' }}>No MITRE techniques mapped yet. Generate AI analysis on cases to populate this heatmap.</div>
+                <div className="at-card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>No MITRE techniques mapped yet. Generate AI analysis on cases to populate this heatmap.</div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px,1fr))', gap: 10 }}>
                   {mitre.map(m => {
@@ -250,10 +250,10 @@ export default function ThreatHunt() {
                           <span style={{ fontSize: '0.78rem', fontWeight: 700, color }}>{m.count}</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+                          <div style={{ flex: 1, height: 4, background: 'rgba(26,22,18,0.09)', borderRadius: 2, overflow: 'hidden' }}>
                             <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 2, transition: 'width 0.5s ease' }} />
                           </div>
-                          <span style={{ fontSize: '0.65rem', color: '#787878', fontFamily: 'JetBrains Mono', minWidth: 28 }}>{pct}%</span>
+                          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono', minWidth: 28 }}>{pct}%</span>
                         </div>
                         <div style={{ fontSize: '0.65rem', color, fontFamily: 'JetBrains Mono', marginTop: 5, opacity: 0.8 }}>{m.tactic}</div>
                       </div>
@@ -268,8 +268,8 @@ export default function ThreatHunt() {
           {tab === 'campaigns' && (
             <div>
               {campaigns.length === 0 ? (
-                <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#787878' }}>
-                  <AlertTriangle size={28} style={{ color: 'rgba(90,138,159,0.3)', margin: '0 auto 10px' }} />
+                <div className="at-card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
+                  <AlertTriangle size={28} style={{ color: 'rgba(204,120,92,0.25)', margin: '0 auto 10px' }} />
                   No campaign-level correlations yet. IOCs appearing in 3+ cases trigger campaign alerts.
                 </div>
               ) : (
@@ -277,23 +277,23 @@ export default function ThreatHunt() {
                   {campaigns.map((camp, i) => (
                     <div key={i} className="at-card" style={{ padding: '16px 18px', borderLeft: '2px solid #C0392B' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
-                        <AlertTriangle size={16} style={{ color: '#4A7EC8', flexShrink: 0 }} />
+                        <AlertTriangle size={16} style={{ color: 'var(--accent)', flexShrink: 0 }} />
                         <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.85rem', color: '#8BB8E8', flex: 1 }}>{camp.ioc}</span>
-                        <span style={{ fontSize: '0.65rem', background: 'rgba(90,138,159,0.12)', border: '1px solid rgba(90,138,159,0.3)', color: '#4A7EC8', padding: '2px 8px', borderRadius: 4, fontFamily: 'JetBrains Mono' }}>
+                        <span style={{ fontSize: '0.65rem', background: 'rgba(204,120,92,0.1)', border: '1px solid rgba(204,120,92,0.25)', color: 'var(--accent)', padding: '2px 8px', borderRadius: 4, fontFamily: 'JetBrains Mono' }}>
                           {camp.case_count} CASES
                         </span>
-                        <span style={{ fontSize: '0.65rem', color: '#787878', fontFamily: 'JetBrains Mono' }}>{camp.ioc_type}</span>
+                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono' }}>{camp.ioc_type}</span>
                       </div>
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
                         {camp.cases.map(c => (
                           <button key={c.id} onClick={() => navigate(`/app/cases/${c.id}`)}
-                            style={{ fontSize: '0.7rem', fontFamily: 'JetBrains Mono', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4, padding: '4px 9px', cursor: 'pointer', color: '#BDD4E8', display: 'flex', gap: 5, alignItems: 'center' }}>
+                            style={{ fontSize: '0.7rem', fontFamily: 'JetBrains Mono', background: 'rgba(26,22,18,0.05)', border: '1px solid rgba(26,22,18,0.09)', borderRadius: 4, padding: '4px 9px', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', gap: 5, alignItems: 'center' }}>
                             <SeverityBadge severity={c.severity} /> {c.case_number}
                           </button>
                         ))}
                       </div>
                       {camp.shared_mitre?.length > 0 && (
-                        <div style={{ fontSize: '0.72rem', color: '#787878', fontFamily: 'JetBrains Mono' }}>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono' }}>
                           Shared MITRE: {camp.shared_mitre.map(m => m.id).join(' · ')}
                         </div>
                       )}
@@ -309,7 +309,7 @@ export default function ThreatHunt() {
             <div>
               <div style={{ display: 'flex', gap: 8, marginBottom: 20, maxWidth: 600 }}>
                 <div style={{ position: 'relative', flex: 1 }}>
-                  <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#787878' }} />
+                  <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   <input className="at-input" placeholder="Search across all cases, IOCs, findings…" value={q}
                     onChange={e => setQ(e.target.value)} onKeyDown={e => e.key === 'Enter' && search()}
                     style={{ paddingLeft: 30, fontFamily: 'JetBrains Mono', fontSize: '0.82rem' }} />
@@ -328,7 +328,7 @@ export default function ThreatHunt() {
                         {searchResults.ioc_matches.map((ioc, i) => (
                           <div key={i} className="at-card" style={{ padding: '10px 14px', display: 'flex', gap: 12, alignItems: 'center' }}>
                             <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.8rem', color: '#8BB8E8', flex: 1 }}>{ioc.ioc}</span>
-                            <span style={{ fontSize: '0.65rem', color: '#787878', fontFamily: 'JetBrains Mono', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: 3 }}>{ioc.ioc_type}</span>
+                            <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono', background: 'rgba(26,22,18,0.05)', padding: '2px 6px', borderRadius: 3 }}>{ioc.ioc_type}</span>
                             <span style={{ fontSize: '0.75rem', fontWeight: 600, color: ioc.case_count > 1 ? '#4A7EC8' : '#787878' }}>{ioc.case_count} case{ioc.case_count !== 1 ? 's' : ''}</span>
                           </div>
                         ))}
@@ -345,7 +345,7 @@ export default function ThreatHunt() {
                             onClick={() => navigate(`/app/cases/${c.id}`)}>
                             <div style={{ flex: 1 }}>
                               <div style={{ fontWeight: 500, fontSize: '0.84rem' }}>{c.title}</div>
-                              <div style={{ fontSize: '0.7rem', color: '#787878', fontFamily: 'JetBrains Mono', marginTop: 2 }}>{c.case_number}</div>
+                              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono', marginTop: 2 }}>{c.case_number}</div>
                             </div>
                             <SeverityBadge severity={c.severity} />
                           </div>
@@ -355,7 +355,7 @@ export default function ThreatHunt() {
                   )}
 
                   {searchResults.ioc_matches?.length === 0 && searchResults.case_matches?.length === 0 && (
-                    <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#787878' }}>No results found for "{q}"</div>
+                    <div className="at-card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>No results found for "{q}"</div>
                   )}
                 </div>
               )}
@@ -365,7 +365,7 @@ export default function ThreatHunt() {
           {/* SQL Console */}
           {tab === 'sql' && (
             <div>
-              <div style={{ fontSize: '0.72rem', color: '#787878', marginBottom: 14, fontFamily: 'JetBrains Mono' }}>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 14, fontFamily: 'JetBrains Mono' }}>
                 Read-only SQL over your telemetry, powered by DuckDB — SELECT / WITH only, capped at 200 rows and 10s.
               </div>
 
@@ -376,19 +376,19 @@ export default function ThreatHunt() {
                   style={{ padding: '10px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', color: '#7A9DB8' }}
                 >
                   {schemaOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
-                  <Database size={13} style={{ color: '#4A7EC8' }} />
+                  <Database size={13} style={{ color: 'var(--accent)' }} />
                   Available tables {sqlSchema ? `(${Object.keys(sqlSchema).length})` : ''}
                 </div>
                 {schemaOpen && (
-                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ borderTop: '1px solid rgba(26,22,18,0.07)', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {!sqlSchema ? (
-                      <Loader2 size={14} className="spinner" style={{ color: '#4A7EC8' }} />
+                      <Loader2 size={14} className="spinner" style={{ color: 'var(--accent)' }} />
                     ) : Object.entries(sqlSchema).map(([view, cols]) => (
                       <div key={view}>
                         <div style={{ fontFamily: 'JetBrains Mono', fontSize: '0.78rem', color: '#8BB8E8', marginBottom: 4 }}>{view}</div>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                           {cols.map(c => (
-                            <span key={c.name} title={c.type} style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono', color: '#787878', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', padding: '1px 6px', borderRadius: 3 }}>
+                            <span key={c.name} title={c.type} style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', background: 'rgba(26,22,18,0.05)', border: '1px solid rgba(26,22,18,0.08)', padding: '1px 6px', borderRadius: 3 }}>
                               {c.name}
                             </span>
                           ))}
@@ -401,7 +401,7 @@ export default function ThreatHunt() {
 
               {/* Examples */}
               <div style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
-                <span style={{ fontSize: '0.7rem', color: '#787878' }}>Examples:</span>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Examples:</span>
                 <select
                   className="at-select"
                   style={{ fontSize: '0.74rem' }}
@@ -429,9 +429,9 @@ export default function ThreatHunt() {
                 <button className="btn-accent" onClick={runSql} disabled={sqlLoading || !sqlQuery.trim()}>
                   {sqlLoading ? <Loader2 size={14} className="spinner" /> : <Play size={14} />} Run
                 </button>
-                <span style={{ fontSize: '0.68rem', color: '#555', fontFamily: 'JetBrains Mono' }}>⌘/Ctrl + Enter to run</span>
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono' }}>⌘/Ctrl + Enter to run</span>
                 {sqlResult && (
-                  <span style={{ fontSize: '0.72rem', color: '#787878', fontFamily: 'JetBrains Mono', marginLeft: 'auto' }}>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono', marginLeft: 'auto' }}>
                     {sqlResult.row_count} row{sqlResult.row_count !== 1 ? 's' : ''}{sqlResult.truncated ? ' (truncated to 200)' : ''}
                   </span>
                 )}
@@ -447,14 +447,14 @@ export default function ThreatHunt() {
               {/* Results */}
               {sqlResult && (
                 sqlResult.rows.length === 0 ? (
-                  <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#787878' }}>Query returned no rows.</div>
+                  <div className="at-card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>Query returned no rows.</div>
                 ) : (
                   <div className="at-card" style={{ padding: 0, overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'JetBrains Mono', fontSize: '0.74rem' }}>
                       <thead>
                         <tr>
                           {sqlResult.columns.map(c => (
-                            <th key={c} style={{ textAlign: 'left', padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,0.08)', color: '#8BB8E8', whiteSpace: 'nowrap', position: 'sticky', top: 0, background: '#0A0A0A' }}>
+                            <th key={c} style={{ textAlign: 'left', padding: '8px 12px', borderBottom: '1px solid rgba(26,22,18,0.09)', color: '#8BB8E8', whiteSpace: 'nowrap', position: 'sticky', top: 0, background: '#0A0A0A' }}>
                               {c}
                             </th>
                           ))}
@@ -462,7 +462,7 @@ export default function ThreatHunt() {
                       </thead>
                       <tbody>
                         {sqlResult.rows.map((row, i) => (
-                          <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                          <tr key={i} style={{ borderBottom: '1px solid rgba(26,22,18,0.05)' }}>
                             {row.map((v, j) => (
                               <td key={j} style={{ padding: '6px 12px', color: '#7A9DB8', whiteSpace: 'nowrap', maxWidth: 360, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {v === null || v === undefined ? <span style={{ color: '#444' }}>—</span> : String(v)}

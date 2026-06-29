@@ -71,7 +71,7 @@ function KPICard({ label, value, sub, icon: Icon, color = '#4A7EC8', alert = fal
       </div>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: '1.6rem', fontWeight: 700, color: alert ? '#EF4444' : '#BDD4E8', lineHeight: 1, ...MONO }}>{value}</div>
-        <div style={{ fontSize: '0.72rem', color: '#BDD4E8', fontWeight: 500, marginTop: 4 }}>{label}</div>
+        <div style={{ fontSize: '0.72rem', color: 'var(--text-primary)', fontWeight: 500, marginTop: 4 }}>{label}</div>
         {sub && <div style={{ fontSize: '0.63rem', color: '#4A6A8A', marginTop: 2, ...MONO }}>{sub}</div>}
       </div>
     </div>
@@ -84,7 +84,7 @@ function ConfBar({ value }) {
   const col = pct >= 90 ? '#EF4444' : pct >= 70 ? '#F97316' : '#EAB308';
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <div style={{ flex: 1, height: 4, background: 'rgba(74,126,200,0.08)', borderRadius: 2 }}>
+      <div style={{ flex: 1, height: 4, background: 'rgba(26,22,18,0.08)', borderRadius: 2 }}>
         <div style={{ width: `${pct}%`, height: '100%', background: col, borderRadius: 2, transition: 'width 0.5s' }} />
       </div>
       <span style={{ fontSize: '0.7rem', color: col, ...MONO, minWidth: 32 }}>{pct}%</span>
@@ -114,7 +114,7 @@ function EventCard({ event, onAction, processing }) {
   return (
     <div style={{
       background:   'rgba(74,126,200,0.03)',
-      border:       `1px solid ${isPending ? `${sevColor}30` : 'rgba(74,126,200,0.08)'}`,
+      border:       `1px solid ${isPending ? `${sevColor}30` : 'rgba(26,22,18,0.08)'}`,
       borderLeft:   `3px solid ${isPending ? sevColor : statColor}`,
       borderRadius: 8,
       marginBottom: 8,
@@ -136,7 +136,7 @@ function EventCard({ event, onAction, processing }) {
 
         {/* Attack type + IP */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#BDD4E8', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
             {ATTACK_LABEL[event.attack_type] || event.attack_type}
             {isPending && (
               <span style={{ fontSize: '0.6rem', background: 'rgba(249,115,22,0.15)', color: '#F97316', padding: '1px 6px', borderRadius: 4, ...MONO }}>
@@ -192,7 +192,7 @@ function EventCard({ event, onAction, processing }) {
 
           {/* AI Reasoning */}
           {event.ai_reasoning && (
-            <div style={{ marginTop: 12, padding: '10px 12px', background: '#050505', border: '1px solid #1C1C24', borderRadius: 6 }}>
+            <div style={{ marginTop: 12, padding: '10px 12px', background: var(--card), border: '1px solid #1C1C24', borderRadius: 6 }}>
               <div style={{ fontSize: '0.62rem', color: '#4A6A8A', ...MONO, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 AI Reasoning Chain
               </div>
@@ -211,7 +211,7 @@ function EventCard({ event, onAction, processing }) {
                   <span key={i} style={{
                     fontSize: '0.68rem', padding: '2px 8px', borderRadius: 4,
                     background: 'rgba(78,122,142,0.1)', border: '1px solid rgba(78,122,142,0.2)',
-                    color: '#4A7EC8', ...MONO,
+                    color: 'var(--accent)', ...MONO,
                   }}>
                     {ind}
                   </span>
@@ -223,10 +223,10 @@ function EventCard({ event, onAction, processing }) {
           {/* Request context */}
           <div style={{ marginTop: 10, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
             <span style={{ fontSize: '0.67rem', color: '#4A6A8A', ...MONO }}>
-              Requests: <span style={{ color: '#BDD4E8' }}>{event.request_count}</span>
+              Requests: <span style={{ color: 'var(--text-primary)' }}>{event.request_count}</span>
             </span>
             <span style={{ fontSize: '0.67rem', color: '#4A6A8A', ...MONO }}>
-              Unique endpoints: <span style={{ color: '#BDD4E8' }}>{event.request_pattern?.unique_endpoints || '—'}</span>
+              Unique endpoints: <span style={{ color: 'var(--text-primary)' }}>{event.request_pattern?.unique_endpoints || '—'}</span>
             </span>
             {event.user_agent && (
               <span style={{ fontSize: '0.67rem', color: '#4A6A8A', ...MONO }}>
@@ -238,7 +238,7 @@ function EventCard({ event, onAction, processing }) {
           {/* Reviewed info */}
           {event.reviewed_by && (
             <div style={{ marginTop: 10, fontSize: '0.68rem', color: '#4A6A8A', ...MONO }}>
-              Reviewed by <span style={{ color: '#4A7EC8' }}>{event.reviewed_by}</span>
+              Reviewed by <span style={{ color: 'var(--accent)' }}>{event.reviewed_by}</span>
               {event.review_notes && <span> · "{event.review_notes}"</span>}
             </div>
           )}
@@ -282,7 +282,7 @@ function EventCard({ event, onAction, processing }) {
                 onChange={e => setNotes(e.target.value)}
                 placeholder="Optional notes for audit trail..."
                 style={{
-                  width: '100%', height: 60, background: '#050505', color: '#BDD4E8',
+                  width: '100%', height: 60, background: var(--card), color: 'var(--text-primary)',
                   border: '1px solid #1C1C24', borderRadius: 4, padding: '8px 10px',
                   fontSize: '0.75rem', fontFamily: 'JetBrains Mono, monospace',
                   resize: 'none', outline: 'none', boxSizing: 'border-box',
@@ -292,7 +292,7 @@ function EventCard({ event, onAction, processing }) {
                 type="submit"
                 disabled={processing}
                 style={{
-                  marginTop: 8, padding: '7px 20px', background: '#BDD4E8', color: '#050505',
+                  marginTop: 8, padding: '7px 20px', background: '#BDD4E8', color: var(--card),
                   border: 'none', borderRadius: 4, fontSize: '0.72rem', fontWeight: 700,
                   fontFamily: 'JetBrains Mono, monospace', cursor: 'pointer',
                   opacity: processing ? 0.5 : 1,
@@ -328,8 +328,8 @@ function AdaptivePanel({ adaptive }) {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <SlidersHorizontal size={14} style={{ color: '#4A7EC8' }} />
-          <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#BDD4E8' }}>Adaptive Thresholds Agent</span>
+          <SlidersHorizontal size={14} style={{ color: 'var(--accent)' }} />
+          <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-primary)' }}>Adaptive Thresholds Agent</span>
           <span style={{ fontSize: '0.62rem', color: '#4A6A8A', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             self-tunes every 4h · Nemotron-70B
           </span>
@@ -346,7 +346,7 @@ function AdaptivePanel({ adaptive }) {
               <div style={{ fontSize: '0.62rem', color: '#4A6A8A', ...MONO, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
                 {meta.label}
               </div>
-              <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#4A7EC8', ...MONO }}>
+              <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--accent)', ...MONO }}>
                 {meta.fmt(val)}{meta.suffix}
               </div>
               {b && (
@@ -363,7 +363,7 @@ function AdaptivePanel({ adaptive }) {
         <History size={12} style={{ color: '#4A6A8A', marginTop: 2, flexShrink: 0 }} />
         {lastChange ? (
           <div style={{ fontSize: '0.68rem', color: '#7A9DB8', ...MONO, lineHeight: 1.6 }}>
-            Last change: <span style={{ color: '#BDD4E8' }}>{lastChange.threshold_name}</span>{' '}
+            Last change: <span style={{ color: 'var(--text-primary)' }}>{lastChange.threshold_name}</span>{' '}
             {THRESHOLD_META[lastChange.threshold_name]?.fmt(lastChange.old_value) ?? lastChange.old_value}
             {' → '}
             {THRESHOLD_META[lastChange.threshold_name]?.fmt(lastChange.new_value) ?? lastChange.new_value}
@@ -471,7 +471,7 @@ export default function DefenseConsole() {
   const pendingCount = events.filter(e => e.status === 'pending_review').length;
 
   return (
-    <div style={{ background: '#050505', minHeight: '100vh', padding: '28px 32px', color: '#BDD4E8' }}>
+    <div style={{ background: var(--card), minHeight: '100vh', padding: '28px 32px', color: 'var(--text-primary)' }}>
 
       {/* Toast notification */}
       {toast && (
@@ -506,7 +506,7 @@ export default function DefenseConsole() {
       `}</style>
 
       {/* ── Header ──────────────────────────────────────────────────────────── */}
-      <div style={{ borderBottom: '1px solid rgba(74,126,200,0.12)', paddingBottom: 14, marginBottom: 24, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+      <div style={{ borderBottom: '1px solid rgba(26,22,18,0.1)', paddingBottom: 14, marginBottom: 24, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
         <div>
           <div style={{ fontSize: '0.68rem', color: '#4A6A8A', ...MONO, letterSpacing: '0.15em', marginBottom: 4 }}>
             AEGISTRACE // AI DEFENSE ENGINE v5.3
@@ -533,7 +533,7 @@ export default function DefenseConsole() {
             disabled={testLoading}
             style={{
               display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px',
-              background: 'rgba(74,126,200,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+              background: 'rgba(74,126,200,0.06)', border: '1px solid rgba(26,22,18,0.1)',
               color: '#7A9DB8', fontSize: '0.68rem', borderRadius: 5, cursor: 'pointer',
               fontFamily: 'JetBrains Mono, monospace', opacity: testLoading ? 0.5 : 1,
             }}
@@ -556,7 +556,7 @@ export default function DefenseConsole() {
             disabled={demoLoading}
             style={{
               display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px',
-              background: 'rgba(74,126,200,0.08)', border: '1px solid rgba(74,126,200,0.25)',
+              background: 'rgba(26,22,18,0.08)', border: '1px solid rgba(74,126,200,0.25)',
               color: '#8BB8E8', fontSize: '0.68rem', borderRadius: 5, cursor: 'pointer',
               fontFamily: 'JetBrains Mono, monospace', opacity: demoLoading ? 0.5 : 1,
             }}
@@ -569,7 +569,7 @@ export default function DefenseConsole() {
             onClick={() => { load(); setCountdown(REFRESH_INTERVAL); }}
             style={{
               display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px',
-              background: 'rgba(74,126,200,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+              background: 'rgba(74,126,200,0.06)', border: '1px solid rgba(26,22,18,0.1)',
               color: '#7A9DB8', fontSize: '0.68rem', borderRadius: 5, cursor: 'pointer',
               fontFamily: 'JetBrains Mono, monospace',
             }}
@@ -618,7 +618,7 @@ export default function DefenseConsole() {
       <AdaptivePanel adaptive={adaptive} />
 
       {/* ── Filter Tabs ──────────────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16, borderBottom: '1px solid rgba(74,126,200,0.12)', paddingBottom: 12 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, borderBottom: '1px solid rgba(26,22,18,0.1)', paddingBottom: 12 }}>
         {[
           { key: 'all',           label: 'All Events',       count: events.length },
           { key: 'pending_review',label: 'Pending Review',   count: stats.pending_review ?? 0 },
@@ -631,7 +631,7 @@ export default function DefenseConsole() {
             onClick={() => setFilter(tab.key)}
             style={{
               padding: '5px 14px', borderRadius: 5, border: '1px solid',
-              borderColor: filter === tab.key ? 'rgba(74,126,200,0.4)' : 'rgba(74,126,200,0.1)',
+              borderColor: filter === tab.key ? 'rgba(204,120,92,0.3)' : 'rgba(74,126,200,0.1)',
               background:  filter === tab.key ? 'rgba(74,126,200,0.1)' : 'transparent',
               color:       filter === tab.key ? '#4A7EC8' : '#4A6A8A',
               fontSize: '0.7rem', fontFamily: 'JetBrains Mono, monospace', cursor: 'pointer',
@@ -641,7 +641,7 @@ export default function DefenseConsole() {
             {tab.label}
             {tab.count > 0 && (
               <span style={{
-                background: filter === tab.key ? 'rgba(74,126,200,0.2)' : 'rgba(74,126,200,0.08)',
+                background: filter === tab.key ? 'rgba(26,22,18,0.14)' : 'rgba(26,22,18,0.08)',
                 color: filter === tab.key ? '#4A7EC8' : '#7A9DB8',
                 fontSize: '0.62rem', padding: '0 5px', borderRadius: 3, ...MONO,
               }}>
@@ -661,10 +661,10 @@ export default function DefenseConsole() {
       ) : filteredEvents.length === 0 ? (
         <div style={{
           textAlign: 'center', padding: '80px 0',
-          background: 'rgba(74,126,200,0.02)', border: '1px solid rgba(74,126,200,0.12)', borderRadius: 8,
+          background: 'rgba(74,126,200,0.02)', border: '1px solid rgba(26,22,18,0.1)', borderRadius: 8,
         }}>
           <ShieldCheck size={36} style={{ color: '#22C55E', margin: '0 auto 12px', display: 'block' }} />
-          <div style={{ color: '#BDD4E8', fontSize: '0.9rem', marginBottom: 6 }}>
+          <div style={{ color: 'var(--text-primary)', fontSize: '0.9rem', marginBottom: 6 }}>
             {filter === 'pending_review' ? 'No pending decisions — you\'re clear.' : 'No events found for this filter.'}
           </div>
           <div style={{ color: '#4A6A8A', fontSize: '0.75rem', ...MONO }}>
@@ -675,7 +675,7 @@ export default function DefenseConsole() {
             disabled={testLoading}
             style={{
               marginTop: 16, padding: '7px 18px', background: 'rgba(74,126,200,0.1)',
-              border: '1px solid rgba(74,126,200,0.3)', color: '#4A7EC8', borderRadius: 5,
+              border: '1px solid rgba(204,120,92,0.25)', color: 'var(--accent)', borderRadius: 5,
               fontSize: '0.72rem', fontFamily: 'JetBrains Mono, monospace', cursor: 'pointer',
             }}
           >
@@ -707,7 +707,7 @@ export default function DefenseConsole() {
 
       {/* ── Footer info ──────────────────────────────────────────────────────── */}
       <div style={{
-        marginTop: 32, paddingTop: 16, borderTop: '1px solid rgba(74,126,200,0.12)',
+        marginTop: 32, paddingTop: 16, borderTop: '1px solid rgba(26,22,18,0.1)',
         display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
       }}>
         <div style={{ fontSize: '0.63rem', color: '#4A6A8A', ...MONO }}>

@@ -30,14 +30,14 @@ function RiskGauge({ score }) {
     <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
       <div style={{ position:'relative', width:80, height:80 }}>
         <svg viewBox="0 0 80 80" style={{ width:80, height:80, transform:'rotate(-90deg)' }}>
-          <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8"/>
+          <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(26,22,18,0.07)" strokeWidth="8"/>
           <circle cx="40" cy="40" r="32" fill="none" stroke={color} strokeWidth="8"
             strokeDasharray={`${(score/100)*201} 201`} strokeLinecap="round"
             style={{ transition:'stroke-dasharray 0.8s ease' }}/>
         </svg>
         <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
           <span style={{ fontSize:'1.2rem', fontWeight:800, color, ...MONO, lineHeight:1 }}>{score}</span>
-          <span style={{ fontSize:'0.5rem', color:'#555', textTransform:'uppercase', letterSpacing:'0.06em' }}>/ 100</span>
+          <span style={{ fontSize:'0.5rem', color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.06em' }}>/ 100</span>
         </div>
       </div>
       <span style={{ fontSize:'0.6rem', fontWeight:700, color, textTransform:'uppercase', letterSpacing:'0.1em', ...MONO }}>{label}</span>
@@ -47,13 +47,13 @@ function RiskGauge({ score }) {
 
 function StatCard({ icon: Icon, label, value, color = '#4A7EC8', sub }) {
   return (
-    <div style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, padding:'12px 14px', flex:1, minWidth:100 }}>
+    <div style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(26,22,18,0.08)', borderRadius:8, padding:'12px 14px', flex:1, minWidth:100 }}>
       <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:6 }}>
         <Icon size={13} style={{ color }}/>
-        <span style={{ fontSize:'0.62rem', color:'#555', textTransform:'uppercase', letterSpacing:'0.08em', ...MONO }}>{label}</span>
+        <span style={{ fontSize:'0.62rem', color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.08em', ...MONO }}>{label}</span>
       </div>
       <div style={{ fontSize:'1.4rem', fontWeight:700, color, ...MONO, lineHeight:1 }}>{value ?? '—'}</div>
-      {sub && <div style={{ fontSize:'0.6rem', color:'#555', marginTop:3, ...MONO }}>{sub}</div>}
+      {sub && <div style={{ fontSize:'0.6rem', color:'var(--text-muted)', marginTop:3, ...MONO }}>{sub}</div>}
     </div>
   );
 }
@@ -67,11 +67,11 @@ function ConfirmModal({ title, body, confirmLabel = 'Confirm', danger = true, on
   return (
     <div style={{ position:'fixed', inset:0, zIndex:2000, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.72)', backdropFilter:'blur(4px)' }}
       onClick={e => { if (e.target === e.currentTarget) onCancel(); }}>
-      <div style={{ background:'#0D0D0D', border:`1px solid ${danger ? 'rgba(239,68,68,0.25)' : 'rgba(90,138,159,0.25)'}`, borderRadius:12, padding:'24px 26px', width:'100%', maxWidth:420, boxShadow:'0 24px 64px rgba(0,0,0,0.65)' }}>
+      <div style={{ background:var(--surface), border:`1px solid ${danger ? 'rgba(239,68,68,0.25)' : 'rgba(90,138,159,0.25)'}`, borderRadius:12, padding:'24px 26px', width:'100%', maxWidth:420, boxShadow:'0 24px 64px rgba(0,0,0,0.65)' }}>
         <div style={{ fontWeight:700, fontSize:'0.95rem', marginBottom:10, color: danger ? '#EF4444' : '#BDD4E8' }}>{title}</div>
-        <div style={{ fontSize:'0.78rem', color:'#787878', lineHeight:1.65, marginBottom:22, whiteSpace:'pre-line' }}>{body}</div>
+        <div style={{ fontSize:'0.78rem', color:'var(--text-muted)', lineHeight:1.65, marginBottom:22, whiteSpace:'pre-line' }}>{body}</div>
         <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
-          <button onClick={onCancel} style={{ background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'#787878', borderRadius:7, padding:'8px 18px', cursor:'pointer', fontSize:'0.78rem' }}>
+          <button onClick={onCancel} style={{ background:'rgba(26,22,18,0.05)', border:'1px solid rgba(26,22,18,0.1)', color:'var(--text-muted)', borderRadius:7, padding:'8px 18px', cursor:'pointer', fontSize:'0.78rem' }}>
             Cancel
           </button>
           <button onClick={() => { onConfirm(); onCancel(); }} autoFocus
@@ -88,7 +88,7 @@ function SortTh({ col, label, sort, onSort, style }) {
   const active = sort.col === col;
   const Icon = active ? (sort.dir === 'asc' ? ChevronUp : ChevronDown) : ChevronsUpDown;
   return (
-    <th onClick={() => onSort(col)} style={{ textAlign:'left', padding:'8px 10px', color: active ? '#4A7EC8' : '#555', fontWeight:600, fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.07em', borderBottom:'1px solid rgba(255,255,255,0.07)', cursor:'pointer', userSelect:'none', whiteSpace:'nowrap', ...style }}>
+    <th onClick={() => onSort(col)} style={{ textAlign:'left', padding:'8px 10px', color: active ? '#4A7EC8' : '#555', fontWeight:600, fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.07em', borderBottom:'1px solid rgba(26,22,18,0.08)', cursor:'pointer', userSelect:'none', whiteSpace:'nowrap', ...style }}>
       <span style={{ display:'flex', alignItems:'center', gap:3 }}>{label} <Icon size={9}/></span>
     </th>
   );
@@ -245,7 +245,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
   ];
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', height:'100%', background:'#0A0A0A', border:'1px solid rgba(255,255,255,0.08)', borderRadius:10, overflow:'hidden' }}>
+    <div style={{ display:'flex', flexDirection:'column', height:'100%', background:'#0A0A0A', border:'1px solid rgba(26,22,18,0.09)', borderRadius:10, overflow:'hidden' }}>
 
       {confirmModal && (
         <ConfirmModal
@@ -259,7 +259,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
       )}
 
       {/* ── Header ── */}
-      <div style={{ padding:'16px 20px', borderBottom:'1px solid rgba(255,255,255,0.07)', background:'rgba(0,0,0,0.4)', flexShrink:0 }}>
+      <div style={{ padding:'16px 20px', borderBottom:'1px solid rgba(26,22,18,0.08)', background:'rgba(0,0,0,0.4)', flexShrink:0 }}>
         <div style={{ display:'flex', alignItems:'center', gap:14 }}>
           <span style={{ fontSize:28 }}>{OS_ICON[ep.os_type] || '💻'}</span>
           <div style={{ flex:1, minWidth:0 }}>
@@ -274,21 +274,21 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                   <Radio size={8}/> LIVE
                 </span>
               ) : (
-                <span style={{ fontSize:'0.58rem', color:'#555', ...MONO }}>connecting…</span>
+                <span style={{ fontSize:'0.58rem', color:'var(--text-muted)', ...MONO }}>connecting…</span>
               )}
             </div>
-            <div style={{ fontSize:'0.7rem', color:'#555', ...MONO, marginTop:2 }}>
+            <div style={{ fontSize:'0.7rem', color:'var(--text-muted)', ...MONO, marginTop:2 }}>
               {ep.ip_address} · {ep.os_type} · Agent v{detail?.agent_version || ep.agent_version}
             </div>
           </div>
           <div style={{ display:'flex', gap:8 }}>
             <button onClick={() => { loadDetail(); loadLogs(); }}
-              style={{ background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:6, padding:'5px 10px', cursor:'pointer', color:'#787878', display:'flex', alignItems:'center', gap:5, fontSize:'0.72rem', ...MONO }}
+              style={{ background:'rgba(26,22,18,0.05)', border:'1px solid rgba(26,22,18,0.09)', borderRadius:6, padding:'5px 10px', cursor:'pointer', color:'var(--text-muted)', display:'flex', alignItems:'center', gap:5, fontSize:'0.72rem', ...MONO }}
               onMouseEnter={e => e.currentTarget.style.color='#BDD4E8'} onMouseLeave={e => e.currentTarget.style.color='#787878'}>
               <RefreshCw size={11}/> Refresh
             </button>
             <button onClick={onClose}
-              style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:6, padding:'5px 9px', cursor:'pointer', color:'#787878' }}>
+              style={{ background:'rgba(26,22,18,0.05)', border:'1px solid rgba(26,22,18,0.09)', borderRadius:6, padding:'5px 9px', cursor:'pointer', color:'var(--text-muted)' }}>
               <X size={14}/>
             </button>
           </div>
@@ -296,7 +296,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
       </div>
 
       {/* ── Tab bar ── */}
-      <div style={{ display:'flex', borderBottom:'1px solid rgba(255,255,255,0.07)', flexShrink:0, overflowX:'auto' }}>
+      <div style={{ display:'flex', borderBottom:'1px solid rgba(26,22,18,0.08)', flexShrink:0, overflowX:'auto' }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
             style={{ padding:'10px 16px', background:'none', border:'none', fontSize:'0.76rem', cursor:'pointer', ...MONO, whiteSpace:'nowrap',
@@ -320,8 +320,8 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
           <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
             {/* Risk + stats row */}
             <div style={{ display:'flex', gap:14, alignItems:'stretch', flexWrap:'wrap' }}>
-              <div style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, padding:'16px 20px', display:'flex', flexDirection:'column', alignItems:'center', gap:6, minWidth:120 }}>
-                <div style={{ fontSize:'0.6rem', color:'#555', textTransform:'uppercase', letterSpacing:'0.1em', ...MONO }}>Risk Score</div>
+              <div style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(26,22,18,0.08)', borderRadius:8, padding:'16px 20px', display:'flex', flexDirection:'column', alignItems:'center', gap:6, minWidth:120 }}>
+                <div style={{ fontSize:'0.6rem', color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.1em', ...MONO }}>Risk Score</div>
                 <RiskGauge score={riskScore} />
               </div>
               <div style={{ flex:1, display:'flex', gap:10, flexWrap:'wrap' }}>
@@ -335,7 +335,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
 
             {/* System info */}
             {sys.cpu_percent !== undefined && (
-              <div style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, padding:'14px 16px' }}>
+              <div style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(26,22,18,0.08)', borderRadius:8, padding:'14px 16px' }}>
                 <div style={{ fontSize:'0.65rem', color:'#4A7EC8', textTransform:'uppercase', letterSpacing:'0.1em', ...MONO, marginBottom:12 }}>◇ System Resources</div>
                 <div style={{ display:'flex', gap:20, flexWrap:'wrap' }}>
                   {[
@@ -344,17 +344,17 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                     { label:'Disk', value: sys.disk_percent, unit:'%', color: sys.disk_percent > 90 ? '#EF4444' : '#22C55E' },
                   ].map(m => m.value !== undefined && (
                     <div key={m.label} style={{ flex:1, minWidth:120 }}>
-                      <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4, fontSize:'0.7rem', color:'#787878', ...MONO }}>
+                      <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4, fontSize:'0.7rem', color:'var(--text-muted)', ...MONO }}>
                         <span>{m.label}</span>
                         <span style={{ color: m.color, fontWeight:600 }}>{m.value}{m.unit}</span>
                       </div>
-                      <div style={{ height:5, background:'rgba(255,255,255,0.06)', borderRadius:3, overflow:'hidden' }}>
+                      <div style={{ height:5, background:'rgba(26,22,18,0.07)', borderRadius:3, overflow:'hidden' }}>
                         <div style={{ height:'100%', width:`${m.value}%`, background: m.color, borderRadius:3, transition:'width 0.6s ease' }}/>
                       </div>
                     </div>
                   ))}
                 </div>
-                <div style={{ display:'flex', gap:16, marginTop:12, flexWrap:'wrap', fontSize:'0.68rem', color:'#555', ...MONO }}>
+                <div style={{ display:'flex', gap:16, marginTop:12, flexWrap:'wrap', fontSize:'0.68rem', color:'var(--text-muted)', ...MONO }}>
                   {sys.uptime_hours !== undefined && <span>⏱ Uptime: {sys.uptime_hours}h</span>}
                   {sys.logged_in_users?.length > 0 && <span>👤 Logged in: {sys.logged_in_users.join(', ')}</span>}
                   {sys.mem_total_mb && <span>🧠 RAM: {Math.round(sys.mem_total_mb/1024)}GB total</span>}
@@ -364,16 +364,16 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
 
             {/* Recent alerts */}
             {detail?.recent_alerts?.length > 0 && (
-              <div style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, padding:'14px 16px' }}>
+              <div style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(26,22,18,0.08)', borderRadius:8, padding:'14px 16px' }}>
                 <div style={{ fontSize:'0.65rem', color:'#4A7EC8', textTransform:'uppercase', letterSpacing:'0.1em', ...MONO, marginBottom:10 }}>◇ Recent Alerts</div>
                 <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
                   {detail.recent_alerts.slice(0,5).map(a => {
                     const sc = SEV_CLR[a.severity] || '#787878';
                     return (
-                      <div key={a.id} style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 10px', background:'rgba(255,255,255,0.02)', borderRadius:6, border:`1px solid rgba(255,255,255,0.05)`, borderLeft:`3px solid ${sc}` }}>
+                      <div key={a.id} style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 10px', background:'rgba(26,22,18,0.03)', borderRadius:6, border:`1px solid rgba(26,22,18,0.05)`, borderLeft:`3px solid ${sc}` }}>
                         <span style={{ fontSize:'0.6rem', fontWeight:700, color:sc, textTransform:'uppercase', ...MONO, minWidth:60 }}>{a.severity}</span>
-                        <span style={{ fontSize:'0.76rem', flex:1, color:'#BDD4E8' }}>{ALERT_LABELS[a.alert_type] || a.alert_type?.replace(/_/g,' ')}</span>
-                        <span style={{ fontSize:'0.62rem', color:'#555', ...MONO, flexShrink:0 }}>
+                        <span style={{ fontSize:'0.76rem', flex:1, color:'var(--text-primary)' }}>{ALERT_LABELS[a.alert_type] || a.alert_type?.replace(/_/g,' ')}</span>
+                        <span style={{ fontSize:'0.62rem', color:'var(--text-muted)', ...MONO, flexShrink:0 }}>
                           {new Date(a.detected_at).toLocaleTimeString(undefined, {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})}
                         </span>
                       </div>
@@ -385,12 +385,12 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
 
             {/* Recent sudo */}
             {detail?.recent_sudo?.length > 0 && (
-              <div style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, padding:'14px 16px' }}>
+              <div style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(26,22,18,0.08)', borderRadius:8, padding:'14px 16px' }}>
                 <div style={{ fontSize:'0.65rem', color:'#F97316', textTransform:'uppercase', letterSpacing:'0.1em', ...MONO, marginBottom:10 }}>◇ Recent sudo Commands</div>
                 <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
                   {detail.recent_sudo.map((s,i) => (
                     <div key={i} style={{ display:'flex', gap:10, padding:'5px 8px', background:'rgba(249,115,22,0.03)', borderRadius:5, alignItems:'flex-start' }}>
-                      <span style={{ color:'#555', fontSize:'0.62rem', ...MONO, flexShrink:0, minWidth:70 }}>
+                      <span style={{ color:'var(--text-muted)', fontSize:'0.62rem', ...MONO, flexShrink:0, minWidth:70 }}>
                         {s.ts ? new Date(s.ts).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}) : ''}
                       </span>
                       {s.username && <span style={{ color:'#EAB308', fontSize:'0.68rem', ...MONO, flexShrink:0 }}>{s.username}</span>}
@@ -421,9 +421,9 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
               {LOG_CATS.map(c => (
                 <button key={c} onClick={() => { setLogFilter(c); loadLogs(c); }}
                   style={{ padding:'3px 10px', borderRadius:5, border:'1px solid', fontSize:'0.65rem', cursor:'pointer', ...MONO, textTransform:'uppercase',
-                    background: logFilter===c ? 'rgba(90,138,159,0.12)' : 'transparent',
+                    background: logFilter===c ? 'rgba(204,120,92,0.1)' : 'transparent',
                     color: logFilter===c ? '#4A7EC8' : '#555',
-                    borderColor: logFilter===c ? 'rgba(90,138,159,0.3)' : 'rgba(255,255,255,0.07)' }}>
+                    borderColor: logFilter===c ? 'rgba(204,120,92,0.25)' : 'rgba(26,22,18,0.08)' }}>
                   {CAT_ICON[c] || ''} {c}
                 </button>
               ))}
@@ -431,32 +431,32 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                 style={{ marginLeft:'auto', padding:'3px 10px', borderRadius:5, border:'1px solid', fontSize:'0.63rem', cursor:'pointer', ...MONO,
                   background: autoScroll ? 'rgba(34,197,94,0.08)' : 'transparent',
                   color: autoScroll ? '#22C55E' : '#555',
-                  borderColor: autoScroll ? 'rgba(34,197,94,0.25)' : 'rgba(255,255,255,0.07)' }}>
+                  borderColor: autoScroll ? 'rgba(34,197,94,0.25)' : 'rgba(26,22,18,0.08)' }}>
                 {autoScroll ? '⬇ Auto-scroll on' : '⬇ Auto-scroll off'}
               </button>
-              <span style={{ fontSize:'0.6rem', color:'#555', ...MONO }}>
+              <span style={{ fontSize:'0.6rem', color:'var(--text-muted)', ...MONO }}>
                 {filteredLogs.length}{logSearch ? `/${rawLogs.length}` : ''} events
                 <span style={{ display:'inline-block', width:6, height:6, borderRadius:'50%', background:'#22C55E', marginLeft:6, animation:'pulse 2s infinite', verticalAlign:'middle' }}/>
               </span>
             </div>
             <div style={{ position:'relative', marginBottom:8 }}>
-              <Search size={12} style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', color:'#555', pointerEvents:'none' }}/>
+              <Search size={12} style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', color:'var(--text-muted)', pointerEvents:'none' }}/>
               <input value={logSearch} onChange={e => setLogSearch(e.target.value)} placeholder="Search logs…"
-                style={{ width:'100%', background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:6, padding:'6px 30px 6px 30px', color:'#BDD4E8', fontSize:'0.72rem', ...MONO, outline:'none', boxSizing:'border-box' }}/>
+                style={{ width:'100%', background:'rgba(0,0,0,0.3)', border:'1px solid rgba(26,22,18,0.09)', borderRadius:6, padding:'6px 30px 6px 30px', color:'var(--text-primary)', fontSize:'0.72rem', ...MONO, outline:'none', boxSizing:'border-box' }}/>
               {logSearch && (
-                <button onClick={() => setLogSearch('')} style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'#555', padding:2, display:'flex', alignItems:'center' }}>
+                <button onClick={() => setLogSearch('')} style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'var(--text-muted)', padding:2, display:'flex', alignItems:'center' }}>
                   <X size={12}/>
                 </button>
               )}
             </div>
             {logsLoading ? (
-              <div style={{ textAlign:'center', padding:30 }}><Loader2 size={16} className="spinner" style={{ color:'#787878' }}/></div>
+              <div style={{ textAlign:'center', padding:30 }}><Loader2 size={16} className="spinner" style={{ color:'var(--text-muted)' }}/></div>
             ) : filteredLogs.length === 0 ? (
-              <div style={{ padding:30, textAlign:'center', color:'#555', fontSize:'0.8rem', ...MONO }}>
+              <div style={{ padding:30, textAlign:'center', color:'var(--text-muted)', fontSize:'0.8rem', ...MONO }}>
                 {rawLogs.length === 0 ? 'Waiting for logs — agent ships every 3s via real-time stream.' : 'No logs match your search.'}
               </div>
             ) : (
-              <div ref={logsRef} style={{ background:'#030303', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, maxHeight:520, overflowY:'auto', ...MONO, fontSize:'0.7rem' }}>
+              <div ref={logsRef} style={{ background:'#030303', border:'1px solid rgba(26,22,18,0.08)', borderRadius:8, maxHeight:520, overflowY:'auto', ...MONO, fontSize:'0.7rem' }}>
                 {filteredLogs.map((log, i) => {
                   const sc = SEV_CLR[log.severity] || '#555';
                   const ts = log.ts ? new Date(log.ts).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}) : '';
@@ -484,28 +484,28 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
         {tab === 'processes' && (
           <div>
             <div style={{ display:'flex', justifyContent:'space-between', marginBottom:10, alignItems:'center' }}>
-              <span style={{ fontSize:'0.68rem', color:'#555', ...MONO }}>{detail?.processes?.length ?? 0} processes · updated every 10s</span>
+              <span style={{ fontSize:'0.68rem', color:'var(--text-muted)', ...MONO }}>{detail?.processes?.length ?? 0} processes · updated every 10s</span>
               <button onClick={() => dispatch('collect_now', {}, 'Collect Now')} disabled={cmdLoading==='collect_now'}
                 style={{ fontSize:'0.68rem', background:'rgba(90,138,159,0.1)', border:'1px solid rgba(90,138,159,0.25)', color:'#4A7EC8', borderRadius:5, padding:'4px 10px', cursor:'pointer', ...MONO, display:'flex', alignItems:'center', gap:5 }}>
                 {cmdLoading==='collect_now' ? <Loader2 size={10} className="spinner"/> : <RefreshCw size={10}/>} Collect Now
               </button>
             </div>
-            <div style={{ background:'#030303', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, overflow:'hidden' }}>
+            <div style={{ background:'#030303', border:'1px solid rgba(26,22,18,0.08)', borderRadius:8, overflow:'hidden' }}>
               <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'0.72rem', ...MONO }}>
                 <thead>
-                  <tr style={{ background:'rgba(255,255,255,0.03)' }}>
+                  <tr style={{ background:'rgba(26,22,18,0.04)' }}>
                     <SortTh col="pid"            label="PID"     sort={sortProc} onSort={c => toggleSort(setSortProc, c)}/>
                     <SortTh col="name"           label="Process" sort={sortProc} onSort={c => toggleSort(setSortProc, c)}/>
                     <SortTh col="username"       label="User"    sort={sortProc} onSort={c => toggleSort(setSortProc, c)}/>
                     <SortTh col="cpu_percent"    label="CPU %"   sort={sortProc} onSort={c => toggleSort(setSortProc, c)}/>
                     <SortTh col="memory_percent" label="Mem %"   sort={sortProc} onSort={c => toggleSort(setSortProc, c)}/>
-                    <th style={{ padding:'8px 10px', color:'#555', fontWeight:600, fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.07em', borderBottom:'1px solid rgba(255,255,255,0.07)' }}>Action</th>
+                    <th style={{ padding:'8px 10px', color:'var(--text-muted)', fontWeight:600, fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.07em', borderBottom:'1px solid rgba(26,22,18,0.08)' }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sortedProcs.map((p,i) => (
-                    <tr key={i} style={{ borderBottom:'1px solid rgba(255,255,255,0.03)', background: p.suspicious ? 'rgba(239,68,68,0.04)' : 'transparent' }}>
-                      <td style={{ padding:'6px 10px', color:'#555' }}>{p.pid}</td>
+                    <tr key={i} style={{ borderBottom:'1px solid rgba(26,22,18,0.04)', background: p.suspicious ? 'rgba(239,68,68,0.04)' : 'transparent' }}>
+                      <td style={{ padding:'6px 10px', color:'var(--text-muted)' }}>{p.pid}</td>
                       <td style={{ padding:'6px 10px', color: p.suspicious ? '#EF4444' : '#BDD4E8', fontWeight: p.suspicious ? 700 : 400 }}>
                         {p.suspicious && '⚠ '}{p.name}
                       </td>
@@ -529,7 +529,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                   {[0,1,2,3,4,5,6,7].map(i => <div key={i} className="skeleton" style={{ height:32, marginBottom:4, borderRadius:4 }}/>)}
                 </div>
               )}
-              {detail && detail.processes.length === 0 && <div style={{ padding:20, textAlign:'center', color:'#555', fontSize:'0.8rem' }}>No process data yet — click Collect Now</div>}
+              {detail && detail.processes.length === 0 && <div style={{ padding:20, textAlign:'center', color:'var(--text-muted)', fontSize:'0.8rem' }}>No process data yet — click Collect Now</div>}
             </div>
           </div>
         )}
@@ -538,30 +538,30 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
         {tab === 'network' && (
           <div>
             <div style={{ display:'flex', justifyContent:'space-between', marginBottom:10, alignItems:'center' }}>
-              <span style={{ fontSize:'0.68rem', color:'#555', ...MONO }}>{detail?.connections?.length ?? 0} active connections</span>
+              <span style={{ fontSize:'0.68rem', color:'var(--text-muted)', ...MONO }}>{detail?.connections?.length ?? 0} active connections</span>
             </div>
-            <div style={{ background:'#030303', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, overflow:'hidden' }}>
+            <div style={{ background:'#030303', border:'1px solid rgba(26,22,18,0.08)', borderRadius:8, overflow:'hidden' }}>
               <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'0.72rem', ...MONO }}>
                 <thead>
-                  <tr style={{ background:'rgba(255,255,255,0.03)' }}>
+                  <tr style={{ background:'rgba(26,22,18,0.04)' }}>
                     <SortTh col="process_name" label="Process"   sort={sortConn} onSort={c => toggleSort(setSortConn, c)}/>
-                    <th style={{ textAlign:'left', padding:'8px 10px', color:'#555', fontWeight:600, fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.07em', borderBottom:'1px solid rgba(255,255,255,0.07)' }}>Local</th>
+                    <th style={{ textAlign:'left', padding:'8px 10px', color:'var(--text-muted)', fontWeight:600, fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.07em', borderBottom:'1px solid rgba(26,22,18,0.08)' }}>Local</th>
                     <SortTh col="remote_ip"    label="Remote IP" sort={sortConn} onSort={c => toggleSort(setSortConn, c)}/>
                     <SortTh col="remote_port"  label="Port"      sort={sortConn} onSort={c => toggleSort(setSortConn, c)}/>
                     <SortTh col="status"       label="Status"    sort={sortConn} onSort={c => toggleSort(setSortConn, c)}/>
-                    <th style={{ textAlign:'left', padding:'8px 10px', color:'#555', fontWeight:600, fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.07em', borderBottom:'1px solid rgba(255,255,255,0.07)' }}>Action</th>
+                    <th style={{ textAlign:'left', padding:'8px 10px', color:'var(--text-muted)', fontWeight:600, fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.07em', borderBottom:'1px solid rgba(26,22,18,0.08)' }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sortedConns.map((c,i) => (
-                    <tr key={i} style={{ borderBottom:'1px solid rgba(255,255,255,0.03)', background: c.suspicious ? 'rgba(239,68,68,0.04)' : 'transparent' }}>
+                    <tr key={i} style={{ borderBottom:'1px solid rgba(26,22,18,0.04)', background: c.suspicious ? 'rgba(239,68,68,0.04)' : 'transparent' }}>
                       <td style={{ padding:'6px 10px', color: c.suspicious ? '#EF4444' : '#BDD4E8' }}>{c.process_name || '—'}</td>
-                      <td style={{ padding:'6px 10px', color:'#555' }}>{c.local_ip}:{c.local_port}</td>
+                      <td style={{ padding:'6px 10px', color:'var(--text-muted)' }}>{c.local_ip}:{c.local_port}</td>
                       <td style={{ padding:'6px 10px', color:'#22C55E' }}>{c.remote_ip || '—'}</td>
                       <td style={{ padding:'6px 10px', color: c.suspicious ? '#EF4444' : '#4A7EC8', fontWeight: c.suspicious ? 700 : 400 }}>
                         {c.suspicious && '⚠ '}{c.remote_port}
                       </td>
-                      <td style={{ padding:'6px 10px', color:'#555' }}>{c.status || '—'}</td>
+                      <td style={{ padding:'6px 10px', color:'var(--text-muted)' }}>{c.status || '—'}</td>
                       <td style={{ padding:'6px 10px' }}>
                         {c.remote_ip && (
                           <button
@@ -580,7 +580,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                   {[0,1,2,3,4].map(i => <div key={i} className="skeleton" style={{ height:32, marginBottom:4, borderRadius:4 }}/>)}
                 </div>
               )}
-              {detail && detail.connections.length === 0 && <div style={{ padding:20, textAlign:'center', color:'#555', fontSize:'0.8rem' }}>No active connections</div>}
+              {detail && detail.connections.length === 0 && <div style={{ padding:20, textAlign:'center', color:'var(--text-muted)', fontSize:'0.8rem' }}>No active connections</div>}
             </div>
           </div>
         )}
@@ -589,7 +589,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
         {tab === 'alerts' && (
           <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
             {(detail?.recent_alerts || []).length === 0 && (
-              <div style={{ padding:40, textAlign:'center', color:'#555' }}>
+              <div style={{ padding:40, textAlign:'center', color:'var(--text-muted)' }}>
                 <CheckCircle size={32} style={{ margin:'0 auto 12px', opacity:0.3, color:'#22C55E' }}/>
                 <div>No alerts for this endpoint</div>
               </div>
@@ -602,31 +602,31 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
               const ts = a.detected_at ? new Date(a.detected_at) : null;
               const precise = ts ? `${ts.toLocaleDateString()} ${ts.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})}` : '';
               return (
-                <div key={a.id} style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, overflow:'hidden', borderLeft:`3px solid ${sc}` }}>
+                <div key={a.id} style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(26,22,18,0.08)', borderRadius:8, overflow:'hidden', borderLeft:`3px solid ${sc}` }}>
                   <div onClick={() => setExpandedAlert(isExp ? null : a.id)}
                     style={{ padding:'12px 16px', cursor:'pointer', display:'flex', alignItems:'center', gap:10 }}>
                     <div style={{ flex:1 }}>
                       <div style={{ display:'flex', gap:8, alignItems:'center', marginBottom:4, flexWrap:'wrap' }}>
-                        <span style={{ fontWeight:600, fontSize:'0.82rem', color:'#BDD4E8' }}>{ALERT_LABELS[a.alert_type] || a.alert_type?.replace(/_/g,' ')}</span>
+                        <span style={{ fontWeight:600, fontSize:'0.82rem', color:'var(--text-primary)' }}>{ALERT_LABELS[a.alert_type] || a.alert_type?.replace(/_/g,' ')}</span>
                         <span style={{ fontSize:'0.6rem', color:sc, background:`${sc}14`, padding:'1px 7px', borderRadius:3, ...MONO, textTransform:'uppercase' }}>{a.severity}</span>
-                        <span style={{ fontSize:'0.6rem', color: a.status==='open'?'#EF4444':'#555', background:'rgba(255,255,255,0.04)', padding:'1px 7px', borderRadius:3, ...MONO, marginLeft:'auto' }}>{a.status}</span>
+                        <span style={{ fontSize:'0.6rem', color: a.status==='open'?'#EF4444':'#555', background:'rgba(26,22,18,0.05)', padding:'1px 7px', borderRadius:3, ...MONO, marginLeft:'auto' }}>{a.status}</span>
                       </div>
-                      <div style={{ fontSize:'0.72rem', color:'#787878' }}>{a.description}</div>
+                      <div style={{ fontSize:'0.72rem', color:'var(--text-muted)' }}>{a.description}</div>
                       <div style={{ fontSize:'0.62rem', color:'#444', marginTop:4, ...MONO }}>🕐 {precise}</div>
                     </div>
-                    <span style={{ color:'#555', fontSize:'0.8rem' }}>{isExp ? '▲' : '▼'}</span>
+                    <span style={{ color:'var(--text-muted)', fontSize:'0.8rem' }}>{isExp ? '▲' : '▼'}</span>
                   </div>
                   {isExp && (
-                    <div style={{ borderTop:'1px solid rgba(255,255,255,0.06)', padding:'12px 16px', background:'rgba(0,0,0,0.2)' }}>
+                    <div style={{ borderTop:'1px solid rgba(26,22,18,0.07)', padding:'12px 16px', background:'rgba(0,0,0,0.2)' }}>
                       <div style={{ display:'flex', flexDirection:'column', gap:4, ...MONO, fontSize:'0.7rem', marginBottom:12 }}>
-                        {ev.process_name && <div style={{ display:'flex', gap:10 }}><span style={{ color:'#555', minWidth:100 }}>Process</span><span style={{ color:'#BDD4E8' }}>{ev.process_name} (PID {ev.process_pid})</span></div>}
-                        {ev.username     && <div style={{ display:'flex', gap:10 }}><span style={{ color:'#555', minWidth:100 }}>User</span><span style={{ color:'#EAB308' }}>{ev.username}</span></div>}
-                        {ev.cmdline      && <div style={{ display:'flex', gap:10 }}><span style={{ color:'#555', minWidth:100 }}>Cmdline</span><span style={{ color:'#BDD4E8', wordBreak:'break-all' }}>{ev.cmdline}</span></div>}
-                        {ev.honey_file   && <div style={{ display:'flex', gap:10 }}><span style={{ color:'#555', minWidth:100 }}>Honey File</span><span style={{ color:'#EF4444' }}>{ev.honey_file}</span></div>}
-                        {ev.path         && <div style={{ display:'flex', gap:10 }}><span style={{ color:'#555', minWidth:100 }}>Path</span><span style={{ color:'#BDD4E8' }}>{ev.path}</span></div>}
-                        {ev.remote_ip    && <div style={{ display:'flex', gap:10 }}><span style={{ color:'#555', minWidth:100 }}>Remote IP</span><span style={{ color:'#22C55E' }}>{ev.remote_ip}:{ev.remote_port}</span></div>}
-                        {ev.source_ip    && <div style={{ display:'flex', gap:10 }}><span style={{ color:'#555', minWidth:100 }}>Source IP</span><span style={{ color:'#22C55E' }}>{ev.source_ip}</span></div>}
-                        {ev.old_hash     && <div style={{ display:'flex', gap:10 }}><span style={{ color:'#555', minWidth:100 }}>Hash Change</span><span style={{ color:'#EAB308' }}>{ev.old_hash} → {ev.new_hash}</span></div>}
+                        {ev.process_name && <div style={{ display:'flex', gap:10 }}><span style={{ color:'var(--text-muted)', minWidth:100 }}>Process</span><span style={{ color:'var(--text-primary)' }}>{ev.process_name} (PID {ev.process_pid})</span></div>}
+                        {ev.username     && <div style={{ display:'flex', gap:10 }}><span style={{ color:'var(--text-muted)', minWidth:100 }}>User</span><span style={{ color:'#EAB308' }}>{ev.username}</span></div>}
+                        {ev.cmdline      && <div style={{ display:'flex', gap:10 }}><span style={{ color:'var(--text-muted)', minWidth:100 }}>Cmdline</span><span style={{ color:'var(--text-primary)', wordBreak:'break-all' }}>{ev.cmdline}</span></div>}
+                        {ev.honey_file   && <div style={{ display:'flex', gap:10 }}><span style={{ color:'var(--text-muted)', minWidth:100 }}>Honey File</span><span style={{ color:'#EF4444' }}>{ev.honey_file}</span></div>}
+                        {ev.path         && <div style={{ display:'flex', gap:10 }}><span style={{ color:'var(--text-muted)', minWidth:100 }}>Path</span><span style={{ color:'var(--text-primary)' }}>{ev.path}</span></div>}
+                        {ev.remote_ip    && <div style={{ display:'flex', gap:10 }}><span style={{ color:'var(--text-muted)', minWidth:100 }}>Remote IP</span><span style={{ color:'#22C55E' }}>{ev.remote_ip}:{ev.remote_port}</span></div>}
+                        {ev.source_ip    && <div style={{ display:'flex', gap:10 }}><span style={{ color:'var(--text-muted)', minWidth:100 }}>Source IP</span><span style={{ color:'#22C55E' }}>{ev.source_ip}</span></div>}
+                        {ev.old_hash     && <div style={{ display:'flex', gap:10 }}><span style={{ color:'var(--text-muted)', minWidth:100 }}>Hash Change</span><span style={{ color:'#EAB308' }}>{ev.old_hash} → {ev.new_hash}</span></div>}
                       </div>
                       <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
                         {ev.process_pid && <button onClick={() => dispatch('kill_process',{pid:ev.process_pid},`Kill PID ${ev.process_pid}`)} style={{ fontSize:'0.65rem', background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.2)', color:'#EF4444', borderRadius:5, padding:'3px 10px', cursor:'pointer', ...MONO }}>⚡ Kill Process</button>}
@@ -655,30 +655,30 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
               </div>
               <div style={{ display:'flex', gap:8, alignItems:'center' }}>
                 {vulnData?.last_scan && (
-                  <span style={{ fontSize:'0.62rem', color:'#555', ...MONO }}>
+                  <span style={{ fontSize:'0.62rem', color:'var(--text-muted)', ...MONO }}>
                     Last scan: {new Date(vulnData.last_scan).toLocaleString()}
                   </span>
                 )}
-                <button onClick={() => { loadVulns(); }} style={{ fontSize:'0.65rem', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', color:'#787878', borderRadius:5, padding:'4px 10px', cursor:'pointer', display:'flex', alignItems:'center', gap:5, ...MONO }}>
+                <button onClick={() => { loadVulns(); }} style={{ fontSize:'0.65rem', background:'rgba(26,22,18,0.05)', border:'1px solid rgba(26,22,18,0.1)', color:'var(--text-muted)', borderRadius:5, padding:'4px 10px', cursor:'pointer', display:'flex', alignItems:'center', gap:5, ...MONO }}>
                   <RefreshCw size={10}/> Refresh
                 </button>
-                <button onClick={triggerVulnScan} disabled={vulnScanning} style={{ fontSize:'0.65rem', background:'rgba(90,138,159,0.12)', border:'1px solid rgba(90,138,159,0.3)', color:'#4A7EC8', borderRadius:5, padding:'4px 10px', cursor:'pointer', display:'flex', alignItems:'center', gap:5, ...MONO }}>
+                <button onClick={triggerVulnScan} disabled={vulnScanning} style={{ fontSize:'0.65rem', background:'rgba(204,120,92,0.1)', border:'1px solid rgba(204,120,92,0.25)', color:'#4A7EC8', borderRadius:5, padding:'4px 10px', cursor:'pointer', display:'flex', alignItems:'center', gap:5, ...MONO }}>
                   {vulnScanning ? <Loader2 size={10} className="spinner"/> : <ScanLine size={10}/>} Scan Now
                 </button>
               </div>
             </div>
 
             {vulnLoading && (
-              <div style={{ padding:40, textAlign:'center', color:'#555' }}>
+              <div style={{ padding:40, textAlign:'center', color:'var(--text-muted)' }}>
                 <Loader2 size={24} className="spinner" style={{ margin:'0 auto 12px', display:'block' }}/>
                 <div>Loading findings…</div>
               </div>
             )}
 
             {!vulnLoading && (!vulnData || vulnData.findings.length === 0) && (
-              <div style={{ padding:48, textAlign:'center', color:'#555' }}>
+              <div style={{ padding:48, textAlign:'center', color:'var(--text-muted)' }}>
                 <ShieldAlert size={36} style={{ margin:'0 auto 14px', opacity:0.25, display:'block', color:'#22C55E' }}/>
-                <div style={{ fontSize:'0.9rem', marginBottom:6, color:'#787878' }}>No findings</div>
+                <div style={{ fontSize:'0.9rem', marginBottom:6, color:'var(--text-muted)' }}>No findings</div>
                 <div style={{ fontSize:'0.72rem', color:'#444' }}>
                   {vulnData?.last_scan ? 'No vulnerabilities detected in the last scan.' : 'Vulnerability scan runs every 5 minutes after the agent connects. Click Scan Now to trigger immediately.'}
                 </div>
@@ -690,15 +690,15 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
               const clr = { CRITICAL:'#EF4444', HIGH:'#F97316', MEDIUM:'#EAB308', LOW:'#22C55E', INFO:'#4A7EC8' }[sev] || '#4A7EC8';
               const catIcon = { network:'🌐', ssh:'🔑', permissions:'🔒', firewall:'🛡', accounts:'👤', software:'📦', persistence:'⚓', config:'⚙', crypto:'🔐' }[f.category] || '⚠';
               return (
-                <div key={f.id} style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, overflow:'hidden', borderLeft:`3px solid ${clr}` }}>
+                <div key={f.id} style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(26,22,18,0.08)', borderRadius:8, overflow:'hidden', borderLeft:`3px solid ${clr}` }}>
                   <div style={{ padding:'14px 16px' }}>
                     <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
                       <span style={{ fontSize:16, flexShrink:0, marginTop:1 }}>{catIcon}</span>
                       <div style={{ flex:1, minWidth:0 }}>
                         <div style={{ display:'flex', gap:8, alignItems:'center', marginBottom:6, flexWrap:'wrap' }}>
-                          <span style={{ fontWeight:600, fontSize:'0.83rem', color:'#BDD4E8' }}>{f.title}</span>
+                          <span style={{ fontWeight:600, fontSize:'0.83rem', color:'var(--text-primary)' }}>{f.title}</span>
                           <span style={{ fontSize:'0.6rem', color:clr, background:`${clr}14`, padding:'1px 7px', borderRadius:3, ...MONO, textTransform:'uppercase', flexShrink:0 }}>{sev}</span>
-                          <span style={{ fontSize:'0.6rem', color:'#555', background:'rgba(255,255,255,0.04)', padding:'1px 7px', borderRadius:3, ...MONO, textTransform:'uppercase' }}>{f.category}</span>
+                          <span style={{ fontSize:'0.6rem', color:'var(--text-muted)', background:'rgba(26,22,18,0.05)', padding:'1px 7px', borderRadius:3, ...MONO, textTransform:'uppercase' }}>{f.category}</span>
                         </div>
                         <div style={{ fontSize:'0.75rem', color:'#A0A0A0', lineHeight:1.55, marginBottom:8 }}>{f.description}</div>
                         <div style={{ fontSize:'0.71rem', color:'#4A7EC8', background:'rgba(90,138,159,0.06)', border:'1px solid rgba(90,138,159,0.15)', borderRadius:5, padding:'7px 10px', lineHeight:1.5 }}>
@@ -727,7 +727,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
         {/* ══ RESPONSE ══ */}
         {tab === 'response' && (
           <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
-            <div style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8, padding:'16px' }}>
+            <div style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(26,22,18,0.08)', borderRadius:8, padding:'16px' }}>
               <div style={{ fontSize:'0.65rem', color:'#4A7EC8', textTransform:'uppercase', letterSpacing:'0.1em', ...MONO, marginBottom:14 }}>◇ Immediate Response Actions</div>
               <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))', gap:10 }}>
                 {[
@@ -739,12 +739,12 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                   { cmd:'set_poll_interval',label:'Set Fast Mode', desc:'Reduce poll interval to 10s for intensive monitoring', color:'#8FAFC0', icon:'⚡', payload:{seconds:10} },
                 ].map(({ cmd, label, desc, color, icon, payload: p }) => (
                   <button key={cmd} onClick={() => dispatch(cmd, p || {}, label)} disabled={!!cmdLoading}
-                    style={{ background:'rgba(255,255,255,0.02)', border:`1px solid rgba(255,255,255,0.07)`, borderRadius:8, padding:'14px', cursor:'pointer', textAlign:'left', transition:'border-color 0.15s', display:'flex', flexDirection:'column', gap:4 }}
+                    style={{ background:'rgba(26,22,18,0.03)', border:`1px solid rgba(26,22,18,0.08)`, borderRadius:8, padding:'14px', cursor:'pointer', textAlign:'left', transition:'border-color 0.15s', display:'flex', flexDirection:'column', gap:4 }}
                     onMouseEnter={e => e.currentTarget.style.borderColor=`${color}40`}
-                    onMouseLeave={e => e.currentTarget.style.borderColor='rgba(255,255,255,0.07)'}>
+                    onMouseLeave={e => e.currentTarget.style.borderColor='rgba(26,22,18,0.08)'}>
                     <div style={{ fontSize:'1.2rem', marginBottom:2 }}>{icon}</div>
-                    <div style={{ fontSize:'0.78rem', fontWeight:600, color:'#BDD4E8' }}>{label}</div>
-                    <div style={{ fontSize:'0.66rem', color:'#555', ...MONO }}>{desc}</div>
+                    <div style={{ fontSize:'0.78rem', fontWeight:600, color:'var(--text-primary)' }}>{label}</div>
+                    <div style={{ fontSize:'0.66rem', color:'var(--text-muted)', ...MONO }}>{desc}</div>
                     {cmdLoading === cmd && <Loader2 size={12} className="spinner" style={{ color, marginTop:4 }}/>}
 
                   </button>
@@ -766,7 +766,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                   <Unlock size={14}/> Unisolate Device
                 </button>
               </div>
-              <div style={{ fontSize:'0.66rem', color:'#555', marginTop:10, ...MONO }}>
+              <div style={{ fontSize:'0.66rem', color:'var(--text-muted)', marginTop:10, ...MONO }}>
                 Isolation uses iptables to block all traffic except to the AegisTrace backend. Agent remains reachable for further commands.
               </div>
             </div>
@@ -781,11 +781,11 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                 </button>
                 <button
                   onClick={() => setConfirmModal({ title: `Uninstall agent from ${ep.hostname}?`, body: `This will:\n• Stop monitoring immediately\n• Remove honey token files\n• Clear the log cursor\n\nYou will need to redeploy to resume monitoring.`, confirmLabel: 'Uninstall Agent', onConfirm: () => dispatch('uninstall_agent', {reason:'Uninstalled from dashboard'}, 'Uninstall Agent') })}
-                  style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.1)', color:'#787878', borderRadius:7, padding:'10px 18px', cursor:'pointer', fontSize:'0.8rem', display:'flex', alignItems:'center', gap:8, ...MONO }}>
+                  style={{ background:'rgba(26,22,18,0.04)', border:'1px solid rgba(26,22,18,0.1)', color:'var(--text-muted)', borderRadius:7, padding:'10px 18px', cursor:'pointer', fontSize:'0.8rem', display:'flex', alignItems:'center', gap:8, ...MONO }}>
                   🗑 Uninstall Agent
                 </button>
               </div>
-              <div style={{ fontSize:'0.66rem', color:'#555', marginTop:10, ...MONO }}>
+              <div style={{ fontSize:'0.66rem', color:'var(--text-muted)', marginTop:10, ...MONO }}>
                 Stop pauses monitoring — agent can be restarted manually on the machine. Uninstall removes all agent files and stops monitoring permanently.
               </div>
             </div>
@@ -802,7 +802,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                 style={{ background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', color:'#EF4444', borderRadius:7, padding:'10px 18px', cursor:'pointer', fontWeight:600, fontSize:'0.8rem', display:'flex', alignItems:'center', gap:8, ...MONO }}>
                 🗑 Delete Endpoint & Destroy Agent
               </button>
-              <div style={{ fontSize:'0.66rem', color:'#555', marginTop:10, ...MONO }}>
+              <div style={{ fontSize:'0.66rem', color:'var(--text-muted)', marginTop:10, ...MONO }}>
                 Sends uninstall command to the agent, then permanently removes all data for this endpoint from the database. Cannot be undone.
               </div>
             </div>
@@ -830,7 +830,7 @@ function MemoryForensicsPanel({ hostname }) {
   }, [hostname]);
 
   if (loading) return (
-    <div style={{ padding:24, color:'#555', fontFamily:'JetBrains Mono,monospace', fontSize:13 }}>
+    <div style={{ padding:24, color:'var(--text-muted)', fontFamily:'JetBrains Mono,monospace', fontSize:13 }}>
       Loading memory dumps...
     </div>
   );
@@ -842,10 +842,10 @@ function MemoryForensicsPanel({ hostname }) {
       {/* Header */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:8 }}>
         <div>
-          <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:14, fontWeight:600, color:'#BDD4E8' }}>
+          <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:14, fontWeight:600, color:'var(--text-primary)' }}>
             Memory Forensics
           </div>
-          <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:10, color:'#555', marginTop:2 }}>
+          <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:10, color:'var(--text-muted)', marginTop:2 }}>
             Layer 4 · Volatility 3 · Triggered on CRITICAL alerts
           </div>
         </div>
@@ -859,10 +859,10 @@ function MemoryForensicsPanel({ hostname }) {
       </div>
 
       {dumps.length === 0 ? (
-        <div style={{ padding:'32px 24px', textAlign:'center', color:'#555',
-          background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:8 }}>
+        <div style={{ padding:'32px 24px', textAlign:'center', color:'var(--text-muted)',
+          background:'rgba(0,0,0,0.3)', border:'1px solid rgba(26,22,18,0.08)', borderRadius:8 }}>
           <div style={{ fontSize:28, marginBottom:10 }}>🧠</div>
-          <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:12, color:'#787878', marginBottom:6 }}>
+          <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:12, color:'var(--text-muted)', marginBottom:6 }}>
             No memory dumps captured yet
           </div>
           <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11, color:'#444', lineHeight:1.6 }}>
@@ -877,7 +877,7 @@ function MemoryForensicsPanel({ hostname }) {
             const statusColor = dump.status === 'done' ? '#10B981'
               : dump.status === 'analysing' ? '#60A5FA' : '#F59E0B';
             const borderColor = dump.injections_found
-              ? 'rgba(239,68,68,0.35)' : 'rgba(255,255,255,0.07)';
+              ? 'rgba(239,68,68,0.35)' : 'rgba(26,22,18,0.08)';
             let analysisObj = null;
             try { analysisObj = dump.analysis_result ? JSON.parse(dump.analysis_result) : null; }
             catch { /* noop */ }
@@ -896,7 +896,7 @@ function MemoryForensicsPanel({ hostname }) {
                       fontWeight:600 }}>
                       {dump.process_name}
                     </span>
-                    <span style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11, color:'#555' }}>
+                    <span style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11, color:'var(--text-muted)' }}>
                       PID {dump.pid}
                     </span>
                     {dump.injections_found && (
@@ -914,7 +914,7 @@ function MemoryForensicsPanel({ hostname }) {
                     )}
                   </div>
                   <div style={{ display:'flex', gap:8, alignItems:'center', flexShrink:0 }}>
-                    <span style={{ fontFamily:'JetBrains Mono,monospace', fontSize:10, color:'#555' }}>
+                    <span style={{ fontFamily:'JetBrains Mono,monospace', fontSize:10, color:'var(--text-muted)' }}>
                       {Math.round(dump.dump_size_bytes / 1024)} KB
                     </span>
                     <span style={{ padding:'2px 8px', borderRadius:3,
@@ -926,14 +926,14 @@ function MemoryForensicsPanel({ hostname }) {
                   </div>
                 </div>
                 {/* Row 2: metadata */}
-                <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11, color:'#555', marginTop:4 }}>
+                <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11, color:'var(--text-muted)', marginTop:4 }}>
                   Triggered by {dump.trigger_type.replace(/_/g, ' ')} ·{' '}
                   {new Date(dump.captured_at).toLocaleString()}
                 </div>
                 {/* Expanded: Volatility analysis */}
                 {isExpanded && (
                   <div style={{ marginTop:12, padding:12, background:'#030308',
-                    borderRadius:6, border:'1px solid rgba(255,255,255,0.06)' }}>
+                    borderRadius:6, border:'1px solid rgba(26,22,18,0.07)' }}>
                     {analysisObj ? (
                       <>
                         {analysisObj.summary && (
@@ -945,7 +945,7 @@ function MemoryForensicsPanel({ hostname }) {
                             {Object.entries(analysisObj.summary).map(([k, v]) => (
                               <div key={k} style={{ display:'flex', gap:12, marginBottom:2 }}>
                                 <span style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11,
-                                  color:'#555', minWidth:180 }}>{k.replace(/_/g, ' ')}</span>
+                                  color:'var(--text-muted)', minWidth:180 }}>{k.replace(/_/g, ' ')}</span>
                                 <span style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11,
                                   color: v === true ? '#EF4444' : v === false ? '#10B981' : '#BDD4E8' }}>
                                   {String(v)}
@@ -968,7 +968,7 @@ function MemoryForensicsPanel({ hostname }) {
                           </div>
                         )}
                         {!analysisObj.summary?.volatility_available && analysisObj.summary?.message && (
-                          <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11, color:'#787878' }}>
+                          <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11, color:'var(--text-muted)' }}>
                             {analysisObj.summary.message}
                             {analysisObj.summary.install && (
                               <span style={{ color:'#F59E0B' }}> · {analysisObj.summary.install}</span>
@@ -977,7 +977,7 @@ function MemoryForensicsPanel({ hostname }) {
                         )}
                       </>
                     ) : (
-                      <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11, color:'#555' }}>
+                      <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11, color:'var(--text-muted)' }}>
                         Analysis pending...
                       </div>
                     )}
@@ -1001,9 +1001,9 @@ function CodeBlock({ code, label }) {
   const copy = () => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(()=>setCopied(false),2000); };
   return (
     <div style={{ position:'relative', marginTop:8 }}>
-      {label && <div style={{ fontSize:'0.65rem', color:'#787878', marginBottom:4, fontFamily:'JetBrains Mono', textTransform:'uppercase', letterSpacing:'0.05em' }}>{label}</div>}
-      <pre style={{ background:'rgba(0,0,0,0.4)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:6, padding:'12px 40px 12px 14px', margin:0, fontFamily:'JetBrains Mono', fontSize:'0.76rem', color:'#7A9DB8', overflowX:'auto', whiteSpace:'pre-wrap', wordBreak:'break-all' }}>{code}</pre>
-      <button onClick={copy} style={{ position:'absolute', top:8, right:8, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:4, padding:'3px 6px', cursor:'pointer', color:copied?'#22C55E':'#787878', fontSize:'0.65rem', display:'flex', alignItems:'center', gap:4 }}>
+      {label && <div style={{ fontSize:'0.65rem', color:'var(--text-muted)', marginBottom:4, fontFamily:'JetBrains Mono', textTransform:'uppercase', letterSpacing:'0.05em' }}>{label}</div>}
+      <pre style={{ background:'rgba(0,0,0,0.4)', border:'1px solid rgba(26,22,18,0.09)', borderRadius:6, padding:'12px 40px 12px 14px', margin:0, fontFamily:'JetBrains Mono', fontSize:'0.76rem', color:'#7A9DB8', overflowX:'auto', whiteSpace:'pre-wrap', wordBreak:'break-all' }}>{code}</pre>
+      <button onClick={copy} style={{ position:'absolute', top:8, right:8, background:'rgba(26,22,18,0.05)', border:'1px solid rgba(26,22,18,0.1)', borderRadius:4, padding:'3px 6px', cursor:'pointer', color:copied?'#22C55E':'#787878', fontSize:'0.65rem', display:'flex', alignItems:'center', gap:4 }}>
         {copied ? <CheckCircle size={11}/> : <Copy size={11}/>} {copied ? 'Copied' : 'Copy'}
       </button>
     </div>
@@ -1039,18 +1039,18 @@ function SetupGuideModal({ onClose, ingestKey, onFetchKey }) {
   return (
     <div style={{ position:'fixed', inset:0, zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.75)', backdropFilter:'blur(6px)', padding:20 }}
       onClick={e => { if(e.target===e.currentTarget) onClose(); }}>
-      <div style={{ background:'#0D0D0D', border:'1px solid rgba(255,255,255,0.1)', borderRadius:14, width:'100%', maxWidth:660, boxShadow:'0 30px 80px rgba(0,0,0,0.7)' }}>
+      <div style={{ background:var(--surface), border:'1px solid rgba(26,22,18,0.1)', borderRadius:14, width:'100%', maxWidth:660, boxShadow:'0 30px 80px rgba(0,0,0,0.7)' }}>
 
         {/* Header */}
-        <div style={{ padding:'20px 22px', borderBottom:'1px solid rgba(255,255,255,0.07)', display:'flex', alignItems:'center', gap:12 }}>
-          <div style={{ width:38, height:38, borderRadius:9, background:'rgba(90,138,159,0.12)', border:'1px solid rgba(90,138,159,0.25)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <div style={{ padding:'20px 22px', borderBottom:'1px solid rgba(26,22,18,0.08)', display:'flex', alignItems:'center', gap:12 }}>
+          <div style={{ width:38, height:38, borderRadius:9, background:'rgba(204,120,92,0.1)', border:'1px solid rgba(90,138,159,0.25)', display:'flex', alignItems:'center', justifyContent:'center' }}>
             <Terminal size={17} style={{ color:'#4A7EC8' }}/>
           </div>
           <div>
             <div style={{ fontWeight:700, fontSize:'0.95rem' }}>Deploy Endpoint Agent</div>
-            <div style={{ fontSize:'0.7rem', color:'#555', marginTop:2, fontFamily:'JetBrains Mono' }}>One command · no files · no config · works on any machine</div>
+            <div style={{ fontSize:'0.7rem', color:'var(--text-muted)', marginTop:2, fontFamily:'JetBrains Mono' }}>One command · no files · no config · works on any machine</div>
           </div>
-          <button onClick={onClose} style={{ marginLeft:'auto', background:'none', border:'none', cursor:'pointer', color:'#555', padding:4 }}><X size={16}/></button>
+          <button onClick={onClose} style={{ marginLeft:'auto', background:'none', border:'none', cursor:'pointer', color:'var(--text-muted)', padding:4 }}><X size={16}/></button>
         </div>
 
         <div style={{ padding:'22px' }}>
@@ -1061,7 +1061,7 @@ function SetupGuideModal({ onClose, ingestKey, onFetchKey }) {
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
                 <div>
                   <div style={{ fontWeight:600, fontSize:'0.82rem', color:'#EAB308', marginBottom:3 }}>Step 1 — Load your deploy token</div>
-                  <div style={{ fontSize:'0.7rem', color:'#787878', fontFamily:'JetBrains Mono' }}>Your token will be embedded in the command automatically</div>
+                  <div style={{ fontSize:'0.7rem', color:'var(--text-muted)', fontFamily:'JetBrains Mono' }}>Your token will be embedded in the command automatically</div>
                 </div>
                 <button onClick={onFetchKey}
                   style={{ background:'#4A7EC8', border:'none', borderRadius:7, padding:'8px 16px', cursor:'pointer', color:'#fff', fontSize:'0.76rem', fontWeight:600, flexShrink:0, display:'flex', alignItems:'center', gap:6 }}>
@@ -1078,13 +1078,13 @@ function SetupGuideModal({ onClose, ingestKey, onFetchKey }) {
                 style={{ padding:'7px 14px', borderRadius:7, border:'1px solid', fontSize:'0.74rem', cursor:'pointer', fontFamily:'JetBrains Mono',
                   background: os===id ? 'rgba(90,138,159,0.1)' : 'transparent',
                   color: os===id ? '#4A7EC8' : '#555',
-                  borderColor: os===id ? 'rgba(90,138,159,0.3)' : 'rgba(255,255,255,0.06)' }}>{label}</button>
+                  borderColor: os===id ? 'rgba(204,120,92,0.25)' : 'rgba(26,22,18,0.07)' }}>{label}</button>
             ))}
           </div>
 
           {/* The command */}
           {!cmd ? (
-            <div style={{ padding:'20px', background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:9, textAlign:'center', color:'#555', fontSize:'0.8rem', fontFamily:'JetBrains Mono' }}>
+            <div style={{ padding:'20px', background:'rgba(0,0,0,0.3)', border:'1px solid rgba(26,22,18,0.08)', borderRadius:9, textAlign:'center', color:'var(--text-muted)', fontSize:'0.8rem', fontFamily:'JetBrains Mono' }}>
               Load your token above to generate the install command
             </div>
           ) : (
@@ -1103,13 +1103,13 @@ function SetupGuideModal({ onClose, ingestKey, onFetchKey }) {
           {cmd && (
             <div style={{ marginTop:14, display:'flex', gap:10, flexWrap:'wrap' }}>
               {['① Installs psutil', '② Downloads agent', '③ Token pre-embedded', '④ Starts in background', '⑤ Appears in dashboard < 60s'].map(s => (
-                <span key={s} style={{ fontSize:'0.65rem', color:'#555', background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.06)', borderRadius:5, padding:'3px 8px', fontFamily:'JetBrains Mono' }}>{s}</span>
+                <span key={s} style={{ fontSize:'0.65rem', color:'var(--text-muted)', background:'rgba(26,22,18,0.04)', border:'1px solid rgba(26,22,18,0.07)', borderRadius:5, padding:'3px 8px', fontFamily:'JetBrains Mono' }}>{s}</span>
               ))}
             </div>
           )}
 
           {/* Requirement note */}
-          <div style={{ marginTop:16, padding:'10px 14px', background:'rgba(255,255,255,0.02)', borderRadius:7, fontSize:'0.68rem', color:'#555', fontFamily:'JetBrains Mono', display:'flex', alignItems:'center', gap:8 }}>
+          <div style={{ marginTop:16, padding:'10px 14px', background:'rgba(26,22,18,0.03)', borderRadius:7, fontSize:'0.68rem', color:'var(--text-muted)', fontFamily:'JetBrains Mono', display:'flex', alignItems:'center', gap:8 }}>
             <span style={{ color:'#4A7EC8' }}>ℹ</span>
             Requires Python 3.8+ · Works on Linux, macOS, Windows · No curl or wget needed
           </div>
@@ -1176,16 +1176,16 @@ export default function Endpoints() {
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20, flexShrink:0 }}>
         <div>
           <h1 style={{ fontSize:'1.3rem', fontWeight:700, margin:0 }}>Endpoints</h1>
-          <div style={{ fontSize:'0.72rem', color:'#555', marginTop:3, fontFamily:'JetBrains Mono' }}>
+          <div style={{ fontSize:'0.72rem', color:'var(--text-muted)', marginTop:3, fontFamily:'JetBrains Mono' }}>
             <span style={{ color:'#22C55E' }}>●</span> {online} online &nbsp;
-            <span style={{ color:'#555' }}>●</span> {offline} offline &nbsp;·&nbsp; {endpoints.length} total
+            <span style={{ color:'var(--text-muted)' }}>●</span> {offline} offline &nbsp;·&nbsp; {endpoints.length} total
           </div>
         </div>
         <div style={{ display:'flex', gap:8 }}>
           <button onClick={() => { fetchKey(); setShowGuide(true); }} style={{ background:'rgba(90,138,159,0.1)', border:'1px solid rgba(90,138,159,0.25)', color:'#4A7EC8', borderRadius:7, padding:'7px 14px', cursor:'pointer', fontSize:'0.76rem', display:'flex', alignItems:'center', gap:6, fontFamily:'JetBrains Mono' }}>
             <Download size={13}/> Deploy Agent
           </button>
-          <button onClick={loadEndpoints} style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', color:'#787878', borderRadius:7, padding:'7px 10px', cursor:'pointer', display:'flex', alignItems:'center', gap:5, fontSize:'0.76rem' }}>
+          <button onClick={loadEndpoints} style={{ background:'rgba(26,22,18,0.05)', border:'1px solid rgba(26,22,18,0.09)', color:'var(--text-muted)', borderRadius:7, padding:'7px 10px', cursor:'pointer', display:'flex', alignItems:'center', gap:5, fontSize:'0.76rem' }}>
             <RefreshCw size={13}/>
           </button>
         </div>
@@ -1196,9 +1196,9 @@ export default function Endpoints() {
           {[0,1,2,3,4].map(i => <div key={i} className="skeleton" style={{ height:80, borderRadius:9 }}/>)}
         </div>
       ) : endpoints.length === 0 ? (
-        <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:14, color:'#555' }}>
+        <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:14, color:'var(--text-muted)' }}>
           <Monitor size={40} style={{ opacity:0.2 }}/>
-          <div style={{ fontWeight:600, color:'#BDD4E8' }}>No endpoints connected</div>
+          <div style={{ fontWeight:600, color:'var(--text-primary)' }}>No endpoints connected</div>
           <div style={{ fontSize:'0.82rem' }}>Deploy the agent on any machine to start monitoring.</div>
           <button onClick={() => { fetchKey(); setShowGuide(true); }} style={{ background:'#4A7EC8', color:'#fff', border:'none', borderRadius:7, padding:'9px 20px', cursor:'pointer', fontSize:'0.8rem', display:'flex', alignItems:'center', gap:7 }}>
             <Download size={14}/> Deploy Agent
@@ -1216,21 +1216,21 @@ export default function Endpoints() {
               return (
                 <div key={ep.id}
                   onClick={() => setSelected(selected?.id === ep.id ? null : ep)}
-                  style={{ background: selected?.id===ep.id ? 'rgba(90,138,159,0.06)' : 'rgba(255,255,255,0.02)', border:`1px solid ${selected?.id===ep.id ? 'rgba(90,138,159,0.35)' : 'rgba(255,255,255,0.07)'}`, borderRadius:9, padding:'14px 16px', cursor:'pointer', transition:'all 0.15s' }}
+                  style={{ background: selected?.id===ep.id ? 'rgba(90,138,159,0.06)' : 'rgba(26,22,18,0.03)', border:`1px solid ${selected?.id===ep.id ? 'rgba(90,138,159,0.35)' : 'rgba(26,22,18,0.08)'}`, borderRadius:9, padding:'14px 16px', cursor:'pointer', transition:'all 0.15s' }}
                   onMouseEnter={e => { if(selected?.id!==ep.id) e.currentTarget.style.borderColor='rgba(90,138,159,0.2)'; }}
-                  onMouseLeave={e => { if(selected?.id!==ep.id) e.currentTarget.style.borderColor='rgba(255,255,255,0.07)'; }}>
+                  onMouseLeave={e => { if(selected?.id!==ep.id) e.currentTarget.style.borderColor='rgba(26,22,18,0.08)'; }}>
                   <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
                     <span style={{ fontSize:20 }}>{OS_ICON[ep.os_type]||'💻'}</span>
                     <div style={{ flex:1, minWidth:0 }}>
                       <div style={{ fontWeight:600, fontSize:'0.86rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{ep.hostname}</div>
-                      <div style={{ fontSize:'0.66rem', color:'#555', fontFamily:'JetBrains Mono', marginTop:1 }}>{ep.ip_address || '—'}</div>
+                      <div style={{ fontSize:'0.66rem', color:'var(--text-muted)', fontFamily:'JetBrains Mono', marginTop:1 }}>{ep.ip_address || '—'}</div>
                     </div>
                     <div style={{ textAlign:'right', flexShrink:0 }}>
                       <div style={{ fontSize:'1.1rem', fontWeight:800, color:riskColor, fontFamily:'JetBrains Mono', lineHeight:1 }}>{risk}</div>
-                      <div style={{ fontSize:'0.55rem', color:'#555', textTransform:'uppercase', letterSpacing:'0.06em' }}>risk</div>
+                      <div style={{ fontSize:'0.55rem', color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.06em' }}>risk</div>
                     </div>
                   </div>
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', fontSize:'0.65rem', color:'#555', fontFamily:'JetBrains Mono' }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', fontSize:'0.65rem', color:'var(--text-muted)', fontFamily:'JetBrains Mono' }}>
                     <span style={{ color: online_ ? '#22C55E' : '#555' }}>● {online_ ? 'Online' : 'Offline'}</span>
                     <span>agent {ep.agent_version}</span>
                     <ChevronRight size={12} style={{ color: selected?.id===ep.id ? '#4A7EC8' : '#444' }}/>

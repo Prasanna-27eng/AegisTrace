@@ -93,8 +93,8 @@ function ShortcutsPanel({ onClose }) {
   }, [onClose]);
 
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: 'rgba(14,14,22,0.95)', border: '1px solid rgba(74,126,200,0.2)', borderRadius: 16, padding: '24px 28px', maxWidth: 460, width: '90%', boxShadow: '0 24px 64px rgba(0,0,0,0.8)' }}>
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(26,22,18,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: 'rgba(245,240,232,0.97)', border: '1px solid rgba(26,22,18,0.1)', borderRadius: 16, padding: '24px 28px', maxWidth: 460, width: '90%', boxShadow: '0 24px 64px rgba(26,22,18,0.2)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Keyboard size={15} style={{ color: 'var(--accent-light)' }} />
@@ -114,7 +114,7 @@ function ShortcutsPanel({ onClose }) {
                   {s.keys.map((k, i) => (
                     <React.Fragment key={k}>
                       {i > 0 && <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>then</span>}
-                      <kbd style={{ fontSize: 11, color: 'var(--text-primary)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 4, padding: '2px 7px', fontFamily: 'var(--font-mono)' }}>{k}</kbd>
+                      <kbd style={{ fontSize: 11, color: 'var(--text-primary)', background: 'rgba(26,22,18,0.06)', border: '1px solid rgba(26,22,18,0.14)', borderRadius: 4, padding: '2px 7px', fontFamily: 'var(--font-mono)' }}>{k}</kbd>
                     </React.Fragment>
                   ))}
                 </div>
@@ -212,10 +212,10 @@ export default function AppShell() {
   }, [navigate, user, addToast]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--bg)', overflow: 'hidden', position: 'relative' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--bg)', backgroundImage: 'radial-gradient(circle, rgba(26,22,18,0.06) 1px, transparent 1px)', backgroundSize: '28px 28px', overflow: 'hidden', position: 'relative' }}>
 
       {/* ── MagicRings background ── */}
-      <MagicRings color="var(--brand-blue)" accent="var(--brand-blue-bright)" />
+      <MagicRings color="#CC785C" accent="#D98B6A" />
 
       {/* ── Floating glass topbar ── */}
       <header style={{
@@ -226,12 +226,12 @@ export default function AppShell() {
         width: 'calc(100% - 48px)',
         maxWidth: 1200,
         height: 48,
-        background: 'rgba(16,14,11,0.78)',
-        backdropFilter: 'blur(20px) saturate(1.6)',
-        WebkitBackdropFilter: 'blur(20px) saturate(1.6)',
+        background: 'rgba(245,240,232,0.88)',
+        backdropFilter: 'blur(24px) saturate(1.6)',
+        WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
         borderRadius: 14,
-        border: '1px solid rgba(74,126,200,0.12)',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(240,235,227,0.04) inset',
+        border: '1px solid rgba(26,22,18,0.1)',
+        boxShadow: '0 4px 24px rgba(26,22,18,0.1), 0 1px 0 rgba(255,255,255,0.6) inset',
         display: 'flex',
         alignItems: 'center',
         gap: 12,
@@ -254,7 +254,7 @@ export default function AppShell() {
         {/* Search — centered */}
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
           <div style={{ position: 'relative', width: '100%', maxWidth: 420 }}>
-            <Search size={12} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)', pointerEvents: 'none' }} />
+            <Search size={12} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'rgba(26,22,18,0.4)', pointerEvents: 'none' }} />
             <input
               placeholder="Search cases, indicators, rules..."
               value={searchQuery}
@@ -262,26 +262,26 @@ export default function AppShell() {
               onKeyDown={e => { if (e.key === 'Enter' && searchQuery.trim()) navigate(`/app/cases?q=${encodeURIComponent(searchQuery)}`); }}
               style={{
                 width: '100%',
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(26,22,18,0.05)',
+                border: '1px solid rgba(26,22,18,0.1)',
                 borderRadius: 8,
                 padding: '6px 88px 6px 30px',
-                color: '#E8E8F0',
+                color: '#1A1612',
                 fontSize: 12,
                 fontFamily: 'var(--font-ui)',
                 outline: 'none',
                 transition: 'background 140ms, border-color 140ms',
               }}
-              onFocus={e => { e.target.style.background = 'rgba(240,235,227,0.08)'; e.target.style.borderColor = 'rgba(204,120,92,0.35)'; }}
-              onBlur={e => { e.target.style.background = 'rgba(255,255,255,0.06)'; e.target.style.borderColor = 'rgba(240,235,227,0.08)'; }}
+              onFocus={e => { e.target.style.background = 'rgba(26,22,18,0.07)'; e.target.style.borderColor = 'rgba(204,120,92,0.35)'; }}
+              onBlur={e => { e.target.style.background = 'rgba(26,22,18,0.05)'; e.target.style.borderColor = 'rgba(26,22,18,0.1)'; }}
             />
             <button
               onClick={() => setPaletteOpen(true)}
               style={{
                 position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)',
-                background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+                background: 'rgba(26,22,18,0.06)', border: '1px solid rgba(26,22,18,0.12)',
                 borderRadius: 5, padding: '2px 7px', cursor: 'pointer',
-                fontSize: 10, color: 'rgba(255,255,255,0.45)', fontFamily: 'var(--font-mono)',
+                fontSize: 10, color: 'rgba(26,22,18,0.5)', fontFamily: 'var(--font-mono)',
                 display: 'flex', alignItems: 'center', gap: 3,
               }}
             >
@@ -314,8 +314,8 @@ export default function AppShell() {
             </TopbarBtn>
 
             {bellOpen && (
-              <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: 320, background: 'rgba(14,14,22,0.95)', border: '1px solid rgba(74,126,200,0.15)', borderRadius: 12, boxShadow: '0 16px 48px rgba(0,0,0,0.7)', zIndex: 400, overflow: 'hidden', backdropFilter: 'blur(16px)' }}>
-                <div style={{ padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: 320, background: 'rgba(245,240,232,0.97)', border: '1px solid rgba(26,22,18,0.1)', borderRadius: 12, boxShadow: '0 16px 48px rgba(26,22,18,0.15)', zIndex: 400, overflow: 'hidden', backdropFilter: 'blur(24px)' }}>
+                <div style={{ padding: '10px 14px', borderBottom: '1px solid rgba(26,22,18,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-ui)' }}>Recent Alerts</span>
                   <button onClick={() => { setNotifications([]); setBellOpen(false); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 10, fontFamily: 'var(--font-mono)' }}>Clear</button>
                 </div>
@@ -327,7 +327,7 @@ export default function AppShell() {
                       const sc = { critical: '#EF4444', high: '#F97316', medium: '#F59E0B', low: '#10B981' }[n.severity] || '#888';
                       const ts = n.detected_at ? new Date(n.detected_at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
                       return (
-                        <div key={n.id || i} style={{ padding: '9px 14px', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', gap: 10, alignItems: 'flex-start', background: n.id === flashId ? 'rgba(239,68,68,0.06)' : 'transparent' }}>
+                        <div key={n.id || i} style={{ padding: '9px 14px', borderBottom: '1px solid rgba(26,22,18,0.05)', display: 'flex', gap: 10, alignItems: 'flex-start', background: n.id === flashId ? 'rgba(239,68,68,0.06)' : 'transparent' }}>
                           <span style={{ width: 5, height: 5, borderRadius: '50%', background: sc, flexShrink: 0, marginTop: 5 }} />
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 500, fontFamily: 'var(--font-ui)', marginBottom: 2 }}>{n.label}</div>
@@ -346,31 +346,31 @@ export default function AppShell() {
           <div ref={userRef} style={{ position: 'relative' }}>
             <button
               onClick={() => setUserMenuOpen(o => !o)}
-              style={{ display: 'flex', alignItems: 'center', gap: 7, background: userMenuOpen ? 'rgba(74,126,200,0.15)' : 'rgba(255,255,255,0.06)', border: `1px solid ${userMenuOpen ? 'rgba(204,120,92,0.3)' : 'rgba(240,235,227,0.08)'}`, borderRadius: 8, padding: '4px 10px 4px 5px', cursor: 'pointer', transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(240,235,227,0.08)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = userMenuOpen ? 'rgba(74,126,200,0.15)' : 'rgba(255,255,255,0.06)'; }}
+              style={{ display: 'flex', alignItems: 'center', gap: 7, background: userMenuOpen ? 'rgba(204,120,92,0.1)' : 'rgba(26,22,18,0.05)', border: `1px solid ${userMenuOpen ? 'rgba(204,120,92,0.25)' : 'rgba(26,22,18,0.1)'}`, borderRadius: 8, padding: '4px 10px 4px 5px', cursor: 'pointer', transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(26,22,18,0.08)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = userMenuOpen ? 'rgba(204,120,92,0.1)' : 'rgba(26,22,18,0.05)'; }}
             >
-              <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg,#2A5A9E,#4A7EC8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', fontFamily: 'var(--font-mono)' }}>
+              <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg,#CC785C,#D98B6A)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', fontFamily: 'var(--font-mono)' }}>
                 {initials}
               </div>
               <span style={{ fontSize: 12, color: 'var(--text-primary)', fontFamily: 'var(--font-ui)', fontWeight: 500 }}>{user?.name?.split(' ')[0]}</span>
             </button>
 
             {userMenuOpen && (
-              <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 8px)', background: 'rgba(14,14,22,0.95)', border: '1px solid rgba(74,126,200,0.15)', borderRadius: 10, padding: 6, minWidth: 180, zIndex: 400, boxShadow: '0 10px 40px rgba(0,0,0,0.6)', backdropFilter: 'blur(16px)' }}>
+              <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 8px)', background: 'rgba(245,240,232,0.97)', border: '1px solid rgba(26,22,18,0.1)', borderRadius: 10, padding: 6, minWidth: 180, zIndex: 400, boxShadow: '0 10px 40px rgba(26,22,18,0.14)', backdropFilter: 'blur(24px)' }}>
                 {[
                   { Icon: Home,     label: 'Back to Home',      action: () => { navigate('/'); setUserMenuOpen(false); } },
                   { Icon: Settings, label: 'Settings',           action: () => { navigate('/app/admin'); setUserMenuOpen(false); } },
                   { Icon: Keyboard, label: 'Shortcuts',          action: () => { setShortcutsOpen(true); setUserMenuOpen(false); } },
                 ].map(({ Icon, label, action }) => (
                   <button key={label} onClick={action} style={{ display: 'flex', alignItems: 'center', gap: 9, width: '100%', background: 'none', border: 'none', borderRadius: 6, padding: '8px 10px', fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-ui)', textAlign: 'left', transition: 'background 0.12s' }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(26,22,18,0.05)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'none'}
                   >
                     <Icon size={13} style={{ opacity: 0.7 }} />{label}
                   </button>
                 ))}
-                <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 6px' }} />
+                <div style={{ height: 1, background: 'rgba(26,22,18,0.07)', margin: '4px 6px' }} />
                 <button onClick={() => { logout(); navigate('/'); }} style={{ display: 'flex', alignItems: 'center', gap: 9, width: '100%', background: 'none', border: 'none', borderRadius: 6, padding: '8px 10px', fontSize: 12, color: '#EF4444', cursor: 'pointer', fontFamily: 'var(--font-ui)', textAlign: 'left', transition: 'background 0.12s' }}
                   onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'none'}
@@ -421,16 +421,16 @@ function TopbarBtn({ children, onClick, title, active }) {
         position: 'relative',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         width: 30, height: 30,
-        background: active ? 'rgba(239,68,68,0.12)' : 'rgba(255,255,255,0.05)',
-        border: `1px solid ${active ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.08)'}`,
+        background: active ? 'rgba(239,68,68,0.1)' : 'rgba(26,22,18,0.05)',
+        border: `1px solid ${active ? 'rgba(239,68,68,0.25)' : 'rgba(26,22,18,0.1)'}`,
         borderRadius: 7,
-        color: active ? '#EF4444' : 'rgba(255,255,255,0.55)',
+        color: active ? '#EF4444' : 'rgba(26,22,18,0.55)',
         cursor: 'pointer',
         transition: 'all 0.15s',
         flexShrink: 0,
       }}
-      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(240,235,227,0.08)'; e.currentTarget.style.color = '#fff'; }}
-      onMouseLeave={e => { e.currentTarget.style.background = active ? 'rgba(239,68,68,0.12)' : 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = active ? '#EF4444' : 'rgba(255,255,255,0.55)'; }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(26,22,18,0.09)'; e.currentTarget.style.color = '#1A1612'; }}
+      onMouseLeave={e => { e.currentTarget.style.background = active ? 'rgba(239,68,68,0.1)' : 'rgba(26,22,18,0.05)'; e.currentTarget.style.color = active ? '#EF4444' : 'rgba(26,22,18,0.55)'; }}
     >
       {children}
     </button>

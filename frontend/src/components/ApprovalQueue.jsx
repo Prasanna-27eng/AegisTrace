@@ -13,7 +13,7 @@ const SEV_COLOR = {
 
 // Tier badge colors
 const TIER_COLORS = {
-  observe:         'rgba(255,255,255,0.2)',
+  observe:         'rgba(26,22,18,0.2)',
   recommend:       '#4A7EC8',
   'auto-safe':     '#22C55E',
   'auto-veto':     '#F59E0B',
@@ -159,7 +159,7 @@ function RecRow({ item, onExecute, onVeto }) {
   const [executing, setExecuting] = useState(false);
   const timerRef = useRef(null);
 
-  const tierColor = TIER_COLORS[item.tier] || 'rgba(255,255,255,0.2)';
+  const tierColor = TIER_COLORS[item.tier] || 'rgba(26,22,18,0.2)';
   const autoSeconds = TIER_COUNTDOWN[item.tier];
 
   // Start countdown for auto-safe / auto-veto tiers
@@ -205,7 +205,7 @@ function RecRow({ item, onExecute, onVeto }) {
   return (
     <div style={{
       background: 'rgba(255,255,255,0.025)',
-      border: `1px solid ${tierColor === 'rgba(255,255,255,0.2)' ? 'rgba(255,255,255,0.07)' : `${tierColor}22`}`,
+      border: `1px solid ${tierColor === 'rgba(26,22,18,0.2)' ? 'rgba(26,22,18,0.08)' : `${tierColor}22`}`,
       borderRadius: 8,
       padding: '10px 12px',
       marginBottom: 6,
@@ -219,9 +219,9 @@ function RecRow({ item, onExecute, onVeto }) {
             <span style={{
               fontSize: 10, padding: '1px 6px', borderRadius: 3, fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: '0.05em',
-              background: tierColor === 'rgba(255,255,255,0.2)' ? tierColor : `${tierColor}20`,
-              color: tierColor === 'rgba(255,255,255,0.2)' ? '#E8E8F0' : tierColor,
-              border: `1px solid ${tierColor === 'rgba(255,255,255,0.2)' ? 'rgba(255,255,255,0.15)' : `${tierColor}40`}`,
+              background: tierColor === 'rgba(26,22,18,0.2)' ? tierColor : `${tierColor}20`,
+              color: tierColor === 'rgba(26,22,18,0.2)' ? '#E8E8F0' : tierColor,
+              border: `1px solid ${tierColor === 'rgba(26,22,18,0.2)' ? 'rgba(26,22,18,0.15)' : `${tierColor}40`}`,
             }}>
               {item.tier}
             </span>
@@ -260,7 +260,7 @@ function RecRow({ item, onExecute, onVeto }) {
             <button
               onClick={handleExecute}
               disabled={executing}
-              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: 'rgba(74,126,200,0.12)', border: '1px solid rgba(74,126,200,0.3)', borderRadius: 5, color: '#8BB8E8', fontSize: 10, fontWeight: 600, cursor: 'pointer' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: 'rgba(26,22,18,0.1)', border: '1px solid rgba(204,120,92,0.25)', borderRadius: 5, color: '#8BB8E8', fontSize: 10, fontWeight: 600, cursor: 'pointer' }}
             >
               <CheckCircle size={10} /> Approve
             </button>
@@ -352,7 +352,7 @@ export default function ApprovalQueue({ cases = [], onApprove, onDismiss }) {
   return (
     <div style={{ fontFamily: "var(--font-ui,'IBM Plex Sans',sans-serif)" }}>
       {/* Tab switcher */}
-      <div style={{ display: 'flex', gap: 2, marginBottom: 16, background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: 3 }}>
+      <div style={{ display: 'flex', gap: 2, marginBottom: 16, background: 'rgba(26,22,18,0.04)', borderRadius: 8, padding: 3 }}>
         {[
           { id: 'cases', label: `Cases (${queue.length})` },
           { id: 'defense', label: `Defense (${pendingRecs.length})` },
@@ -362,7 +362,7 @@ export default function ApprovalQueue({ cases = [], onApprove, onDismiss }) {
             onClick={() => setActiveTab(t.id)}
             style={{
               flex: 1, padding: '6px 8px', borderRadius: 6, border: 'none',
-              background: activeTab === t.id ? 'rgba(74,126,200,0.2)' : 'none',
+              background: activeTab === t.id ? 'rgba(26,22,18,0.14)' : 'none',
               color: activeTab === t.id ? '#8BB8E8' : 'var(--text-muted, #475569)',
               fontSize: 11, fontWeight: 600, cursor: 'pointer',
             }}
@@ -443,7 +443,7 @@ export default function ApprovalQueue({ cases = [], onApprove, onDismiss }) {
             <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary, #F1F5F9)' }}>
               {pendingRecs.length === 0 ? 'No pending countermeasures' : `${pendingRecs.length} pending countermeasure${pendingRecs.length !== 1 ? 's' : ''}`}
             </span>
-            <button onClick={loadRecs} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 5, padding: '3px 7px', color: '#6B7280', cursor: 'pointer' }}>
+            <button onClick={loadRecs} style={{ background: 'none', border: '1px solid rgba(26,22,18,0.09)', borderRadius: 5, padding: '3px 7px', color: '#6B7280', cursor: 'pointer' }}>
               <RefreshCw size={11} />
             </button>
           </div>
@@ -451,17 +451,17 @@ export default function ApprovalQueue({ cases = [], onApprove, onDismiss }) {
           {loadingRecs ? (
             <div style={{ textAlign: 'center', padding: 20, fontSize: 12, color: '#6B7280' }}>Loading…</div>
           ) : pendingRecs.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '24px 16px', background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.07)', borderRadius: 10 }}>
+            <div style={{ textAlign: 'center', padding: '24px 16px', background: 'rgba(26,22,18,0.03)', border: '1px dashed rgba(26,22,18,0.08)', borderRadius: 10 }}>
               <Shield size={24} style={{ color: '#374151', marginBottom: 8 }} />
               <div style={{ fontSize: 12, color: '#6B7280' }}>No pending countermeasures</div>
             </div>
           ) : (
             TIER_ORDER_LIST.filter(tier => tierGroups[tier]?.length > 0).map(tier => {
-              const tierColor = TIER_COLORS[tier] || 'rgba(255,255,255,0.2)';
+              const tierColor = TIER_COLORS[tier] || 'rgba(26,22,18,0.2)';
               return (
                 <div key={tier} style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: tierColor === 'rgba(255,255,255,0.2)' ? '#9CA3AF' : tierColor, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: tierColor === 'rgba(255,255,255,0.2)' ? '#9CA3AF' : tierColor }} />
+                  <div style={{ fontSize: 10, fontWeight: 700, color: tierColor === 'rgba(26,22,18,0.2)' ? '#9CA3AF' : tierColor, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: tierColor === 'rgba(26,22,18,0.2)' ? '#9CA3AF' : tierColor }} />
                     {tier} ({tierGroups[tier].length})
                   </div>
                   {tierGroups[tier].map(item => (

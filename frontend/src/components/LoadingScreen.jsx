@@ -57,10 +57,10 @@ export default function LoadingScreen() {
   if (reduced) {
     return (
       <motion.div initial={{ opacity: 1 }} exit={{ opacity: 0 }}
-        style={{ position: 'fixed', inset: 0, background: '#050505', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 20, zIndex: 9999 }}>
+        style={{ position: 'fixed', inset: 0, background: var(--card), display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 20, zIndex: 9999 }}>
         <img src="/assets/brand/aegistrace-icon-transparent.png" alt="AegisTrace"
           style={{ width: 72, height: 72, filter: 'drop-shadow(0 0 8px rgba(74,126,200,0.6))' }}/>
-        <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, color: '#BDD4E8', letterSpacing: '0.3em' }}>AEGISTRACE</span>
+        <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, color: 'var(--text-primary)', letterSpacing: '0.3em' }}>AEGISTRACE</span>
       </motion.div>
     );
   }
@@ -70,7 +70,7 @@ export default function LoadingScreen() {
       initial={{ opacity: 1 }}
       exit={{ y: '-100%', opacity: 0 }}
       transition={{ duration: 0.65, ease: [0.76, 0, 0.24, 1], delay: 0.08 }}
-      style={{ position: 'fixed', inset: 0, background: '#050505', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', zIndex: 9999, overflow: 'hidden' }}
+      style={{ position: 'fixed', inset: 0, background: var(--card), display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', zIndex: 9999, overflow: 'hidden' }}
     >
       {/* Deep glow bloom */}
       <motion.div aria-hidden
@@ -86,7 +86,7 @@ export default function LoadingScreen() {
         initial={{ scale: 0.55, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
         transition={{ ...SPRING, delay: 0.10 }}
         style={{ position: 'relative', marginBottom: 38,
-          filter: 'drop-shadow(0 0 18px rgba(74,126,200,0.65)) drop-shadow(0 0 36px rgba(74,126,200,0.3))' }}
+          filter: 'drop-shadow(0 0 18px rgba(74,126,200,0.65)) drop-shadow(0 0 36px rgba(204,120,92,0.25))' }}
       >
         <MetallicPaint
           imageUrl="/assets/brand/aegistrace-icon-transparent.png"
@@ -103,7 +103,7 @@ export default function LoadingScreen() {
           transition={{ duration: 8, ease: 'linear', repeat: Infinity }}
           style={{
             position: 'absolute', inset: -12, borderRadius: '50%',
-            border: '1px dashed rgba(74,126,200,0.12)',
+            border: '1px dashed rgba(26,22,18,0.1)',
             pointerEvents: 'none',
           }}
         />
@@ -117,7 +117,7 @@ export default function LoadingScreen() {
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={{ duration: 0.42, delay: 0.68 + i * 0.058, ease: EOUT }}
             style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 14, fontWeight: 600,
-              color: '#BDD4E8', letterSpacing: '0.22em', display: 'inline-block' }}
+              color: 'var(--text-primary)', letterSpacing: '0.22em', display: 'inline-block' }}
           >{ch}</motion.span>
         ))}
       </div>
@@ -129,7 +129,7 @@ export default function LoadingScreen() {
           transition={{ duration: 1.85, delay: 0.6, ease: [0.4, 0, 0.2, 1] }}
           style={{ position: 'absolute', inset: 0, transformOrigin: 'left',
             background: 'linear-gradient(90deg, #2A5A9E 0%, #4A7EC8 50%, #8BB8E8 100%)',
-            boxShadow: '0 0 10px rgba(74,126,200,0.9), 0 0 24px rgba(74,126,200,0.5)' }}
+            boxShadow: '0 0 10px rgba(74,126,200,0.9), 0 0 24px rgba(204,120,92,0.35)' }}
         />
       </div>
     </motion.div>

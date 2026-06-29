@@ -77,7 +77,7 @@ export default function MetallicPaint({ imageUrl, size = 160 }) {
       img.src = imageUrl;
       img.onload = () => {
         ctx.drawImage(img, 0, 0, W, H);
-        ctx.fillStyle = 'rgba(74,126,200,0.3)';
+        ctx.fillStyle = 'rgba(204,120,92,0.25)';
         ctx.globalCompositeOperation = 'source-atop';
         ctx.fillRect(0, 0, W, H);
         ctx.globalCompositeOperation = 'source-over';

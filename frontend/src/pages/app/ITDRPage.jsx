@@ -19,7 +19,7 @@ const DETECTOR_META = {
   new_device:                      { label: 'New Device Login',           color: '#EAB308', Icon: Smartphone },
   privilege_escalation:            { label: 'Privilege Escalation',       color: '#EF4444', Icon: Shield },
   token_theft:                     { label: 'Token / Session Theft',      color: '#8BB8E8', Icon: Key },
-  shadow_ai:                       { label: 'Shadow AI Usage',            color: '#4A7EC8', Icon: Bot },
+  shadow_ai:                       { label: 'Shadow AI Usage',            color: 'var(--accent)', Icon: Bot },
   // Endpoint agent alerts
   honey_token_access:              { label: 'Honey Token Accessed',       color: '#EF4444', Icon: AlertTriangle },
   suspicious_process:              { label: 'Suspicious Process',         color: '#F97316', Icon: Activity },
@@ -41,7 +41,7 @@ const DETECTOR_META = {
 const EVENT_TYPE_LABELS = {
   login:            { label: 'Login',           color: '#22C55E' },
   failed_login:     { label: 'Failed Login',    color: '#EF4444' },
-  logout:           { label: 'Logout',          color: '#787878' },
+  logout:           { label: 'Logout',          color: 'var(--text-muted)' },
   privilege_change: { label: 'Priv. Change',    color: '#F97316' },
   mfa_challenge:    { label: 'MFA Challenge',   color: '#EAB308' },
   password_reset:   { label: 'Pwd Reset',       color: '#8BB8E8' },
@@ -105,15 +105,15 @@ function AddEventPanel({ onCreated, onClose }) {
   };
 
   const row = { display: 'flex', flexDirection: 'column', gap: 4 };
-  const lbl = { fontSize: '0.67rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.06em' };
+  const lbl = { fontSize: '0.67rem', color: 'var(--text-muted)', ...MONO, textTransform: 'uppercase', letterSpacing: '0.06em' };
 
   return (
-    <div className="at-card" style={{ padding: 20, marginBottom: 20, borderColor: 'rgba(74,126,200,0.2)' }}>
+    <div className="at-card" style={{ padding: 20, marginBottom: 20, borderColor: 'rgba(26,22,18,0.14)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <span style={{ fontWeight: 600, fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: 7 }}>
-          <Plus size={14} style={{ color: '#4A7EC8' }} /> Add Auth Event
+          <Plus size={14} style={{ color: 'var(--accent)' }} /> Add Auth Event
         </span>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={14} /></button>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={14} /></button>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
         <div style={row}>
@@ -199,12 +199,12 @@ function ParseLogPanel({ onParsed, onClose }) {
   };
 
   return (
-    <div className="at-card" style={{ padding: 20, marginBottom: 20, borderColor: 'rgba(74,126,200,0.2)' }}>
+    <div className="at-card" style={{ padding: 20, marginBottom: 20, borderColor: 'rgba(26,22,18,0.14)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <span style={{ fontWeight: 600, fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: 7 }}>
-          <FileText size={14} style={{ color: '#4A7EC8' }} /> AI Log Parser
+          <FileText size={14} style={{ color: 'var(--accent)' }} /> AI Log Parser
         </span>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={14} /></button>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={14} /></button>
       </div>
       <input className="at-input" value={label} onChange={e => setLabel(e.target.value)}
         placeholder="Identity label (optional override)" style={{ marginBottom: 10, fontSize: '0.8rem', ...MONO }} />
@@ -217,7 +217,7 @@ function ParseLogPanel({ onParsed, onClose }) {
         </button>
       </div>
       {parsed && (
-        <div style={{ marginTop: 12, fontSize: '0.72rem', color: '#787878', ...MONO }}>
+        <div style={{ marginTop: 12, fontSize: '0.72rem', color: 'var(--text-muted)', ...MONO }}>
           Extracted {parsed.count} event(s): {parsed.events?.slice(0, 4).map(e => `${e.event_type}@${e.identity_label}`).join(', ')}{parsed.count > 4 ? '…' : ''}
         </div>
       )}
@@ -233,13 +233,13 @@ function DetectionTab({ events, anomalies, loading }) {
     <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 20 }}>
       {/* Auth Event Log */}
       <div>
-        <div style={{ fontSize: '0.68rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
           Auth Events ({events.length})
         </div>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 40 }}><Loader2 size={18} className="spinner" style={{ color: '#787878' }} /></div>
+          <div style={{ textAlign: 'center', padding: 40 }}><Loader2 size={18} className="spinner" style={{ color: 'var(--text-muted)' }} /></div>
         ) : events.length === 0 ? (
-          <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#787878' }}>
+          <div className="at-card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
             <User size={28} style={{ margin: '0 auto 12px', opacity: 0.2 }} />
             <div style={{ fontSize: '0.82rem', marginBottom: 8 }}>No auth events yet</div>
             <div style={{ fontSize: '0.72rem', ...MONO, color: '#404040' }}>Add events manually or paste log text to get started</div>
@@ -247,9 +247,9 @@ function DetectionTab({ events, anomalies, loading }) {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {events.map(ev => {
-              const meta = EVENT_TYPE_LABELS[ev.event_type] || { label: ev.event_type, color: '#787878' };
+              const meta = EVENT_TYPE_LABELS[ev.event_type] || { label: ev.event_type, color: 'var(--text-muted)' };
               return (
-                <div key={ev.id} style={{ background: 'rgba(8,8,8,0.65)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '10px 14px', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <div key={ev.id} style={{ background: 'rgba(8,8,8,0.65)', border: '1px solid rgba(26,22,18,0.08)', borderRadius: 8, padding: '10px 14px', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                   <div style={{ width: 7, height: 7, borderRadius: '50%', background: meta.color, marginTop: 5, flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3, flexWrap: 'wrap' }}>
@@ -257,7 +257,7 @@ function DetectionTab({ events, anomalies, loading }) {
                       <span style={{ fontSize: '0.65rem', color: meta.color, background: `${meta.color}18`, padding: '1px 7px', borderRadius: 3, ...MONO, flexShrink: 0 }}>{meta.label}</span>
                       {!ev.success && <span style={{ fontSize: '0.62rem', color: '#EF4444', ...MONO }}>FAILED</span>}
                     </div>
-                    <div style={{ fontSize: '0.68rem', color: '#787878', ...MONO, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', ...MONO, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                       {ev.source_ip && <span>{ev.source_ip}</span>}
                       {ev.country   && <span>{ev.country}</span>}
                       {ev.device_name && <span>{ev.device_name}</span>}
@@ -273,11 +273,11 @@ function DetectionTab({ events, anomalies, loading }) {
 
       {/* Active Detections */}
       <div>
-        <div style={{ fontSize: '0.68rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
           Active Detections ({anomalies.length})
         </div>
         {anomalies.length === 0 ? (
-          <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#787878' }}>
+          <div className="at-card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
             <CheckCircle size={28} style={{ margin: '0 auto 12px', color: '#22C55E', opacity: 0.4 }} />
             <div style={{ fontSize: '0.82rem' }}>No active threats detected</div>
             <div style={{ fontSize: '0.72rem', ...MONO, color: '#404040', marginTop: 6 }}>Run Analysis on an identity to check</div>
@@ -294,8 +294,8 @@ function DetectionTab({ events, anomalies, loading }) {
                     <span style={{ fontWeight: 700, fontSize: '0.82rem', color: dm.color }}>{dm.label}</span>
                     <span style={{ marginLeft: 'auto', fontSize: '0.64rem', color: SEV_COLOR[a.severity], ...MONO }}>{a.severity?.toUpperCase()}</span>
                   </div>
-                  <div style={{ fontSize: '0.76rem', color: '#909090', lineHeight: 1.6, marginBottom: 8 }}>{a.description}</div>
-                  <div style={{ fontSize: '0.64rem', color: '#787878', ...MONO }}>
+                  <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 8 }}>{a.description}</div>
+                  <div style={{ fontSize: '0.64rem', color: 'var(--text-muted)', ...MONO }}>
                     Confidence: {Math.round((a.confidence || 0) * 100)}% · {timeAgo(a.detected_at)}
                   </div>
                 </div>
@@ -306,13 +306,13 @@ function DetectionTab({ events, anomalies, loading }) {
 
         {/* Detector reference */}
         <div className="at-card" style={{ padding: '14px 16px', marginTop: 16 }}>
-          <div style={{ fontSize: '0.64rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+          <div style={{ fontSize: '0.64rem', color: 'var(--text-muted)', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
             6 Detectors Active
           </div>
           {Object.entries(DETECTOR_META).map(([k, v]) => (
-            <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: '0.72rem' }}>
+            <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid rgba(26,22,18,0.05)', fontSize: '0.72rem' }}>
               <v.Icon size={11} style={{ color: v.color, flexShrink: 0 }} />
-              <span style={{ color: '#909090' }}>{v.label}</span>
+              <span style={{ color: 'var(--text-muted)' }}>{v.label}</span>
               <div style={{ marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%', background: '#22C55E', boxShadow: '0 0 5px #22C55E55' }} />
             </div>
           ))}
@@ -385,8 +385,8 @@ function AlertsTab() {
 
   const EvidenceRow = ({ label, value, mono = true }) => value ? (
     <div style={{ display: 'flex', gap: 10, marginBottom: 5, alignItems: 'flex-start' }}>
-      <span style={{ fontSize: '0.68rem', color: '#787878', minWidth: 110, flexShrink: 0, paddingTop: 1 }}>{label}</span>
-      <span style={{ fontSize: '0.72rem', color: '#BDD4E8', ...(mono ? MONO : {}), wordBreak: 'break-all', lineHeight: 1.5 }}>{String(value)}</span>
+      <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', minWidth: 110, flexShrink: 0, paddingTop: 1 }}>{label}</span>
+      <span style={{ fontSize: '0.72rem', color: 'var(--text-primary)', ...(mono ? MONO : {}), wordBreak: 'break-all', lineHeight: 1.5 }}>{String(value)}</span>
     </div>
   ) : null;
 
@@ -406,22 +406,22 @@ function AlertsTab() {
         {STATUS_FILTERS.map(f => (
           <button key={f} onClick={() => setFilter(f)}
             style={{ padding: '5px 14px', borderRadius: 6, border: '1px solid', fontSize: '0.72rem', cursor: 'pointer', ...MONO, textTransform: 'uppercase', letterSpacing: '0.06em',
-              background: filter === f ? 'rgba(74,126,200,0.12)' : 'transparent',
+              background: filter === f ? 'rgba(26,22,18,0.1)' : 'transparent',
               color: filter === f ? '#8BB8E8' : '#787878',
-              borderColor: filter === f ? 'rgba(74,126,200,0.3)' : 'rgba(255,255,255,0.07)',
+              borderColor: filter === f ? 'rgba(204,120,92,0.25)' : 'rgba(26,22,18,0.08)',
             }}>
             {f.replace('_', ' ')}
           </button>
         ))}
-        <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: '#787878', ...MONO, alignSelf: 'center' }}>
+        <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: 'var(--text-muted)', ...MONO, alignSelf: 'center' }}>
           {total} total
         </span>
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 60 }}><Loader2 size={20} className="spinner" style={{ color: '#787878' }} /></div>
+        <div style={{ textAlign: 'center', padding: 60 }}><Loader2 size={20} className="spinner" style={{ color: 'var(--text-muted)' }} /></div>
       ) : alerts.length === 0 ? (
-        <div className="at-card" style={{ padding: 60, textAlign: 'center', color: '#787878' }}>
+        <div className="at-card" style={{ padding: 60, textAlign: 'center', color: 'var(--text-muted)' }}>
           <CheckCircle size={32} style={{ margin: '0 auto 14px', color: '#22C55E', opacity: 0.3 }} />
           <div style={{ fontSize: '0.85rem' }}>No alerts for this filter</div>
         </div>
@@ -450,33 +450,33 @@ function AlertsTab() {
                   <Icon size={15} style={{ color: dm.color, marginTop: 2, flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5, flexWrap: 'wrap' }}>
-                      <span style={{ fontWeight: 600, fontSize: '0.84rem', color: '#BDD4E8' }}>{dm.label}</span>
+                      <span style={{ fontWeight: 600, fontSize: '0.84rem', color: 'var(--text-primary)' }}>{dm.label}</span>
                       <span style={{ fontSize: '0.64rem', color: SEV_COLOR[a.severity], background: `${SEV_COLOR[a.severity]}14`, padding: '1px 7px', borderRadius: 3, ...MONO }}>
                         {(a.severity || 'low').toUpperCase()}
                       </span>
-                      {hostname && <span style={{ fontSize: '0.7rem', color: '#787878', ...MONO }}>🖥 {hostname}</span>}
+                      {hostname && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', ...MONO }}>🖥 {hostname}</span>}
                       <span style={{ marginLeft: 'auto', fontSize: '0.64rem', color: sc, background: `${sc}14`, padding: '1px 8px', borderRadius: 3, ...MONO, textTransform: 'uppercase' }}>
                         {(a.status || 'open').replace('_', ' ')}
                       </span>
                       <span style={{ fontSize: '0.7rem', color: '#5A5A5A' }}>{isOpen ? '▲' : '▼'}</span>
                     </div>
                     {a.description && (
-                      <div style={{ fontSize: '0.76rem', color: '#909090', lineHeight: 1.5 }}>{a.description}</div>
+                      <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>{a.description}</div>
                     )}
-                    <div style={{ marginTop: 6, fontSize: '0.64rem', color: '#787878', ...MONO }}>🕐 {preciseTime(a.detected_at)}</div>
+                    <div style={{ marginTop: 6, fontSize: '0.64rem', color: 'var(--text-muted)', ...MONO }}>🕐 {preciseTime(a.detected_at)}</div>
                   </div>
                 </div>
 
                 {/* ── Expanded detail + actions ── */}
                 {isOpen && (
-                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '16px 18px', background: 'rgba(0,0,0,0.25)' }}>
+                  <div style={{ borderTop: '1px solid rgba(26,22,18,0.08)', padding: '16px 18px', background: 'rgba(0,0,0,0.25)' }}>
 
                     {/* Evidence fields */}
                     <div style={{ marginBottom: 14 }}>
-                      <div style={{ fontSize: '0.65rem', color: '#4A7EC8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10, ...MONO }}>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10, ...MONO }}>
                         ◇ Evidence
                       </div>
-                      <div style={{ padding: '12px 14px', background: 'rgba(0,0,0,0.3)', borderRadius: 7, border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div style={{ padding: '12px 14px', background: 'rgba(26,22,18,0.05)', borderRadius: 7, border: '1px solid rgba(26,22,18,0.07)' }}>
                         <EvidenceRow label="Process"     value={ev.process_name ? `${ev.process_name} (PID ${ev.process_pid || '?'})` : null} />
                         <EvidenceRow label="User"        value={ev.username} />
                         <EvidenceRow label="Cmdline"     value={ev.cmdline} />
@@ -490,14 +490,14 @@ function AlertsTab() {
                         <EvidenceRow label="Domain"      value={ev.domain} />
                         <EvidenceRow label="Severity"    value={ev.severity} />
                         {Object.keys(ev).length === 0 && (
-                          <div style={{ fontSize: '0.72rem', color: '#555' }}>No evidence data</div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>No evidence data</div>
                         )}
                       </div>
                     </div>
 
                     {/* Response actions */}
                     <div style={{ marginBottom: 12 }}>
-                      <div style={{ fontSize: '0.65rem', color: '#4A7EC8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10, ...MONO }}>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10, ...MONO }}>
                         ◇ Response Actions
                       </div>
                       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -538,14 +538,14 @@ function AlertsTab() {
                     </div>
 
                     {/* Status actions */}
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingTop: 10, borderTop: '1px solid rgba(26,22,18,0.05)' }}>
                       {a.status === 'open' && <>
                         <button onClick={() => updateStatus(a.id, 'investigating')}
                           style={{ fontSize: '0.65rem', background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.2)', color: '#F97316', borderRadius: 4, padding: '3px 10px', cursor: 'pointer', ...MONO }}>
                           Investigate
                         </button>
                         <button onClick={() => updateStatus(a.id, 'false_positive')}
-                          style={{ fontSize: '0.65rem', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#787878', borderRadius: 4, padding: '3px 10px', cursor: 'pointer', ...MONO }}>
+                          style={{ fontSize: '0.65rem', background: 'rgba(26,22,18,0.05)', border: '1px solid rgba(26,22,18,0.09)', color: 'var(--text-muted)', borderRadius: 4, padding: '3px 10px', cursor: 'pointer', ...MONO }}>
                           False Positive
                         </button>
                       </>}
@@ -588,13 +588,13 @@ function AnalyticsTab() {
 
   if (loading) return (
     <div style={{ textAlign: 'center', padding: 80 }}>
-      <Loader2 size={22} className="spinner" style={{ color: '#4A7EC8' }} />
-      <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 12, ...MONO }}>Loading analytics…</div>
+      <Loader2 size={22} className="spinner" style={{ color: 'var(--accent)' }} />
+      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 12, ...MONO }}>Loading analytics…</div>
     </div>
   );
 
   if (!data) return (
-    <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#787878' }}>
+    <div className="at-card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
       <AlertCircle size={28} style={{ margin: '0 auto 12px', opacity: 0.3 }} />
       <div>Could not load analytics</div>
     </div>
@@ -607,13 +607,13 @@ function AnalyticsTab() {
 
   const KPICard = ({ label, value, sub, color = '#BDD4E8', icon: Icon }) => (
     <div className="at-card" style={{ padding: '18px 20px', display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-      {Icon && <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <Icon size={16} style={{ color: '#4A7EC8' }} />
+      {Icon && <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(26,22,18,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <Icon size={16} style={{ color: 'var(--accent)' }} />
       </div>}
       <div>
         <div style={{ fontSize: '1.6rem', fontWeight: 700, color, lineHeight: 1.1, ...MONO }}>{value}</div>
-        <div style={{ fontSize: '0.72rem', color: '#BDD4E8', fontWeight: 500, marginTop: 4 }}>{label}</div>
-        {sub && <div style={{ fontSize: '0.64rem', color: '#787878', marginTop: 2, ...MONO }}>{sub}</div>}
+        <div style={{ fontSize: '0.72rem', color: 'var(--text-primary)', fontWeight: 500, marginTop: 4 }}>{label}</div>
+        {sub && <div style={{ fontSize: '0.64rem', color: 'var(--text-muted)', marginTop: 2, ...MONO }}>{sub}</div>}
       </div>
     </div>
   );
@@ -623,16 +623,16 @@ function AnalyticsTab() {
 
       {/* Period selector */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: '0.68rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           Showing last {period} days
         </div>
         <div style={{ display: 'flex', gap: 4 }}>
           {[7, 14, 30, 60, 90].map(d => (
             <button key={d} onClick={() => setPeriod(d)}
               style={{ padding: '4px 11px', borderRadius: 5, border: '1px solid', fontSize: '0.7rem', cursor: 'pointer', ...MONO,
-                background: period === d ? 'rgba(74,126,200,0.12)' : 'transparent',
+                background: period === d ? 'rgba(26,22,18,0.1)' : 'transparent',
                 color: period === d ? '#8BB8E8' : '#787878',
-                borderColor: period === d ? 'rgba(74,126,200,0.3)' : 'rgba(255,255,255,0.07)',
+                borderColor: period === d ? 'rgba(204,120,92,0.25)' : 'rgba(26,22,18,0.08)',
               }}>
               {d}d
             </button>
@@ -652,17 +652,17 @@ function AnalyticsTab() {
 
         {/* Detector fire rates */}
         <div className="at-card" style={{ padding: '18px 20px' }}>
-          <div style={{ fontSize: '0.68rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
+          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
             Detector Fire Rates
           </div>
           {data.detector_fire_rates.length === 0 ? (
-            <div style={{ padding: '30px 0', textAlign: 'center', color: '#787878', fontSize: '0.8rem' }}>
+            <div style={{ padding: '30px 0', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
               No detections in this period
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {data.detector_fire_rates.map(d => {
-                const dm = DETECTOR_META[d.detector] || { label: d.detector, color: '#4A7EC8', Icon: Shield };
+                const dm = DETECTOR_META[d.detector] || { label: d.detector, color: 'var(--accent)', Icon: Shield };
                 const pct = Math.round((d.count / maxDetector) * 100);
                 return (
                   <div key={d.detector}>
@@ -671,9 +671,9 @@ function AnalyticsTab() {
                         <dm.Icon size={12} style={{ color: dm.color, flexShrink: 0 }} />
                         <span style={{ fontSize: '0.76rem', color: '#7A9DB8' }}>{dm.label}</span>
                       </div>
-                      <span style={{ fontSize: '0.72rem', color: '#BDD4E8', fontWeight: 600, ...MONO }}>{d.count}</span>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-primary)', fontWeight: 600, ...MONO }}>{d.count}</span>
                     </div>
-                    <div style={{ height: 5, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+                    <div style={{ height: 5, background: 'rgba(26,22,18,0.07)', borderRadius: 3, overflow: 'hidden' }}>
                       <div style={{ height: '100%', width: `${pct}%`, background: dm.color, borderRadius: 3, transition: 'width 0.6s ease', opacity: 0.8 }} />
                     </div>
                   </div>
@@ -687,7 +687,7 @@ function AnalyticsTab() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {/* Severity */}
           <div className="at-card" style={{ padding: '18px 20px' }}>
-            <div style={{ fontSize: '0.68rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>
+            <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>
               Severity Distribution
             </div>
             {/* Stacked bar */}
@@ -703,7 +703,7 @@ function AnalyticsTab() {
                 <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <div style={{ width: 8, height: 8, borderRadius: 2, background: SEV_COLOR[s], flexShrink: 0 }} />
                   <span style={{ fontSize: '0.72rem', color: '#7A9DB8', textTransform: 'capitalize' }}>{s}</span>
-                  <span style={{ marginLeft: 'auto', fontSize: '0.72rem', fontWeight: 600, color: '#BDD4E8', ...MONO }}>{data.severity_distribution[s]}</span>
+                  <span style={{ marginLeft: 'auto', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-primary)', ...MONO }}>{data.severity_distribution[s]}</span>
                 </div>
               ))}
             </div>
@@ -711,11 +711,11 @@ function AnalyticsTab() {
 
           {/* Status breakdown */}
           <div className="at-card" style={{ padding: '18px 20px' }}>
-            <div style={{ fontSize: '0.68rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>
+            <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>
               Alert Status
             </div>
             {Object.keys(data.status_breakdown).length === 0 ? (
-              <div style={{ fontSize: '0.76rem', color: '#787878' }}>No alerts recorded yet</div>
+              <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>No alerts recorded yet</div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {Object.entries(data.status_breakdown).map(([st, count]) => {
@@ -725,9 +725,9 @@ function AnalyticsTab() {
                     <div key={st}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                         <span style={{ fontSize: '0.72rem', color: '#7A9DB8', textTransform: 'capitalize' }}>{st.replace('_', ' ')}</span>
-                        <span style={{ fontSize: '0.72rem', color: '#BDD4E8', fontWeight: 600, ...MONO }}>{count} <span style={{ color: '#787878', fontWeight: 400 }}>({pct}%)</span></span>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-primary)', fontWeight: 600, ...MONO }}>{count} <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>({pct}%)</span></span>
                       </div>
-                      <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
+                      <div style={{ height: 4, background: 'rgba(26,22,18,0.07)', borderRadius: 2, overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: `${pct}%`, background: c, borderRadius: 2, opacity: 0.75 }} />
                       </div>
                     </div>
@@ -741,7 +741,7 @@ function AnalyticsTab() {
 
       {/* 30-day trend */}
       <div className="at-card" style={{ padding: '18px 20px' }}>
-        <div style={{ fontSize: '0.68rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
+        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
           Daily Detection Trend — last {Math.min(period, 30)} days
         </div>
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 72, overflowX: 'auto' }}>
@@ -753,7 +753,7 @@ function AnalyticsTab() {
                 style={{ flex: 1, minWidth: 6, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, cursor: 'default' }}>
                 <div style={{
                   width: '100%', height: h,
-                  background: d.count > 0 ? (isToday ? '#4A7EC8' : 'rgba(74,126,200,0.4)') : 'rgba(74,126,200,0.05)',
+                  background: d.count > 0 ? (isToday ? '#4A7EC8' : 'rgba(204,120,92,0.3)') : 'rgba(74,126,200,0.05)',
                   borderRadius: '2px 2px 0 0',
                   transition: 'height 0.4s ease',
                 }} />
@@ -761,7 +761,7 @@ function AnalyticsTab() {
             );
           })}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: '0.6rem', color: '#555', ...MONO }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: '0.6rem', color: 'var(--text-muted)', ...MONO }}>
           <span>{data.daily_trend[0]?.date}</span>
           <span>{data.daily_trend[Math.floor(data.daily_trend.length / 2)]?.date}</span>
           <span>{data.daily_trend[data.daily_trend.length - 1]?.date}</span>
@@ -771,7 +771,7 @@ function AnalyticsTab() {
       {/* Top targeted identities */}
       {data.top_targeted_identities.length > 0 && (
         <div className="at-card" style={{ padding: '18px 20px' }}>
-          <div style={{ fontSize: '0.68rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
+          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
             Top Targeted Identities
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
@@ -780,11 +780,11 @@ function AnalyticsTab() {
               return (
                 <div key={item.identity}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 5 }}>
-                    <span style={{ fontSize: '0.68rem', color: '#787878', ...MONO, width: 16, textAlign: 'right', flexShrink: 0 }}>#{i + 1}</span>
-                    <span style={{ fontSize: '0.78rem', color: '#BDD4E8', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', ...MONO }}>{item.identity}</span>
+                    <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', ...MONO, width: 16, textAlign: 'right', flexShrink: 0 }}>#{i + 1}</span>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', ...MONO }}>{item.identity}</span>
                     <span style={{ fontSize: '0.72rem', fontWeight: 600, color: i === 0 ? '#EF4444' : '#7A9DB8', ...MONO, flexShrink: 0 }}>{item.count} alert{item.count !== 1 ? 's' : ''}</span>
                   </div>
-                  <div style={{ height: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 2, marginLeft: 26, overflow: 'hidden' }}>
+                  <div style={{ height: 4, background: 'rgba(26,22,18,0.05)', borderRadius: 2, marginLeft: 26, overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${pct}%`, background: i === 0 ? '#EF4444' : '#4A7EC8', borderRadius: 2, opacity: 0.7 }} />
                   </div>
                 </div>
@@ -855,10 +855,10 @@ export default function ITDRPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-            <Shield size={20} style={{ color: '#4A7EC8' }} />
+            <Shield size={20} style={{ color: 'var(--accent)' }} />
             <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Identity Threat Detection & Response</h1>
           </div>
-          <div style={{ fontSize: '0.7rem', color: '#787878', ...MONO }}>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', ...MONO }}>
             6 identity detectors · credential stuffing · impossible travel · new device · privilege escalation · token theft · shadow AI
             {' · '}
             <span style={{ color: '#A78BFA', fontWeight: 600 }}>Layer 3: Falco eBPF</span>
@@ -886,8 +886,8 @@ export default function ITDRPage() {
       {/* Run Analysis bar (Detection tab only) */}
       {tab === 'detection' && (
         <div className="at-card" style={{ padding: '12px 18px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <AlertTriangle size={14} style={{ color: '#4A7EC8', flexShrink: 0 }} />
-          <div style={{ fontSize: '0.76rem', color: '#909090', flex: 1 }}>Run all 6 ITDR detectors for a specific identity</div>
+          <AlertTriangle size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+          <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', flex: 1 }}>Run all 6 ITDR detectors for a specific identity</div>
           <input className="at-input" value={analyseForm.identity_label}
             onChange={e => setAnalyseForm(p => ({...p, identity_label: e.target.value}))}
             onKeyDown={e => e.key === 'Enter' && runAnalysis()}
@@ -900,7 +900,7 @@ export default function ITDRPage() {
       )}
 
       {/* Tab bar */}
-      <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)', marginBottom: 24, gap: 0 }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid rgba(26,22,18,0.08)', marginBottom: 24, gap: 0 }}>
         {TABS.map(({ key, label, icon: Icon }) => (
           <button key={key} className="tab-btn" onClick={() => setTab(key)}
             style={{ display: 'flex', alignItems: 'center', gap: 6 }}

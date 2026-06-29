@@ -11,19 +11,19 @@
   --font-ui:      'DM Sans', system-ui, -apple-system, sans-serif;
   --font-mono:    'IBM Plex Mono', ui-monospace, monospace;
 
-  /* ── Warm Dark Backgrounds (App + dark hero sections) ─────────── */
-  --bg:            #141210;   /* warm near-black */
-  --surface:       #1C1916;   /* primary surface */
-  --card:          #222018;   /* raised card */
-  --card-hover:    #2A271F;   /* card hover */
-  --elevated:      #2E2B22;   /* modals */
-  --surface-2:     #353028;   /* highest elevation */
-  --inset:         #0E0C0A;   /* code wells, insets */
-  --sidebar-bg:    #100E0B;   /* sidebar deepest */
+  /* ── Warm Cream Backgrounds (App + light sections) ────────────── */
+  --bg:            #F5F0E8;   /* Anthropic cream */
+  --surface:       #EDE7DC;   /* primary surface */
+  --card:          #E8E0D4;   /* raised card */
+  --card-hover:    #DDD4C4;   /* card hover */
+  --elevated:      #D8CEBC;   /* modals */
+  --surface-2:     #D0C4B0;   /* highest elevation */
+  --inset:         #E8E0D4;   /* insets / code wells */
+  --sidebar-bg:    #EDE7DC;   /* sidebar */
 
   /* ── Topbar ─────────────────────────────────────────────────────── */
-  --topbar-bg:    linear-gradient(135deg, #141210 0%, #1C1916 100%);
-  --topbar-solid: #141210;
+  --topbar-bg:    linear-gradient(135deg, #F5F0E8 0%, #EDE7DC 100%);
+  --topbar-solid: #F5F0E8;
 
   /* ── Accent — Anthropic Coral ──────────────────────────────────── */
   --accent:        #CC785C;
@@ -59,26 +59,26 @@
   --sev-low:        #10B981;
   --sev-info:       #8B8680;
 
-  /* ── Warm Dark Text ────────────────────────────────────────────── */
-  --text-primary:   #F0EBE3;   /* warm off-white */
-  --text-secondary: rgba(240,235,227,0.65);
-  --text-muted:     rgba(240,235,227,0.38);
-  --text-disabled:  rgba(240,235,227,0.2);
-  --text-inverse:   #141210;
+  /* ── Cream Text ─────────────────────────────────────────────────── */
+  --text-primary:   #1A1612;   /* near-black ink */
+  --text-secondary: #6B6258;   /* warm mid-gray */
+  --text-muted:     rgba(26,22,18,0.45);
+  --text-disabled:  rgba(26,22,18,0.25);
+  --text-inverse:   #F5F0E8;
 
-  /* ── Borders (warm) ────────────────────────────────────────────── */
-  --border:         rgba(240,235,227,0.08);
-  --border-light:   rgba(240,235,227,0.05);
-  --border-medium:  rgba(240,235,227,0.12);
-  --border-strong:  rgba(240,235,227,0.22);
+  /* ── Borders (dark-on-light) ────────────────────────────────────── */
+  --border:         rgba(26,22,18,0.09);
+  --border-light:   rgba(26,22,18,0.05);
+  --border-medium:  rgba(26,22,18,0.13);
+  --border-strong:  rgba(26,22,18,0.22);
 
-  /* ── Shadows (warm undertone) ──────────────────────────────────── */
-  --shadow-sm:   0 1px 3px rgba(10,8,6,0.55), 0 1px 2px rgba(10,8,6,0.4);
-  --shadow-md:   0 4px 16px rgba(10,8,6,0.65), 0 2px 4px rgba(10,8,6,0.45);
-  --shadow-lg:   0 10px 40px rgba(10,8,6,0.75), 0 4px 8px rgba(10,8,6,0.5);
-  --shadow-card: 0 0 0 1px rgba(240,235,227,0.07), 0 4px 16px rgba(10,8,6,0.6);
-  --shadow-warm: 0 4px 24px rgba(204,120,92,0.22);
-  --shadow-glow: 0 0 40px rgba(204,120,92,0.18), 0 0 80px rgba(204,120,92,0.08);
+  /* ── Shadows (light undertone) ──────────────────────────────────── */
+  --shadow-sm:   0 1px 3px rgba(26,22,18,0.1), 0 1px 2px rgba(26,22,18,0.07);
+  --shadow-md:   0 4px 16px rgba(26,22,18,0.12), 0 2px 4px rgba(26,22,18,0.08);
+  --shadow-lg:   0 10px 40px rgba(26,22,18,0.16), 0 4px 8px rgba(26,22,18,0.1);
+  --shadow-card: 0 0 0 1px rgba(26,22,18,0.08), 0 4px 16px rgba(26,22,18,0.1);
+  --shadow-warm: 0 4px 24px rgba(204,120,92,0.18);
+  --shadow-glow: 0 0 40px rgba(204,120,92,0.15), 0 0 80px rgba(204,120,92,0.07);
 
   /* ── Public Page — Anthropic warm cream ──────────────────────── */
   --pub-bg:           #F5F0E8;   /* Anthropic page cream */
@@ -125,16 +125,16 @@
   --base:  200ms cubic-bezier(0.4,0,0.2,1);
   --slow:  350ms cubic-bezier(0.4,0,0.2,1);
   --emil:  cubic-bezier(0.16,1,0.3,1);
-  --glass-bg:    rgba(20,18,16,0.92);
-  --glass-border: rgba(240,235,227,0.08);
+  --glass-bg:    rgba(245,240,232,0.88);
+  --glass-border: rgba(26,22,18,0.09);
   --brand-blue:        #CC785C;
   --brand-blue-bright: #E8A080;
   --brand-blue-deep:   #B8644A;
-  --brand-glow:        rgba(204,120,92,0.35);
-  --brand-glow-soft:   rgba(204,120,92,0.15);
-  --brand-black:       #141210;
-  --brand-gunmetal:    #222018;
-  --brand-steel:       #F0EBE3;
+  --brand-glow:        rgba(204,120,92,0.3);
+  --brand-glow-soft:   rgba(204,120,92,0.12);
+  --brand-black:       #F5F0E8;
+  --brand-gunmetal:    #EDE7DC;
+  --brand-steel:       #1A1612;
   --accent-cyan:       #CC785C;
   --accent-cyan-soft:  rgba(204,120,92,0.12);
   --teal:              #CC785C;

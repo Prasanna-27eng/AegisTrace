@@ -7,13 +7,13 @@ const ICON_GAP    = 6;
 const MAX_SCALE   = 1.45;
 const SCALE_RANGE = 110;
 
-// Neutral palette — no blue saturation on inactive icons
-const ICON_COLOR_INACTIVE = 'rgba(175,180,195,0.72)';
-const ICON_COLOR_ACTIVE   = 'rgba(230,232,240,0.95)';
-const TILE_BG_INACTIVE    = 'rgba(18,18,26,0.0)';
-const TILE_BG_ACTIVE      = 'rgba(255,255,255,0.09)';
-const TILE_BORDER_INACTIVE = 'rgba(255,255,255,0.0)';
-const TILE_BORDER_ACTIVE  = 'rgba(255,255,255,0.13)';
+// Cream light palette
+const ICON_COLOR_INACTIVE = 'rgba(26,22,18,0.5)';
+const ICON_COLOR_ACTIVE   = '#CC785C';
+const TILE_BG_INACTIVE    = 'transparent';
+const TILE_BG_ACTIVE      = 'rgba(204,120,92,0.1)';
+const TILE_BORDER_INACTIVE = 'transparent';
+const TILE_BORDER_ACTIVE  = 'rgba(204,120,92,0.22)';
 
 function DockItem({ item, mouseX }) {
   const ref      = useRef(null);
@@ -64,7 +64,7 @@ function DockItem({ item, mouseX }) {
           transform: 'translateX(-50%)',
           marginBottom: 6,
           background: 'rgba(12,12,18,0.94)',
-          border: '1px solid rgba(255,255,255,0.1)',
+          border: '1px solid rgba(26,22,18,0.1)',
           borderRadius: 6,
           padding: '3px 9px',
           fontSize: 11,
@@ -90,8 +90,8 @@ function DockItem({ item, mouseX }) {
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
-        background: isActive ? TILE_BG_ACTIVE : hovered ? 'rgba(255,255,255,0.05)' : TILE_BG_INACTIVE,
-        border: `1px solid ${isActive ? TILE_BORDER_ACTIVE : hovered ? 'rgba(255,255,255,0.07)' : TILE_BORDER_INACTIVE}`,
+        background: isActive ? TILE_BG_ACTIVE : hovered ? 'rgba(26,22,18,0.05)' : TILE_BG_INACTIVE,
+        border: `1px solid ${isActive ? TILE_BORDER_ACTIVE : hovered ? 'rgba(26,22,18,0.08)' : TILE_BORDER_INACTIVE}`,
         transition: 'background 0.18s, border-color 0.18s',
         color: isActive ? ICON_COLOR_ACTIVE : ICON_COLOR_INACTIVE,
       }}>
@@ -99,7 +99,7 @@ function DockItem({ item, mouseX }) {
         {React.cloneElement(item.icon, {
           style: {
             ...item.icon.props.style,
-            color: isActive ? ICON_COLOR_ACTIVE : hovered ? 'rgba(210,215,225,0.85)' : ICON_COLOR_INACTIVE,
+            color: isActive ? ICON_COLOR_ACTIVE : hovered ? 'rgba(26,22,18,0.75)' : ICON_COLOR_INACTIVE,
             transition: 'color 0.18s',
           }
         })}
@@ -114,7 +114,7 @@ function DockItem({ item, mouseX }) {
             width: 3,
             height: 3,
             borderRadius: '50%',
-            background: 'rgba(200,205,220,0.7)',
+            background: '#CC785C',
           }} />
         )}
 
@@ -136,7 +136,7 @@ function DockItem({ item, mouseX }) {
             alignItems: 'center',
             justifyContent: 'center',
             padding: '0 3px',
-            border: '1.5px solid #050505',
+            border: '1.5px solid rgba(26,22,18,0.06)',
           }}>
             {item.badge > 99 ? '99+' : item.badge}
           </div>
@@ -165,7 +165,7 @@ function DockDivider() {
     <div style={{
       width: 1,
       height: ICON_SIZE * 0.55,
-      background: 'rgba(255,255,255,0.08)',
+      background: 'rgba(26,22,18,0.12)',
       alignSelf: 'flex-end',
       marginBottom: 5,
       flexShrink: 0,
@@ -188,12 +188,12 @@ export default function Dock({ items = [] }) {
         alignItems: 'flex-end',
         gap: ICON_GAP,
         padding: '8px 12px',
-        background: 'rgba(10,10,16,0.82)',
-        backdropFilter: 'blur(28px) saturate(1.2)',
-        WebkitBackdropFilter: 'blur(28px) saturate(1.2)',
+        background: 'rgba(245,240,232,0.88)',
+        backdropFilter: 'blur(28px) saturate(1.6)',
+        WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
         borderRadius: 18,
-        border: '1px solid rgba(255,255,255,0.08)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.04) inset',
+        border: '1px solid rgba(26,22,18,0.1)',
+        boxShadow: '0 8px 32px rgba(26,22,18,0.12), 0 1px 0 rgba(255,255,255,0.7) inset',
       }}
       onMouseMove={(e) => mouseX.set(e.clientX)}
       onMouseLeave={() => mouseX.set(Infinity)}

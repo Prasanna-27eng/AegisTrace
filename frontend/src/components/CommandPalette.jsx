@@ -45,7 +45,7 @@ function highlight(text, query) {
   return (
     <>
       {text.slice(0, idx)}
-      <mark style={{ background: 'rgba(74,126,200,0.35)', color: '#BDD4E8', borderRadius: 2 }}>
+      <mark style={{ background: 'rgba(74,126,200,0.35)', color: 'var(--text-primary)', borderRadius: 2 }}>
         {text.slice(idx, idx + query.length)}
       </mark>
       {text.slice(idx + query.length)}
@@ -158,10 +158,10 @@ export default function CommandPalette({ open, onClose, recentCases = [], onOpen
       <div
         onClick={e => e.stopPropagation()}
         className="dropdown-pop"
-        style={{ width: '100%', maxWidth: 580, background: '#0E0E16', border: '1px solid rgba(74,126,200,0.2)', borderRadius: 12, boxShadow: '0 24px 64px rgba(0,0,0,0.8)', overflow: 'hidden' }}
+        style={{ width: '100%', maxWidth: 580, background: var(--surface), border: '1px solid rgba(26,22,18,0.14)', borderRadius: 12, boxShadow: '0 24px 64px rgba(0,0,0,0.8)', overflow: 'hidden' }}
       >
         {/* Search input */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderBottom: '1px solid rgba(74,126,200,0.12)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderBottom: '1px solid rgba(26,22,18,0.1)' }}>
           <Search size={16} style={{ color: '#4A6A8A', flexShrink: 0 }} />
           <input
             ref={inputRef}
@@ -169,7 +169,7 @@ export default function CommandPalette({ open, onClose, recentCases = [], onOpen
             onChange={e => setQ(e.target.value)}
             placeholder="Search pages, cases, tools…"
             aria-label="Command palette search"
-            style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: '#BDD4E8', fontSize: '0.9rem', fontFamily: 'Inter, sans-serif' }}
+            style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '0.9rem', fontFamily: 'Inter, sans-serif' }}
           />
           {q && (
             <button onClick={() => setQ('')} style={{ background: 'none', border: 'none', color: '#4A6A8A', cursor: 'pointer', padding: 2 }}>
@@ -183,7 +183,7 @@ export default function CommandPalette({ open, onClose, recentCases = [], onOpen
         <div ref={listRef} style={{ maxHeight: 420, overflowY: 'auto', padding: '8px 0' }}>
           {flat.length === 0 ? (
             <div style={{ padding: '24px 16px', textAlign: 'center', color: '#4A6A8A', fontSize: '0.82rem' }}>
-              No results for "<span style={{ color: '#BDD4E8' }}>{q}</span>"
+              No results for "<span style={{ color: 'var(--text-primary)' }}>{q}</span>"
             </div>
           ) : (
             Object.entries(groups).map(([groupName, items]) => (
@@ -203,7 +203,7 @@ export default function CommandPalette({ open, onClose, recentCases = [], onOpen
                       style={{
                         display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px',
                         cursor: 'pointer', transition: 'background 0.08s',
-                        background: isSelected ? 'rgba(74,126,200,0.15)' : 'transparent',
+                        background: isSelected ? 'rgba(26,22,18,0.12)' : 'transparent',
                         borderLeft: isSelected ? '2px solid #4A7EC8' : '2px solid transparent',
                       }}
                     >
@@ -224,7 +224,7 @@ export default function CommandPalette({ open, onClose, recentCases = [], onOpen
                           {item.hint.split(' ').map(k => <KBD key={k}>{k}</KBD>)}
                         </div>
                       )}
-                      {isSelected && <ArrowRight size={13} style={{ color: '#4A7EC8', flexShrink: 0 }} />}
+                      {isSelected && <ArrowRight size={13} style={{ color: 'var(--accent)', flexShrink: 0 }} />}
                     </div>
                   );
                 })}

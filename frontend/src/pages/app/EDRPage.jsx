@@ -22,7 +22,7 @@ export default function EDRPage() {
   }, [caseId]);
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#050505', padding: '20px 24px' }}>
+    <div style={{ minHeight: '100vh', background: var(--card), padding: '20px 24px' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div className="skeleton" style={{ height: 10, width: 200, marginBottom: 20 }} />
         {[0,1,2].map(i => (
@@ -33,25 +33,25 @@ export default function EDRPage() {
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: '#050505', color: '#BDD4E8' }}>
+    <div style={{ minHeight: '100vh', background: var(--card), color: 'var(--text-primary)' }}>
 
       {/* Header */}
       <div style={{
-        background: '#0E0E16', borderBottom: '1px solid rgba(255,255,255,0.07)',
+        background: var(--surface), borderBottom: '1px solid rgba(26,22,18,0.08)',
         padding: '12px 24px', display: 'flex', alignItems: 'center', gap: 12,
       }}>
         <button
           onClick={() => window.close()}
-          style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.78rem' }}
+          style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.78rem' }}
         >
           <ChevronLeft size={14} /> Close
         </button>
-        <span style={{ color: 'rgba(255,255,255,0.2)' }}>|</span>
+        <span style={{ color: 'rgba(26,22,18,0.2)' }}>|</span>
         <Shield size={15} style={{ color: '#22C55E' }} />
         <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>EDR Response Console</span>
         {caseData && (
           <>
-            <span style={{ color: 'rgba(255,255,255,0.2)' }}>—</span>
+            <span style={{ color: 'rgba(26,22,18,0.2)' }}>—</span>
             <span style={{ fontSize: '0.78rem', fontFamily: 'JetBrains Mono', color: '#8BB8E8' }}>{caseData.case_number}</span>
             <span style={{ fontSize: '0.82rem', fontWeight: 500 }}>{caseData.title}</span>
             <SeverityBadge severity={caseData.severity} />
@@ -65,7 +65,7 @@ export default function EDRPage() {
         {caseData ? (
           <EDRTab caseData={caseData} />
         ) : (
-          <div style={{ padding: '40px 0', textAlign: 'center', color: '#787878' }}>
+          <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--text-muted)' }}>
             {caseId ? 'Case not found.' : 'No case context. Use the EDR tab from inside a case.'}
           </div>
         )}

@@ -22,13 +22,13 @@ function KPICard({ label, value, sub, color, Icon, trend }) {
       onMouseEnter={e => e.currentTarget.style.borderColor = `${color}30`}
       onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(148,163,184,0.08)'}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <span style={{ fontSize: '0.65rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.1em', ...MONO }}>{label}</span>
+        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', ...MONO }}>{label}</span>
         <div style={{ width: 30, height: 30, borderRadius: 8, background: `${color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Icon size={14} style={{ color }} />
         </div>
       </div>
       <div style={{ fontSize: '2rem', fontWeight: 700, color, ...MONO, lineHeight: 1 }}>{value ?? '—'}</div>
-      {sub && <div style={{ fontSize: '0.7rem', color: '#787878', marginTop: 6, ...MONO }}>{sub}</div>}
+      {sub && <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: 6, ...MONO }}>{sub}</div>}
       {trend !== undefined && (
         <div style={{ fontSize: '0.68rem', color: trend >= 0 ? '#22C55E' : '#EF4444', marginTop: 4, ...MONO }}>
           {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}% vs last week
@@ -47,7 +47,7 @@ function HBar({ label, value, max, color }) {
         <span style={{ fontSize: '0.74rem', color: '#7A9DB8', textTransform: 'capitalize' }}>{label}</span>
         <span style={{ fontSize: '0.72rem', color, ...MONO, fontWeight: 600 }}>{value}</span>
       </div>
-      <div style={{ height: 5, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+      <div style={{ height: 5, background: 'rgba(26,22,18,0.07)', borderRadius: 3, overflow: 'hidden' }}>
         <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 3, transition: 'width 0.6s ease' }} />
       </div>
     </div>
@@ -59,7 +59,7 @@ function SectionHeader({ icon: Icon, label, color = '#4A7EC8' }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
       <Icon size={14} style={{ color }} />
-      <span style={{ fontSize: '0.68rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.1em', ...MONO }}>{label}</span>
+      <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', ...MONO }}>{label}</span>
     </div>
   );
 }
@@ -137,10 +137,10 @@ export default function Analytics() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-            <BarChart2 size={20} style={{ color: '#4A7EC8' }} />
+            <BarChart2 size={20} style={{ color: 'var(--accent)' }} />
             <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Analytics</h1>
           </div>
-          <div style={{ fontSize: '0.7rem', color: '#787878', ...MONO }}>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', ...MONO }}>
             SOC performance metrics — severity trends, SLA health, MITRE coverage
             {lastRefresh && <span style={{ marginLeft: 10 }}>· Last refreshed {timeAgo(lastRefresh)}</span>}
           </div>
@@ -196,7 +196,7 @@ export default function Analytics() {
             <Panel>
               <SectionHeader icon={Shield} label="Open by Severity" />
               {severity.length === 0 ? (
-                <div style={{ color: '#787878', fontSize: '0.78rem', ...MONO }}>No open cases</div>
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.78rem', ...MONO }}>No open cases</div>
               ) : (
                 severity.map(s => (
                   <HBar key={s.severity} label={s.severity} value={s.count} max={maxSev} color={SEV_COLOR[s.severity] || '#888888'} />
@@ -220,12 +220,12 @@ export default function Analytics() {
                 ))}
                 {sla.length > 0 && (
                   <div style={{ marginTop: 6 }}>
-                    <div style={{ fontSize: '0.62rem', color: '#787878', ...MONO, marginBottom: 6 }}>Top priority</div>
+                    <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', ...MONO, marginBottom: 6 }}>Top priority</div>
                     {sla.filter(c => c.sla_status !== 'on_track').slice(0, 3).map(c => (
-                      <div key={c.case_id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: '0.72rem' }}>
+                      <div key={c.case_id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid rgba(26,22,18,0.05)', fontSize: '0.72rem' }}>
                         <div style={{ width: 5, height: 5, borderRadius: '50%', background: c.sla_status === 'breached' ? '#EF4444' : '#EAB308', flexShrink: 0 }} />
                         <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#7A9DB8' }}>{c.title}</span>
-                        <span style={{ ...MONO, color: '#787878', flexShrink: 0 }}>{c.pct_used}%</span>
+                        <span style={{ ...MONO, color: 'var(--text-muted)', flexShrink: 0 }}>{c.pct_used}%</span>
                       </div>
                     ))}
                   </div>
@@ -237,16 +237,16 @@ export default function Analytics() {
             <Panel>
               <SectionHeader icon={TrendingUp} label="Avg Close Time" color="#8BB8E8" />
               {ttc.length === 0 ? (
-                <div style={{ color: '#787878', fontSize: '0.78rem', ...MONO }}>No closed cases</div>
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.78rem', ...MONO }}>No closed cases</div>
               ) : (
                 ttc.map(t => (
-                  <div key={t.severity} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                  <div key={t.severity} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(26,22,18,0.05)' }}>
                     <div style={{ width: 7, height: 7, borderRadius: '50%', background: SEV_COLOR[t.severity] || '#888888', flexShrink: 0 }} />
                     <span style={{ flex: 1, fontSize: '0.8rem', color: '#7A9DB8', textTransform: 'capitalize' }}>{t.severity}</span>
                     <span style={{ fontSize: '0.78rem', color: SEV_COLOR[t.severity] || '#787878', ...MONO, fontWeight: 600 }}>
                       {t.avg_hours ? `${t.avg_hours}h` : '—'}
                     </span>
-                    <span style={{ fontSize: '0.65rem', color: '#787878', ...MONO }}>{t.count} cases</span>
+                    <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', ...MONO }}>{t.count} cases</span>
                   </div>
                 ))
               )}
@@ -260,14 +260,14 @@ export default function Analytics() {
             <Panel>
               <SectionHeader icon={Activity} label="Case Volume (14 days)" />
               {trend.length === 0 ? (
-                <div style={{ color: '#787878', fontSize: '0.78rem', ...MONO }}>No trend data</div>
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.78rem', ...MONO }}>No trend data</div>
               ) : (
                 <div>
                   <div style={{ display: 'flex', gap: 16, marginBottom: 14 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.7rem', color: '#787878' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.7rem', color: 'var(--text-muted)' }}>
                       <div style={{ width: 8, height: 8, background: '#4A7EC8', borderRadius: 2 }} /> Created
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.7rem', color: '#787878' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.7rem', color: 'var(--text-muted)' }}>
                       <div style={{ width: 8, height: 8, background: '#22C55E', borderRadius: 2 }} /> Closed
                     </div>
                   </div>
@@ -298,7 +298,7 @@ export default function Analytics() {
             <Panel>
               <SectionHeader icon={Users} label="Analyst Throughput" color="#22C55E" />
               {throughput.length === 0 ? (
-                <div style={{ color: '#787878', fontSize: '0.78rem', ...MONO }}>No data</div>
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.78rem', ...MONO }}>No data</div>
               ) : (
                 throughput.slice(0, 6).map(a => (
                   <HBar key={a.analyst} label={a.analyst || 'Unassigned'} value={a.created} max={maxThroughput} color="#4A7EC8" />
@@ -323,7 +323,7 @@ export default function Analytics() {
                     }}>
                       <div style={{ fontSize: '0.65rem', color: '#EF4444', ...MONO, marginBottom: 3 }}>{m.id}</div>
                       <div style={{ fontSize: '0.73rem', color: '#7A9DB8', lineHeight: 1.3, marginBottom: 4 }}>{m.name}</div>
-                      <div style={{ fontSize: '0.62rem', color: '#787878', ...MONO }}>{m.count} {m.count === 1 ? 'case' : 'cases'}</div>
+                      <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', ...MONO }}>{m.count} {m.count === 1 ? 'case' : 'cases'}</div>
                     </div>
                   );
                 })}
@@ -336,7 +336,7 @@ export default function Analytics() {
             <Panel>
               <SectionHeader icon={DollarSign} label="AI Cost Intelligence (30 days)" color="#F59E0B" />
               {!costData || costData.total_cost_usd_30d === 0 ? (
-                <div style={{ fontSize: '0.75rem', color: '#787878', ...MONO, textAlign: 'center', padding: '16px 0' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', ...MONO, textAlign: 'center', padding: '16px 0' }}>
                   No AI usage logged yet. Cost tracking activates on first LLM call.
                 </div>
               ) : (
@@ -348,12 +348,12 @@ export default function Analytics() {
                       { label: 'Per Alert', value: `$${costData.cost_per_alert_avg?.toFixed(6)}`, color: '#22C55E' },
                     ].map(stat => (
                       <div key={stat.label} style={{ background: `${stat.color}08`, border: `1px solid ${stat.color}20`, borderRadius: 8, padding: '10px 12px' }}>
-                        <div style={{ fontSize: '0.58rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>{stat.label}</div>
+                        <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>{stat.label}</div>
                         <div style={{ fontSize: '0.95rem', fontWeight: 700, color: stat.color, ...MONO }}>{stat.value}</div>
                       </div>
                     ))}
                   </div>
-                  <div style={{ fontSize: '0.62rem', color: '#787878', ...MONO, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>By Operation</div>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', ...MONO, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>By Operation</div>
                   {(costData.breakdown_by_operation || []).slice(0, 6).map(op => {
                     const maxCost = Math.max(...costData.breakdown_by_operation.map(o => o.total_cost_usd));
                     return (
@@ -362,7 +362,7 @@ export default function Analytics() {
                           <span style={{ fontSize: '0.72rem', color: '#7A9DB8', textTransform: 'capitalize' }}>{op.operation}</span>
                           <span style={{ fontSize: '0.68rem', color: '#F59E0B', ...MONO }}>${op.total_cost_usd.toFixed(4)} ({op.count})</span>
                         </div>
-                        <div style={{ height: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 2, overflow: 'hidden' }}>
+                        <div style={{ height: 4, background: 'rgba(26,22,18,0.05)', borderRadius: 2, overflow: 'hidden' }}>
                           <div style={{ height: '100%', width: `${maxCost > 0 ? (op.total_cost_usd / maxCost) * 100 : 0}%`, background: '#F59E0B', borderRadius: 2 }} />
                         </div>
                       </div>

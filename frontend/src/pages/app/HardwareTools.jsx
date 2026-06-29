@@ -9,7 +9,7 @@ import './hardware-tools.css';
 // ── Tool catalogue ────────────────────────────────────────────────────────────
 const CATEGORIES = [
   {
-    id: 'wifi', label: 'WiFi Attack', icon: Wifi, color: '#4A7EC8',
+    id: 'wifi', label: 'WiFi Attack', icon: Wifi, color: 'var(--accent)',
     tools: [
       { key: 'probe_request_analyser',   name: 'Probe Request Analyser',   desc: 'Identify aggressive WiFi scanners from PineAP logs', hint: 'Paste WiFi Pineapple PineAP log output.\nSupports JSON lines, CSV, or plain text.\n\nExample:\n{"type":"probe","client_mac":"AA:BB:CC:11:22:33","ssid":"HomeNet","channel":6}' },
       { key: 'evil_twin_detector',       name: 'Evil Twin Detector',       desc: 'Find rogue APs claiming a legitimate SSID',           hint: 'Paste beacon/AP scan log showing SSIDs and BSSIDs.\n\nExample:\nSSID: HomeNet | BSSID: AA:BB:CC:DD:EE:FF | Channel: 6' },
@@ -50,7 +50,7 @@ const CATEGORIES = [
     ],
   },
   {
-    id: 'endpoint', label: 'Endpoint', icon: Monitor, color: '#4A7EC8',
+    id: 'endpoint', label: 'Endpoint', icon: Monitor, color: 'var(--accent)',
     tools: [
       { key: 'sysmon_parser',            name: 'Sysmon Event Parser',        desc: 'LOLBin detection, LSASS access, process injection',   hint: 'Paste Windows Sysmon event log in XML or JSON format.\nEventIDs 1,3,7,8,10,11,12,13,22 are fully supported.' },
       { key: 'process_tree_analyser',    name: 'Process Tree Analyser',      desc: 'Risk-score every process, flag suspicious spawning',   hint: 'Paste process list from aegistrace_agent.py or any JSON/CSV/text with PID, PPID, and process name.' },
@@ -102,7 +102,7 @@ function KVPairs({ data, skip = [] }) {
 
 // ── Table renderer ────────────────────────────────────────────────────────────
 function DataTable({ rows, cols }) {
-  if (!rows || !rows.length) return <div style={{ padding: 16, color: '#787878', fontSize: '0.8rem' }}>No data.</div>;
+  if (!rows || !rows.length) return <div style={{ padding: 16, color: 'var(--text-muted)', fontSize: '0.8rem' }}>No data.</div>;
   const keys = cols || Object.keys(rows[0]).slice(0, 6);
   return (
     <div style={{ overflowX: 'auto' }}>
@@ -268,7 +268,7 @@ function ResultRenderer({ toolKey, result }) {
           <>
             <div style={{display:'flex',gap:10,padding:'12px 16px',flexWrap:'wrap'}}>
               {Object.entries(result.event_types||{}).map(([k,v]) => (
-                <div key={k} style={{background:'rgba(255,255,255,0.03)',border:'1px solid var(--border)',borderRadius:6,padding:'8px 14px',textAlign:'center'}}>
+                <div key={k} style={{background:'rgba(26,22,18,0.04)',border:'1px solid var(--border)',borderRadius:6,padding:'8px 14px',textAlign:'center'}}>
                   <div style={{fontSize:'1.1rem',fontWeight:700,fontFamily:'JetBrains Mono',color:'var(--text-primary)'}}>{v}</div>
                   <div style={{fontSize:'0.62rem',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.06em'}}>{k}</div>
                 </div>
@@ -483,7 +483,7 @@ export default function HardwareTools() {
                     <div className="hw-tool-name">{t.name}</div>
                     <div className="hw-tool-key">{t.key}</div>
                   </div>
-                  {selected === t.key && <ChevronRight size={12} style={{ color: '#4A7EC8', flexShrink:0 }} />}
+                  {selected === t.key && <ChevronRight size={12} style={{ color: 'var(--accent)', flexShrink:0 }} />}
                 </div>
               ))}
             </div>
@@ -509,7 +509,7 @@ export default function HardwareTools() {
                   <div style={{ fontWeight: 700, fontSize: '1rem' }}>{tool.name}</div>
                   <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>{tool.desc}</div>
                 </div>
-                <span style={{ marginLeft: 'auto', fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: 4 }}>
+                <span style={{ marginLeft: 'auto', fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono', background: 'rgba(26,22,18,0.05)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: 4 }}>
                   {tool.category.label}
                 </span>
               </div>
@@ -557,7 +557,7 @@ export default function HardwareTools() {
               <div className="hw-result-section">
                 <div className="hw-result-header">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Shield size={14} style={{ color: '#4A7EC8' }} />
+                    <Shield size={14} style={{ color: 'var(--accent)' }} />
                     <span style={{ fontWeight: 600, fontSize: '0.88rem' }}>{tool.name} — Analysis Complete</span>
                     {runId && <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono' }}>Run #{runId}</span>}
                   </div>

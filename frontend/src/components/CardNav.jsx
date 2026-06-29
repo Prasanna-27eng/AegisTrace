@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Grid3X3, X } from './icons';
+import { ArrowRight, Grid3X3, X, Menu } from './icons';
+
+function useIsMobile() {
+  const [m, setM] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 700);
+  useEffect(() => {
+    const fn = () => setM(window.innerWidth <= 700);
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, []);
+  return m;
+}
 
 const NAV_ITEMS = [
   { label: 'Platform',  to: '/platform'  },
@@ -29,7 +39,9 @@ const SANS   = "'DM Sans', system-ui, sans-serif";
 
 export default function CardNav() {
   const { pathname } = useLocation();
-  const [open, setOpen]       = useState(false);
+  const isMobile = useIsMobile();
+  const [open, setOpen]         = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -89,77 +101,82 @@ export default function CardNav() {
           {/* Spacer */}
           <div style={{ flex: 1 }} />
 
-          {/* Pill nav */}
-          <nav
-            aria-label="Main navigation"
-            style={{
-              display: 'flex', alignItems: 'center', gap: 2,
-              background: 'rgba(26,22,18,0.04)',
-              border: '1px solid rgba(26,22,18,0.06)',
-              borderRadius: 100,
-              padding: 3,
-            }}
-          >
-            {NAV_ITEMS.map(({ label, to }) => {
-              const active = pathname === to;
-              return (
-                <Link key={label} to={to} style={{ position: 'relative', textDecoration: 'none' }}>
-                  {active && (
-                    <motion.div
-                      layoutId="cardnav-pill"
-                      style={{
-                        position: 'absolute', inset: 0,
-                        background: 'rgba(204,120,92,0.12)',
-                        border: '1px solid rgba(204,120,92,0.25)',
-                        borderRadius: 100,
-                      }}
-                      transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-                    />
-                  )}
-                  <span style={{
-                    position: 'relative', zIndex: 1,
-                    display: 'block',
-                    fontFamily: SANS,
-                    fontSize: 13, fontWeight: active ? 500 : 400,
-                    color: active ? CORAL : MUTED,
-                    padding: '5px 14px',
-                    borderRadius: 100,
-                    whiteSpace: 'nowrap',
-                    transition: 'color 140ms',
-                  }}>
-                    {label}
-                  </span>
-                </Link>
-              );
-            })}
-          </nav>
+          {/* Pill nav — desktop only */}
+          {!isMobile && (
+            <nav
+              aria-label="Main navigation"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 2,
+                background: 'rgba(26,22,18,0.04)',
+                border: '1px solid rgba(26,22,18,0.06)',
+                borderRadius: 100,
+                padding: 3,
+              }}
+            >
+              {NAV_ITEMS.map(({ label, to }) => {
+                const active = pathname === to;
+                return (
+                  <Link key={label} to={to} style={{ position: 'relative', textDecoration: 'none' }}>
+                    {active && (
+                      <motion.div
+                        layoutId="cardnav-pill"
+                        style={{
+                          position: 'absolute', inset: 0,
+                          background: 'rgba(204,120,92,0.12)',
+                          border: '1px solid rgba(204,120,92,0.25)',
+                          borderRadius: 100,
+                        }}
+                        transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                      />
+                    )}
+                    <span style={{
+                      position: 'relative', zIndex: 1,
+                      display: 'block',
+                      fontFamily: SANS,
+                      fontSize: 13, fontWeight: active ? 500 : 400,
+                      color: active ? CORAL : MUTED,
+                      padding: '5px 14px',
+                      borderRadius: 100,
+                      whiteSpace: 'nowrap',
+                      transition: 'color 140ms',
+                    }}>
+                      {label}
+                    </span>
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
 
           {/* Spacer */}
           <div style={{ flex: 1 }} />
 
           {/* Right actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-            <button
-              onClick={() => setOpen(v => !v)}
-              aria-label="Toggle modules menu"
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                background: open ? 'rgba(204,120,92,0.1)' : 'transparent',
-                border: `1px solid ${open ? 'rgba(204,120,92,0.25)' : 'rgba(26,22,18,0.12)'}`,
-                borderRadius: 8,
-                color: open ? CORAL : MUTED,
-                fontFamily: MONO,
-                fontSize: 10.5, letterSpacing: '0.12em',
-                padding: '6px 12px',
-                cursor: 'pointer',
-                transition: 'background 140ms, color 140ms, border-color 140ms',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(204,120,92,0.08)'; e.currentTarget.style.color = CORAL; e.currentTarget.style.borderColor = 'rgba(204,120,92,0.2)'; }}
-              onMouseLeave={e => { if (!open) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = MUTED; e.currentTarget.style.borderColor = 'rgba(26,22,18,0.12)'; } }}
-            >
-              {open ? <X size={12} /> : <Grid3X3 size={12} />}
-              MODULES
-            </button>
+            {/* Modules btn — desktop only */}
+            {!isMobile && (
+              <button
+                onClick={() => setOpen(v => !v)}
+                aria-label="Toggle modules menu"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  background: open ? 'rgba(204,120,92,0.1)' : 'transparent',
+                  border: `1px solid ${open ? 'rgba(204,120,92,0.25)' : 'rgba(26,22,18,0.12)'}`,
+                  borderRadius: 8,
+                  color: open ? CORAL : MUTED,
+                  fontFamily: MONO,
+                  fontSize: 10.5, letterSpacing: '0.12em',
+                  padding: '6px 12px',
+                  cursor: 'pointer',
+                  transition: 'background 140ms, color 140ms, border-color 140ms',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(204,120,92,0.08)'; e.currentTarget.style.color = CORAL; e.currentTarget.style.borderColor = 'rgba(204,120,92,0.2)'; }}
+                onMouseLeave={e => { if (!open) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = MUTED; e.currentTarget.style.borderColor = 'rgba(26,22,18,0.12)'; } }}
+              >
+                {open ? <X size={12} /> : <Grid3X3 size={12} />}
+                MODULES
+              </button>
+            )}
 
             <Link
               to="/app/login"
@@ -185,8 +202,25 @@ export default function CardNav() {
                 e.currentTarget.style.boxShadow = 'none';
               }}
             >
-              Enter Console <ArrowRight size={11} />
+              {isMobile ? 'Console' : 'Enter Console'} <ArrowRight size={11} />
             </Link>
+
+            {/* Mobile hamburger */}
+            {isMobile && (
+              <button
+                onClick={() => setMobileOpen(v => !v)}
+                aria-label="Open navigation"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 34, height: 34,
+                  background: mobileOpen ? 'rgba(204,120,92,0.1)' : 'rgba(26,22,18,0.05)',
+                  border: `1px solid rgba(26,22,18,0.12)`,
+                  borderRadius: 8, color: INK, cursor: 'pointer',
+                }}
+              >
+                {mobileOpen ? <X size={14} /> : <Menu size={14} />}
+              </button>
+            )}
           </div>
         </div>
 
@@ -256,6 +290,47 @@ export default function CardNav() {
           onClick={() => setOpen(false)}
         />
       )}
+
+      {/* Mobile menu */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <div style={{ position: 'fixed', inset: 0, zIndex: 198 }} onClick={() => setMobileOpen(false)} />
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.97 }}
+              transition={{ duration: 0.2, ease: E }}
+              style={{
+                position: 'fixed', top: 70, left: 12, right: 12, zIndex: 199,
+                background: 'rgba(245,240,232,0.97)',
+                backdropFilter: 'blur(28px)',
+                border: '1px solid rgba(26,22,18,0.1)',
+                borderRadius: 14,
+                padding: 12,
+                boxShadow: '0 16px 48px rgba(26,22,18,0.15)',
+              }}
+            >
+              {NAV_ITEMS.map(({ label, to }) => {
+                const active = pathname === to;
+                return (
+                  <Link key={label} to={to} onClick={() => setMobileOpen(false)}
+                    style={{
+                      display: 'block', padding: '12px 14px',
+                      textDecoration: 'none', borderRadius: 8,
+                      fontFamily: SANS, fontSize: 14,
+                      fontWeight: active ? 600 : 400,
+                      color: active ? CORAL : INK,
+                      background: active ? 'rgba(204,120,92,0.08)' : 'transparent',
+                      marginBottom: 2,
+                    }}
+                  >{label}</Link>
+                );
+              })}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
 }

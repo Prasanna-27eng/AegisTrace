@@ -152,12 +152,12 @@ export default function Sidebar({ collapsed, setCollapsed }) {
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(74,126,200,0.1)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <img src="/assets/brand/aegistrace-icon-transparent.png" alt="" style={{ width: 22, height: 22, objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(74,126,200,0.5))' }}/>
+              <img src="/assets/brand/aegistrace-icon-transparent.png" alt="" style={{ width: 22, height: 22, objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(204,120,92,0.35))' }}/>
               <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 12, color: 'var(--text-primary)', letterSpacing: '0.16em' }}>AEGISTRACE</span>
             </div>
           )}
           {collapsed && (
-            <img src="/assets/brand/aegistrace-icon-transparent.png" alt="AegisTrace" title="AegisTrace" onClick={() => navigate('/')} style={{ width: 24, height: 24, objectFit: 'contain', cursor: 'pointer', filter: 'drop-shadow(0 0 4px rgba(74,126,200,0.5))' }}/>
+            <img src="/assets/brand/aegistrace-icon-transparent.png" alt="AegisTrace" title="AegisTrace" onClick={() => navigate('/')} style={{ width: 24, height: 24, objectFit: 'contain', cursor: 'pointer', filter: 'drop-shadow(0 0 4px rgba(204,120,92,0.35))' }}/>
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
@@ -177,7 +177,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
             onMouseEnter={e => {
               e.currentTarget.style.background = 'rgba(74,126,200,0.10)';
               e.currentTarget.style.color = '#8BB8E8';
-              e.currentTarget.style.borderColor = 'rgba(74,126,200,0.3)';
+              e.currentTarget.style.borderColor = 'rgba(204,120,92,0.25)';
             }}
             onMouseLeave={e => {
               e.currentTarget.style.background = 'none';
@@ -201,7 +201,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                 onChange={e => setSearchQuery(e.target.value)}
                 style={{
                   width: '100%',
-                  background: 'rgba(255,255,255,0.04)',
+                  background: 'rgba(26,22,18,0.05)',
                   border: '1px solid var(--border)',
                   borderRadius: 5,
                   padding: '5px 8px 5px 24px',
@@ -211,8 +211,8 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                   outline: 'none',
                   transition: 'border-color 140ms, background 140ms',
                 }}
-                onFocus={e => { e.target.style.borderColor = 'rgba(74,126,200,0.4)'; e.target.style.background = 'rgba(74,126,200,0.04)'; }}
-                onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.background = 'rgba(255,255,255,0.04)'; }}
+                onFocus={e => { e.target.style.borderColor = 'rgba(204,120,92,0.3)'; e.target.style.background = 'rgba(74,126,200,0.04)'; }}
+                onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.background = 'rgba(26,22,18,0.05)'; }}
               />
             </div>
           </div>
@@ -369,12 +369,12 @@ export default function Sidebar({ collapsed, setCollapsed }) {
             <div style={{
               display: 'flex', alignItems: 'center', gap: 8,
               padding: '6px 8px', borderRadius: 6,
-              background: 'rgba(255,255,255,0.03)',
+              background: 'rgba(26,22,18,0.04)',
             }}>
               <div style={{
                 width: 28, height: 28, borderRadius: '50%',
                 background: 'rgba(74,126,200,0.18)',
-                border: '1px solid rgba(74,126,200,0.3)',
+                border: '1px solid rgba(204,120,92,0.25)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 11, fontWeight: 700, color: '#8BB8E8',
                 fontFamily: 'var(--font-mono)', flexShrink: 0,

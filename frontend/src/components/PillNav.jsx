@@ -29,7 +29,7 @@ export default function PillNav() {
         background: 'rgba(5,5,5,0.85)',
         backdropFilter: 'blur(20px) saturate(160%)',
         WebkitBackdropFilter: 'blur(20px) saturate(160%)',
-        borderBottom: '1px solid rgba(74,126,200,0.08)',
+        borderBottom: '1px solid rgba(26,22,18,0.08)',
       }}
     >
       {/* Logo */}

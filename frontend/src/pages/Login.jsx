@@ -5,16 +5,17 @@ import { Eye, EyeOff, ArrowRight, ArrowLeft } from '../components/icons';
 import api from '../api/client';
 import useStore from '../store/useStore';
 
-const E = [0.23, 1, 0.32, 1];
+const E      = [0.23, 1, 0.32, 1];
 const CORAL  = '#CC785C';
-const DARK   = '#141210';
-const INK    = '#F0EBE3';
-const MUTED  = 'rgba(240,235,227,0.55)';
+const BG     = '#F5F0E8';
+const SURF   = '#EDE7DC';
+const INK    = '#1A1612';
+const MUTED  = 'rgba(26,22,18,0.5)';
+const BORDER = 'rgba(26,22,18,0.1)';
 const SERIF  = "'DM Serif Display', Georgia, serif";
 const SANS   = "'DM Sans', system-ui, sans-serif";
 const MONO   = "'IBM Plex Mono', monospace";
 
-/* ── Animated grain texture ──────────────────────────────────────────────── */
 const GRAIN = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
 
 export default function Login() {
@@ -30,7 +31,6 @@ export default function Login() {
   const [mfaCode,      setMfaCode]      = useState('');
   const [pendingToken, setPendingToken] = useState('');
   const [shakeKey,     setShakeKey]     = useState(0);
-  const [focusField,   setFocusField]   = useState(null);
 
   const panelRef = useRef(null);
   const mouseX = useMotionValue(0);
@@ -86,13 +86,9 @@ export default function Login() {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, display: 'flex', background: DARK, overflow: 'hidden' }}>
+    <div style={{ position: 'fixed', inset: 0, display: 'flex', background: BG, overflow: 'hidden' }}>
       <style>{`
         @keyframes shimmer { 0%,100%{opacity:0.3} 50%{opacity:0.7} }
-        @keyframes float {
-          0%,100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-12px) rotate(2deg); }
-        }
         @keyframes shake {
           0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)}
           40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)}
@@ -106,8 +102,8 @@ export default function Login() {
 
         .login-field {
           width: 100%; box-sizing: border-box;
-          background: rgba(240,235,227,0.04);
-          border: 1px solid rgba(240,235,227,0.1);
+          background: rgba(26,22,18,0.04);
+          border: 1px solid rgba(26,22,18,0.13);
           color: ${INK};
           font-family: ${SANS};
           font-size: 15px;
@@ -117,15 +113,15 @@ export default function Login() {
           transition: border-color 200ms ease, background 200ms ease, box-shadow 200ms ease;
           -webkit-font-smoothing: antialiased;
         }
-        .login-field::placeholder { color: rgba(240,235,227,0.25); }
+        .login-field::placeholder { color: rgba(26,22,18,0.3); }
         .login-field:focus {
-          border-color: rgba(204,120,92,0.6);
+          border-color: rgba(204,120,92,0.55);
           background: rgba(204,120,92,0.04);
-          box-shadow: 0 0 0 3px rgba(204,120,92,0.12);
+          box-shadow: 0 0 0 3px rgba(204,120,92,0.1);
         }
         .login-field.error {
           border-color: rgba(239,68,68,0.5);
-          box-shadow: 0 0 0 3px rgba(239,68,68,0.1);
+          box-shadow: 0 0 0 3px rgba(239,68,68,0.08);
         }
         .sign-btn {
           width: 100%;
@@ -143,7 +139,7 @@ export default function Login() {
         .sign-btn:hover:not(:disabled) {
           background: #B8644A;
           transform: translateY(-2px);
-          box-shadow: 0 6px 28px rgba(204,120,92,0.35);
+          box-shadow: 0 6px 28px rgba(204,120,92,0.3);
         }
         .sign-btn:active:not(:disabled) { transform: scale(0.98); }
         .sign-btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -152,7 +148,7 @@ export default function Login() {
         }
       `}</style>
 
-      {/* ── LEFT ATMOSPHERIC PANEL ───────────────────────────────────────── */}
+      {/* LEFT PANEL */}
       <div
         ref={panelRef}
         className="login-panel"
@@ -160,54 +156,46 @@ export default function Login() {
         onMouseLeave={() => { mouseX.set(0); mouseY.set(0); }}
         style={{
           flex: '0 0 52%', position: 'relative', overflow: 'hidden',
-          background: '#100E0B', display: 'none',
+          background: SURF, display: 'none',
+          borderRight: `1px solid ${BORDER}`,
         }}
       >
-        {/* Grain texture */}
+        {/* Grain */}
         <div aria-hidden style={{
-          position: 'absolute', inset: 0, opacity: 0.035,
+          position: 'absolute', inset: 0, opacity: 0.03,
           backgroundImage: GRAIN, backgroundSize: '200px',
           pointerEvents: 'none', zIndex: 1,
         }}/>
 
-        {/* Parallax bg layer 1 — large warm orb */}
+        {/* Dot grid */}
+        <div aria-hidden style={{
+          position: 'absolute', inset: 0, zIndex: 1, opacity: 1,
+          backgroundImage: 'radial-gradient(circle, rgba(26,22,18,0.07) 1px, transparent 1px)',
+          backgroundSize: '28px 28px',
+          pointerEvents: 'none',
+        }}/>
+
+        {/* Warm orb — parallax layer 1 */}
         <motion.div aria-hidden style={{
           position: 'absolute', width: 700, height: 700, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(204,120,92,0.12) 0%, transparent 65%)',
+          background: 'radial-gradient(circle, rgba(204,120,92,0.14) 0%, transparent 65%)',
           top: '50%', left: '50%', marginTop: -350, marginLeft: -350,
           pointerEvents: 'none', zIndex: 2,
           x: bg1X, y: bg1Y,
         }}/>
 
-        {/* Parallax bg layer 2 — smaller teal accent */}
+        {/* Accent orb — parallax layer 2 */}
         <motion.div aria-hidden style={{
           position: 'absolute', width: 400, height: 400, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(204,120,92,0.07) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(204,120,92,0.08) 0%, transparent 70%)',
           bottom: '10%', right: '-5%',
           pointerEvents: 'none', zIndex: 2,
           x: bg2X, y: bg2Y,
         }}/>
 
-        {/* Subtle grid lines */}
-        <div aria-hidden style={{
-          position: 'absolute', inset: 0, zIndex: 2, opacity: 0.04,
-          backgroundImage: 'linear-gradient(rgba(240,235,227,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(240,235,227,0.4) 1px, transparent 1px)',
-          backgroundSize: '60px 60px',
-        }}/>
-
-        {/* Corner accent */}
-        <div aria-hidden style={{
-          position: 'absolute', bottom: 0, left: 0,
-          width: 2, height: 80,
-          background: `linear-gradient(to top, ${CORAL}, transparent)`,
-          zIndex: 4,
-        }}/>
-        <div aria-hidden style={{
-          position: 'absolute', bottom: 0, left: 0,
-          width: 80, height: 2,
-          background: `linear-gradient(to right, ${CORAL}, transparent)`,
-          zIndex: 4,
-        }}/>
+        {/* Corner accent lines */}
+        <div aria-hidden style={{ position: 'absolute', bottom: 0, left: 0, width: 2, height: 80, background: `linear-gradient(to top, ${CORAL}, transparent)`, zIndex: 4 }}/>
+        <div aria-hidden style={{ position: 'absolute', bottom: 0, left: 0, width: 80, height: 2, background: `linear-gradient(to right, ${CORAL}, transparent)`, zIndex: 4 }}/>
 
         {/* Main content — 3D tilt */}
         <motion.div
@@ -231,14 +219,11 @@ export default function Login() {
               <img
                 src="/assets/brand/aegistrace-icon-transparent.png"
                 alt="AegisTrace"
-                style={{
-                  width: 44, height: 44, objectFit: 'contain',
-                  filter: `drop-shadow(0 0 12px rgba(204,120,92,0.5))`,
-                }}
+                style={{ width: 44, height: 44, objectFit: 'contain', filter: `drop-shadow(0 0 10px rgba(204,120,92,0.4))` }}
               />
               <div>
                 <div style={{ fontFamily: MONO, fontSize: 11, color: CORAL, letterSpacing: '0.18em' }}>AEGISTRACE</div>
-                <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(240,235,227,0.3)', letterSpacing: '0.14em', marginTop: 1 }}>ITDR PLATFORM</div>
+                <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(26,22,18,0.35)', letterSpacing: '0.14em', marginTop: 1 }}>ITDR PLATFORM</div>
               </div>
             </div>
 
@@ -265,19 +250,19 @@ export default function Login() {
             <div style={{ display: 'flex', gap: 32 }}>
               {[
                 { n: '100%', label: 'Open Source' },
-                { n: '15+',  label: 'Detectors' },
-                { n: 'SOC2', label: 'Compliant' },
+                { n: '15+',  label: 'Detectors'  },
+                { n: 'SOC2', label: 'Compliant'  },
               ].map(({ n, label }) => (
                 <div key={label}>
                   <div style={{ fontFamily: SERIF, fontSize: 22, color: INK, fontWeight: 400 }}>{n}</div>
-                  <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(240,235,227,0.35)', letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: 2 }}>{label}</div>
+                  <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(26,22,18,0.4)', letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: 2 }}>{label}</div>
                 </div>
               ))}
             </div>
           </motion.div>
         </motion.div>
 
-        {/* Floating orbital badge */}
+        {/* Floating badge */}
         <motion.div
           animate={{ y: [0, -8, 0] }}
           transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
@@ -295,11 +280,11 @@ export default function Login() {
         </motion.div>
       </div>
 
-      {/* ── RIGHT FORM PANEL ─────────────────────────────────────────────── */}
+      {/* RIGHT FORM PANEL */}
       <div style={{
         flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '32px 24px', overflowY: 'auto',
-        background: 'linear-gradient(160deg, #1C1916 0%, #141210 100%)',
+        background: BG,
       }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -307,15 +292,15 @@ export default function Login() {
           transition={{ duration: 0.6, ease: E }}
           style={{ width: '100%', maxWidth: 400 }}
         >
-          {/* Back to site */}
+          {/* Back link */}
           <Link to="/" style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
-            fontFamily: MONO, fontSize: 11, color: 'rgba(240,235,227,0.35)',
+            fontFamily: MONO, fontSize: 11, color: 'rgba(26,22,18,0.35)',
             letterSpacing: '0.1em', textDecoration: 'none', marginBottom: 40,
             transition: 'color 180ms ease',
           }}
             onMouseEnter={e => e.target.style.color = CORAL}
-            onMouseLeave={e => e.target.style.color = 'rgba(240,235,227,0.35)'}
+            onMouseLeave={e => e.target.style.color = 'rgba(26,22,18,0.35)'}
           >
             <ArrowLeft size={12} weight="regular" /> BACK TO SITE
           </Link>
@@ -324,10 +309,10 @@ export default function Login() {
           <div style={{ marginBottom: 36 }}>
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
-              background: 'rgba(204,120,92,0.1)', border: '1px solid rgba(204,120,92,0.2)',
+              background: 'rgba(204,120,92,0.08)', border: '1px solid rgba(204,120,92,0.2)',
               borderRadius: 50, padding: '5px 14px', marginBottom: 20,
             }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: CORAL, boxShadow: `0 0 6px ${CORAL}` }} />
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: CORAL, boxShadow: `0 0 6px rgba(204,120,92,0.5)` }} />
               <span style={{ fontFamily: MONO, fontSize: 9.5, color: CORAL, letterSpacing: '0.14em' }}>SECURE ACCESS</span>
             </div>
             <h1 style={{
@@ -340,7 +325,10 @@ export default function Login() {
               fontFamily: SANS, fontSize: 13.5, color: MUTED,
               marginTop: 8, lineHeight: 1.55,
             }}>
-              {mfa ? 'Enter the 6-digit code from your authenticator app.' : 'Sign in to your AegisTrace workspace.'}
+              {mfa
+                ? 'Enter the 6-digit code from your authenticator app.'
+                : 'Sign in to your AegisTrace workspace.'
+              }
             </p>
           </div>
 
@@ -355,9 +343,8 @@ export default function Login() {
                 transition={{ duration: 0.3, ease: E }}
                 onSubmit={handleLogin}
               >
-                {/* Email */}
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(240,235,227,0.35)', letterSpacing: '0.16em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
+                  <label style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(26,22,18,0.4)', letterSpacing: '0.16em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
                     Email address
                   </label>
                   <input
@@ -370,9 +357,8 @@ export default function Login() {
                   />
                 </div>
 
-                {/* Password */}
                 <div style={{ marginBottom: 24, position: 'relative' }}>
-                  <label style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(240,235,227,0.35)', letterSpacing: '0.16em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
+                  <label style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(26,22,18,0.4)', letterSpacing: '0.16em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
                     Password
                   </label>
                   <div style={{ position: 'relative' }}>
@@ -391,18 +377,17 @@ export default function Login() {
                       style={{
                         position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
                         background: 'none', border: 'none', cursor: 'pointer',
-                        color: 'rgba(240,235,227,0.3)', padding: 4, display: 'flex',
+                        color: 'rgba(26,22,18,0.3)', padding: 4, display: 'flex',
                         transition: 'color 150ms',
                       }}
                       onMouseEnter={e => e.currentTarget.style.color = CORAL}
-                      onMouseLeave={e => e.currentTarget.style.color = 'rgba(240,235,227,0.3)'}
+                      onMouseLeave={e => e.currentTarget.style.color = 'rgba(26,22,18,0.3)'}
                     >
                       {showPw ? <EyeOff size={15} weight="regular"/> : <Eye size={15} weight="regular"/>}
                     </button>
                   </div>
                 </div>
 
-                {/* Error */}
                 <AnimatePresence>
                   {error && (
                     <motion.div
@@ -411,9 +396,9 @@ export default function Login() {
                       transition={{ duration: 0.2 }}
                       className="login-shake"
                       style={{
-                        background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
+                        background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)',
                         borderRadius: 8, padding: '10px 14px', marginBottom: 16,
-                        fontFamily: SANS, fontSize: 13, color: '#F87171', lineHeight: 1.4,
+                        fontFamily: SANS, fontSize: 13, color: '#C0392B', lineHeight: 1.4,
                       }}
                     >
                       {error}
@@ -423,7 +408,7 @@ export default function Login() {
 
                 <button type="submit" className="sign-btn" disabled={loading}>
                   {loading
-                    ? <span className="login-spinner" style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block' }}/>
+                    ? <span className="login-spinner" style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block' }}/>
                     : <><span>Sign in</span><ArrowRight size={16} weight="regular"/></>
                   }
                 </button>
@@ -438,7 +423,7 @@ export default function Login() {
                 onSubmit={handleMfa}
               >
                 <div style={{ marginBottom: 24 }}>
-                  <label style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(240,235,227,0.35)', letterSpacing: '0.16em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
+                  <label style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(26,22,18,0.4)', letterSpacing: '0.16em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
                     Verification code
                   </label>
                   <input
@@ -458,17 +443,18 @@ export default function Login() {
                     <motion.div
                       key={shakeKey} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }} className="login-shake"
-                      style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontFamily: SANS, fontSize: 13, color: '#F87171' }}
+                      style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontFamily: SANS, fontSize: 13, color: '#C0392B' }}
                     >{error}</motion.div>
                   )}
                 </AnimatePresence>
                 <button type="submit" className="sign-btn" disabled={loading}>
                   {loading
-                    ? <span className="login-spinner" style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block' }}/>
+                    ? <span className="login-spinner" style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block' }}/>
                     : <><span>Verify</span><ArrowRight size={16} weight="regular"/></>
                   }
                 </button>
-                <button type="button" onClick={() => { setMfa(false); setError(''); }} style={{ marginTop: 12, width: '100%', background: 'none', border: 'none', color: MUTED, fontFamily: SANS, fontSize: 13, cursor: 'pointer', padding: 8 }}>
+                <button type="button" onClick={() => { setMfa(false); setError(''); }}
+                  style={{ marginTop: 12, width: '100%', background: 'none', border: 'none', color: MUTED, fontFamily: SANS, fontSize: 13, cursor: 'pointer', padding: 8 }}>
                   ← Back
                 </button>
               </motion.form>
@@ -476,10 +462,10 @@ export default function Login() {
           </AnimatePresence>
 
           {/* Footer */}
-          <div style={{ marginTop: 36, paddingTop: 24, borderTop: '1px solid rgba(240,235,227,0.07)' }}>
-            <p style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(240,235,227,0.2)', textAlign: 'center', letterSpacing: '0.1em', lineHeight: 1.6 }}>
+          <div style={{ marginTop: 36, paddingTop: 24, borderTop: `1px solid ${BORDER}` }}>
+            <p style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(26,22,18,0.3)', textAlign: 'center', letterSpacing: '0.1em', lineHeight: 1.6 }}>
               AegisTrace ITDR · Built in Dublin, Ireland<br />
-              <span style={{ color: 'rgba(240,235,227,0.12)' }}>Free & open source · Apache 2.0</span>
+              <span style={{ color: 'rgba(26,22,18,0.2)' }}>Free & open source · Apache 2.0</span>
             </p>
           </div>
         </motion.div>

@@ -31,8 +31,8 @@ function StatCard({ label, value, color = '#BDD4E8', sub }) {
   return (
     <div className="at-card" style={{ padding: '14px 16px', flex: '1 1 120px' }}>
       <div style={{ fontSize: '1.7rem', fontWeight: 700, color, fontFamily: 'JetBrains Mono' }}>{value ?? '—'}</div>
-      <div style={{ fontSize: '0.68rem', color: '#787878', marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
-      {sub && <div style={{ fontSize: '0.65rem', color: '#787878', marginTop: 2, fontFamily: 'JetBrains Mono' }}>{sub}</div>}
+      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
+      {sub && <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: 2, fontFamily: 'JetBrains Mono' }}>{sub}</div>}
     </div>
   );
 }
@@ -53,7 +53,7 @@ function ActivityChart({ data }) {
               height: `${Math.max(4, (d.count / max) * 56)}px`,
               transition: 'height 0.4s ease',
             }} />
-            <div style={{ fontSize: 8, color: '#787878', fontFamily: 'JetBrains Mono' }}>
+            <div style={{ fontSize: 8, color: 'var(--text-muted)', fontFamily: 'JetBrains Mono' }}>
               {new Date(d.date).toLocaleDateString('en-IE', { weekday: 'short' })[0]}
             </div>
           </div>
@@ -70,7 +70,7 @@ function LogRow({ log, isNew }) {
     <div style={{
       display: 'flex', gap: 10, alignItems: 'flex-start',
       padding: '9px 14px',
-      background: isNew ? 'rgba(90,138,159,0.06)' : '#0E0E16',
+      background: isNew ? 'rgba(90,138,159,0.06)' : var(--surface),
       borderRadius: 6,
       borderLeft: `2px solid ${color}`,
       transition: 'background 1s ease',
@@ -81,26 +81,26 @@ function LogRow({ log, isNew }) {
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.82rem', fontWeight: 500, color: '#BDD4E8' }}>{log.label}</span>
+          <span style={{ fontSize: '0.82rem', fontWeight: 500, color: 'var(--text-primary)' }}>{log.label}</span>
           <span style={{ fontSize: '0.65rem', color, fontFamily: 'JetBrains Mono', background: `${color}15`, padding: '1px 6px', borderRadius: 3 }}>
             {CAT_LABELS[log.category] || log.category}
           </span>
           {log.entity_id && (
-            <span style={{ fontSize: '0.7rem', color: '#787878', fontFamily: 'JetBrains Mono' }}>{log.entity_id}</span>
+            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono' }}>{log.entity_id}</span>
           )}
         </div>
         {log.detail && (
-          <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {String(log.detail).slice(0, 90)}
           </div>
         )}
         {log.user_email && (
-          <div style={{ fontSize: '0.68rem', color: '#787878', marginTop: 2, fontFamily: 'JetBrains Mono' }}>
+          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: 2, fontFamily: 'JetBrains Mono' }}>
             by {log.user_email}
           </div>
         )}
       </div>
-      <div style={{ fontSize: '0.68rem', color: '#787878', fontFamily: 'JetBrains Mono', flexShrink: 0, whiteSpace: 'nowrap' }}>
+      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono', flexShrink: 0, whiteSpace: 'nowrap' }}>
         {new Date(log.timestamp).toLocaleTimeString('en-IE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
         <div style={{ fontSize: '0.6rem', color: '#444444' }}>
           {new Date(log.timestamp).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
@@ -195,12 +195,12 @@ export default function AuditLog() {
               </span>
             </div>
             {liveCount > 0 && (
-              <span style={{ fontSize: '0.65rem', color: '#4A7EC8', fontFamily: 'JetBrains Mono', background: 'rgba(90,138,159,0.1)', padding: '2px 8px', borderRadius: 10 }}>
+              <span style={{ fontSize: '0.65rem', color: 'var(--accent)', fontFamily: 'JetBrains Mono', background: 'rgba(90,138,159,0.1)', padding: '2px 8px', borderRadius: 10 }}>
                 +{liveCount} new
               </span>
             )}
           </div>
-          <div style={{ fontSize: '0.72rem', color: '#787878' }}>
+          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
             Every action in AegisTrace — updated every 4 seconds
           </div>
         </div>
@@ -240,7 +240,7 @@ export default function AuditLog() {
                 fontSize: '0.72rem', padding: '5px 12px', borderRadius: 5, cursor: 'pointer',
                 fontFamily: 'JetBrains Mono', border: '1px solid',
                 background: category === cat ? `${CAT_COLOR[cat] || 'rgba(90,138,159,1)'}18` : 'transparent',
-                borderColor: category === cat ? `${CAT_COLOR[cat] || '#4A7EC8'}50` : 'rgba(255,255,255,0.08)',
+                borderColor: category === cat ? `${CAT_COLOR[cat] || '#4A7EC8'}50` : 'rgba(26,22,18,0.09)',
                 color: category === cat ? (CAT_COLOR[cat] || '#4A7EC8') : '#787878',
               }}>
               {cat === '' ? 'All' : CAT_LABELS[cat]}
@@ -255,16 +255,16 @@ export default function AuditLog() {
       </div>
 
       {/* Count */}
-      <div style={{ fontSize: '0.72rem', color: '#787878', marginBottom: 10, fontFamily: 'JetBrains Mono' }}>
+      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 10, fontFamily: 'JetBrains Mono' }}>
         {filteredLogs.length} event{filteredLogs.length !== 1 ? 's' : ''}
         {category ? ` · filtered by ${CAT_LABELS[category]}` : ''}
-        {!paused && <span style={{ color: '#4A7EC8' }}> · auto-refreshing</span>}
+        {!paused && <span style={{ color: 'var(--accent)' }}> · auto-refreshing</span>}
       </div>
 
       {/* Log list */}
       <div ref={listRef} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         {filteredLogs.length === 0 ? (
-          <div className="at-card" style={{ padding: 40, textAlign: 'center', color: '#787878' }}>
+          <div className="at-card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
             No events in this period.
           </div>
         ) : (

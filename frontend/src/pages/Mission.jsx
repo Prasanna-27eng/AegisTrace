@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, useMotionValue, useTransform, useSpring, useInView } from 'framer-motion';
 import CardNav from '../components/CardNav';
-import { ArrowRight, Shield, Brain, Eye } from '../components/icons';
+import { ArrowRight, Shield, Brain, Eye, Globe, Lock, Users, Zap, CheckCircle } from '../components/icons';
 
 /* ─── Tokens ──────────────────────────────────────────────────────────────── */
 const T = {
@@ -125,7 +125,7 @@ export default function Mission() {
         <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 65% 55% at 50% 45%, rgba(204,120,92,0.1) 0%, transparent 65%)' }} />
         <motion.div style={{
           position: 'absolute', inset: -40, zIndex: 0,
-          backgroundImage: 'radial-gradient(circle, rgba(204,120,92,0.15) 1px, transparent 1px)',
+          backgroundImage: 'radial-gradient(circle, rgba(26,22,18,0.07) 1px, transparent 1px)',
           backgroundSize: '36px 36px', x: isTouch ? 0 : dX, y: isTouch ? 0 : dY,
         }} />
 
@@ -186,6 +186,84 @@ export default function Mission() {
         </div>
       </section>
 
+      {/* THE PROBLEM WE'RE SOLVING */}
+      <section style={{ background: T.bg, padding: 'clamp(80px,10vw,120px) clamp(20px,5vw,80px)', position: 'relative', overflow: 'hidden' }}>
+        <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.04, pointerEvents: 'none' }} />
+        <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          <Reveal>
+            <h2 style={{ fontFamily: T.fontD, fontSize: 'clamp(2rem,4vw,3.2rem)', color: T.darkText, fontWeight: 400, margin: '0 0 16px', lineHeight: 1.2 }}>
+              The problem every SOC knows
+            </h2>
+            <p style={{ fontFamily: T.fontUI, fontSize: '1.05rem', color: T.darkMuted, lineHeight: 1.8, maxWidth: '60ch', margin: '0 0 56px' }}>
+              Modern organizations have identity scattered across dozens of systems. Okta logs go one place. Azure AD logs go another. The endpoint agents report to a third system. And AI agents now act autonomously without any identity accountability whatsoever.
+            </p>
+          </Reveal>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
+            {[
+              { icon: Users, title: 'Fragmented identity data', body: 'The average enterprise uses 8-12 identity providers. No single team has a unified view of who authenticated where, when, and what they did next. Correlation takes hours of manual work.' },
+              { icon: Zap, title: 'Alert fatigue is real', body: 'SIEM platforms generate thousands of alerts per day. Without behavioral context and ML triage, analysts spend 70% of their time on false positives instead of real threats.' },
+              { icon: Brain, title: 'AI agents have no identity audit trail', body: 'An AI agent that reads your email, edits documents, and calls APIs creates no traditional audit trail. If it acts maliciously — or is hijacked — there is nothing to investigate.' },
+              { icon: Lock, title: 'Compliance requires evidence', body: 'SOC2, ISO 27001, and NIST CSF audits require documented evidence of detection, response, and remediation. Gathering that evidence manually is a multi-week project every audit cycle.' },
+              { icon: Globe, title: 'Open source is missing in ITDR', body: 'Commercial ITDR tools cost $30k-$200k per year. Small security teams and startups have no viable alternative. The ITDR space has no Wireshark, no Metasploit — until now.' },
+              { icon: CheckCircle, title: 'AegisTrace solves all five', body: 'One unified platform: ingest from any identity source, AI-powered triage, full AI agent accountability, auto-generated compliance evidence, and 100% open source under MIT license.' },
+            ].map(({ icon: Icon, title, body }, i) => (
+              <Reveal key={title} delay={i * 0.07}>
+                <div style={{
+                  background: T.card, border: `1px solid ${T.border}`,
+                  borderRadius: 14, padding: '24px 24px',
+                  boxShadow: '0 2px 8px rgba(26,22,18,0.06)',
+                }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(204,120,92,0.1)', border: '1px solid rgba(204,120,92,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                    <Icon size={18} color={T.accent} />
+                  </div>
+                  <h3 style={{ fontFamily: T.fontD, fontSize: '1.1rem', color: T.darkText, fontWeight: 400, margin: '0 0 10px' }}>{title}</h3>
+                  <p style={{ fontFamily: T.fontUI, fontSize: '0.9rem', color: T.darkMuted, lineHeight: 1.7, margin: 0 }}>{body}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ATSP PROTOCOL */}
+      <section style={{ background: T.pubBg, padding: 'clamp(80px,10vw,120px) clamp(20px,5vw,80px)' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <Reveal>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: 16, marginBottom: 16 }}>
+              <h2 style={{ fontFamily: T.fontD, fontSize: 'clamp(2rem,4vw,3.2rem)', color: T.pubText, fontWeight: 400, margin: 0, lineHeight: 1.2 }}>
+                The ATSP Protocol
+              </h2>
+              <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: T.accent, background: 'rgba(204,120,92,0.1)', border: '1px solid rgba(204,120,92,0.2)', borderRadius: 50, padding: '4px 12px', letterSpacing: '0.12em' }}>
+                OPEN STANDARD
+              </span>
+            </div>
+            <p style={{ fontFamily: T.fontUI, fontSize: '1.05rem', color: T.pubMuted, lineHeight: 1.8, maxWidth: '60ch', margin: '0 0 48px' }}>
+              The AegisTrace Security Protocol is an open standard for AI agent identity and accountability. It defines how agents declare identity, scope permissions, record actions, and produce audit-ready provenance chains.
+            </p>
+          </Reveal>
+
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
+            {[
+              { step: '01', title: 'Agent Identity Attestation', desc: 'Every AI agent receives a cryptographic identity token scoped to a specific user, time window, and permission set. The token cannot be reused outside its scope.' },
+              { step: '02', title: 'Action Provenance Ledger', desc: 'Every action taken by an AI agent is appended to an append-only ledger with timestamp, actor identity, resource affected, and reasoning chain from the model.' },
+              { step: '03', title: 'Human Approval Gate', desc: 'Sensitive actions (delete, send, pay, escalate) require a human approval before execution. The approval UI surfaces the agent\'s stated reasoning and proposed action.' },
+              { step: '04', title: 'Regulatory Evidence Package', desc: 'ATSP-compliant agents automatically produce evidence packages meeting SOC2 CC6.1 (logical access) and ISO 27001 A.9 (access control) requirements.' },
+            ].map(({ step, title, desc }) => (
+              <Reveal key={step} delay={parseInt(step) * 0.07}>
+                <div style={{ display: 'flex', gap: 20, padding: '24px', background: T.bg, border: `1px solid ${T.border}`, borderRadius: 14 }}>
+                  <div style={{ fontFamily: T.fontD, fontStyle: 'italic', fontSize: '2.5rem', color: 'rgba(26,22,18,0.08)', lineHeight: 1, flexShrink: 0, userSelect: 'none' }}>{step}</div>
+                  <div>
+                    <h3 style={{ fontFamily: T.fontD, fontSize: '1.1rem', color: T.pubText, fontWeight: 400, margin: '6px 0 8px', lineHeight: 1.3 }}>{title}</h3>
+                    <p style={{ fontFamily: T.fontUI, fontSize: '0.9rem', color: T.pubMuted, lineHeight: 1.7, margin: 0 }}>{desc}</p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* BUILDER PROFILE (dark) */}
       <section style={{ background: T.bg, padding: 'clamp(80px,10vw,120px) clamp(20px,5vw,80px)', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.04, pointerEvents: 'none' }} />
@@ -202,14 +280,14 @@ export default function Mission() {
                   automate Okta investigations, and map attack paths. It grew into a platform.
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-                  {['ITDR', 'Cloud Security', 'Python', 'Threat Intelligence', 'Dublin, Ireland'].map(tag => (
-                    <span key={tag} style={{ fontFamily: T.fontUI, fontSize: '0.8rem', fontWeight: 500, color: T.darkMuted, background: 'rgba(240,235,227,0.06)', border: `1px solid rgba(240,235,227,0.08)`, borderRadius: 100, padding: '5px 14px' }}>{tag}</span>
+                  {['SC-200 Certified', 'Security+', 'MSc Computing (DBS)', 'ITDR', 'Dublin, Ireland'].map(tag => (
+                    <span key={tag} style={{ fontFamily: T.fontUI, fontSize: '0.8rem', fontWeight: 500, color: T.darkMuted, background: 'rgba(26,22,18,0.05)', border: `1px solid rgba(26,22,18,0.1)`, borderRadius: 100, padding: '5px 14px' }}>{tag}</span>
                   ))}
                 </div>
               </div>
             </Reveal>
             <Reveal delay={0.15}>
-              <div style={{ background: T.surface, border: `1px solid rgba(240,235,227,0.08)`, borderRadius: 20, padding: '36px' }}>
+              <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 20, padding: '36px' }}>
                 <blockquote style={{ fontFamily: T.fontD, fontStyle: 'italic', fontSize: 'clamp(1.1rem, 2.5vw, 1.5rem)', color: T.darkText, lineHeight: 1.55, margin: 0 }}>
                   "I built this because every enterprise SIEM I used felt like it was designed for a team of 20. SOC analysts need clarity, not complexity."
                 </blockquote>
@@ -256,7 +334,7 @@ export default function Mission() {
         </div>
       </section>
 
-      <footer style={{ background: T.surface, borderTop: `1px solid rgba(240,235,227,0.08)`, padding: 'clamp(36px,5vw,52px) clamp(20px,5vw,80px)' }}>
+      <footer style={{ background: T.surface, borderTop: `1px solid ${T.border}`, padding: 'clamp(36px,5vw,52px) clamp(20px,5vw,80px)' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
           <div style={{ fontFamily: T.fontD, fontSize: '1.1rem', color: T.darkText }}>AegisTrace</div>
           <div style={{ fontFamily: T.fontUI, fontSize: '0.84rem', color: T.darkMuted }}>© 2025 Prasanna Kumar · MIT License</div>

@@ -30,8 +30,8 @@ function CopyBtn({ text }) {
   }, [text]);
   return (
     <button onClick={copy} style={{
-      background: copied ? 'rgba(16,185,129,0.1)' : 'rgba(74,126,200,0.08)',
-      border: `1px solid ${copied ? 'rgba(16,185,129,0.25)' : 'rgba(74,126,200,0.2)'}`,
+      background: copied ? 'rgba(16,185,129,0.1)' : 'rgba(26,22,18,0.08)',
+      border: `1px solid ${copied ? 'rgba(16,185,129,0.25)' : 'rgba(26,22,18,0.14)'}`,
       color: copied ? GREEN : BLUE_L,
       borderRadius: 4, cursor: 'pointer',
       padding: '4px 10px',
@@ -56,11 +56,11 @@ function CodeBlock({ code, label }) {
       )}
       <div style={{
         background: '#040408',
-        border: '1px solid rgba(74,126,200,0.15)',
+        border: '1px solid rgba(26,22,18,0.12)',
         borderRadius: 8, overflow: 'hidden',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '8px 14px', borderBottom: '1px solid rgba(74,126,200,0.08)',
+          padding: '8px 14px', borderBottom: '1px solid rgba(26,22,18,0.08)',
           background: 'rgba(74,126,200,0.03)' }}>
           <div style={{ display: 'flex', gap: 5 }}>
             {['#F87171','#FBBF24','#34D399'].map(c => (
@@ -96,7 +96,7 @@ function Section({ icon: Icon, title, color = BLUE, children, delay = 0 }) {
     <motion.div {...FADE} transition={{ ...EASE, delay }}
       style={{
         background: '#0A0A12',
-        border: '1px solid rgba(255,255,255,0.07)',
+        border: '1px solid rgba(26,22,18,0.08)',
         borderRadius: 12,
         overflow: 'hidden',
         marginBottom: 20,
@@ -105,8 +105,8 @@ function Section({ icon: Icon, title, color = BLUE, children, delay = 0 }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 10,
         padding: '16px 22px',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-        background: 'rgba(255,255,255,0.02)',
+        borderBottom: '1px solid rgba(26,22,18,0.07)',
+        background: 'rgba(26,22,18,0.03)',
       }}>
         <div style={{ width: 30, height: 30, borderRadius: 8,
           background: `${color}14`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -123,15 +123,15 @@ function Section({ icon: Icon, title, color = BLUE, children, delay = 0 }) {
 function Step({ n, title, children }) {
   const [open, setOpen] = useState(n <= 2);
   return (
-    <div style={{ marginBottom: 12, border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, overflow: 'hidden' }}>
+    <div style={{ marginBottom: 12, border: '1px solid rgba(26,22,18,0.07)', borderRadius: 8, overflow: 'hidden' }}>
       <button
         onClick={() => setOpen(o => !o)}
-        style={{ width: '100%', background: open ? 'rgba(74,126,200,0.06)' : 'rgba(255,255,255,0.02)',
+        style={{ width: '100%', background: open ? 'rgba(74,126,200,0.06)' : 'rgba(26,22,18,0.03)',
           border: 'none', cursor: 'pointer', padding: '12px 16px',
           display: 'flex', alignItems: 'center', gap: 12, transition: 'background 0.15s' }}
       >
         <div style={{ width: 24, height: 24, borderRadius: '50%',
-          background: open ? 'rgba(74,126,200,0.2)' : 'rgba(255,255,255,0.07)',
+          background: open ? 'rgba(26,22,18,0.14)' : 'rgba(26,22,18,0.08)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0 }}>
           <span style={{ ...MONO, fontSize: 11, fontWeight: 700, color: open ? BLUE_L : MUTED }}>{n}</span>
@@ -149,8 +149,8 @@ function OsPill({ label, active, onClick }) {
   return (
     <button onClick={onClick} style={{
       padding: '5px 14px', borderRadius: 6, cursor: 'pointer',
-      background: active ? 'rgba(74,126,200,0.15)' : 'rgba(255,255,255,0.04)',
-      border: `1px solid ${active ? 'rgba(74,126,200,0.4)' : 'rgba(255,255,255,0.08)'}`,
+      background: active ? 'rgba(26,22,18,0.12)' : 'rgba(26,22,18,0.05)',
+      border: `1px solid ${active ? 'rgba(204,120,92,0.3)' : 'rgba(26,22,18,0.09)'}`,
       color: active ? BLUE_L : MUTED,
       fontSize: 12, ...MONO, transition: 'all 140ms',
     }}>{label}</button>
@@ -327,7 +327,7 @@ sudo nginx -t && sudo systemctl reload nginx`;
               { label: 'Active Endpoints', value: loading ? '—' : active, color: GREEN },
               { label: 'Total Enrolled',   value: loading ? '—' : endpoints.length, color: BLUE_L },
             ].map(({ label, value, color }) => (
-              <div key={label} style={{ background: '#0A0A12', border: '1px solid rgba(255,255,255,0.07)',
+              <div key={label} style={{ background: '#0A0A12', border: '1px solid rgba(26,22,18,0.08)',
                 borderRadius: 10, padding: '10px 18px', textAlign: 'center', minWidth: 90 }}>
                 <div style={{ ...UI, fontSize: '1.5rem', fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
                 <div style={{ ...MONO, fontSize: 9, color: MUTED, marginTop: 4, letterSpacing: '0.08em',
@@ -341,14 +341,14 @@ sudo nginx -t && sudo systemctl reload nginx`;
       {/* Enrolled endpoints strip */}
       {!loading && endpoints.length > 0 && (
         <motion.div {...FADE} transition={{ ...EASE, delay: 0.05 }}
-          style={{ background: '#0A0A12', border: '1px solid rgba(255,255,255,0.07)',
+          style={{ background: '#0A0A12', border: '1px solid rgba(26,22,18,0.08)',
             borderRadius: 10, padding: '14px 18px', marginBottom: 20 }}>
           <div style={{ ...MONO, fontSize: 10, color: MUTED, letterSpacing: '0.1em',
             textTransform: 'uppercase', marginBottom: 10 }}>Enrolled Endpoints</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {endpoints.slice(0, 12).map(ep => (
               <div key={ep.id} style={{ display: 'flex', alignItems: 'center', gap: 7,
-                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+                background: 'rgba(26,22,18,0.04)', border: '1px solid rgba(26,22,18,0.07)',
                 borderRadius: 6, padding: '5px 10px' }}>
                 <StatusDot active={ep.is_active} />
                 <span style={{ ...MONO, fontSize: 11, color: '#94A3B8' }}>{ep.hostname || ep.host_ip}</span>
@@ -429,7 +429,7 @@ sudo nginx -t && sudo systemctl reload nginx`;
             { key: 'SHODAN_API_KEY',   example: '<shodan key>',                                   required: false, note: 'Shodan host intelligence (optional)' },
             { key: 'ALLOWED_ORIGINS',  example: `https://your-domain.com`,                        required: false, note: 'CORS origins (defaults to *)' },
           ].map(({ key, example, required, note }) => (
-            <div key={key} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)',
+            <div key={key} style={{ background: 'rgba(26,22,18,0.03)', border: '1px solid rgba(26,22,18,0.08)',
               borderRadius: 8, padding: '12px 14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                 <code style={{ ...MONO, fontSize: 12, color: required ? BLUE_L : MUTED }}>{key}</code>
@@ -471,11 +471,11 @@ sudo -u postgres psql aegistrace_db -c "SELECT COUNT(*) FROM \\"case\\";"`} />
             { icon: Terminal, label: 'Terminal Lab',      path: '/app/terminal-lab', color: BLUE_L },
           ].map(({ icon: Icon, label, path, color }) => (
             <a key={path} href={path} style={{ display: 'flex', alignItems: 'center', gap: 10,
-              padding: '10px 14px', background: 'rgba(255,255,255,0.02)',
-              border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8,
+              padding: '10px 14px', background: 'rgba(26,22,18,0.03)',
+              border: '1px solid rgba(26,22,18,0.08)', borderRadius: 8,
               textDecoration: 'none', transition: 'border-color 150ms, background 150ms' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(74,126,200,0.25)'; e.currentTarget.style.background = 'rgba(74,126,200,0.05)'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(26,22,18,0.08)'; e.currentTarget.style.background = 'rgba(26,22,18,0.03)'; }}
             >
               <Icon size={14} color={color} />
               <span style={{ ...UI, fontSize: '0.82rem', color: '#8090A8' }}>{label}</span>

@@ -36,12 +36,12 @@ function PolicyCard({ policy, onEdit, onDelete, onToggle }) {
             <div style={{ width: 7, height: 7, borderRadius: '50%', background: policy.is_active ? '#22C55E' : '#888888', boxShadow: policy.is_active ? '0 0 6px #22C55E' : 'none' }} />
             <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{policy.name}</span>
             {policy.identity_type && (
-              <span style={{ fontSize: '0.62rem', ...MONO, background: 'rgba(74,126,200,0.1)', color: '#4A7EC8', padding: '1px 7px', borderRadius: 3 }}>
+              <span style={{ fontSize: '0.62rem', ...MONO, background: 'rgba(74,126,200,0.1)', color: 'var(--accent)', padding: '1px 7px', borderRadius: 3 }}>
                 {policy.identity_type}
               </span>
             )}
           </div>
-          {policy.description && <div style={{ fontSize: '0.76rem', color: '#787878', lineHeight: 1.5 }}>{policy.description}</div>}
+          {policy.description && <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>{policy.description}</div>}
         </div>
         <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
           <button onClick={() => onToggle(policy)} className="btn-ghost" style={{ padding: '4px 8px', fontSize: '0.7rem' }}>
@@ -60,7 +60,7 @@ function PolicyCard({ policy, onEdit, onDelete, onToggle }) {
           <span key={d} style={{ fontSize: '0.65rem', ...MONO, background: 'rgba(239,68,68,0.08)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.2)', padding: '2px 7px', borderRadius: 3 }}>✗ {d}</span>
         ))}
         {ips.length > 0 && (
-          <span style={{ fontSize: '0.65rem', ...MONO, background: 'rgba(74,126,200,0.08)', color: '#4A7EC8', border: '1px solid rgba(74,126,200,0.2)', padding: '2px 7px', borderRadius: 3 }}>
+          <span style={{ fontSize: '0.65rem', ...MONO, background: 'rgba(26,22,18,0.08)', color: 'var(--accent)', border: '1px solid rgba(26,22,18,0.14)', padding: '2px 7px', borderRadius: 3 }}>
             <MapPin size={9} style={{ display: 'inline', marginRight: 3 }} />{ips.length} IP{ips.length !== 1 ? 's' : ''}
           </span>
         )}
@@ -108,10 +108,10 @@ function PolicyForm({ initial, onSave, onClose }) {
   };
 
   return (
-    <div className="at-card" style={{ padding: 20, borderColor: 'rgba(74,126,200,0.2)', marginBottom: 16 }}>
+    <div className="at-card" style={{ padding: 20, borderColor: 'rgba(26,22,18,0.14)', marginBottom: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{initial?.id ? 'Edit Policy' : 'New Policy'}</div>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={15} /></button>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={15} /></button>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         <div style={{ gridColumn: '1/-1' }}>
@@ -198,7 +198,7 @@ function ValidationPanel() {
     <div style={{ background: 'rgba(8,8,8,0.7)', border: '1px solid rgba(148,163,184,0.08)', borderRadius: 12, padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
         <Zap size={14} style={{ color: '#EAB308' }} />
-        <span style={{ fontSize: '0.68rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.1em', ...MONO }}>Test Policy Validation</span>
+        <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', ...MONO }}>Test Policy Validation</span>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 12 }}>
         <div>
@@ -227,7 +227,7 @@ function ValidationPanel() {
               {result.allowed ? 'Action Permitted' : 'Action Denied'}
             </span>
             {result.node_risk_score != null && (
-              <span style={{ ...MONO, fontSize: '0.7rem', color: '#787878', marginLeft: 'auto' }}>Node risk: {result.node_risk_score}</span>
+              <span style={{ ...MONO, fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: 'auto' }}>Node risk: {result.node_risk_score}</span>
             )}
           </div>
           {result.violations?.length > 0 && (
@@ -289,10 +289,10 @@ export default function Policies() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-            <Shield size={20} style={{ color: '#4A7EC8' }} />
+            <Shield size={20} style={{ color: 'var(--accent)' }} />
             <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Policy Engine</h1>
           </div>
-          <div style={{ fontSize: '0.7rem', color: '#787878', ...MONO }}>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', ...MONO }}>
             {active} active · {inactive} inactive · Define access control rules per identity type
           </div>
         </div>
@@ -317,9 +317,9 @@ export default function Policies() {
 
       {/* Policy list */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 60 }}><Loader2 size={20} className="spinner" style={{ color: '#4A7EC8' }} /></div>
+        <div style={{ textAlign: 'center', padding: 60 }}><Loader2 size={20} className="spinner" style={{ color: 'var(--accent)' }} /></div>
       ) : policies.length === 0 ? (
-        <div className="at-card" style={{ padding: 60, textAlign: 'center', color: '#787878' }}>
+        <div className="at-card" style={{ padding: 60, textAlign: 'center', color: 'var(--text-muted)' }}>
           <Shield size={32} style={{ margin: '0 auto 14px', opacity: 0.2 }} />
           <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: 8 }}>No policies yet</div>
           <div style={{ fontSize: '0.78rem', ...MONO, marginBottom: 20, color: '#404040' }}>

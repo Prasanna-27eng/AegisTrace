@@ -101,7 +101,7 @@ const IDENTITY_TYPE_COLORS = {
 
 function KnowledgeCard({ entry }) {
   return (
-    <div style={{ padding: '12px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, marginBottom: 8 }}>
+    <div style={{ padding: '12px 14px', background: 'rgba(26,22,18,0.03)', border: '1px solid rgba(26,22,18,0.08)', borderRadius: 10, marginBottom: 8 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
         <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#E8E8F0', flex: 1 }}>{entry.title}</span>
         <span style={{ fontSize: '0.62rem', ...MONO, padding: '2px 7px', borderRadius: 4, background: `${IDENTITY_TYPE_COLORS[entry.identity_type] || '#6B7280'}18`, color: IDENTITY_TYPE_COLORS[entry.identity_type] || '#6B7280', border: `1px solid ${IDENTITY_TYPE_COLORS[entry.identity_type] || '#6B7280'}33` }}>
@@ -127,7 +127,7 @@ function KnowledgeCard({ entry }) {
       {entry.tags?.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
           {entry.tags.map(t => (
-            <span key={t} style={{ fontSize: '0.6rem', ...MONO, padding: '1px 6px', borderRadius: 3, background: 'rgba(74,126,200,0.1)', color: '#4A7EC8', border: '1px solid rgba(74,126,200,0.2)' }}>{t}</span>
+            <span key={t} style={{ fontSize: '0.6rem', ...MONO, padding: '1px 6px', borderRadius: 3, background: 'rgba(74,126,200,0.1)', color: 'var(--accent)', border: '1px solid rgba(26,22,18,0.14)' }}>{t}</span>
           ))}
         </div>
       )}
@@ -165,21 +165,21 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 24 }}>
       <div style={{ background: '#111111', border: '1px solid rgba(148,163,184,0.1)', borderRadius: 16, width: '100%', maxWidth: 900, maxHeight: '90vh', overflow: 'auto', boxShadow: '0 24px 64px rgba(0,0,0,0.7)' }}>
         {/* Header */}
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(26,22,18,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: 4 }}>Investigation Templates</div>
-            <div style={{ fontSize: '0.72rem', color: '#787878', ...MONO }}>Pick a scaffold to pre-fill your case — you can edit everything after</div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', ...MONO }}>Pick a scaffold to pre-fill your case — you can edit everything after</div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {/* Tab switcher */}
-            <div style={{ display: 'flex', gap: 2, background: 'rgba(255,255,255,0.04)', borderRadius: 7, padding: 3 }}>
+            <div style={{ display: 'flex', gap: 2, background: 'rgba(26,22,18,0.05)', borderRadius: 7, padding: 3 }}>
               {[{ id: 'templates', label: 'Templates' }, { id: 'knowledge', label: 'Knowledge Base' }].map(t => (
-                <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ padding: '4px 12px', borderRadius: 5, border: 'none', background: activeTab === t.id ? 'rgba(74,126,200,0.2)' : 'none', color: activeTab === t.id ? '#8BB8E8' : '#787878', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer' }}>
+                <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ padding: '4px 12px', borderRadius: 5, border: 'none', background: activeTab === t.id ? 'rgba(26,22,18,0.14)' : 'none', color: activeTab === t.id ? '#8BB8E8' : '#787878', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer' }}>
                   {t.label}
                 </button>
               ))}
             </div>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', padding: 4 }}><X size={16} /></button>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}><X size={16} /></button>
           </div>
         </div>
 
@@ -191,11 +191,11 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
                 placeholder="Filter by title, type, or tag…"
                 value={knowledgeFilter}
                 onChange={e => setKnowledgeFilter(e.target.value)}
-                style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 7, padding: '7px 12px', color: '#E8E8F0', fontSize: '0.78rem', outline: 'none', boxSizing: 'border-box' }}
+                style={{ width: '100%', background: 'rgba(26,22,18,0.05)', border: '1px solid rgba(26,22,18,0.1)', borderRadius: 7, padding: '7px 12px', color: '#E8E8F0', fontSize: '0.78rem', outline: 'none', boxSizing: 'border-box' }}
               />
             </div>
             {loadingKnowledge ? (
-              <div style={{ textAlign: 'center', padding: 24, color: '#787878', fontSize: '0.78rem' }}>Loading knowledge base…</div>
+              <div style={{ textAlign: 'center', padding: 24, color: 'var(--text-muted)', fontSize: '0.78rem' }}>Loading knowledge base…</div>
             ) : knowledge.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '32px 16px', color: '#4B5563' }}>
                 <BookOpen size={28} style={{ marginBottom: 8, opacity: 0.4 }} />
@@ -213,26 +213,26 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
         )}
 
         {activeTab === 'knowledge' && (
-          <div style={{ padding: '14px 24px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'flex-end' }}>
+          <div style={{ padding: '14px 24px', borderTop: '1px solid rgba(26,22,18,0.07)', display: 'flex', justifyContent: 'flex-end' }}>
             <button className="btn-ghost" onClick={onClose} style={{ fontSize: '0.82rem' }}>Close</button>
           </div>
         )}
 
         {activeTab === 'templates' && <><div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
           {/* Template list */}
-          <div style={{ padding: '16px', borderRight: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ padding: '16px', borderRight: '1px solid rgba(26,22,18,0.07)', display: 'flex', flexDirection: 'column', gap: 8 }}>
             {TEMPLATES.map(t => (
               <div
                 key={t.id}
                 onClick={() => { setSelected(t); setPreview(t); }}
                 style={{
                   padding: '12px 14px', borderRadius: 10, cursor: 'pointer',
-                  background: selected?.id === t.id ? `${t.color}10` : 'rgba(255,255,255,0.02)',
-                  border: `1px solid ${selected?.id === t.id ? t.color + '30' : 'rgba(255,255,255,0.06)'}`,
+                  background: selected?.id === t.id ? `${t.color}10` : 'rgba(26,22,18,0.03)',
+                  border: `1px solid ${selected?.id === t.id ? t.color + '30' : 'rgba(26,22,18,0.07)'}`,
                   transition: 'all 0.15s',
                 }}
-                onMouseEnter={e => { if (selected?.id !== t.id) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
-                onMouseLeave={e => { if (selected?.id !== t.id) e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
+                onMouseEnter={e => { if (selected?.id !== t.id) e.currentTarget.style.background = 'rgba(26,22,18,0.05)'; }}
+                onMouseLeave={e => { if (selected?.id !== t.id) e.currentTarget.style.background = 'rgba(26,22,18,0.03)'; }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ width: 32, height: 32, borderRadius: 8, background: `${t.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -240,11 +240,11 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
                   </div>
                   <div>
                     <div style={{ fontWeight: 600, fontSize: '0.86rem' }}>{t.label}</div>
-                    <div style={{ fontSize: '0.68rem', color: '#787878', ...MONO }}>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', ...MONO }}>
                       Default: <span style={{ color: t.severity === 'critical' ? '#EF4444' : t.severity === 'high' ? '#F97316' : '#EAB308' }}>{t.severity}</span>
                     </div>
                   </div>
-                  <ChevronRight size={14} style={{ color: '#787878', marginLeft: 'auto' }} />
+                  <ChevronRight size={14} style={{ color: 'var(--text-muted)', marginLeft: 'auto' }} />
                 </div>
               </div>
             ))}
@@ -265,7 +265,7 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
                 </div>
 
                 <div>
-                  <div style={{ fontSize: '0.62rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>MITRE Techniques</div>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>MITRE Techniques</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                     {preview.mitre.map(m => (
                       <span key={m} style={{ fontSize: '0.65rem', ...MONO, background: 'rgba(239,68,68,0.08)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.18)', padding: '2px 7px', borderRadius: 3 }}>{m}</span>
@@ -274,10 +274,10 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
                 </div>
 
                 <div>
-                  <div style={{ fontSize: '0.62rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Evidence to Collect</div>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Evidence to Collect</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                     {preview.evidence.map(e => (
-                      <div key={e} style={{ display: 'flex', gap: 6, fontSize: '0.74rem', color: '#909090' }}>
+                      <div key={e} style={{ display: 'flex', gap: 6, fontSize: '0.74rem', color: 'var(--text-muted)' }}>
                         <span style={{ color: '#4E7A8E', flexShrink: 0 }}>→</span> {e}
                       </div>
                     ))}
@@ -285,10 +285,10 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
                 </div>
 
                 <div>
-                  <div style={{ fontSize: '0.62rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>First Steps</div>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>First Steps</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                     {preview.steps.map((s, i) => (
-                      <div key={i} style={{ display: 'flex', gap: 7, fontSize: '0.74rem', color: '#909090' }}>
+                      <div key={i} style={{ display: 'flex', gap: 7, fontSize: '0.74rem', color: 'var(--text-muted)' }}>
                         <span style={{ color: '#22C55E', ...MONO, flexShrink: 0 }}>{i + 1}.</span> {s}
                       </div>
                     ))}
@@ -300,7 +300,7 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '14px 24px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+        <div style={{ padding: '14px 24px', borderTop: '1px solid rgba(26,22,18,0.07)', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
           <button className="btn-ghost" onClick={onClose} style={{ fontSize: '0.82rem' }}>Cancel</button>
           <button className="btn-accent" onClick={apply} disabled={!selected} style={{ fontSize: '0.82rem' }}>
             <Check size={13} /> Use Template

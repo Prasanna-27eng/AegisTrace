@@ -8,7 +8,7 @@ import api from '../../api/client';
 import useStore from '../../store/useStore';
 
 const SOURCE_META = {
-  cisa_kev:      { label: 'CISA KEV',        color: '#4A7EC8', icon: AlertTriangle, url: 'https://www.cisa.gov/known-exploited-vulnerabilities-catalog' },
+  cisa_kev:      { label: 'CISA KEV',        color: 'var(--accent)', icon: AlertTriangle, url: 'https://www.cisa.gov/known-exploited-vulnerabilities-catalog' },
   urlhaus:       { label: 'URLhaus',          color: '#EF4444', icon: Globe,         url: 'https://urlhaus.abuse.ch/' },
   threatfox:     { label: 'ThreatFox',        color: '#EAB308', icon: Shield,        url: 'https://threatfox.abuse.ch/' },
   malwarebazaar: { label: 'MalwareBazaar',    color: '#8BB8E8', icon: Bug,           url: 'https://bazaar.abuse.ch/' },
@@ -25,7 +25,7 @@ function timeAgo(isoStr) {
 }
 
 function SourceBadge({ source }) {
-  const m = SOURCE_META[source] || { label: source, color: '#787878' };
+  const m = SOURCE_META[source] || { label: source, color: 'var(--text-muted)' };
   return (
     <span style={{
       fontSize: '0.62rem', fontFamily: 'JetBrains Mono', fontWeight: 600,
@@ -60,21 +60,21 @@ function FeedSection({ feedKey, data, navigate }) {
       >
         <Icon size={13} style={{ color: meta.color }} />
         <span style={{ fontWeight: 600, fontSize: '0.82rem' }}>{meta.label}</span>
-        <span style={{ fontSize: '0.68rem', color: '#787878', fontFamily: 'JetBrains Mono' }}>
+        <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono' }}>
           {data.total != null ? `${data.total} entries` : ''}
           {data.date_released ? ` · Updated ${timeAgo(data.date_released)}` : ''}
         </span>
         <a href={meta.url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
-          style={{ marginLeft: 4, color: '#787878' }}>
+          style={{ marginLeft: 4, color: 'var(--text-muted)' }}>
           <ExternalLink size={10} />
         </a>
         <span style={{ marginLeft: 'auto' }}>
-          {open ? <ChevronDown size={12} style={{ color: '#787878' }} /> : <ChevronRight size={12} style={{ color: '#787878' }} />}
+          {open ? <ChevronDown size={12} style={{ color: 'var(--text-muted)' }} /> : <ChevronRight size={12} style={{ color: 'var(--text-muted)' }} />}
         </span>
       </div>
 
       {open && items.length === 0 && (
-        <div style={{ fontSize: '0.75rem', color: '#787878', padding: '8px 0' }}>No items returned.</div>
+        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '8px 0' }}>No items returned.</div>
       )}
 
       {open && items.length > 0 && (
@@ -83,17 +83,17 @@ function FeedSection({ feedKey, data, navigate }) {
           {feedKey === 'cisa_kev' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
               {items.map((v, i) => (
-                <div key={i} style={{ display: 'flex', gap: 10, padding: '7px 10px', background: '#0E0E16', borderRadius: 5, fontSize: '0.74rem', alignItems: 'flex-start' }}>
+                <div key={i} style={{ display: 'flex', gap: 10, padding: '7px 10px', background: var(--surface), borderRadius: 5, fontSize: '0.74rem', alignItems: 'flex-start' }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 2 }}>
                       <span style={{ fontFamily: 'JetBrains Mono', color: '#EF4444', fontWeight: 600, fontSize: '0.7rem' }}>{v.cve_id}</span>
                       <span style={{ fontWeight: 500 }}>{v.vendor} — {v.product}</span>
                     </div>
-                    <div style={{ color: '#787878', fontSize: '0.68rem', lineHeight: 1.4 }}>{v.description}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem', lineHeight: 1.4 }}>{v.description}</div>
                     {v.action && <div style={{ color: '#EAB308', fontSize: '0.67rem', marginTop: 3 }}>→ {v.action}</div>}
                   </div>
                   <div style={{ flexShrink: 0, textAlign: 'right' }}>
-                    <div style={{ fontSize: '0.62rem', color: '#787878', fontFamily: 'JetBrains Mono' }}>Added {v.date_added}</div>
+                    <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono' }}>Added {v.date_added}</div>
                     <div style={{ fontSize: '0.62rem', color: '#EF4444', fontFamily: 'JetBrains Mono' }}>Due {v.due_date}</div>
                   </div>
                 </div>
@@ -105,16 +105,16 @@ function FeedSection({ feedKey, data, navigate }) {
           {feedKey === 'urlhaus' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {items.map((u, i) => (
-                <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 10px', background: '#0E0E16', borderRadius: 5, fontSize: '0.72rem', alignItems: 'center' }}>
+                <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 10px', background: var(--surface), borderRadius: 5, fontSize: '0.72rem', alignItems: 'center' }}>
                   <span style={{
                     fontSize: '0.6rem', padding: '1px 5px', borderRadius: 3, flexShrink: 0,
                     background: u.url_status === 'online' ? 'rgba(239,68,68,0.12)' : 'rgba(136,136,136,0.12)',
                     color: u.url_status === 'online' ? '#EF4444' : '#787878',
                     fontFamily: 'JetBrains Mono', fontWeight: 600,
                   }}>{u.url_status}</span>
-                  <span style={{ fontFamily: 'JetBrains Mono', color: '#909090', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, fontSize: '0.68rem' }}>{u.url}</span>
+                  <span style={{ fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, fontSize: '0.68rem' }}>{u.url}</span>
                   {u.tags?.length > 0 && <span style={{ color: '#8BB8E8', fontSize: '0.62rem', flexShrink: 0 }}>{u.tags.slice(0, 2).join(', ')}</span>}
-                  <span style={{ color: '#787878', fontSize: '0.62rem', flexShrink: 0, fontFamily: 'JetBrains Mono' }}>{timeAgo(u.date_added)}</span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', flexShrink: 0, fontFamily: 'JetBrains Mono' }}>{timeAgo(u.date_added)}</span>
                 </div>
               ))}
             </div>
@@ -124,15 +124,15 @@ function FeedSection({ feedKey, data, navigate }) {
           {feedKey === 'threatfox' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {items.map((t, i) => (
-                <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 10px', background: '#0E0E16', borderRadius: 5, fontSize: '0.72rem', alignItems: 'center' }}>
+                <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 10px', background: var(--surface), borderRadius: 5, fontSize: '0.72rem', alignItems: 'center' }}>
                   <span style={{
                     fontSize: '0.6rem', padding: '1px 5px', borderRadius: 3, flexShrink: 0,
                     background: 'rgba(234,179,8,0.1)', color: '#EAB308',
                     fontFamily: 'JetBrains Mono', fontWeight: 600, textTransform: 'uppercase',
                   }}>{t.ioc_type}</span>
-                  <span style={{ fontFamily: 'JetBrains Mono', color: '#909090', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, fontSize: '0.68rem' }}>{t.ioc}</span>
-                  <span style={{ color: '#787878', fontSize: '0.7rem', flexShrink: 0 }}>{t.malware || t.threat_type}</span>
-                  <span style={{ color: '#787878', fontSize: '0.62rem', flexShrink: 0, fontFamily: 'JetBrains Mono' }}>{t.confidence}%</span>
+                  <span style={{ fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, fontSize: '0.68rem' }}>{t.ioc}</span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem', flexShrink: 0 }}>{t.malware || t.threat_type}</span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', flexShrink: 0, fontFamily: 'JetBrains Mono' }}>{t.confidence}%</span>
                 </div>
               ))}
             </div>
@@ -142,11 +142,11 @@ function FeedSection({ feedKey, data, navigate }) {
           {feedKey === 'malwarebazaar' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {items.map((s, i) => (
-                <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 10px', background: '#0E0E16', borderRadius: 5, fontSize: '0.72rem', alignItems: 'center' }}>
+                <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 10px', background: var(--surface), borderRadius: 5, fontSize: '0.72rem', alignItems: 'center' }}>
                   <span style={{ fontFamily: 'JetBrains Mono', color: '#8BB8E8', fontSize: '0.62rem', flexShrink: 0, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.sha256?.slice(0, 12)}…</span>
                   <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.file_name || s.sha256}</span>
                   <span style={{ color: '#EF4444', fontSize: '0.7rem', flexShrink: 0 }}>{s.signature || s.file_type}</span>
-                  <span style={{ color: '#787878', fontSize: '0.62rem', flexShrink: 0, fontFamily: 'JetBrains Mono' }}>{timeAgo(s.first_seen)}</span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', flexShrink: 0, fontFamily: 'JetBrains Mono' }}>{timeAgo(s.first_seen)}</span>
                 </div>
               ))}
             </div>
@@ -156,10 +156,10 @@ function FeedSection({ feedKey, data, navigate }) {
           {feedKey === 'feodotracker' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {items.map((h, i) => (
-                <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 10px', background: '#0E0E16', borderRadius: 5, fontSize: '0.72rem', alignItems: 'center' }}>
+                <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 10px', background: var(--surface), borderRadius: 5, fontSize: '0.72rem', alignItems: 'center' }}>
                   <span style={{ fontFamily: 'JetBrains Mono', color: '#EF4444', minWidth: 110, fontWeight: 500 }}>{h.ip}{h.port ? `:${h.port}` : ''}</span>
                   <span style={{ color: '#EAB308', flex: 1 }}>{h.malware}</span>
-                  <span style={{ color: '#787878', fontSize: '0.62rem', flexShrink: 0, fontFamily: 'JetBrains Mono' }}>last online {h.last_online || '—'}</span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', flexShrink: 0, fontFamily: 'JetBrains Mono' }}>last online {h.last_online || '—'}</span>
                 </div>
               ))}
             </div>
@@ -199,7 +199,7 @@ export default function ThreatFeeds() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 }}>
         <div>
           <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Live Threat Intel Feeds</h1>
-          <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 3 }}>
+          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 3 }}>
             CISA KEV · URLhaus · ThreatFox · MalwareBazaar · Feodo Tracker — refreshed every 5 min
             {fetchedAt && <span style={{ fontFamily: 'JetBrains Mono', marginLeft: 8 }}>· Last fetch: {timeAgo(fetchedAt)}</span>}
           </div>
@@ -218,7 +218,7 @@ export default function ThreatFeeds() {
       </div>
 
       {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: '48px 0', color: '#787878' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: '48px 0', color: 'var(--text-muted)' }}>
           <Loader2 size={22} style={{ animation: 'spin 1s linear infinite', color: '#8BB8E8' }} />
           <div style={{ fontSize: '0.82rem' }}>Fetching threat intelligence feeds…</div>
         </div>

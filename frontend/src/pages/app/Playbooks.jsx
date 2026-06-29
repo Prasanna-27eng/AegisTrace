@@ -198,7 +198,7 @@ function PipelineBuilder({
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: slot === 'trigger' ? '13px' : '0.62rem',
         fontWeight: 700, color: c,
-        background: '#050505',
+        background: var(--card),
         boxShadow: `0 0 10px ${c}55`,
         flexShrink: 0,
         transition: 'all 0.35s ease',
@@ -370,7 +370,7 @@ function PipelineBuilder({
                   title={a.requires_approval ? 'Approval required — click to remove' : 'No approval required — click to require'}
                   style={{
                     background: 'none',
-                    border: `1px solid ${a.requires_approval ? 'rgba(245,158,11,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                    border: `1px solid ${a.requires_approval ? 'rgba(245,158,11,0.4)' : 'rgba(26,22,18,0.1)'}`,
                     borderRadius: 5, padding: '3px 7px', cursor: 'pointer',
                     color: a.requires_approval ? '#F59E0B' : '#555',
                     display: 'flex', alignItems: 'center', gap: 4,
@@ -386,7 +386,7 @@ function PipelineBuilder({
                   title="Toggle params editor"
                   style={{
                     background: 'none',
-                    border: `1px solid ${expandedParams.has(i) ? 'rgba(156,124,255,0.35)' : 'rgba(255,255,255,0.08)'}`,
+                    border: `1px solid ${expandedParams.has(i) ? 'rgba(156,124,255,0.35)' : 'rgba(26,22,18,0.09)'}`,
                     borderRadius: 5, padding: '3px 7px', cursor: 'pointer',
                     color: expandedParams.has(i) ? '#9C7CFF' : '#555',
                     fontSize: '0.62rem', ...MONO,
@@ -456,7 +456,7 @@ function PipelineBuilder({
       </div>
 
       {/* ── DRY-RUN SIMULATION PANEL ──────────────────────────────────────── */}
-      <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(26,22,18,0.07)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <button
             className="btn-ghost"
@@ -636,7 +636,7 @@ function PlaybookForm({ initial, onSave, onClose }) {
           {isWide && (
             <div style={{
               display: 'flex', gap: 2,
-              background: 'rgba(255,255,255,0.04)',
+              background: 'rgba(26,22,18,0.05)',
               borderRadius: 6, padding: 3,
             }}>
               <button style={tabStyle(viewMode === 'form')}     onClick={() => setViewMode('form')}>Form</button>
@@ -644,7 +644,7 @@ function PlaybookForm({ initial, onSave, onClose }) {
             </div>
           )}
         </div>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
           <X size={15} />
         </button>
       </div>
@@ -687,7 +687,7 @@ function PlaybookForm({ initial, onSave, onClose }) {
           {/* Conditions */}
           <div style={{ marginBottom: 16 }}>
             <label className="at-label">Trigger Conditions</label>
-            <div style={{ fontSize: '0.7rem', color: '#555', marginBottom: 8 }}>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: 8 }}>
               Use <span style={MONO}>min_*</span> / <span style={MONO}>max_*</span> prefixes for numeric thresholds, exact keys for string match.
             </div>
             {form.conditions.map((c, i) => (
@@ -706,7 +706,7 @@ function PlaybookForm({ initial, onSave, onClose }) {
             {form.actions.map((a, i) => (
               <div key={i} className="at-card" style={{ padding: '10px 12px', marginBottom: 8 }}>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
-                  <span style={{ fontSize: '0.7rem', color: '#555', ...MONO, width: 18 }}>{i + 1}.</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', ...MONO, width: 18 }}>{i + 1}.</span>
                   <select className="at-select" value={a.type} onChange={e => updateAction(i, 'type', e.target.value)} style={{ flex: 1 }}>
                     {ACTION_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                   </select>
@@ -786,18 +786,18 @@ function RunHistory({ playbookId }) {
   }, [playbookId]);
 
   if (loading) return <div style={{ padding: 14, textAlign: 'center' }}><Loader2 size={14} className="spinner" style={{ color: '#4DA3FF' }} /></div>;
-  if (!runs.length) return <div style={{ padding: '10px 14px', fontSize: '0.76rem', color: '#555' }}>No runs yet.</div>;
+  if (!runs.length) return <div style={{ padding: '10px 14px', fontSize: '0.76rem', color: 'var(--text-muted)' }}>No runs yet.</div>;
 
   return (
-    <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+    <div style={{ borderTop: '1px solid rgba(26,22,18,0.07)' }}>
       {runs.map(r => {
         let taken = [], pending = [];
         try { taken = JSON.parse(r.actions_taken || '[]'); } catch {}
         try { pending = JSON.parse(r.actions_pending || '[]'); } catch {}
         return (
-          <div key={r.id} style={{ padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+          <div key={r.id} style={{ padding: '10px 14px', borderBottom: '1px solid rgba(26,22,18,0.05)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '0.7rem', color: '#555', ...MONO }}>{fmtTime(r.run_at)}</span>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', ...MONO }}>{fmtTime(r.run_at)}</span>
               <span style={{
                 fontSize: '0.65rem', ...MONO, padding: '1px 7px', borderRadius: 3,
                 background: r.status === 'completed' ? 'rgba(34,197,94,0.08)' : r.status === 'failed' ? 'rgba(239,68,68,0.08)' : 'rgba(234,179,8,0.08)',
@@ -806,7 +806,7 @@ function RunHistory({ playbookId }) {
               }}>
                 {r.status}
               </span>
-              <span style={{ fontSize: '0.74rem', color: '#787878' }}>{r.result_summary}</span>
+              <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>{r.result_summary}</span>
             </div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {taken.map((a, i) => (
@@ -848,7 +848,7 @@ function PlaybookCard({ pb, onEdit, onDelete, onToggle, onTest }) {
                 </span>
               )}
             </div>
-            {pb.description && <div style={{ fontSize: '0.76rem', color: '#787878', lineHeight: 1.5 }}>{pb.description}</div>}
+            {pb.description && <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>{pb.description}</div>}
           </div>
           <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
             <button onClick={() => onTest(pb)} className="btn-ghost" style={{ padding: '4px 8px', fontSize: '0.7rem' }} title="Dry-run test"><Play size={12} /></button>
@@ -865,14 +865,14 @@ function PlaybookCard({ pb, onEdit, onDelete, onToggle, onTest }) {
             IF {TRIGGER_TYPES.find(t => t.value === pb.trigger_event_type)?.label || pb.trigger_event_type}
           </span>
           {Object.entries(conditions).map(([k, v]) => (
-            <span key={k} style={{ fontSize: '0.66rem', ...MONO, background: 'rgba(255,255,255,0.04)', color: '#7A9DB8', border: '1px solid rgba(255,255,255,0.08)', padding: '2px 7px', borderRadius: 3 }}>
+            <span key={k} style={{ fontSize: '0.66rem', ...MONO, background: 'rgba(26,22,18,0.05)', color: '#7A9DB8', border: '1px solid rgba(26,22,18,0.09)', padding: '2px 7px', borderRadius: 3 }}>
               {k} = {String(v)}
             </span>
           ))}
         </div>
 
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-          <span style={{ fontSize: '0.7rem', color: '#555' }}>THEN</span>
+          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>THEN</span>
           {actions.map((a, i) => (
             <span key={i} style={{
               fontSize: '0.66rem', ...MONO, padding: '2px 7px', borderRadius: 3,
@@ -885,13 +885,13 @@ function PlaybookCard({ pb, onEdit, onDelete, onToggle, onTest }) {
           ))}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10, fontSize: '0.7rem', color: '#555', ...MONO }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10, fontSize: '0.7rem', color: 'var(--text-muted)', ...MONO }}>
           <span>{pb.run_count || 0} run{pb.run_count === 1 ? '' : 's'}</span>
           <span>last run: {fmtTime(pb.last_run_at)}</span>
         </div>
       </div>
 
-      <div onClick={() => setShowRuns(s => !s)} style={{ padding: '8px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, borderTop: '1px solid rgba(255,255,255,0.06)', fontSize: '0.74rem', color: '#787878' }}>
+      <div onClick={() => setShowRuns(s => !s)} style={{ padding: '8px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, borderTop: '1px solid rgba(26,22,18,0.07)', fontSize: '0.74rem', color: 'var(--text-muted)' }}>
         {showRuns ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
         <History size={12} /> Run history
       </div>
@@ -927,9 +927,9 @@ function TestModal({ pb, onClose }) {
       <div className="at-card" style={{ padding: 20, width: 480, maxWidth: '90vw' }} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Dry-Run: {pb.name}</div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer' }}><X size={15} /></button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={15} /></button>
         </div>
-        <div style={{ fontSize: '0.72rem', color: '#787878', marginBottom: 8 }}>
+        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 8 }}>
           Synthetic <span style={MONO}>{pb.trigger_event_type}</span> event data — no actions are executed.
         </div>
         <textarea
@@ -943,7 +943,7 @@ function TestModal({ pb, onClose }) {
         {result && (
           <div style={{ marginTop: 14 }}>
             {result.results.length === 0 ? (
-              <div style={{ fontSize: '0.78rem', color: '#787878' }}>Conditions did not match — no actions would run.</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Conditions did not match — no actions would run.</div>
             ) : result.results.map((r, i) => (
               <div key={i} style={{ marginBottom: 10 }}>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -1023,7 +1023,7 @@ export default function Playbooks() {
             <Workflow size={20} style={{ color: '#9C7CFF' }} />
             <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Playbook Engine</h1>
           </div>
-          <div style={{ fontSize: '0.7rem', color: '#787878', ...MONO }}>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', ...MONO }}>
             {active} active · {playbooks.length - active} inactive · {totalRuns} total runs · Automated SOAR response rules
           </div>
         </div>
@@ -1041,7 +1041,7 @@ export default function Playbooks() {
       {loading ? (
         <div style={{ textAlign: 'center', padding: 60 }}><Loader2 size={20} className="spinner" style={{ color: '#9C7CFF' }} /></div>
       ) : playbooks.length === 0 ? (
-        <div className="at-card" style={{ padding: 60, textAlign: 'center', color: '#787878' }}>
+        <div className="at-card" style={{ padding: 60, textAlign: 'center', color: 'var(--text-muted)' }}>
           <Workflow size={32} style={{ margin: '0 auto 14px', opacity: 0.2 }} />
           <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: 8 }}>No playbooks yet</div>
           <div style={{ fontSize: '0.78rem', ...MONO, marginBottom: 20, color: '#404040' }}>

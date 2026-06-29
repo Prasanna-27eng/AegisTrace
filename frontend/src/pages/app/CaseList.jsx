@@ -44,10 +44,10 @@ function ConfirmModal({ caseNumber, onConfirm, onCancel }) {
     >
       <div
         onClick={e => e.stopPropagation()}
-        style={{ background: '#111', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: '24px 28px', maxWidth: 400, width: '90%', boxShadow: '0 24px 64px rgba(0,0,0,0.8)' }}
+        style={{ background: '#111', border: '1px solid rgba(26,22,18,0.12)', borderRadius: 12, padding: '24px 28px', maxWidth: 400, width: '90%', boxShadow: '0 24px 64px rgba(0,0,0,0.8)' }}
       >
-        <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: 8, color: '#BDD4E8' }}>Delete case?</h3>
-        <p style={{ fontSize: '0.8rem', color: '#787878', marginBottom: 24, lineHeight: 1.55 }}>
+        <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: 8, color: 'var(--text-primary)' }}>Delete case?</h3>
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: 24, lineHeight: 1.55 }}>
           <span style={{ fontFamily: 'JetBrains Mono', color: '#7A9DB8' }}>{caseNumber}</span> will be permanently deleted. This cannot be undone.
         </p>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
@@ -187,13 +187,13 @@ export default function CaseList() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <img src="/assets/brand/aegistrace-icon-transparent.png" alt="" style={{ width: 24, height: 24, objectFit: 'contain', opacity: 0.8, filter: 'drop-shadow(0 0 4px rgba(74,126,200,0.5))' }}/>
+            <img src="/assets/brand/aegistrace-icon-transparent.png" alt="" style={{ width: 24, height: 24, objectFit: 'contain', opacity: 0.8, filter: 'drop-shadow(0 0 4px rgba(204,120,92,0.35))' }}/>
             <h1 className="cd" style={{ fontSize: '1.2rem' }}>Cases</h1>
           </div>
           <div style={{ display: 'flex', gap: 12, marginTop: 4, fontSize: '0.7rem', fontFamily: 'JetBrains Mono' }}>
-            <span style={{ color: '#787878' }}>{cases.length} total</span>
+            <span style={{ color: 'var(--text-muted)' }}>{cases.length} total</span>
             {open > 0 && <span style={{ color: '#EF4444' }}>{open} open</span>}
-            {critical > 0 && <span style={{ color: '#4A7EC8' }}>{critical} critical</span>}
+            {critical > 0 && <span style={{ color: 'var(--accent)' }}>{critical} critical</span>}
             {pending > 0 && <span style={{ color: '#EAB308' }}>{pending} pending</span>}
           </div>
         </div>
@@ -232,7 +232,7 @@ export default function CaseList() {
             onClick={() => applyChip(idx, f)}
             style={{
               padding: '4px 12px', borderRadius: 20, fontSize: '0.72rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: activeChip === idx ? 600 : 400, transition: 'all 0.15s',
-              background: activeChip === idx ? '#4A7EC8' : 'rgba(255,255,255,0.04)',
+              background: activeChip === idx ? '#4A7EC8' : 'rgba(26,22,18,0.05)',
               color: activeChip === idx ? '#fff' : '#787878',
               border: activeChip === idx ? '1px solid #4A7EC8' : '1px solid rgba(74,126,200,0.1)',
             }}
@@ -245,7 +245,7 @@ export default function CaseList() {
       {/* Search + filters row */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
         <div style={{ position: 'relative', flex: '1 1 200px' }}>
-          <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#787878' }} />
+          <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input className="at-input" placeholder="Search title, case number, analyst, findings…" value={q}
             onChange={e => setQ(e.target.value)}
             style={{ paddingLeft: 30, paddingRight: q ? 28 : 12, fontSize: '0.8rem' }} />
@@ -269,7 +269,7 @@ export default function CaseList() {
       {loading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {[0,1,2,3,4,5,6,7].map(i => (
-            <div key={i} style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12, background: '#141420', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8 }}>
+            <div key={i} style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12, background: '#141420', border: '1px solid rgba(26,22,18,0.08)', borderRadius: 8 }}>
               <div style={{ flex: 1 }}>
                 <div className="skeleton" style={{ height: 13, width: `${45 + (i % 3) * 15}%`, marginBottom: 6 }} />
                 <div className="skeleton" style={{ height: 9, width: `${25 + (i % 4) * 8}%` }} />
@@ -288,7 +288,7 @@ export default function CaseList() {
           <div style={{ fontWeight: 600, fontSize: '0.92rem', marginBottom: 8 }}>
             {q || severity || status ? 'No cases match your filters' : 'No cases yet'}
           </div>
-          <div style={{ fontSize: '0.78rem', color: '#787878', marginBottom: 16, maxWidth: 340, margin: '0 auto 16px' }}>
+          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 16, maxWidth: 340, margin: '0 auto 16px' }}>
             {q || severity || status
               ? 'Try adjusting your filters or clearing the search.'
               : 'Create your first investigation case to start building your SOC queue.'}
@@ -343,7 +343,7 @@ export default function CaseList() {
                     {c.is_public && <Globe size={10} style={{ color: '#22C55E', flexShrink: 0 }} title="Public" />}
                     {isSlaBreached && <span title="SLA breach"><AlertTriangle size={11} style={{ color: '#EF4444', flexShrink: 0 }} /></span>}
                   </div>
-                  <div style={{ display: 'flex', gap: 8, fontSize: '0.67rem', color: '#787878', fontFamily: 'JetBrains Mono', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: 8, fontSize: '0.67rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono', flexWrap: 'wrap' }}>
                     <span>{c.case_number}</span>
                     {c.analyst_name && <span>· {c.analyst_name}</span>}
                     {c.incident_type && <span style={{ textTransform: 'capitalize' }}>· {c.incident_type.replace(/_/g,' ')}</span>}
@@ -356,7 +356,7 @@ export default function CaseList() {
                     <Clock size={10} />
                     <span>{age}</span>
                   </div>
-                  <div style={{ fontSize: '0.62rem', color: '#787878', fontFamily: 'JetBrains Mono' }}>{updated}</div>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono' }}>{updated}</div>
                 </div>
 
                 {/* Badges */}

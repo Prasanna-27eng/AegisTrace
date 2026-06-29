@@ -24,13 +24,13 @@ const AI_SERVICE = {
   'api.perplexity.ai':                    { label: 'Perplexity',   color: '#06B6D4' },
   'api.replicate.com':                    { label: 'Replicate',    color: '#6366F1' },
   'inference.cerebras.ai':                { label: 'Cerebras',     color: '#0EA5E9' },
-  'api.deepseek.com':                     { label: 'DeepSeek',     color: '#4A7EC8' },
+  'api.deepseek.com':                     { label: 'DeepSeek',     color: 'var(--accent)' },
   'openrouter.ai':                        { label: 'OpenRouter',   color: '#A855F7' },
   'api.x.ai':                             { label: 'Grok (xAI)',   color: '#1DA1F2' },
 };
 
 function getService(domain) {
-  return AI_SERVICE[domain] ?? { label: domain, color: '#787878' };
+  return AI_SERVICE[domain] ?? { label: domain, color: 'var(--text-muted)' };
 }
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
@@ -246,7 +246,7 @@ function EventRow({ ev, onReview, onCreateCase }) {
               target="_blank" rel="noreferrer"
               style={{
                 display: 'flex', alignItems: 'center', gap: 7,
-                background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)',
+                background: 'rgba(26,22,18,0.05)', border: '1px solid var(--border)',
                 color: 'var(--text-muted)', borderRadius: 7, padding: '8px 14px',
                 fontSize: '0.78rem', cursor: 'pointer', ...MONO, textDecoration: 'none',
               }}
