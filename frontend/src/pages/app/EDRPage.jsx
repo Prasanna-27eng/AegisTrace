@@ -52,7 +52,7 @@ export default function EDRPage() {
         {caseData && (
           <>
             <span style={{ color: 'rgba(26,22,18,0.2)' }}>—</span>
-            <span style={{ fontSize: '0.78rem', fontFamily: 'JetBrains Mono', color: '#8BB8E8' }}>{caseData.case_number}</span>
+            <span style={{ fontSize: '0.78rem', fontFamily: 'JetBrains Mono', color: 'rgba(26,22,18,0.7)' }}>{caseData.case_number}</span>
             <span style={{ fontSize: '0.82rem', fontWeight: 500 }}>{caseData.title}</span>
             <SeverityBadge severity={caseData.severity} />
             <StatusBadge   status={caseData.status} />

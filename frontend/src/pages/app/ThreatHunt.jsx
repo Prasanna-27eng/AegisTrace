@@ -41,7 +41,7 @@ const SQL_EXAMPLES = [
 
 const TACTIC_COLOR = {
   'Initial Access': '#4A7EC8', 'Execution': '#EF4444', 'Persistence': '#EAB308',
-  'Privilege Escalation': '#F97316', 'Defense Evasion': '#8BB8E8',
+  'Privilege Escalation': '#F97316', 'Defense Evasion': 'rgba(26,22,18,0.7)',
   'Credential Access': '#EC4899', 'Discovery': '#22C55E',
   'Lateral Movement': '#06B6D4', 'Collection': '#4A7EC8',
   'Command and Control': '#8B5CF6', 'Exfiltration': '#F59E0B',
@@ -137,7 +137,7 @@ export default function ThreatHunt() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 10, marginBottom: 20 }}>
           {[
             { label: 'Total Cases',         val: stats.total_cases,        color: 'var(--text-primary)' },
-            { label: 'IOCs Tracked',        val: stats.total_iocs_tracked, color: '#8BB8E8' },
+            { label: 'IOCs Tracked',        val: stats.total_iocs_tracked, color: 'rgba(26,22,18,0.7)' },
             { label: 'Campaign IOCs',       val: stats.campaign_iocs,      color: 'var(--accent)' },
             { label: 'Multi-Case IOCs',     val: stats.multi_case_iocs,    color: '#EAB308' },
             { label: 'Events (7 days)',     val: stats.events_last_7_days, color: '#22C55E' },
@@ -204,7 +204,7 @@ export default function ThreatHunt() {
                   {iocs.map(ioc => (
                     <div key={ioc.id} className="at-card" style={{ padding: '12px 16px', borderLeft: ioc.is_campaign ? '2px solid #C0392B' : '1px solid rgba(26,22,18,0.08)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.82rem', color: '#8BB8E8', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{ioc.ioc}</span>
+                        <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.82rem', color: 'rgba(26,22,18,0.7)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{ioc.ioc}</span>
                         <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono', background: 'rgba(26,22,18,0.05)', padding: '2px 6px', borderRadius: 3 }}>{ioc.ioc_type}</span>
                         {ioc.is_campaign && (
                           <span style={{ fontSize: '0.65rem', color: 'var(--accent)', fontFamily: 'JetBrains Mono', background: 'rgba(90,138,159,0.1)', border: '1px solid rgba(204,120,92,0.25)', padding: '2px 6px', borderRadius: 3 }}>⚠ CAMPAIGN</span>
@@ -245,7 +245,7 @@ export default function ThreatHunt() {
                     return (
                       <div key={m.technique_id} className="at-card" style={{ padding: '14px 16px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                          <span style={{ fontSize: '0.75rem', color: '#8BB8E8', fontFamily: 'JetBrains Mono', minWidth: 80 }}>{m.technique_id}</span>
+                          <span style={{ fontSize: '0.75rem', color: 'rgba(26,22,18,0.7)', fontFamily: 'JetBrains Mono', minWidth: 80 }}>{m.technique_id}</span>
                           <span style={{ fontSize: '0.82rem', fontWeight: 500, flex: 1 }}>{m.name}</span>
                           <span style={{ fontSize: '0.78rem', fontWeight: 700, color }}>{m.count}</span>
                         </div>
@@ -278,7 +278,7 @@ export default function ThreatHunt() {
                     <div key={i} className="at-card" style={{ padding: '16px 18px', borderLeft: '2px solid #C0392B' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
                         <AlertTriangle size={16} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-                        <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.85rem', color: '#8BB8E8', flex: 1 }}>{camp.ioc}</span>
+                        <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.85rem', color: 'rgba(26,22,18,0.7)', flex: 1 }}>{camp.ioc}</span>
                         <span style={{ fontSize: '0.65rem', background: 'rgba(204,120,92,0.1)', border: '1px solid rgba(204,120,92,0.25)', color: 'var(--accent)', padding: '2px 8px', borderRadius: 4, fontFamily: 'JetBrains Mono' }}>
                           {camp.case_count} CASES
                         </span>
@@ -327,7 +327,7 @@ export default function ThreatHunt() {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                         {searchResults.ioc_matches.map((ioc, i) => (
                           <div key={i} className="at-card" style={{ padding: '10px 14px', display: 'flex', gap: 12, alignItems: 'center' }}>
-                            <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.8rem', color: '#8BB8E8', flex: 1 }}>{ioc.ioc}</span>
+                            <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.8rem', color: 'rgba(26,22,18,0.7)', flex: 1 }}>{ioc.ioc}</span>
                             <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono', background: 'rgba(26,22,18,0.05)', padding: '2px 6px', borderRadius: 3 }}>{ioc.ioc_type}</span>
                             <span style={{ fontSize: '0.75rem', fontWeight: 600, color: ioc.case_count > 1 ? '#4A7EC8' : '#787878' }}>{ioc.case_count} case{ioc.case_count !== 1 ? 's' : ''}</span>
                           </div>
@@ -385,7 +385,7 @@ export default function ThreatHunt() {
                       <Loader2 size={14} className="spinner" style={{ color: 'var(--accent)' }} />
                     ) : Object.entries(sqlSchema).map(([view, cols]) => (
                       <div key={view}>
-                        <div style={{ fontFamily: 'JetBrains Mono', fontSize: '0.78rem', color: '#8BB8E8', marginBottom: 4 }}>{view}</div>
+                        <div style={{ fontFamily: 'JetBrains Mono', fontSize: '0.78rem', color: 'rgba(26,22,18,0.7)', marginBottom: 4 }}>{view}</div>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                           {cols.map(c => (
                             <span key={c.name} title={c.type} style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', background: 'rgba(26,22,18,0.05)', border: '1px solid rgba(26,22,18,0.08)', padding: '1px 6px', borderRadius: 3 }}>
@@ -454,7 +454,7 @@ export default function ThreatHunt() {
                       <thead>
                         <tr>
                           {sqlResult.columns.map(c => (
-                            <th key={c} style={{ textAlign: 'left', padding: '8px 12px', borderBottom: '1px solid rgba(26,22,18,0.09)', color: '#8BB8E8', whiteSpace: 'nowrap', position: 'sticky', top: 0, background: '#0A0A0A' }}>
+                            <th key={c} style={{ textAlign: 'left', padding: '8px 12px', borderBottom: '1px solid rgba(26,22,18,0.09)', color: 'rgba(26,22,18,0.7)', whiteSpace: 'nowrap', position: 'sticky', top: 0, background: 'var(--surface)' }}>
                               {c}
                             </th>
                           ))}

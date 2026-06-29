@@ -17,10 +17,10 @@ const TABS = [
   { id: 'system',       label: 'System',           Icon: Activity },
 ];
 
-const ROLE_COLOR = { admin: '#4A7EC8', analyst: '#8BB8E8', viewer: '#787878' };
+const ROLE_COLOR = { admin: '#4A7EC8', analyst: 'rgba(26,22,18,0.7)', viewer: '#787878' };
 const ACTION_COLOR = {
-  login: '#22C55E', case_created: '#8BB8E8', case_closed: '#22C55E',
-  case_deleted: '#EF4444', user_created: '#8BB8E8', user_deleted: '#EF4444',
+  login: '#22C55E', case_created: 'rgba(26,22,18,0.7)', case_closed: '#22C55E',
+  case_deleted: '#EF4444', user_created: 'rgba(26,22,18,0.7)', user_deleted: '#EF4444',
   ai_generated: '#EAB308', alert_imported: '#4A7EC8', share_toggled: '#888888',
   password_changed: '#EAB308', status_changed: '#FFFFFF',
 };
@@ -745,7 +745,7 @@ function SchedulesTab({ addToast }) {
                 <span>📬 {emails.join(', ')}</span>
                 <span>🗓 {s.schedule_type} · {s.report_type.replace('_',' ')}</span>
                 <span>🕐 {s.schedule_hour}:00 UTC</span>
-                {s.next_run_at && <span style={{ color:'#8BB8E8' }}>Next: {new Date(s.next_run_at).toLocaleString()}</span>}
+                {s.next_run_at && <span style={{ color:'rgba(26,22,18,0.7)' }}>Next: {new Date(s.next_run_at).toLocaleString()}</span>}
                 {s.last_sent_at && <span>Last sent: {new Date(s.last_sent_at).toLocaleString()}</span>}
               </div>
             </div>
@@ -780,7 +780,7 @@ const EDR_PLATFORMS = [
   {
     id: 'sentinelone',
     name: 'SentinelOne',
-    color: '#8BB8E8',
+    color: 'rgba(26,22,18,0.7)',
     docs: 'https://usea1-partners.sentinelone.net/docs/en/generating-api-tokens.html',
     envVars: [
       { key: 'SENTINELONE_BASE_URL',  desc: 'Your console URL e.g. https://usea1.sentinelone.net' },
@@ -858,12 +858,12 @@ function IntegrationsTab({ addToast }) {
       {/* Intro banner */}
       <div className="at-card" style={{ padding: '14px 18px', borderColor: 'rgba(143,175,192,0.2)', background: 'rgba(143,175,192,0.04)' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-          <Terminal size={15} style={{ color: '#8BB8E8', marginTop: 2, flexShrink: 0 }} />
+          <Terminal size={15} style={{ color: 'rgba(26,22,18,0.7)', marginTop: 2, flexShrink: 0 }} />
           <div>
             <div style={{ fontWeight: 600, fontSize: '0.86rem', marginBottom: 4 }}>EDR Integration — Environment Variables</div>
             <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.65 }}>
               AegisTrace connects to EDR platforms via API credentials stored as environment variables — not in the database.
-              On Render, add them at <strong style={{ color: '#8BB8E8' }}>Dashboard → Your Service → Environment</strong> then redeploy.
+              On Render, add them at <strong style={{ color: 'rgba(26,22,18,0.7)' }}>Dashboard → Your Service → Environment</strong> then redeploy.
               Credentials are never logged or stored in SQLite.
             </div>
           </div>
@@ -874,7 +874,7 @@ function IntegrationsTab({ addToast }) {
       <div style={{ display: 'flex', gap: 10 }}>
         <a href="https://dashboard.render.com" target="_blank" rel="noreferrer"
           style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 6, background: 'rgba(26,22,18,0.05)', border: '1px solid rgba(26,22,18,0.1)', color: 'var(--text-primary)', fontSize: '0.78rem', textDecoration: 'none', ...mono }}>
-          <ExternalLink size={12} style={{ color: '#8BB8E8' }} /> Open Render Dashboard
+          <ExternalLink size={12} style={{ color: 'rgba(26,22,18,0.7)' }} /> Open Render Dashboard
         </a>
         <button className="btn-ghost" onClick={load} style={{ fontSize: '0.78rem', padding: '8px 14px' }}>
           <RefreshCw size={12} /> Refresh Status
@@ -954,7 +954,7 @@ function IntegrationsTab({ addToast }) {
                     {platform.steps.map((step, i) => (
                       <div key={i} style={{ display: 'flex', gap: 10, fontSize: '0.78rem', color: 'var(--text-primary)', padding: '4px 0', borderBottom: '1px solid rgba(26,22,18,0.05)' }}>
                         <span style={{ color: platform.color, ...mono, minWidth: 18 }}>{i + 1}.</span>
-                        <span style={{ color: 'rgba(240,240,248,0.7)' }}>{step}</span>
+                        <span style={{ color: 'rgba(26,22,18,0.7)' }}>{step}</span>
                       </div>
                     ))}
                   </div>
@@ -962,7 +962,7 @@ function IntegrationsTab({ addToast }) {
 
                 {/* Docs link */}
                 <a href={platform.docs} target="_blank" rel="noreferrer"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.74rem', color: '#8BB8E8', textDecoration: 'none', ...mono }}>
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.74rem', color: 'rgba(26,22,18,0.7)', textDecoration: 'none', ...mono }}>
                   <ExternalLink size={11} /> {platform.name} API Documentation
                 </a>
               </div>

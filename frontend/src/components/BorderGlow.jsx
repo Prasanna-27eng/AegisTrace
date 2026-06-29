@@ -3,7 +3,7 @@ import React from 'react';
 const PALETTES = {
   critical: ['#EF4444', '#F97316'],
   high:     ['#F97316', '#FBBF24'],
-  normal:   ['#4A7EC8', '#8BB8E8'],
+  normal:   ['#4A7EC8', 'rgba(26,22,18,0.7)'],
   info:     ['#22C55E', '#4A7EC8'],
   gold:     ['#F59E0B', '#FBBF24'],
 };

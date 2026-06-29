@@ -176,7 +176,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
             }}
             onMouseEnter={e => {
               e.currentTarget.style.background = 'rgba(74,126,200,0.10)';
-              e.currentTarget.style.color = '#8BB8E8';
+              e.currentTarget.style.color = 'rgba(26,22,18,0.7)';
               e.currentTarget.style.borderColor = 'rgba(204,120,92,0.25)';
             }}
             onMouseLeave={e => {
@@ -376,7 +376,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                 background: 'rgba(74,126,200,0.18)',
                 border: '1px solid rgba(204,120,92,0.25)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 11, fontWeight: 700, color: '#8BB8E8',
+                fontSize: 11, fontWeight: 700, color: 'rgba(26,22,18,0.7)',
                 fontFamily: 'var(--font-mono)', flexShrink: 0,
               }}>
                 {initials}
@@ -393,7 +393,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           )}
           {collapsed && user && (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '4px 0' }}>
-              <div title={user.name} style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(37,99,235,0.18)', border: '1px solid rgba(37,99,235,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#8BB8E8', fontFamily: 'var(--font-mono)' }}>
+              <div title={user.name} style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(37,99,235,0.18)', border: '1px solid rgba(37,99,235,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'rgba(26,22,18,0.7)', fontFamily: 'var(--font-mono)' }}>
                 {initials}
               </div>
             </div>

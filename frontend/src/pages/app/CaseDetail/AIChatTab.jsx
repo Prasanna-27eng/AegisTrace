@@ -47,15 +47,15 @@ export default function AIChatTab({ caseId, caseData }) {
           <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
             {msg.role === 'assistant' && (
               <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(143,175,192,0.15)', border: '1px solid rgba(143,175,192,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Bot size={14} style={{ color: '#8BB8E8' }} />
+                <Bot size={14} style={{ color: 'rgba(26,22,18,0.7)' }} />
               </div>
             )}
             <div style={{
               maxWidth: '75%',
               padding: '10px 14px',
               borderRadius: msg.role === 'user' ? '12px 12px 4px 12px' : '12px 12px 12px 4px',
-              background: msg.role === 'user' ? 'rgba(90,138,159,0.15)' : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${msg.role === 'user' ? 'rgba(90,138,159,0.25)' : 'rgba(255,255,255,0.07)'}`,
+              background: msg.role === 'user' ? 'rgba(90,138,159,0.15)' : 'rgba(26,22,18,0.04)',
+              border: `1px solid ${msg.role === 'user' ? 'rgba(90,138,159,0.25)' : 'rgba(26,22,18,0.07)'}`,
               fontSize: '0.84rem',
               lineHeight: 1.65,
               color: '#BDD4E8',
@@ -78,11 +78,11 @@ export default function AIChatTab({ caseId, caseData }) {
         {loading && (
           <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
             <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(143,175,192,0.15)', border: '1px solid rgba(143,175,192,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Bot size={14} style={{ color: '#8BB8E8' }} />
+              <Bot size={14} style={{ color: 'rgba(26,22,18,0.7)' }} />
             </div>
-            <div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px 12px 12px 4px', display: 'flex', gap: 5, alignItems: 'center' }}>
+            <div style={{ padding: '10px 14px', background: 'rgba(26,22,18,0.04)', border: '1px solid rgba(26,22,18,0.07)', borderRadius: '12px 12px 12px 4px', display: 'flex', gap: 5, alignItems: 'center' }}>
               {[0, 1, 2].map(d => (
-                <div key={d} style={{ width: 6, height: 6, borderRadius: '50%', background: '#8BB8E8', animation: `spin 1s ease ${d * 0.2}s infinite`, opacity: 0.6 }} />
+                <div key={d} style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(26,22,18,0.7)', animation: `spin 1s ease ${d * 0.2}s infinite`, opacity: 0.6 }} />
               ))}
             </div>
           </div>
@@ -91,7 +91,7 @@ export default function AIChatTab({ caseId, caseData }) {
       </div>
 
       {/* Input */}
-      <div style={{ padding: '14px 20px', borderTop: '1px solid rgba(255,255,255,0.07)', flexShrink: 0, display: 'flex', gap: 8 }}>
+      <div style={{ padding: '14px 20px', borderTop: '1px solid rgba(26,22,18,0.07)', flexShrink: 0, display: 'flex', gap: 8 }}>
         <input
           className="at-input"
           placeholder="Ask about this case…"

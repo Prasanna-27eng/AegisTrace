@@ -6,7 +6,7 @@ import useStore from '../../../store/useStore';
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 
 const TYPE_COLOR = {
-  note:       { bg: 'rgba(143,175,192,0.08)', border: 'rgba(143,175,192,0.2)', color: '#8BB8E8', label: 'Note' },
+  note:       { bg: 'rgba(143,175,192,0.08)', border: 'rgba(143,175,192,0.2)', color: 'rgba(26,22,18,0.7)', label: 'Note' },
   handoff:    { bg: 'rgba(234,179,8,0.08)',   border: 'rgba(234,179,8,0.2)',   color: '#EAB308', label: 'Handoff' },
   escalation: { bg: 'rgba(239,68,68,0.08)',   border: 'rgba(239,68,68,0.2)',   color: '#EF4444', label: 'Escalation' },
   decision:   { bg: 'rgba(34,197,94,0.08)',   border: 'rgba(34,197,94,0.2)',   color: '#22C55E', label: 'Decision' },
@@ -92,7 +92,7 @@ export default function CommentsTab({ caseId }) {
                   onClick={() => setType(k)}
                   style={{
                     padding: '3px 10px', borderRadius: 4, fontSize: '0.68rem', cursor: 'pointer',
-                    border: `1px solid ${type === k ? v.border : 'rgba(255,255,255,0.08)'}`,
+                    border: `1px solid ${type === k ? v.border : 'rgba(26,22,18,0.08)'}`,
                     background: type === k ? v.bg : 'transparent',
                     color: type === k ? v.color : '#787878',
                     ...MONO,
@@ -108,7 +108,7 @@ export default function CommentsTab({ caseId }) {
               placeholder="Add a note, handoff, escalation, or decision record…"
               rows={3}
               onKeyDown={e => { if (e.key === 'Enter' && e.ctrlKey) addComment(); }}
-              style={{ background: '#050505', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#BDD4E8', fontSize: '0.82rem', padding: '10px 12px', resize: 'vertical', outline: 'none', lineHeight: 1.6 }}
+              style={{ background: 'var(--surface)', border: '1px solid rgba(26,22,18,0.1)', borderRadius: 6, color: '#BDD4E8', fontSize: '0.82rem', padding: '10px 12px', resize: 'vertical', outline: 'none', lineHeight: 1.6 }}
             />
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <button className="btn-accent" onClick={addComment} disabled={saving} style={{ fontSize: '0.78rem' }}>
@@ -144,7 +144,7 @@ function CommentCard({ c, editing, setEditing, saveEdit, togglePin, deleteCommen
   const isEditing = editing?.id === c.id;
 
   return (
-    <div style={{ background: c.is_pinned ? 'rgba(255,255,255,0.025)' : 'rgba(240,240,248,0.02)', border: `1px solid ${c.is_pinned ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.07)'}`, borderLeft: `3px solid ${meta.color}`, borderRadius: 8, padding: '14px 16px' }}>
+    <div style={{ background: c.is_pinned ? 'rgba(26,22,18,0.025)' : 'rgba(26,22,18,0.02)', border: `1px solid ${c.is_pinned ? 'rgba(26,22,18,0.12)' : 'rgba(26,22,18,0.07)'}`, borderLeft: `3px solid ${meta.color}`, borderRadius: 8, padding: '14px 16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
         <div style={{ width: 26, height: 26, borderRadius: '50%', background: `${meta.color}18`, border: `1px solid ${meta.color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, color: meta.color, flexShrink: 0 }}>
           {c.author_name?.[0] || '?'}
@@ -167,7 +167,7 @@ function CommentCard({ c, editing, setEditing, saveEdit, togglePin, deleteCommen
             value={editing.body}
             onChange={e => setEditing(p => ({ ...p, body: e.target.value }))}
             rows={3}
-            style={{ background: '#050505', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: '#BDD4E8', fontSize: '0.8rem', padding: '8px 10px', resize: 'vertical', outline: 'none' }}
+            style={{ background: 'var(--surface)', border: '1px solid rgba(26,22,18,0.12)', borderRadius: 6, color: '#BDD4E8', fontSize: '0.8rem', padding: '8px 10px', resize: 'vertical', outline: 'none' }}
           />
           <div style={{ display: 'flex', gap: 7 }}>
             <button className="btn-accent" onClick={saveEdit} style={{ fontSize: '0.72rem' }}><Check size={11} /> Save</button>

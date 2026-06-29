@@ -11,7 +11,7 @@ import useStore from '../../store/useStore';
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 
 const TYPE_COLOR = {
-  ip: '#EF4444', domain: '#EAB308', hash: '#8BB8E8',
+  ip: '#EF4444', domain: '#EAB308', hash: 'rgba(26,22,18,0.7)',
   url: '#22C55E', email: '#4A7EC8', port: '#888888',
 };
 
@@ -83,7 +83,7 @@ function SessionSidebar({ sessions, activeId, onSelect, onCreate, onDelete }) {
                 {s.command_count || 0} cmds
               </span>
               {s.mode === 'sandbox' && (
-                <span style={{ fontSize: '0.6rem', color: '#8BB8E8', background: 'rgba(143,175,192,0.1)', padding: '0 4px', borderRadius: 2, ...MONO }}>SANDBOX</span>
+                <span style={{ fontSize: '0.6rem', color: 'rgba(26,22,18,0.7)', background: 'rgba(143,175,192,0.1)', padding: '0 4px', borderRadius: 2, ...MONO }}>SANDBOX</span>
               )}
             </div>
           </div>
@@ -114,7 +114,7 @@ function OutputPane({ command, onPushIOCs, onSaveToCase, caseId }) {
       <div style={{ padding: '8px 14px', borderBottom: '1px solid rgba(26,22,18,0.07)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
         <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', ...MONO, flex: 1 }}>
           {command.tool_name} · {timeAgo(command.created_at)}
-          <span style={{ marginLeft: 8, padding: '1px 6px', borderRadius: 3, fontSize: '0.6rem', background: command.mode === 'sandbox' ? 'rgba(143,175,192,0.15)' : 'rgba(34,197,94,0.1)', color: command.mode === 'sandbox' ? '#8BB8E8' : '#22C55E' }}>
+          <span style={{ marginLeft: 8, padding: '1px 6px', borderRadius: 3, fontSize: '0.6rem', background: command.mode === 'sandbox' ? 'rgba(143,175,192,0.15)' : 'rgba(34,197,94,0.1)', color: command.mode === 'sandbox' ? 'rgba(26,22,18,0.7)' : '#22C55E' }}>
             {command.mode?.toUpperCase()}
           </span>
         </span>
@@ -144,7 +144,7 @@ function OutputPane({ command, onPushIOCs, onSaveToCase, caseId }) {
             {/* AI Summary */}
             {command.ai_summary && (
               <div>
-                <div style={{ fontSize: '0.62rem', color: '#8BB8E8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6, ...MONO, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <div style={{ fontSize: '0.62rem', color: 'rgba(26,22,18,0.7)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6, ...MONO, display: 'flex', alignItems: 'center', gap: 5 }}>
                   <Brain size={10} /> AI Summary
                 </div>
                 <div style={{ fontSize: '0.78rem', color: 'rgba(240,240,248,0.8)', lineHeight: 1.6 }}>
@@ -428,7 +428,7 @@ export default function TerminalLab() {
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
             {/* Terminal transcript */}
-            <div style={{ flex: 1, overflow: 'auto', padding: '10px 16px', background: '#0A0A0A' }} ref={outputRef}>
+            <div style={{ flex: 1, overflow: 'auto', padding: '10px 16px', background: 'var(--surface)' }} ref={outputRef}>
               {commands.length === 0 ? (
                 <div style={{ padding: '24px 0', color: 'var(--text-muted)', fontSize: '0.78rem', ...MONO }}>
                   <span style={{ color: 'var(--accent)' }}>aegistrace@lab:~$</span> _
@@ -452,7 +452,7 @@ export default function TerminalLab() {
                       <span style={{ marginLeft: 'auto', fontSize: '0.62rem', color: 'var(--text-muted)', ...MONO }}>
                         {timeAgo(cmd.created_at)}
                       </span>
-                      <span style={{ fontSize: '0.6rem', padding: '1px 5px', borderRadius: 2, background: cmd.mode === 'sandbox' ? 'rgba(143,175,192,0.12)' : 'rgba(34,197,94,0.08)', color: cmd.mode === 'sandbox' ? '#8BB8E8' : '#22C55E', ...MONO }}>
+                      <span style={{ fontSize: '0.6rem', padding: '1px 5px', borderRadius: 2, background: cmd.mode === 'sandbox' ? 'rgba(143,175,192,0.12)' : 'rgba(34,197,94,0.08)', color: cmd.mode === 'sandbox' ? 'rgba(26,22,18,0.7)' : '#22C55E', ...MONO }}>
                         {cmd.mode}
                       </span>
                     </div>
@@ -465,7 +465,7 @@ export default function TerminalLab() {
             </div>
 
             {/* Tool presets */}
-            <div style={{ padding: '8px 14px', borderTop: '1px solid rgba(26,22,18,0.05)', background: '#090909', display: 'flex', gap: 5, flexWrap: 'wrap', flexShrink: 0 }}>
+            <div style={{ padding: '8px 14px', borderTop: '1px solid rgba(26,22,18,0.05)', background: '#1A1612', display: 'flex', gap: 5, flexWrap: 'wrap', flexShrink: 0 }}>
               {TOOL_PRESETS.map(p => (
                 <button
                   key={p.name}
@@ -516,7 +516,7 @@ export default function TerminalLab() {
                   onChange={e => setPasteOutput(e.target.value)}
                   placeholder="Paste real tool output here — AI will analyse it…"
                   rows={5}
-                  style={{ width: '100%', background: '#0A0A0A', border: '1px solid rgba(26,22,18,0.1)', borderRadius: 6, color: '#22C55E', ...MONO, fontSize: '0.73rem', padding: '8px 10px', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
+                  style={{ width: '100%', background: 'var(--surface)', border: '1px solid rgba(26,22,18,0.1)', borderRadius: 6, color: '#22C55E', ...MONO, fontSize: '0.73rem', padding: '8px 10px', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
                 />
               )}
             </div>
@@ -527,7 +527,7 @@ export default function TerminalLab() {
       {/* Right panel: output details */}
       <div style={{ width: 380, flexShrink: 0, borderLeft: '1px solid rgba(26,22,18,0.08)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }} ref={outputRef}>
         <div style={{ padding: '10px 14px', borderBottom: '1px solid rgba(26,22,18,0.08)', fontSize: '0.7rem', color: 'var(--text-muted)', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Brain size={11} style={{ color: '#8BB8E8' }} />
+          <Brain size={11} style={{ color: 'rgba(26,22,18,0.7)' }} />
           AI Analysis
           {activeCmd && <span style={{ marginLeft: 'auto', opacity: 0.5, fontWeight: 400 }}>{activeCmd.tool_name}</span>}
         </div>

@@ -5,7 +5,7 @@ import api from '../../api/client';
 /* ── Category config ─────────────────────────────────────────────────────── */
 const CAT_COLOR = {
   auth:     '#22C55E',
-  case:     '#8BB8E8',
+  case:     'rgba(26,22,18,0.7)',
   ai:       '#EAB308',
   evidence: '#4A7EC8',
   intel:    '#06B6D4',

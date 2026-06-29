@@ -186,7 +186,7 @@ export default function Analytics() {
             <KPICard label="Critical Open"  value={overview?.critical_open}  Icon={Zap}           color="#EF4444"  sub="Immediate action" />
             <KPICard label="SLA Breached"   value={slaBreached}              Icon={Clock}         color="#F97316"  sub={`${slaAtRisk} at risk`} />
             <KPICard label="Closed Cases"   value={overview?.closed_cases}   Icon={CheckCircle}   color="#22C55E"  sub="All time" />
-            <KPICard label="Avg Close Time" value={overview?.avg_time_to_close_hours ? `${overview.avg_time_to_close_hours}h` : '—'} Icon={Target} color="#8BB8E8" sub="Mean resolution" />
+            <KPICard label="Avg Close Time" value={overview?.avg_time_to_close_hours ? `${overview.avg_time_to_close_hours}h` : '—'} Icon={Target} color="rgba(26,22,18,0.7)" sub="Mean resolution" />
           </div>
 
           {/* Main grid */}
@@ -235,7 +235,7 @@ export default function Analytics() {
 
             {/* Time to Close */}
             <Panel>
-              <SectionHeader icon={TrendingUp} label="Avg Close Time" color="#8BB8E8" />
+              <SectionHeader icon={TrendingUp} label="Avg Close Time" color="rgba(26,22,18,0.7)" />
               {ttc.length === 0 ? (
                 <div style={{ color: 'var(--text-muted)', fontSize: '0.78rem', ...MONO }}>No closed cases</div>
               ) : (
@@ -344,7 +344,7 @@ export default function Analytics() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 14 }}>
                     {[
                       { label: 'Total (30d)', value: `$${costData.total_cost_usd_30d?.toFixed(4)}`, color: '#F59E0B' },
-                      { label: 'Per Case', value: `$${costData.cost_per_case_avg?.toFixed(5)}`, color: '#8BB8E8' },
+                      { label: 'Per Case', value: `$${costData.cost_per_case_avg?.toFixed(5)}`, color: 'rgba(26,22,18,0.7)' },
                       { label: 'Per Alert', value: `$${costData.cost_per_alert_avg?.toFixed(6)}`, color: '#22C55E' },
                     ].map(stat => (
                       <div key={stat.label} style={{ background: `${stat.color}08`, border: `1px solid ${stat.color}20`, borderRadius: 8, padding: '10px 12px' }}>

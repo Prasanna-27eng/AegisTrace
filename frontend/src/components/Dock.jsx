@@ -193,7 +193,7 @@ export default function Dock({ items = [] }) {
         WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
         borderRadius: 18,
         border: '1px solid rgba(26,22,18,0.1)',
-        boxShadow: '0 8px 32px rgba(26,22,18,0.12), 0 1px 0 rgba(255,255,255,0.7) inset',
+        boxShadow: '0 8px 32px rgba(26,22,18,0.12), 0 1px 0 rgba(26,22,18,0.7) inset',
       }}
       onMouseMove={(e) => mouseX.set(e.clientX)}
       onMouseLeave={() => mouseX.set(Infinity)}

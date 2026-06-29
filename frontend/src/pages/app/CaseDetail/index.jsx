@@ -114,7 +114,7 @@ export default function CaseDetail() {
   if (loading) return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header skeleton */}
-      <div style={{ background: '#0E0E16', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '12px 20px' }}>
+      <div style={{ background: 'var(--surface)', borderBottom: '1px solid rgba(26,22,18,0.07)', padding: '12px 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
           <div className="skeleton" style={{ height: 14, width: 60, borderRadius: 4 }} />
           <div className="skeleton" style={{ height: 14, width: 90, borderRadius: 4 }} />
@@ -129,7 +129,7 @@ export default function CaseDetail() {
         </div>
       </div>
       {/* Tab bar skeleton */}
-      <div style={{ background: '#0E0E16', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: 4, padding: '0 4px', flexShrink: 0 }}>
+      <div style={{ background: 'var(--surface)', borderBottom: '1px solid rgba(26,22,18,0.07)', display: 'flex', gap: 4, padding: '0 4px', flexShrink: 0 }}>
         {[70, 100, 48, 68, 68, 52, 72, 96, 64, 76, 88, 56, 60].map((w, i) => (
           <div key={i} className="skeleton" style={{ height: 8, width: w, borderRadius: 3, margin: '18px 8px' }} />
         ))}
@@ -156,12 +156,12 @@ export default function CaseDetail() {
   return (
     <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Case header */}
-      <div style={{ background: '#0E0E16', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '12px 20px' }}>
+      <div style={{ background: 'var(--surface)', borderBottom: '1px solid rgba(26,22,18,0.07)', padding: '12px 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
           <button onClick={() => navigate('/app/cases')} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.78rem' }}>
             <ChevronLeft size={14} /> Cases
           </button>
-          <span style={{ color: 'rgba(255,255,255,0.2)' }}>/</span>
+          <span style={{ color: 'rgba(26,22,18,0.2)' }}>/</span>
           <span style={{ fontSize: '0.78rem', color: '#787878', fontFamily: 'JetBrains Mono' }}>{caseData?.case_number}</span>
 
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 6, alignItems: 'center' }}>
@@ -186,7 +186,7 @@ export default function CaseDetail() {
       </div>
 
       {/* Tabs */}
-      <div style={{ background: '#0E0E16', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', overflowX: 'auto', flexShrink: 0 }}>
+      <div style={{ background: 'var(--surface)', borderBottom: '1px solid rgba(26,22,18,0.07)', display: 'flex', overflowX: 'auto', flexShrink: 0 }}>
         {TABS.map(t => (
           <button
             key={t.id}
@@ -223,7 +223,7 @@ export default function CaseDetail() {
             </div>
             <button
               onClick={() => navigate('/app/edr')}
-              style={{ padding: '8px 18px', background: 'rgba(74,126,200,0.12)', border: '1px solid rgba(74,126,200,0.3)', borderRadius: 8, color: '#8BB8E8', fontSize: '0.82rem', cursor: 'pointer', fontFamily: 'var(--font-mono)' }}
+              style={{ padding: '8px 18px', background: 'rgba(74,126,200,0.12)', border: '1px solid rgba(74,126,200,0.3)', borderRadius: 8, color: 'rgba(26,22,18,0.7)', fontSize: '0.82rem', cursor: 'pointer', fontFamily: 'var(--font-mono)' }}
             >
               Open Full EDR Console →
             </button>

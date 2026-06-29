@@ -30,7 +30,7 @@ const ACTION_COLOR = {
   block:      '#EF4444',
   rate_limit: '#F97316',
   watchlist:  '#EAB308',
-  escalate:   '#8BB8E8',
+  escalate:   'rgba(26,22,18,0.7)',
   dismiss:    '#4A6A8A',
 };
 
@@ -151,7 +151,7 @@ function EventCard({ event, onAction, processing }) {
 
         {/* AI threat type */}
         {event.ai_threat_type && (
-          <div style={{ fontSize: '0.68rem', color: '#8BB8E8', ...MONO, flexShrink: 0 }}>
+          <div style={{ fontSize: '0.68rem', color: 'rgba(26,22,18,0.7)', ...MONO, flexShrink: 0 }}>
             {event.ai_threat_type}
           </div>
         )}
@@ -249,7 +249,7 @@ function EventCard({ event, onAction, processing }) {
               {[
                 { act: 'block',     label: 'Block IP',    col: '#EF4444', Icon: Ban        },
                 { act: 'watchlist', label: 'Watchlist',   col: '#EAB308', Icon: Eye        },
-                { act: 'escalate',  label: 'Escalate',    col: '#8BB8E8', Icon: ShieldAlert},
+                { act: 'escalate',  label: 'Escalate',    col: 'rgba(26,22,18,0.7)', Icon: ShieldAlert},
                 { act: 'dismiss',   label: 'Dismiss',     col: '#4A6A8A', Icon: XCircle    },
               ].map(({ act, label, col, Icon: I }) => (
                 <button
@@ -342,7 +342,7 @@ function AdaptivePanel({ adaptive }) {
           const b = bounds[key];
           if (val === undefined) return null;
           return (
-            <div key={key} style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(74,126,200,0.07)', borderRadius: 8, padding: '10px 12px' }}>
+            <div key={key} style={{ background: 'rgba(26,22,18,0.015)', border: '1px solid rgba(74,126,200,0.07)', borderRadius: 8, padding: '10px 12px' }}>
               <div style={{ fontSize: '0.62rem', color: '#4A6A8A', ...MONO, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
                 {meta.label}
               </div>
@@ -367,7 +367,7 @@ function AdaptivePanel({ adaptive }) {
             {THRESHOLD_META[lastChange.threshold_name]?.fmt(lastChange.old_value) ?? lastChange.old_value}
             {' → '}
             {THRESHOLD_META[lastChange.threshold_name]?.fmt(lastChange.new_value) ?? lastChange.new_value}
-            {' via '}<span style={{ color: '#8BB8E8' }}>{lastChange.agent_model}</span>
+            {' via '}<span style={{ color: 'rgba(26,22,18,0.7)' }}>{lastChange.agent_model}</span>
             {' · '}{timeAgo(lastChange.applied_at)}
             {lastChange.reason && <div style={{ color: '#4A6A8A', marginTop: 2 }}>"{lastChange.reason}"</div>}
           </div>
@@ -477,7 +477,7 @@ export default function DefenseConsole() {
       {toast && (
         <div style={{
           position: 'fixed', top: 20, right: 24, zIndex: 9999,
-          background: toast.type === 'success' ? '#0a1a0a' : '#1a0a0a',
+          background: toast.type === 'success' ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
           border: `1px solid ${toast.type === 'success' ? '#22C55E' : '#EF4444'}`,
           color: toast.type === 'success' ? '#22C55E' : '#EF4444',
           padding: '10px 18px', borderRadius: 6, fontSize: '0.78rem',
@@ -557,7 +557,7 @@ export default function DefenseConsole() {
             style={{
               display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px',
               background: 'rgba(26,22,18,0.08)', border: '1px solid rgba(74,126,200,0.25)',
-              color: '#8BB8E8', fontSize: '0.68rem', borderRadius: 5, cursor: 'pointer',
+              color: 'rgba(26,22,18,0.7)', fontSize: '0.68rem', borderRadius: 5, cursor: 'pointer',
               fontFamily: 'JetBrains Mono, monospace', opacity: demoLoading ? 0.5 : 1,
             }}
           >
@@ -602,7 +602,7 @@ export default function DefenseConsole() {
           value={stats.honeypot_hits ?? 0}
           sub="scanner traps triggered"
           icon={Target}
-          color="#8BB8E8"
+          color="rgba(26,22,18,0.7)"
           alert={(stats.honeypot_hits ?? 0) > 0}
         />
         <KPICard

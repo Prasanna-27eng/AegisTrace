@@ -14,7 +14,7 @@ const ACTION_COLORS = {
   case_create:      '#4A7EC8',
   case_update:      '#4A7EC8',
   ioc_extraction:   '#EAB308',
-  ai_analysis:      '#8BB8E8',
+  ai_analysis:      'rgba(26,22,18,0.7)',
   report_generate:  '#22C55E',
   threat_score:     '#F97316',
   case_close:       '#EF4444',
@@ -73,7 +73,7 @@ function ActionCard({ action, onApprove, onReject, processing }) {
             {(action.action_type || 'unknown').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
           </div>
           <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', ...MONO, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            {action.model_used && <span style={{ color: '#8BB8E8' }}>{action.model_used}</span>}
+            {action.model_used && <span style={{ color: 'rgba(26,22,18,0.7)' }}>{action.model_used}</span>}
             {action.actor && <span>by {action.actor}</span>}
             <span>{timeAgo(action.timestamp)}</span>
           </div>
@@ -247,7 +247,7 @@ function TokenCard({ token, onRevoke, dim = false }) {
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 8 }}>
         {token.capabilities?.map(cap => (
-          <span key={cap} style={{ fontSize: '0.65rem', color: '#8BB8E8', background: 'rgba(26,22,18,0.08)', border: '1px solid rgba(26,22,18,0.12)', padding: '2px 7px', borderRadius: 3, ...MONO }}>
+          <span key={cap} style={{ fontSize: '0.65rem', color: 'rgba(26,22,18,0.7)', background: 'rgba(26,22,18,0.08)', border: '1px solid rgba(26,22,18,0.12)', padding: '2px 7px', borderRadius: 3, ...MONO }}>
             {cap}
           </span>
         ))}
@@ -324,7 +324,7 @@ function DelegationTokensTab() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-            <Key size={15} style={{ color: '#8BB8E8' }} />
+            <Key size={15} style={{ color: 'rgba(26,22,18,0.7)' }} />
             <h2 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
               Agent Delegation Tokens
             </h2>
@@ -400,7 +400,7 @@ function DelegationTokensTab() {
                     <input type="checkbox" checked={form.capabilities.includes(cap)}
                       onChange={e => setForm(f => ({ ...f, capabilities: e.target.checked ? [...f.capabilities, cap] : f.capabilities.filter(c => c !== cap) }))}
                       style={{ width: 13, height: 13, accentColor: '#4A7EC8' }} />
-                    <span style={{ fontSize: '0.65rem', color: form.capabilities.includes(cap) ? '#8BB8E8' : '#787878', ...MONO }}>{cap}</span>
+                    <span style={{ fontSize: '0.65rem', color: form.capabilities.includes(cap) ? 'rgba(26,22,18,0.7)' : '#787878', ...MONO }}>{cap}</span>
                   </label>
                 ))}
               </div>
@@ -506,7 +506,7 @@ export default function AgentSecurity() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <Bot size={18} style={{ color: '#8BB8E8' }} />
+            <Bot size={18} style={{ color: 'rgba(26,22,18,0.7)' }} />
             <h1 style={{ fontSize: '1.2rem', fontWeight: 600 }}>AI Agent Security</h1>
             {pending.length > 0 && (
               <span style={{ fontSize: '0.65rem', ...MONO, background: 'rgba(234,179,8,0.15)', color: '#EAB308', border: '1px solid rgba(234,179,8,0.3)', padding: '2px 8px', borderRadius: 10, fontWeight: 700 }}>
@@ -580,7 +580,7 @@ export default function AgentSecurity() {
 
           {/* How it works callout */}
           <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(143,175,192,0.05)', border: '1px solid rgba(143,175,192,0.15)', borderRadius: 8, display: 'flex', gap: 10, alignItems: 'center' }}>
-            <Shield size={14} style={{ color: '#8BB8E8', flexShrink: 0 }} />
+            <Shield size={14} style={{ color: 'rgba(26,22,18,0.7)', flexShrink: 0 }} />
             <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
               <strong style={{ color: 'var(--text-primary)' }}>Bounded Autonomy:</strong> Every AI action is logged to the Provenance Ledger before executing. Actions above {settings.threshold}% confidence auto-approve. All others queue here for human review. You remain in control.
             </div>

@@ -6,8 +6,8 @@ import useStore from '../../../store/useStore';
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 
 const ACTION_META = {
-  ai_analysis:  { color: '#8BB8E8', label: 'AI Analysis',  Icon: Brain },
-  ai_summary:   { color: '#8BB8E8', label: 'AI Summary',   Icon: Brain },
+  ai_analysis:  { color: 'rgba(26,22,18,0.7)', label: 'AI Analysis',  Icon: Brain },
+  ai_summary:   { color: 'rgba(26,22,18,0.7)', label: 'AI Summary',   Icon: Brain },
   tool_run:     { color: '#EAB308', label: 'Tool Run',      Icon: Wrench },
   evidence_add: { color: '#22C55E', label: 'Evidence Added', Icon: Database },
   ioc_enrich:   { color: '#4A7EC8', label: 'IOC Enrich',   Icon: Database },
@@ -30,7 +30,7 @@ function confidenceBar(score) {
   const color = score >= 80 ? '#22C55E' : score >= 50 ? '#EAB308' : '#EF4444';
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <div style={{ width: 60, height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+      <div style={{ width: 60, height: 4, background: 'rgba(26,22,18,0.08)', borderRadius: 2, overflow: 'hidden' }}>
         <div style={{ width: `${score}%`, height: '100%', background: color, borderRadius: 2 }} />
       </div>
       <span style={{ fontSize: '0.65rem', color, ...MONO }}>{score}%</span>
@@ -45,12 +45,12 @@ function ProvenanceRow({ record, onApprove }) {
   const approval = APPROVAL_COLOR[record.approval_status] || APPROVAL_COLOR.auto;
 
   return (
-    <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, overflow: 'hidden', marginBottom: 8 }}>
+    <div style={{ border: '1px solid rgba(26,22,18,0.07)', borderRadius: 8, overflow: 'hidden', marginBottom: 8 }}>
       <div
         onClick={() => setOpen(p => !p)}
-        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', cursor: 'pointer', background: 'rgba(240,240,248,0.02)', transition: 'background 0.15s' }}
-        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
-        onMouseLeave={e => e.currentTarget.style.background = 'rgba(240,240,248,0.02)'}
+        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', cursor: 'pointer', background: 'rgba(26,22,18,0.02)', transition: 'background 0.15s' }}
+        onMouseEnter={e => e.currentTarget.style.background = 'rgba(26,22,18,0.04)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'rgba(26,22,18,0.02)'}
       >
         <Icon size={13} style={{ color: meta.color, flexShrink: 0 }} />
         <span style={{ fontSize: '0.72rem', color: meta.color, fontWeight: 600, ...MONO, minWidth: 90 }}>{meta.label}</span>
@@ -69,7 +69,7 @@ function ProvenanceRow({ record, onApprove }) {
       </div>
 
       {open && (
-        <div style={{ padding: '12px 14px', borderTop: '1px solid rgba(255,255,255,0.06)', background: '#0A0A0A', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ padding: '12px 14px', borderTop: '1px solid rgba(26,22,18,0.06)', background: 'var(--surface)', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
             {[
               ['Actor', record.actor || '—'],
@@ -89,7 +89,7 @@ function ProvenanceRow({ record, onApprove }) {
           {record.input_context && (
             <div>
               <div style={{ fontSize: '0.62rem', color: '#787878', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4, ...MONO }}>Input Context (truncated)</div>
-              <pre style={{ margin: 0, fontSize: '0.7rem', color: 'rgba(240,240,248,0.55)', ...MONO, lineHeight: 1.5, whiteSpace: 'pre-wrap', maxHeight: 80, overflow: 'auto', background: 'rgba(255,255,255,0.02)', padding: '6px 8px', borderRadius: 4 }}>
+              <pre style={{ margin: 0, fontSize: '0.7rem', color: 'rgba(26,22,18,0.55)', ...MONO, lineHeight: 1.5, whiteSpace: 'pre-wrap', maxHeight: 80, overflow: 'auto', background: 'rgba(26,22,18,0.02)', padding: '6px 8px', borderRadius: 4 }}>
                 {record.input_context.slice(0, 400)}{record.input_context.length > 400 ? '…' : ''}
               </pre>
             </div>
@@ -166,7 +166,7 @@ export default function ProvenanceTab({ caseId }) {
   return (
     <div style={{ padding: '20px 24px', maxWidth: 1000 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-        <Database size={17} style={{ color: '#8BB8E8' }} />
+        <Database size={17} style={{ color: 'rgba(26,22,18,0.7)' }} />
         <div>
           <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>Provenance Ledger</div>
           <div style={{ fontSize: '0.7rem', color: '#787878', marginTop: 1 }}>

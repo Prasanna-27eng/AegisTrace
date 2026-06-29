@@ -18,7 +18,7 @@ const CATEGORIES = [
     ],
   },
   {
-    id: 'rf', label: 'RF / Radio', icon: Radio, color: '#8BB8E8',
+    id: 'rf', label: 'RF / Radio', icon: Radio, color: 'rgba(26,22,18,0.7)',
     tools: [
       { key: 'spectrum_analyser',        name: 'Spectrum Analyser',        desc: 'Map signal activity across RF bands',                 hint: 'Paste hackrf_sweep CSV output or RF spectrum scan data.\n\nhackrf_sweep format: date,time,hz_low,hz_high,hz_bin,samples,dBm...' },
       { key: 'replay_attack_detector',   name: 'Replay Attack Detector',   desc: 'Detect repeated RF signals (car fobs, remotes)',      hint: 'Paste RF signal capture log with frequency, strength, and timing data.' },
@@ -57,7 +57,7 @@ const CATEGORIES = [
     ],
   },
   {
-    id: 'ai', label: 'Universal', icon: Bot, color: '#8BB8E8',
+    id: 'ai', label: 'Universal', icon: Bot, color: 'rgba(26,22,18,0.7)',
     tools: [
       { key: 'ai_universal_parser',      name: 'AI Universal Parser',        desc: 'Any log format → auto-parsed, MITRE-tagged by AI',   hint: 'Paste ANY log from ANY security tool.\nAI will automatically identify the format, extract fields,\nand map to MITRE ATT&CK. Works on completely unknown formats.' },
     ],
@@ -69,7 +69,7 @@ const TOOL_MAP = {};
 CATEGORIES.forEach(cat => cat.tools.forEach(t => { TOOL_MAP[t.key] = { ...t, category: cat }; }));
 
 // ── Severity colour ───────────────────────────────────────────────────────────
-const SEV_COLOR = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'#8BB8E8', info:'#787878' };
+const SEV_COLOR = { critical:'#EF4444', high:'#F97316', medium:'#EAB308', low:'rgba(26,22,18,0.7)', info:'#787878' };
 const sevStyle = (s) => ({
   color: SEV_COLOR[s] || '#787878',
   background: `${SEV_COLOR[s] || '#888888'}18`,
@@ -258,7 +258,7 @@ function ResultRenderer({ toolKey, result }) {
               </div>
             </div>
             {result.ai_explanation && (
-              <div style={{margin:'12px 16px 0',padding:'10px 14px',background:'rgba(143,175,192,0.06)',border:'1px solid rgba(143,175,192,0.15)',borderRadius:6,fontSize:'0.8rem',color:'#8BB8E8',fontStyle:'italic'}}>{result.ai_explanation}</div>
+              <div style={{margin:'12px 16px 0',padding:'10px 14px',background:'rgba(143,175,192,0.06)',border:'1px solid rgba(143,175,192,0.15)',borderRadius:6,fontSize:'0.8rem',color:'rgba(26,22,18,0.7)',fontStyle:'italic'}}>{result.ai_explanation}</div>
             )}
             {result.mitre_technique && <div style={{padding:'8px 16px'}}><span className="hw-mitre-tag">{result.mitre_technique}</span></div>}
           </>

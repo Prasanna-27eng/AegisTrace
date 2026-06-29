@@ -108,9 +108,9 @@ function AttackPathViz({ data }) {
                 fill="rgba(74,126,200,0.5)"/>
               {/* MITRE label */}
               <rect x={mx - 28} y={my - 10} width={56} height={18} rx={3}
-                fill="#050505" stroke="rgba(74,126,200,0.2)"/>
+                fill="var(--surface)" stroke="rgba(74,126,200,0.2)"/>
               <text x={mx} y={my + 3} textAnchor="middle" fontSize="8.5"
-                fill="#8BB8E8" fontFamily="var(--font-mono)">{edge.mitre_id}</text>
+                fill="rgba(26,22,18,0.7)" fontFamily="var(--font-mono)">{edge.mitre_id}</text>
             </g>
           );
         })}
@@ -144,7 +144,7 @@ function AttackPathViz({ data }) {
                 {(node.node_type || '').replace('_', ' ').toUpperCase()}
               </text>
               {/* Risk bar */}
-              <rect x={8} y={48} width={112} height={4} rx={2} fill="rgba(255,255,255,0.06)"/>
+              <rect x={8} y={48} width={112} height={4} rx={2} fill="rgba(26,22,18,0.06)"/>
               <rect x={8} y={48} width={Math.round(112 * node.risk_score)} height={4} rx={2} fill={sevColor}/>
               {/* Risk label */}
               <text x={124} y={54} fontSize="8" fill={sevColor} textAnchor="end" fontFamily="var(--font-mono)">
@@ -288,7 +288,7 @@ export default function AttackGraphTab({ caseData, updateCase, caseId }) {
               border: `1px solid ${activeTab === id ? 'rgba(74,126,200,0.35)' : 'rgba(74,126,200,0.12)'}`,
               borderRadius: 6, cursor: 'pointer', fontFamily: 'JetBrains Mono, monospace',
               fontSize: 13, fontWeight: activeTab === id ? 600 : 400,
-              color: activeTab === id ? '#8BB8E8' : '#787878',
+              color: activeTab === id ? 'rgba(26,22,18,0.7)' : '#787878',
               transition: 'all 140ms ease',
             }}>{label}</button>
         ))}
@@ -351,7 +351,7 @@ export default function AttackGraphTab({ caseData, updateCase, caseId }) {
                     <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(156,124,255,0.12)', border: '1px solid rgba(156,124,255,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.68rem', color: '#9C7CFF', fontWeight: 700 }}>{s.step}</div>
-                        {i < result.steps.length - 1 && <div style={{ width: 1, flex: 1, background: 'rgba(255,255,255,0.08)', marginTop: 4 }} />}
+                        {i < result.steps.length - 1 && <div style={{ width: 1, flex: 1, background: 'rgba(26,22,18,0.08)', marginTop: 4 }} />}
                       </div>
                       <div className="at-card" style={{ flex: 1, padding: '10px 14px', marginBottom: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
@@ -374,12 +374,12 @@ export default function AttackGraphTab({ caseData, updateCase, caseId }) {
                   <ArrowRight size={13} style={{ color: '#555', transform: showEvents ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }} />
                 </div>
                 {showEvents && (
-                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+                  <div style={{ borderTop: '1px solid rgba(26,22,18,0.07)' }}>
                     {(result.events || []).map((e, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px', borderBottom: i < result.events.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none', fontSize: '0.76rem' }}>
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px', borderBottom: i < result.events.length - 1 ? '1px solid rgba(26,22,18,0.04)' : 'none', fontSize: '0.76rem' }}>
                         <Clock size={12} style={{ color: '#444', flexShrink: 0 }} />
                         <span style={{ color: '#555', ...MONO, fontSize: '0.7rem', flexShrink: 0 }}>{fmtTime(e.timestamp)}</span>
-                        <span style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4, padding: '1px 6px', fontSize: '0.66rem', color: '#8BB8E8', flexShrink: 0, ...MONO }}>{SOURCE_LABELS[e.source] || e.source}</span>
+                        <span style={{ background: 'rgba(26,22,18,0.04)', border: '1px solid rgba(26,22,18,0.08)', borderRadius: 4, padding: '1px 6px', fontSize: '0.66rem', color: 'rgba(26,22,18,0.7)', flexShrink: 0, ...MONO }}>{SOURCE_LABELS[e.source] || e.source}</span>
                         {e.hostname && <span style={{ color: '#787878', fontSize: '0.7rem', ...MONO, flexShrink: 0 }}>{e.hostname}</span>}
                         <span style={{ color: '#7A9DB8', flex: 1 }}>{e.description}</span>
                         <SeverityBadge severity={e.severity} />

@@ -204,7 +204,7 @@ function RecRow({ item, onExecute, onVeto }) {
 
   return (
     <div style={{
-      background: 'rgba(255,255,255,0.025)',
+      background: 'rgba(26,22,18,0.025)',
       border: `1px solid ${tierColor === 'rgba(26,22,18,0.2)' ? 'rgba(26,22,18,0.08)' : `${tierColor}22`}`,
       borderRadius: 8,
       padding: '10px 12px',
@@ -260,7 +260,7 @@ function RecRow({ item, onExecute, onVeto }) {
             <button
               onClick={handleExecute}
               disabled={executing}
-              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: 'rgba(26,22,18,0.1)', border: '1px solid rgba(204,120,92,0.25)', borderRadius: 5, color: '#8BB8E8', fontSize: 10, fontWeight: 600, cursor: 'pointer' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: 'rgba(26,22,18,0.1)', border: '1px solid rgba(204,120,92,0.25)', borderRadius: 5, color: 'rgba(26,22,18,0.7)', fontSize: 10, fontWeight: 600, cursor: 'pointer' }}
             >
               <CheckCircle size={10} /> Approve
             </button>
@@ -363,7 +363,7 @@ export default function ApprovalQueue({ cases = [], onApprove, onDismiss }) {
             style={{
               flex: 1, padding: '6px 8px', borderRadius: 6, border: 'none',
               background: activeTab === t.id ? 'rgba(26,22,18,0.14)' : 'none',
-              color: activeTab === t.id ? '#8BB8E8' : 'var(--text-muted, #475569)',
+              color: activeTab === t.id ? 'rgba(26,22,18,0.7)' : 'var(--text-muted, #475569)',
               fontSize: 11, fontWeight: 600, cursor: 'pointer',
             }}
           >

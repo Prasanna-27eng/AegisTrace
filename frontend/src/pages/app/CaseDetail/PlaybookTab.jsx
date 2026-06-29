@@ -93,7 +93,7 @@ export default function PlaybookTab({ caseData, updateCase }) {
           <div style={{ fontSize: '1.2rem', fontWeight: 700, color: progress === 100 ? '#22C55E' : '#BDD4E8' }}>{progress}%</div>
         </div>
         {/* Progress bar */}
-        <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+        <div style={{ height: 4, background: 'rgba(26,22,18,0.08)', borderRadius: 2, overflow: 'hidden' }}>
           <div style={{ height: '100%', width: `${progress}%`, background: progress === 100 ? '#22C55E' : '#4A7EC8', borderRadius: 2, transition: 'width 0.3s ease' }} />
         </div>
       </div>
@@ -101,7 +101,7 @@ export default function PlaybookTab({ caseData, updateCase }) {
       <div className="at-card" style={{ padding: '14px 16px', marginBottom: 16 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {playbook.map(task => (
-            <div key={task.id} onClick={() => toggle(task.id)} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 0', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+            <div key={task.id} onClick={() => toggle(task.id)} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 0', cursor: 'pointer', borderBottom: '1px solid rgba(26,22,18,0.04)' }}>
               <div style={{ color: checked[task.id] ? '#22C55E' : '#787878', flexShrink: 0, marginTop: 1 }}>
                 {checked[task.id] ? <CheckSquare size={16} /> : <Square size={16} />}
               </div>
@@ -121,7 +121,7 @@ export default function PlaybookTab({ caseData, updateCase }) {
         </div>
         <div className="at-card" style={{ padding: '14px 16px', borderColor: 'rgba(234,179,8,0.2)' }}>
           {closureRequired.map(item => (
-            <div key={item.id} onClick={() => setClosureChecked(p => ({ ...p, [item.id]: !p[item.id] }))} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+            <div key={item.id} onClick={() => setClosureChecked(p => ({ ...p, [item.id]: !p[item.id] }))} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', cursor: 'pointer', borderBottom: '1px solid rgba(26,22,18,0.04)' }}>
               <div style={{ color: closureChecked[item.id] ? '#22C55E' : '#787878', flexShrink: 0 }}>
                 {closureChecked[item.id] ? <CheckSquare size={15} /> : <Square size={15} />}
               </div>

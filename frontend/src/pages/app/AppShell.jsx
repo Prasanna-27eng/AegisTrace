@@ -231,7 +231,7 @@ export default function AppShell() {
         WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
         borderRadius: 14,
         border: '1px solid rgba(26,22,18,0.1)',
-        boxShadow: '0 4px 24px rgba(26,22,18,0.1), 0 1px 0 rgba(255,255,255,0.6) inset',
+        boxShadow: '0 4px 24px rgba(26,22,18,0.1), 0 1px 0 rgba(26,22,18,0.6) inset',
         display: 'flex',
         alignItems: 'center',
         gap: 12,

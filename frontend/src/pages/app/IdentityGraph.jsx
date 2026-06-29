@@ -14,7 +14,7 @@ const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 const NODE_TYPES = [
   { id: 'user',            label: 'Human User',      color: 'var(--accent)',  Icon: User },
   { id: 'service_account', label: 'Service Account', color: '#EAB308',  Icon: Shield },
-  { id: 'api_key',         label: 'API Key',          color: '#8BB8E8',  Icon: Key },
+  { id: 'api_key',         label: 'API Key',          color: 'rgba(26,22,18,0.7)',  Icon: Key },
   { id: 'token',           label: 'Token',            color: '#F97316',  Icon: Key },
   { id: 'device',          label: 'Device',           color: '#22C55E',  Icon: Monitor },
   { id: 'agent',           label: 'AI Agent',         color: 'var(--accent)',  Icon: Bot },
@@ -40,7 +40,7 @@ function NodeIcon({ type, size = 14 }) {
 function riskColor(score) {
   if (score >= 80) return '#EF4444';
   if (score >= 50) return '#EAB308';
-  if (score >= 20) return '#8BB8E8';
+  if (score >= 20) return 'rgba(26,22,18,0.7)';
   return '#22C55E';
 }
 
@@ -76,7 +76,7 @@ function IdentityAttackPathViz({ data }) {
   return (
     <div style={{ marginTop: 12 }}>
       {data.summary && (
-        <div style={{ fontSize: 11, color: '#8BB8E8', lineHeight: 1.5, marginBottom: 10, padding: '8px 10px', background: 'rgba(74,126,200,0.06)', border: '1px solid rgba(26,22,18,0.12)', borderRadius: 5 }}>
+        <div style={{ fontSize: 11, color: 'rgba(26,22,18,0.7)', lineHeight: 1.5, marginBottom: 10, padding: '8px 10px', background: 'rgba(74,126,200,0.06)', border: '1px solid rgba(26,22,18,0.12)', borderRadius: 5 }}>
           {data.summary}
         </div>
       )}
@@ -88,7 +88,7 @@ function IdentityAttackPathViz({ data }) {
               <span style={{ color: 'var(--text-muted)', flex: 1, lineHeight: 1.4 }}>
                 <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{step.from_label}</span>
                 {' → '}
-                <span style={{ color: '#8BB8E8' }}>{step.action}</span>
+                <span style={{ color: 'rgba(26,22,18,0.7)' }}>{step.action}</span>
                 {' → '}
                 <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{step.to_label}</span>
               </span>
@@ -172,7 +172,7 @@ function NodeDetailOverlay({ node, onClose }) {
 
       {/* Node type badge */}
       <div style={{ marginBottom: 10, marginTop: 2 }}>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#8BB8E8', background: 'rgba(139,184,232,0.1)', padding: '3px 8px', borderRadius: 3, letterSpacing: '0.06em' }}>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: 'rgba(26,22,18,0.7)', background: 'rgba(139,184,232,0.1)', padding: '3px 8px', borderRadius: 3, letterSpacing: '0.06em' }}>
           {(type || 'unknown').replace(/_/g, ' ').toUpperCase()}
         </span>
       </div>
@@ -234,7 +234,7 @@ function NodeDetailOverlay({ node, onClose }) {
           marginTop: 16,
           width: '100%',
           background: '#F59E0B',
-          color: '#0d0d0d',
+          color: '#1A1612',
           border: 'none',
           padding: '10px 0',
           borderRadius: 6,
@@ -612,7 +612,7 @@ function NodePanel({ node, onMarkCompromised, onDelete, onClose, onScoreUpdate }
             {Object.entries(node.metadata).map(([k, v]) => (
               <div key={k} style={{ display: 'flex', gap: 8, padding: '3px 0', borderBottom: '1px solid rgba(74,126,200,0.06)', fontSize: '0.7rem' }}>
                 <span style={{ color: 'var(--text-muted)', minWidth: 60 }}>{k}</span>
-                <span style={{ color: 'rgba(240,240,248,0.7)', ...MONO, wordBreak: 'break-all', fontSize: '0.68rem' }}>{String(v)}</span>
+                <span style={{ color: 'rgba(26,22,18,0.7)', ...MONO, wordBreak: 'break-all', fontSize: '0.68rem' }}>{String(v)}</span>
               </div>
             ))}
           </div>
@@ -822,7 +822,7 @@ export default function IdentityGraph() {
         <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(26,22,18,0.1)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Fingerprint size={14} style={{ color: '#8BB8E8' }} />
+              <Fingerprint size={14} style={{ color: 'rgba(26,22,18,0.7)' }} />
               <span style={{ fontWeight: 600, fontSize: '0.82rem' }}>Identity Graph</span>
             </div>
             <button onClick={load} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 2 }}><RefreshCw size={12} /></button>

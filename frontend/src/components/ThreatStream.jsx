@@ -116,7 +116,7 @@ export default function ThreatStream({ opacity = 0.55 }) {
     }
 
     // Initial black fill
-    ctx.fillStyle = '#000000';
+    ctx.fillStyle = 'var(--bg)';
     ctx.fillRect(0, 0, W, H);
     frame();
 

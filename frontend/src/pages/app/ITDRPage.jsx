@@ -18,7 +18,7 @@ const DETECTOR_META = {
   impossible_travel:               { label: 'Impossible Travel',          color: '#F97316', Icon: MapPin },
   new_device:                      { label: 'New Device Login',           color: '#EAB308', Icon: Smartphone },
   privilege_escalation:            { label: 'Privilege Escalation',       color: '#EF4444', Icon: Shield },
-  token_theft:                     { label: 'Token / Session Theft',      color: '#8BB8E8', Icon: Key },
+  token_theft:                     { label: 'Token / Session Theft',      color: 'rgba(26,22,18,0.7)', Icon: Key },
   shadow_ai:                       { label: 'Shadow AI Usage',            color: 'var(--accent)', Icon: Bot },
   // Endpoint agent alerts
   honey_token_access:              { label: 'Honey Token Accessed',       color: '#EF4444', Icon: AlertTriangle },
@@ -32,7 +32,7 @@ const DETECTOR_META = {
   usb_inserted:                    { label: 'USB Device Inserted',        color: '#EAB308', Icon: AlertCircle },
   registry_change:                 { label: 'Registry Persistence',       color: '#EF4444', Icon: AlertTriangle },
   user_management:                 { label: 'User Account Change',        color: '#EF4444', Icon: User },
-  new_destination:                 { label: 'New Network Destination',    color: '#8BB8E8', Icon: Activity },
+  new_destination:                 { label: 'New Network Destination',    color: 'rgba(26,22,18,0.7)', Icon: Activity },
   behavioural_anomaly:             { label: 'Behavioural Anomaly',        color: '#EAB308', Icon: AlertCircle },
   // v6.2 Falco Layer 3 — eBPF / kernel-level alerts (prefix: falco_)
   falco_alert:                     { label: 'Falco eBPF Alert',           color: '#A78BFA', Icon: Zap },
@@ -44,7 +44,7 @@ const EVENT_TYPE_LABELS = {
   logout:           { label: 'Logout',          color: 'var(--text-muted)' },
   privilege_change: { label: 'Priv. Change',    color: '#F97316' },
   mfa_challenge:    { label: 'MFA Challenge',   color: '#EAB308' },
-  password_reset:   { label: 'Pwd Reset',       color: '#8BB8E8' },
+  password_reset:   { label: 'Pwd Reset',       color: 'rgba(26,22,18,0.7)' },
   account_lock:     { label: 'Account Lock',    color: '#EF4444' },
 };
 
@@ -407,7 +407,7 @@ function AlertsTab() {
           <button key={f} onClick={() => setFilter(f)}
             style={{ padding: '5px 14px', borderRadius: 6, border: '1px solid', fontSize: '0.72rem', cursor: 'pointer', ...MONO, textTransform: 'uppercase', letterSpacing: '0.06em',
               background: filter === f ? 'rgba(26,22,18,0.1)' : 'transparent',
-              color: filter === f ? '#8BB8E8' : '#787878',
+              color: filter === f ? 'rgba(26,22,18,0.7)' : '#787878',
               borderColor: filter === f ? 'rgba(204,120,92,0.25)' : 'rgba(26,22,18,0.08)',
             }}>
             {f.replace('_', ' ')}
@@ -509,7 +509,7 @@ function AlertsTab() {
                         )}
                         {hasPid && (
                           <ActionBtn label="🌲 Process Tree"
-                            color="#8BB8E8" bg="rgba(139,184,232,0.08)" border="rgba(139,184,232,0.2)"
+                            color="rgba(26,22,18,0.7)" bg="rgba(139,184,232,0.08)" border="rgba(139,184,232,0.2)"
                             loading={cmdLoading === `${a.id}-get_process_tree`}
                             onClick={() => dispatch(a.id, hostname, 'get_process_tree', { pid: hasPid })} />
                         )}
@@ -631,7 +631,7 @@ function AnalyticsTab() {
             <button key={d} onClick={() => setPeriod(d)}
               style={{ padding: '4px 11px', borderRadius: 5, border: '1px solid', fontSize: '0.7rem', cursor: 'pointer', ...MONO,
                 background: period === d ? 'rgba(26,22,18,0.1)' : 'transparent',
-                color: period === d ? '#8BB8E8' : '#787878',
+                color: period === d ? 'rgba(26,22,18,0.7)' : '#787878',
                 borderColor: period === d ? 'rgba(204,120,92,0.25)' : 'rgba(26,22,18,0.08)',
               }}>
               {d}d

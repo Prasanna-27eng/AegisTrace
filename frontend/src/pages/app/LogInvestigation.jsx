@@ -5,7 +5,7 @@ import useStore from '../../store/useStore';
 import { useNavigate } from 'react-router-dom';
 
 const LOG_TYPES = ['auto','syslog','windows_event','apache_access','nginx_access','firewall','cloudtrail','auth_log','generic'];
-const SEVERITY_COLOR = { high:'#EF4444', medium:'#EAB308', low:'#8BB8E8' };
+const SEVERITY_COLOR = { high:'#EF4444', medium:'#EAB308', low:'rgba(26,22,18,0.7)' };
 const VERDICT_COLOR  = { Malicious:'#EF4444', Suspicious:'#EAB308', Clean:'#22C55E', Unknown:'#888888' };
 
 const EXAMPLES = {
@@ -242,7 +242,7 @@ export default function LogInvestigation() {
                     <div className="section-label">MITRE ATT&CK</div>
                     {result.mitre_techniques.map((m,i) => (
                       <div key={i} style={{ display:'flex', gap:10, padding:'5px 0', borderBottom:'1px solid rgba(26,22,18,0.05)' }}>
-                        <span style={{ fontSize:'0.72rem', color:'#8BB8E8', fontFamily:'JetBrains Mono', minWidth:80 }}>{m.id}</span>
+                        <span style={{ fontSize:'0.72rem', color:'rgba(26,22,18,0.7)', fontFamily:'JetBrains Mono', minWidth:80 }}>{m.id}</span>
                         <span style={{ fontSize:'0.78rem' }}>{m.name}</span>
                         <span style={{ fontSize:'0.68rem', color:'var(--text-muted)', marginLeft:'auto' }}>{m.tactic}</span>
                       </div>

@@ -52,7 +52,7 @@ export default function PillNav() {
         aria-label="Main navigation"
         style={{
           display: 'flex', alignItems: 'center', gap: 2,
-          background: 'rgba(255,255,255,0.035)',
+          background: 'rgba(26,22,18,0.035)',
           border: '1px solid rgba(74,126,200,0.1)',
           borderRadius: 100,
           padding: '4px',

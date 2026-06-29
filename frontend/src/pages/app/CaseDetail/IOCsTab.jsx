@@ -115,8 +115,8 @@ export default function IOCsTab({ caseData, updateCase, caseId }) {
           {iocs.map((item, i) => (
             <div key={i}>
               <div className="at-card" style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono', color: '#787878', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: 3, flexShrink: 0 }}>{item.type}</span>
-                <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.8rem', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', color: defanged[i] ? '#EAB308' : '#8BB8E8' }}>
+                <span style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono', color: '#787878', background: 'rgba(26,22,18,0.05)', padding: '2px 6px', borderRadius: 3, flexShrink: 0 }}>{item.type}</span>
+                <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.8rem', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', color: defanged[i] ? '#EAB308' : 'rgba(26,22,18,0.7)' }}>
                   {defanged[i] || item.ioc}
                 </span>
                 {item.verdict && (

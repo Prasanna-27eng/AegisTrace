@@ -13,7 +13,7 @@ const REFRESH_INTERVAL = 30; // seconds
 
 const SEV  = { critical: '#EF4444', high: '#F97316', medium: '#EAB308', low: '#22C55E' };
 const NODE_COLORS = {
-  user: '#4A7EC8', service_account: '#8BB8E8', api_key: '#EAB308',
+  user: '#4A7EC8', service_account: 'rgba(26,22,18,0.7)', api_key: '#EAB308',
   token: '#F97316', device: '#22C55E', agent: '#2EE6D6', prompt: '#EC4899',
 };
 
@@ -67,7 +67,7 @@ function KPICard({ label, value, sub, icon: Icon, color = '#4A7EC8', alert = fal
 function Panel({ title, icon: Icon, count, children, onNavigate, accentColor = '#4A7EC8', style = {} }) {
   return (
     <div style={{
-      background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(26,22,18,0.08)',
+      background: 'rgba(26,22,18,0.015)', border: '1px solid rgba(26,22,18,0.08)',
       borderRadius: 12, display: 'flex', flexDirection: 'column', overflow: 'hidden', ...style,
     }}>
       <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(26,22,18,0.07)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
@@ -371,9 +371,9 @@ export default function ControlPlane() {
             { label: 'Open Cases',    value: overview.open_cases || 0,    color: 'var(--accent)', icon: Eye },
             { label: 'SLA Breached',  value: overview.sla_breached || 0,  color: '#EF4444', icon: AlertTriangle, alert: (overview.sla_breached || 0) > 0 },
             { label: 'Critical Cases',value: overview.critical_open || 0, color: '#EF4444', icon: Zap, alert: (overview.critical_open || 0) > 0 },
-            { label: 'Avg Close Time',value: overview.avg_time_to_close ? `${overview.avg_time_to_close}h` : '—', color: '#8BB8E8', icon: Clock },
+            { label: 'Avg Close Time',value: overview.avg_time_to_close ? `${overview.avg_time_to_close}h` : '—', color: 'rgba(26,22,18,0.7)', icon: Clock },
           ].map(k => (
-            <div key={k.label} style={{ background: k.alert ? 'rgba(239,68,68,0.04)' : 'rgba(255,255,255,0.015)', border: `1px solid ${k.alert ? 'rgba(239,68,68,0.16)' : 'rgba(26,22,18,0.07)'}`, borderRadius: 10, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div key={k.label} style={{ background: k.alert ? 'rgba(239,68,68,0.04)' : 'rgba(26,22,18,0.015)', border: `1px solid ${k.alert ? 'rgba(239,68,68,0.16)' : 'rgba(26,22,18,0.07)'}`, borderRadius: 10, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
               <k.icon size={15} style={{ color: k.color, flexShrink: 0 }} />
               <div>
                 <div style={{ fontSize: '1.2rem', fontWeight: 700, color: k.alert ? '#EF4444' : '#BDD4E8', ...MONO }}>{k.value}</div>

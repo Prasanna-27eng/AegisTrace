@@ -65,7 +65,7 @@ export default function VisionTab({ caseData, caseId, reload }) {
     <div style={{ padding: '20px 24px', maxWidth: 920 }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-        <Eye size={18} style={{ color: '#8BB8E8' }} />
+        <Eye size={18} style={{ color: 'rgba(26,22,18,0.7)' }} />
         <div>
           <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>Vision Analysis</div>
           <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 1 }}>
@@ -78,13 +78,13 @@ export default function VisionTab({ caseData, caseId, reload }) {
       <div
         onClick={() => fileRef.current?.click()}
         style={{
-          border: `2px dashed ${preview ? 'rgba(143,175,192,0.4)' : 'rgba(255,255,255,0.1)'}`,
+          border: `2px dashed ${preview ? 'rgba(143,175,192,0.4)' : 'rgba(26,22,18,0.1)'}`,
           borderRadius: 8,
           padding: preview ? 12 : 40,
           textAlign: 'center',
           cursor: 'pointer',
           marginBottom: 16,
-          background: preview ? 'transparent' : 'rgba(255,255,255,0.02)',
+          background: preview ? 'transparent' : 'rgba(26,22,18,0.02)',
           transition: 'border-color 200ms',
           position: 'relative',
         }}
@@ -99,7 +99,7 @@ export default function VisionTab({ caseData, caseId, reload }) {
           </>
         ) : (
           <>
-            <Upload size={28} style={{ color: 'rgba(255,255,255,0.2)', margin: '0 auto 12px', display: 'block' }}/>
+            <Upload size={28} style={{ color: 'rgba(26,22,18,0.2)', margin: '0 auto 12px', display: 'block' }}/>
             <div style={{ fontSize: '0.85rem', color: '#787878' }}>Drop a screenshot or click to upload</div>
             <div style={{ fontSize: '0.72rem', color: '#555', marginTop: 6 }}>JPEG, PNG, WebP — max 5 MB</div>
           </>
@@ -112,7 +112,7 @@ export default function VisionTab({ caseData, caseId, reload }) {
         value={context}
         onChange={e => setContext(e.target.value)}
         placeholder="Optional: add context about what this screenshot shows (e.g. 'from infected host', 'phishing email body')"
-        style={{ width: '100%', background: '#111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, color: '#BDD4E8', padding: '10px 12px', fontSize: '0.82rem', resize: 'vertical', minHeight: 56, marginBottom: 14, boxSizing: 'border-box' }}
+        style={{ width: '100%', background: 'var(--card)', border: '1px solid rgba(26,22,18,0.08)', borderRadius: 6, color: '#BDD4E8', padding: '10px 12px', fontSize: '0.82rem', resize: 'vertical', minHeight: 56, marginBottom: 14, boxSizing: 'border-box' }}
       />
 
       <button
@@ -162,7 +162,7 @@ export default function VisionTab({ caseData, caseId, reload }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {result.iocs_detected.map((ioc, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem' }}>
-                    <span style={{ background: 'rgba(139,184,232,0.1)', borderRadius: 3, padding: '2px 6px', color: '#8BB8E8', ...MONO, textTransform: 'uppercase', fontSize: '0.65rem' }}>{ioc.type}</span>
+                    <span style={{ background: 'rgba(139,184,232,0.1)', borderRadius: 3, padding: '2px 6px', color: 'rgba(26,22,18,0.7)', ...MONO, textTransform: 'uppercase', fontSize: '0.65rem' }}>{ioc.type}</span>
                     <span style={{ color: '#BDD4E8', ...MONO }}>{ioc.value}</span>
                   </div>
                 ))}

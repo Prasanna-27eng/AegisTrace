@@ -329,7 +329,7 @@ function PipelineBuilder({
               flex: 1,
               background: overIdx === i && dragIdx !== null && dragIdx !== i
                 ? 'rgba(77,163,255,0.04)'
-                : 'rgba(255,255,255,0.012)',
+                : 'rgba(26,22,18,0.012)',
               border: `1px solid ${cardBorderColor(i, a)}`,
               borderRadius: 8,
               padding: '10px 12px',
@@ -346,7 +346,7 @@ function PipelineBuilder({
                   onDragEnd={() => { setDragIdx(null); setOverIdx(null); }}
                   style={{
                     cursor: 'grab', userSelect: 'none',
-                    color: '#333', fontSize: '15px', lineHeight: 1,
+                    color: 'rgba(26,22,18,0.7)', fontSize: '15px', lineHeight: 1,
                     padding: '2px', flexShrink: 0,
                   }}
                   title="Drag to reorder"

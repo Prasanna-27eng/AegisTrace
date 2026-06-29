@@ -14,7 +14,7 @@ const PLATFORM_LABELS = {
 
 const PLATFORM_COLORS = {
   crowdstrike: '#EF4444',
-  sentinelone:  '#8BB8E8',
+  sentinelone:  'rgba(26,22,18,0.7)',
   carbonblack:  '#22C55E',
 };
 
@@ -241,8 +241,8 @@ export default function EDRTab({ caseData }) {
               <div key={name} style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '5px 10px', borderRadius: 6,
-                background: info.configured ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)',
-                border: `1px solid ${info.configured ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.04)'}`,
+                background: info.configured ? 'rgba(26,22,18,0.04)' : 'rgba(26,22,18,0.02)',
+                border: `1px solid ${info.configured ? 'rgba(26,22,18,0.1)' : 'rgba(26,22,18,0.04)'}`,
                 opacity: info.configured ? 1 : 0.45,
               }}>
                 <StatusDot ok={info.connected} />
@@ -275,8 +275,8 @@ export default function EDRTab({ caseData }) {
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
             placeholder="Hostname or IP address…"
             style={{
-              flex: 1, padding: '7px 10px', background: '#0E0E16',
-              border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6,
+              flex: 1, padding: '7px 10px', background: 'var(--surface)',
+              border: '1px solid rgba(26,22,18,0.08)', borderRadius: 6,
               color: '#BDD4E8', fontSize: '0.82rem', fontFamily: 'JetBrains Mono',
             }}
           />
@@ -302,13 +302,13 @@ export default function EDRTab({ caseData }) {
                   display: 'flex', alignItems: 'center', gap: 10,
                   padding: '9px 12px', borderRadius: 6, cursor: 'pointer',
                   background: selected?.endpoint_id === ep.endpoint_id
-                    ? 'rgba(74,126,200,0.08)' : '#0E0E16',
+                    ? 'rgba(74,126,200,0.08)' : 'var(--surface)',
                   border: `1px solid ${selected?.endpoint_id === ep.endpoint_id
                     ? 'rgba(90,138,159,0.25)' : 'transparent'}`,
                   transition: 'all 0.15s',
                 }}
-                onMouseEnter={e => { if (selected?.endpoint_id !== ep.endpoint_id) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
-                onMouseLeave={e => { if (selected?.endpoint_id !== ep.endpoint_id) e.currentTarget.style.background = '#0E0E16'; }}
+                onMouseEnter={e => { if (selected?.endpoint_id !== ep.endpoint_id) e.currentTarget.style.background = 'rgba(26,22,18,0.04)'; }}
+                onMouseLeave={e => { if (selected?.endpoint_id !== ep.endpoint_id) e.currentTarget.style.background = 'var(--surface)'; }}
               >
                 <Cpu size={13} style={{ color: PLATFORM_COLORS[ep.platform] || '#787878', flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -411,16 +411,16 @@ export default function EDRTab({ caseData }) {
                   onChange={e => setProcFilter(e.target.value)}
                   placeholder="Filter by name or PID…"
                   style={{
-                    padding: '3px 8px', background: '#0E0E16',
-                    border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4,
+                    padding: '3px 8px', background: 'var(--surface)',
+                    border: '1px solid rgba(26,22,18,0.08)', borderRadius: 4,
                     color: '#BDD4E8', fontSize: '0.72rem', fontFamily: 'JetBrains Mono',
                   }}
                 />
               </div>
-              <div style={{ maxHeight: 220, overflowY: 'auto', borderRadius: 6, border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ maxHeight: 220, overflowY: 'auto', borderRadius: 6, border: '1px solid rgba(26,22,18,0.06)' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.72rem', fontFamily: 'JetBrains Mono' }}>
                   <thead>
-                    <tr style={{ background: '#0E0E16', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <tr style={{ background: 'var(--surface)', borderBottom: '1px solid rgba(26,22,18,0.06)' }}>
                       {['PID', 'Name', 'User', 'Kill'].map(h => (
                         <th key={h} style={{ padding: '5px 8px', color: '#787878', textAlign: 'left', fontWeight: 500, fontFamily: 'Inter, sans-serif', fontSize: '0.65rem' }}>{h}</th>
                       ))}
@@ -428,8 +428,8 @@ export default function EDRTab({ caseData }) {
                   </thead>
                   <tbody>
                     {filteredProcs.slice(0, 80).map((p, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: i % 2 ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
-                        <td style={{ padding: '4px 8px', color: '#8BB8E8' }}>{p.pid}</td>
+                      <tr key={i} style={{ borderBottom: '1px solid rgba(26,22,18,0.04)', background: i % 2 ? 'transparent' : 'rgba(26,22,18,0.01)' }}>
+                        <td style={{ padding: '4px 8px', color: 'rgba(26,22,18,0.7)' }}>{p.pid}</td>
                         <td style={{ padding: '4px 8px', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name || p.command || '—'}</td>
                         <td style={{ padding: '4px 8px', color: '#787878' }}>{p.user || '—'}</td>
                         <td style={{ padding: '4px 8px' }}>
@@ -455,8 +455,8 @@ export default function EDRTab({ caseData }) {
                   onChange={e => setPidInput(e.target.value)}
                   placeholder="Enter PID…"
                   style={{
-                    width: 80, padding: '4px 8px', background: '#0E0E16',
-                    border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4,
+                    width: 80, padding: '4px 8px', background: 'var(--surface)',
+                    border: '1px solid rgba(26,22,18,0.1)', borderRadius: 4,
                     color: '#BDD4E8', fontSize: '0.75rem', fontFamily: 'JetBrains Mono',
                   }}
                 />
@@ -465,8 +465,8 @@ export default function EDRTab({ caseData }) {
                   disabled={!pidInput.trim() || !!loadingAction}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px',
-                    background: pidInput.trim() ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.04)',
-                    border: `1px solid ${pidInput.trim() ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                    background: pidInput.trim() ? 'rgba(239,68,68,0.15)' : 'rgba(26,22,18,0.04)',
+                    border: `1px solid ${pidInput.trim() ? 'rgba(239,68,68,0.3)' : 'rgba(26,22,18,0.06)'}`,
                     borderRadius: 4, color: pidInput.trim() ? '#EF4444' : '#787878',
                     fontSize: '0.75rem', cursor: pidInput.trim() ? 'pointer' : 'not-allowed',
                   }}
@@ -492,8 +492,8 @@ export default function EDRTab({ caseData }) {
                 onKeyDown={e => e.key === 'Enter' && handleRunCommand()}
                 placeholder="e.g. netstat -an  or  ps  or  reg query HKLM\\Software…"
                 style={{
-                  flex: 1, padding: '6px 10px', background: '#0E0E16',
-                  border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6,
+                  flex: 1, padding: '6px 10px', background: 'var(--surface)',
+                  border: '1px solid rgba(26,22,18,0.08)', borderRadius: 6,
                   color: '#BDD4E8', fontSize: '0.78rem', fontFamily: 'JetBrains Mono',
                 }}
               />
@@ -510,7 +510,7 @@ export default function EDRTab({ caseData }) {
             {cmdOutput && (
               <pre style={{
                 marginTop: 8, padding: '10px 12px', background: '#060606',
-                border: '1px solid rgba(255,255,255,0.07)', borderRadius: 6,
+                border: '1px solid rgba(26,22,18,0.07)', borderRadius: 6,
                 fontSize: '0.72rem', fontFamily: 'JetBrains Mono', color: '#A0FFB0',
                 maxHeight: 200, overflowY: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all',
               }}>
@@ -553,12 +553,12 @@ export default function EDRTab({ caseData }) {
           {showHistory && (
             <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
               {history.map(a => (
-                <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.72rem', padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.72rem', padding: '4px 0', borderBottom: '1px solid rgba(26,22,18,0.04)' }}>
                   <span style={{ color: a.status === 'success' ? '#22C55E' : a.status === 'failed' ? '#EF4444' : '#EAB308', flexShrink: 0 }}>
                     {a.status === 'success' ? '✓' : a.status === 'failed' ? '✗' : '…'}
                   </span>
                   <PlatformBadge platform={a.platform} />
-                  <span style={{ fontFamily: 'JetBrains Mono', color: '#8BB8E8' }}>{a.action}</span>
+                  <span style={{ fontFamily: 'JetBrains Mono', color: 'rgba(26,22,18,0.7)' }}>{a.action}</span>
                   <span style={{ color: '#BDD4E8', fontWeight: 500 }}>{a.hostname || a.endpoint_id}</span>
                   {a.target && <span style={{ color: '#787878', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>{a.target}</span>}
                   <span style={{ marginLeft: 'auto', color: '#787878', fontFamily: 'JetBrains Mono', fontSize: '0.62rem', flexShrink: 0 }}>

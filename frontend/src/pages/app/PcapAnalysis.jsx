@@ -34,7 +34,7 @@ function Section({ title, icon: Icon, children, defaultOpen = true }) {
         style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', marginBottom: open ? 12 : 0 }}
         onClick={() => setOpen(v => !v)}
       >
-        <Icon size={13} style={{ color: '#8BB8E8' }} />
+        <Icon size={13} style={{ color: 'rgba(26,22,18,0.7)' }} />
         <span style={{ fontSize: '0.76rem', fontWeight: 600 }}>{title}</span>
         <span style={{ marginLeft: 'auto' }}>
           {open ? <ChevronDown size={12} style={{ color: 'var(--text-muted)' }} /> : <ChevronRight size={12} style={{ color: 'var(--text-muted)' }} />}
@@ -124,7 +124,7 @@ export default function PcapAnalysis() {
               onChange={e => handleFile(e.target.files[0])} />
             {uploading ? (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, color: 'var(--text-muted)' }}>
-                <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', color: '#8BB8E8' }} />
+                <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', color: 'rgba(26,22,18,0.7)' }} />
                 <div style={{ fontSize: '0.82rem' }}>Parsing packets and running AI analysis…</div>
                 <div style={{ fontSize: '0.72rem' }}>Large captures may take up to 2 minutes</div>
               </div>
@@ -242,7 +242,7 @@ export default function PcapAnalysis() {
                       background: 'rgba(26,22,18,0.05)', border: '1px solid rgba(26,22,18,0.08)',
                       fontFamily: 'JetBrains Mono',
                     }}>
-                      <span style={{ color: '#8BB8E8' }}>{proto}</span>
+                      <span style={{ color: 'rgba(26,22,18,0.7)' }}>{proto}</span>
                       <span style={{ color: 'var(--text-muted)' }}> · {count.toLocaleString()}</span>
                     </div>
                   ))}
@@ -257,7 +257,7 @@ export default function PcapAnalysis() {
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.72rem' }}>
                         <span style={{ fontFamily: 'JetBrains Mono', color: t.is_private ? '#787878' : '#EF4444', minWidth: 120 }}>{t.ip}</span>
                         <div style={{ flex: 1, height: 4, background: 'rgba(26,22,18,0.07)', borderRadius: 2, overflow: 'hidden' }}>
-                          <div style={{ width: `${Math.min((t.bytes / (result.top_talkers[0]?.bytes || 1)) * 100, 100)}%`, height: '100%', background: t.is_private ? '#8BB8E8' : '#EF4444', borderRadius: 2 }} />
+                          <div style={{ width: `${Math.min((t.bytes / (result.top_talkers[0]?.bytes || 1)) * 100, 100)}%`, height: '100%', background: t.is_private ? 'rgba(26,22,18,0.7)' : '#EF4444', borderRadius: 2 }} />
                         </div>
                         <span style={{ color: 'var(--text-muted)', minWidth: 60, textAlign: 'right' }}>{(t.bytes / 1024).toFixed(1)} KB</span>
                         <span style={{ color: 'var(--text-muted)', minWidth: 55, textAlign: 'right' }}>{t.packets} pkts</span>
@@ -290,7 +290,7 @@ export default function PcapAnalysis() {
                       <div key={i} style={{ display: 'flex', gap: 8, padding: '3px 0', fontSize: '0.72rem', borderBottom: '1px solid rgba(26,22,18,0.05)' }}>
                         <span style={{
                           padding: '1px 6px', borderRadius: 3, fontSize: '0.62rem', fontWeight: 600,
-                          background: 'rgba(139,184,232,0.12)', color: '#8BB8E8',
+                          background: 'rgba(139,184,232,0.12)', color: 'rgba(26,22,18,0.7)',
                         }}>{ioc.type}</span>
                         <span style={{ fontFamily: 'JetBrains Mono', flex: 1 }}>{ioc.ioc}</span>
                         <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem' }}>{ioc.source}</span>

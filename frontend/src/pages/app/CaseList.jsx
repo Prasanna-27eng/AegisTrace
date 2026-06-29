@@ -44,7 +44,7 @@ function ConfirmModal({ caseNumber, onConfirm, onCancel }) {
     >
       <div
         onClick={e => e.stopPropagation()}
-        style={{ background: '#111', border: '1px solid rgba(26,22,18,0.12)', borderRadius: 12, padding: '24px 28px', maxWidth: 400, width: '90%', boxShadow: '0 24px 64px rgba(0,0,0,0.8)' }}
+        style={{ background: 'var(--card)', border: '1px solid rgba(26,22,18,0.12)', borderRadius: 12, padding: '24px 28px', maxWidth: 400, width: '90%', boxShadow: '0 24px 64px rgba(0,0,0,0.8)' }}
       >
         <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: 8, color: 'var(--text-primary)' }}>Delete case?</h3>
         <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: 24, lineHeight: 1.55 }}>

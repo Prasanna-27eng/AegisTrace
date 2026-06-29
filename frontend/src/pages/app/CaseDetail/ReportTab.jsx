@@ -93,7 +93,7 @@ export default function ReportTab({ caseId, caseData }) {
       btnStyle: {},
     },
     {
-      icon: <FileText size={28} style={{ color: '#8BB8E8', marginBottom: 12 }} />,
+      icon: <FileText size={28} style={{ color: 'rgba(26,22,18,0.7)', marginBottom: 12 }} />,
       title: 'Word Document',
       desc: 'Editable DOCX for sharing with stakeholders or including in SOC documentation.',
       url: `/api/reports/${caseId}/docx`,
@@ -111,7 +111,7 @@ export default function ReportTab({ caseId, caseData }) {
       filename: `${caseData.case_number}-dora.pdf`,
       btnClass: 'btn-ghost',
       btnStyle: { borderColor: 'rgba(34,197,94,0.3)', color: '#22C55E' },
-      cardStyle: { borderColor: isClosed ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.07)' },
+      cardStyle: { borderColor: isClosed ? 'rgba(34,197,94,0.2)' : 'rgba(26,22,18,0.07)' },
     },
   ];
 
@@ -187,7 +187,7 @@ export default function ReportTab({ caseId, caseData }) {
               </p>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                  <tr style={{ borderBottom: '1px solid rgba(26,22,18,0.08)' }}>
                     {['Section', 'Title', 'Status', 'Evidence'].map(h => (
                       <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#787878', textTransform: 'uppercase' }}>{h}</th>
                     ))}
@@ -195,7 +195,7 @@ export default function ReportTab({ caseId, caseData }) {
                 </thead>
                 <tbody>
                   {dpdpaReport.dpdpa_obligations.map((o, i) => (
-                    <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                    <tr key={i} style={{ borderBottom: '1px solid rgba(26,22,18,0.04)' }}>
                       <td style={{ padding: '10px 12px', color: '#60A5FA', fontFamily: 'JetBrains Mono, monospace', fontSize: 11 }}>{o.section}</td>
                       <td style={{ padding: '10px 12px', color: '#BDD4E8' }}>{o.title}</td>
                       <td style={{ padding: '10px 12px' }}>
@@ -291,7 +291,7 @@ export default function ReportTab({ caseId, caseData }) {
             {/* Regulatory mapping tables */}
             {Object.entries(regPackage.regulatory_mapping).map(([reg, articles]) => (
               <div key={reg} style={{ marginBottom: 16 }}>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: '#8BB8E8', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'rgba(26,22,18,0.7)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>
                   {reg.replace(/_/g,' ')}
                 </div>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-ui)', fontSize: 12 }}>
@@ -357,7 +357,7 @@ export default function ReportTab({ caseId, caseData }) {
                     </span>
                   </div>
                 </div>
-                <div style={{ height: 5, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{ height: 5, background: 'rgba(26,22,18,0.06)', borderRadius: 3, overflow: 'hidden' }}>
                   <div style={{ width: `${pct}%`, height: '100%', background: isReady ? '#22C55E' : pct >= 57 ? '#EAB308' : '#EF4444', borderRadius: 3, transition: 'width 0.5s ease' }} />
                 </div>
               </div>
@@ -366,7 +366,7 @@ export default function ReportTab({ caseId, caseData }) {
             {/* Section checklist */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
               {sections.map(s => (
-                <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '5px 0', borderBottom: '1px solid rgba(26,22,18,0.04)' }}>
                   {s.done
                     ? <CheckCircle size={13} style={{ color: '#22C55E', flexShrink: 0 }} />
                     : <XCircle size={13} style={{ color: '#EF4444', opacity: 0.5, flexShrink: 0 }} />}

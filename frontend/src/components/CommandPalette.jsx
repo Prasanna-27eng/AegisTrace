@@ -146,7 +146,7 @@ export default function CommandPalette({ open, onClose, recentCases = [], onOpen
 
   if (!open) return null;
 
-  const SEV_COLOR = { critical: '#EF4444', high: '#F97316', medium: '#EAB308', low: '#8BB8E8', info: '#4A6A8A' };
+  const SEV_COLOR = { critical: '#EF4444', high: '#F97316', medium: '#EAB308', low: 'rgba(26,22,18,0.7)', info: '#4A6A8A' };
 
   let globalIdx = 0;
 
@@ -207,7 +207,7 @@ export default function CommandPalette({ open, onClose, recentCases = [], onOpen
                         borderLeft: isSelected ? '2px solid #4A7EC8' : '2px solid transparent',
                       }}
                     >
-                      <item.Icon size={15} style={{ color: isSelected ? '#8BB8E8' : '#4A6A8A', flexShrink: 0 }} />
+                      <item.Icon size={15} style={{ color: isSelected ? 'rgba(26,22,18,0.7)' : '#4A6A8A', flexShrink: 0 }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: '0.84rem', color: isSelected ? '#BDD4E8' : '#7A9DB8' }}>{highlight(item.label, q)}</div>
                         {item.sub && (

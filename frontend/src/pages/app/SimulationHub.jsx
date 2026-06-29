@@ -104,7 +104,7 @@ function timeAgo(d) {
 /* ── Result status with morph ────────────────────────────────────────────── */
 function ResultBadge({ result, morphing }) {
   const label = result === 'DETECTED' ? 'DETECTED' : 'NOT_DETECTED';
-  const color = result === 'DETECTED' ? '#00FF66' : '#FF3333';
+  const color = result === 'DETECTED' ? '#059669' : '#DC2626';
   const display = useMorphText(label, morphing);
 
   return (
@@ -188,7 +188,7 @@ export default function SimulationHub() {
   const detectionRate = totalRuns ? Math.round((detected / totalRuns) * 100) : 0;
 
   return (
-    <div style={{ padding: '28px 32px', maxWidth: 1400, background: '#000000', minHeight: '100vh' }}>
+    <div style={{ padding: '28px 32px', maxWidth: 1400, background: 'var(--bg)', minHeight: '100vh' }}>
 
       {/* ── Header ── */}
       <div style={{ marginBottom: 32, paddingBottom: 24, borderBottom: '1px solid rgba(26,22,18,0.07)' }}>
@@ -208,9 +208,9 @@ export default function SimulationHub() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, background: 'rgba(26,22,18,0.05)', marginBottom: 32 }}>
         {[
           { label: 'Total Runs',      value: totalRuns,       color: 'var(--text-primary)' },
-          { label: 'Detected',        value: detected,        color: '#00FF66' },
-          { label: 'Not Detected',    value: notDetected,     color: '#FF3333' },
-          { label: 'Detection Rate',  value: `${detectionRate}%`, color: detectionRate >= 80 ? '#00FF66' : detectionRate >= 50 ? '#F97316' : '#FF3333' },
+          { label: 'Detected',        value: detected,        color: '#059669' },
+          { label: 'Not Detected',    value: notDetected,     color: '#DC2626' },
+          { label: 'Detection Rate',  value: `${detectionRate}%`, color: detectionRate >= 80 ? '#059669' : detectionRate >= 50 ? '#F97316' : '#DC2626' },
         ].map(k => (
           <div key={k.label} style={{ background: 'var(--card)', padding: '20px 22px' }}>
             <div style={{ fontSize: '2rem', fontWeight: 300, color: k.color, letterSpacing: '-0.04em', ...MONO, marginBottom: 6 }}>{k.value}</div>
@@ -229,7 +229,7 @@ export default function SimulationHub() {
               5 Attack Techniques
             </div>
             <button onClick={runAll} disabled={!!running}
-              style={{ background: running ? 'rgba(26,22,18,0.05)' : '#FFFFFF', color: running ? '#505050' : '#000000', border: 'none', padding: '7px 16px', fontSize: '0.62rem', fontWeight: 700, cursor: running ? 'not-allowed' : 'pointer', letterSpacing: '0.12em', textTransform: 'uppercase', ...MONO, display: 'flex', alignItems: 'center', gap: 6, transition: 'opacity 0.2s' }}
+              style={{ background: running ? 'rgba(26,22,18,0.05)' : '#FFFFFF', color: running ? '#505050' : 'var(--bg)', border: 'none', padding: '7px 16px', fontSize: '0.62rem', fontWeight: 700, cursor: running ? 'not-allowed' : 'pointer', letterSpacing: '0.12em', textTransform: 'uppercase', ...MONO, display: 'flex', alignItems: 'center', gap: 6, transition: 'opacity 0.2s' }}
               onMouseEnter={e => !running && (e.currentTarget.style.opacity = '0.8')}
               onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
               <Play size={10} /> RUN ALL
@@ -248,7 +248,7 @@ export default function SimulationHub() {
                   style={{
                     background: active ? 'rgba(74,126,200,0.06)' : 'var(--card)',
                     padding: '16px 18px', cursor: 'pointer',
-                    borderLeft: `2px solid ${active ? '#FFFFFF' : (res ? (res.result === 'DETECTED' ? '#00FF66' : '#FF3333') : 'transparent')}`,
+                    borderLeft: `2px solid ${active ? '#FFFFFF' : (res ? (res.result === 'DETECTED' ? '#059669' : '#DC2626') : 'transparent')}`,
                     transition: 'background 0.15s',
                   }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
@@ -310,8 +310,8 @@ export default function SimulationHub() {
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
                   {selectedResult.result === 'DETECTED'
-                    ? <CheckCircle size={18} style={{ color: '#00FF66' }} />
-                    : <AlertTriangle size={18} style={{ color: '#FF3333' }} />}
+                    ? <CheckCircle size={18} style={{ color: '#059669' }} />
+                    : <AlertTriangle size={18} style={{ color: '#DC2626' }} />}
                   <div>
                     <ResultBadge result={selectedResult.result} morphing={morphing === selectedTech} />
                     <div style={{ fontSize: '0.64rem', color: '#505050', ...MONO, marginTop: 3 }}>
@@ -320,7 +320,7 @@ export default function SimulationHub() {
                   </div>
                   {selectedResult.confidence && (
                     <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-                      <div style={{ fontSize: '1.4rem', fontWeight: 300, color: '#00FF66', ...MONO }}>{Math.round(selectedResult.confidence * 100)}%</div>
+                      <div style={{ fontSize: '1.4rem', fontWeight: 300, color: '#059669', ...MONO }}>{Math.round(selectedResult.confidence * 100)}%</div>
                       <div style={{ fontSize: '0.58rem', color: '#505050', textTransform: 'uppercase', letterSpacing: '0.1em' }}>confidence</div>
                     </div>
                   )}
@@ -333,7 +333,7 @@ export default function SimulationHub() {
 
                 {/* Evidence */}
                 {selectedResult.evidence && Object.keys(selectedResult.evidence).length > 0 && (
-                  <div style={{ background: '#000000', border: '1px solid rgba(26,22,18,0.07)', padding: '14px' }}>
+                  <div style={{ background: 'var(--bg)', border: '1px solid rgba(26,22,18,0.07)', padding: '14px' }}>
                     <div style={{ fontSize: '0.58rem', color: '#383838', textTransform: 'uppercase', letterSpacing: '0.14em', ...MONO, marginBottom: 10 }}>
                       Evidence
                     </div>
@@ -385,10 +385,10 @@ export default function SimulationHub() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: 'rgba(26,22,18,0.04)' }}>
                 {history.slice(0, 12).map(h => (
                   <div key={h.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 12px', background: 'var(--card)' }}>
-                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: h.result === 'DETECTED' ? '#00FF66' : '#FF3333', flexShrink: 0 }} />
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: h.result === 'DETECTED' ? '#059669' : '#DC2626', flexShrink: 0 }} />
                     <span style={{ fontSize: '0.62rem', color: '#505050', ...MONO, width: 72, flexShrink: 0 }}>{h.technique_id}</span>
                     <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.technique_name}</span>
-                    <span style={{ fontSize: '0.6rem', fontWeight: 700, color: h.result === 'DETECTED' ? '#00FF66' : '#FF3333', ...MONO, flexShrink: 0, letterSpacing: '0.06em' }}>
+                    <span style={{ fontSize: '0.6rem', fontWeight: 700, color: h.result === 'DETECTED' ? '#059669' : '#DC2626', ...MONO, flexShrink: 0, letterSpacing: '0.06em' }}>
                       {h.result === 'DETECTED' ? 'DETECTED' : 'MISS'}
                     </span>
                     <span style={{ fontSize: '0.6rem', color: '#383838', ...MONO, flexShrink: 0, minWidth: 54, textAlign: 'right' }}>

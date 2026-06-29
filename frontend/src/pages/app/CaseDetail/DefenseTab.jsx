@@ -3,7 +3,7 @@ import { Shield, Zap, CheckCircle, XCircle, Play, RefreshCw } from '../../../com
 import api from '../../../api/client';
 
 const TIER_COLORS = {
-  observe:         'rgba(255,255,255,0.15)',
+  observe:         'rgba(26,22,18,0.15)',
   recommend:       '#4A7EC8',
   'auto-safe':     '#22C55E',
   'auto-veto':     '#F59E0B',
@@ -17,7 +17,7 @@ const BLAST_COLORS = {
 };
 
 function TierBadge({ tier }) {
-  const bg = TIER_COLORS[tier] || 'rgba(255,255,255,0.15)';
+  const bg = TIER_COLORS[tier] || 'rgba(26,22,18,0.15)';
   return (
     <span style={{
       display: 'inline-block',
@@ -27,9 +27,9 @@ function TierBadge({ tier }) {
       fontWeight: 700,
       letterSpacing: '0.06em',
       textTransform: 'uppercase',
-      background: bg === 'rgba(255,255,255,0.15)' ? bg : `${bg}22`,
-      color: bg === 'rgba(255,255,255,0.15)' ? '#E8E8F0' : bg,
-      border: `1px solid ${bg === 'rgba(255,255,255,0.15)' ? 'rgba(255,255,255,0.2)' : `${bg}44`}`,
+      background: bg === 'rgba(26,22,18,0.15)' ? bg : `${bg}22`,
+      color: bg === 'rgba(26,22,18,0.15)' ? '#E8E8F0' : bg,
+      border: `1px solid ${bg === 'rgba(26,22,18,0.15)' ? 'rgba(26,22,18,0.2)' : `${bg}44`}`,
     }}>
       {tier}
     </span>
@@ -63,7 +63,7 @@ function D3FendBadge({ id }) {
       fontWeight: 600,
       padding: '2px 7px',
       background: 'rgba(74,126,200,0.15)',
-      color: '#8BB8E8',
+      color: 'rgba(26,22,18,0.7)',
       borderRadius: 4,
       border: '1px solid rgba(74,126,200,0.3)',
     }}>
@@ -86,8 +86,8 @@ function RecCard({ rec, onStatusChange }) {
 
   return (
     <div style={{
-      background: 'rgba(255,255,255,0.03)',
-      border: '1px solid rgba(255,255,255,0.08)',
+      background: 'rgba(26,22,18,0.03)',
+      border: '1px solid rgba(26,22,18,0.08)',
       borderRadius: 10,
       padding: '14px 16px',
       marginBottom: 10,
@@ -124,7 +124,7 @@ function RecCard({ rec, onStatusChange }) {
           background: rec.status === 'executed' ? 'rgba(34,197,94,0.15)' :
                       rec.status === 'approved' ? 'rgba(74,126,200,0.15)' :
                       rec.status === 'vetoed' || rec.status === 'rejected' ? 'rgba(239,68,68,0.15)' :
-                      'rgba(255,255,255,0.08)',
+                      'rgba(26,22,18,0.08)',
           color: rec.status === 'executed' ? '#22C55E' :
                  rec.status === 'approved' ? '#4A7EC8' :
                  rec.status === 'vetoed' || rec.status === 'rejected' ? '#EF4444' :
@@ -178,7 +178,7 @@ function RecCard({ rec, onStatusChange }) {
               padding: '5px 14px',
               background: 'rgba(74,126,200,0.15)',
               border: '1px solid rgba(74,126,200,0.35)',
-              borderRadius: 6, color: '#8BB8E8', fontSize: 11, fontWeight: 600,
+              borderRadius: 6, color: 'rgba(26,22,18,0.7)', fontSize: 11, fontWeight: 600,
               cursor: 'pointer',
             }}
           >
@@ -261,7 +261,7 @@ export default function DefenseTab({ caseData }) {
         <div style={{ display: 'flex', gap: 8 }}>
           <button
             onClick={load}
-            style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '6px 10px', color: '#6B7280', cursor: 'pointer' }}
+            style={{ background: 'none', border: '1px solid rgba(26,22,18,0.1)', borderRadius: 6, padding: '6px 10px', color: '#6B7280', cursor: 'pointer' }}
           >
             <RefreshCw size={13} />
           </button>
@@ -274,7 +274,7 @@ export default function DefenseTab({ caseData }) {
                 padding: '7px 16px',
                 background: 'rgba(74,126,200,0.15)',
                 border: '1px solid rgba(74,126,200,0.4)',
-                borderRadius: 7, color: '#8BB8E8', fontSize: 12, fontWeight: 600,
+                borderRadius: 7, color: 'rgba(26,22,18,0.7)', fontSize: 12, fontWeight: 600,
                 cursor: generating ? 'not-allowed' : 'pointer',
               }}
             >
@@ -289,8 +289,8 @@ export default function DefenseTab({ caseData }) {
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '7px 14px',
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(26,22,18,0.05)',
+                border: '1px solid rgba(26,22,18,0.1)',
                 borderRadius: 7, color: '#6B7280', fontSize: 12,
                 cursor: generating ? 'not-allowed' : 'pointer',
               }}
@@ -315,8 +315,8 @@ export default function DefenseTab({ caseData }) {
       ) : recs.length === 0 ? (
         <div style={{
           textAlign: 'center', padding: '48px 24px',
-          background: 'rgba(255,255,255,0.02)',
-          border: '1px dashed rgba(255,255,255,0.08)',
+          background: 'rgba(26,22,18,0.02)',
+          border: '1px dashed rgba(26,22,18,0.08)',
           borderRadius: 12,
         }}>
           <Shield size={32} style={{ color: '#374151', marginBottom: 12 }} />
@@ -333,7 +333,7 @@ export default function DefenseTab({ caseData }) {
               const count = recs.filter(r => r.status === s).length;
               const color = s === 'executed' ? '#22C55E' : s === 'approved' ? '#4A7EC8' : s === 'rejected' ? '#EF4444' : '#6B7280';
               return (
-                <div key={s} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '8px 14px', minWidth: 80 }}>
+                <div key={s} style={{ background: 'rgba(26,22,18,0.03)', border: '1px solid rgba(26,22,18,0.07)', borderRadius: 8, padding: '8px 14px', minWidth: 80 }}>
                   <div style={{ fontSize: 18, fontWeight: 700, color, fontFamily: 'JetBrains Mono, monospace' }}>{count}</div>
                   <div style={{ fontSize: 10, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s}</div>
                 </div>

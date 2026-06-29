@@ -10,7 +10,7 @@ const CATEGORY_META = {
   token_use:       { label: 'Token Use',         color: '#EAB308',  Icon: Key },
   privilege_change:{ label: 'Privilege Change',  color: '#F97316',  Icon: Shield },
   agent_action:    { label: 'Agent Action',      color: '#4A7EC8',  Icon: Bot },
-  ai_output:       { label: 'AI Output',         color: '#8BB8E8',  Icon: Bot },
+  ai_output:       { label: 'AI Output',         color: 'rgba(26,22,18,0.7)',  Icon: Bot },
   approval:        { label: 'Approved',          color: '#22C55E',  Icon: Check },
   rejection:       { label: 'Rejected',          color: '#EF4444',  Icon: X },
   policy_override: { label: 'Policy Override',   color: '#F97316',  Icon: AlertTriangle },
@@ -25,7 +25,7 @@ const TRUST_COLOR = {
   revoked:    '#888888',
 };
 
-const ACTOR_TYPE_COLOR = { human: '#BDD4E8', ai: '#8BB8E8', agent: '#4A7EC8', system: '#787878' };
+const ACTOR_TYPE_COLOR = { human: '#BDD4E8', ai: 'rgba(26,22,18,0.7)', agent: '#4A7EC8', system: '#787878' };
 
 function timeLabel(d) {
   if (!d) return '';
@@ -68,7 +68,7 @@ export default function TrustTimelineTab({ caseId }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <GitBranch size={17} style={{ color: '#8BB8E8' }} />
+          <GitBranch size={17} style={{ color: 'rgba(26,22,18,0.7)' }} />
           <div>
             <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>Trust Timeline</div>
             <div style={{ fontSize: '0.7rem', color: '#787878', marginTop: 1 }}>Chain of trust events — logins, token use, privilege changes, agent actions, approvals</div>
@@ -134,7 +134,7 @@ export default function TrustTimelineTab({ caseId }) {
       ) : (
         <div style={{ position: 'relative', paddingLeft: 28 }}>
           {/* Vertical line */}
-          <div style={{ position: 'absolute', left: 11, top: 8, bottom: 8, width: 1, background: 'rgba(255,255,255,0.08)' }} />
+          <div style={{ position: 'absolute', left: 11, top: 8, bottom: 8, width: 1, background: 'rgba(26,22,18,0.08)' }} />
 
           {events.map((ev, i) => {
             const meta = CATEGORY_META[ev.event_category] || CATEGORY_META.action;
@@ -150,7 +150,7 @@ export default function TrustTimelineTab({ caseId }) {
                   boxShadow: `0 0 8px ${TRUST_COLOR[ev.trust_level] || '#888888'}66`,
                 }} />
 
-                <div style={{ background: 'rgba(240,240,248,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '12px 14px' }}>
+                <div style={{ background: 'rgba(26,22,18,0.02)', border: '1px solid rgba(26,22,18,0.07)', borderRadius: 8, padding: '12px 14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                     <Icon size={13} style={{ color: meta.color, flexShrink: 0 }} />
                     <span style={{ fontSize: '0.72rem', fontWeight: 600, color: meta.color, ...MONO }}>{meta.label}</span>
@@ -161,7 +161,7 @@ export default function TrustTimelineTab({ caseId }) {
                   <div style={{ display: 'flex', gap: 12, fontSize: '0.68rem', color: '#787878', ...MONO }}>
                     {ev.actor && <span>Actor: <span style={{ color: ACTOR_TYPE_COLOR[ev.actor_type] || '#BDD4E8' }}>{ev.actor}</span></span>}
                     {ev.actor_type && <span style={{ color: ACTOR_TYPE_COLOR[ev.actor_type] || '#787878' }}>[{ev.actor_type}]</span>}
-                    {ev.evidence_ref && <span>Ref: <span style={{ color: '#8BB8E8' }}>{ev.evidence_ref}</span></span>}
+                    {ev.evidence_ref && <span>Ref: <span style={{ color: 'rgba(26,22,18,0.7)' }}>{ev.evidence_ref}</span></span>}
                   </div>
                 </div>
               </div>

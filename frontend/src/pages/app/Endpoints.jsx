@@ -245,7 +245,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
   ];
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', height:'100%', background:'#0A0A0A', border:'1px solid rgba(26,22,18,0.09)', borderRadius:10, overflow:'hidden' }}>
+    <div style={{ display:'flex', flexDirection:'column', height:'100%', background:'var(--surface)', border:'1px solid rgba(26,22,18,0.09)', borderRadius:10, overflow:'hidden' }}>
 
       {confirmModal && (
         <ConfirmModal
@@ -456,16 +456,16 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                 {rawLogs.length === 0 ? 'Waiting for logs — agent ships every 3s via real-time stream.' : 'No logs match your search.'}
               </div>
             ) : (
-              <div ref={logsRef} style={{ background:'#030303', border:'1px solid rgba(26,22,18,0.08)', borderRadius:8, maxHeight:520, overflowY:'auto', ...MONO, fontSize:'0.7rem' }}>
+              <div ref={logsRef} style={{ background:'var(--surface)', border:'1px solid rgba(26,22,18,0.08)', borderRadius:8, maxHeight:520, overflowY:'auto', ...MONO, fontSize:'0.7rem' }}>
                 {filteredLogs.map((log, i) => {
                   const sc = SEV_CLR[log.severity] || '#555';
                   const ts = log.ts ? new Date(log.ts).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}) : '';
                   const isBad = log.event_type === 'failed_login';
                   const isSudo = log.event_type === 'sudo_command';
                   return (
-                    <div key={i} style={{ display:'flex', gap:8, padding:'4px 10px', borderBottom:'1px solid rgba(255,255,255,0.025)', alignItems:'flex-start',
+                    <div key={i} style={{ display:'flex', gap:8, padding:'4px 10px', borderBottom:'1px solid rgba(26,22,18,0.025)', alignItems:'flex-start',
                       background: isBad ? 'rgba(239,68,68,0.05)' : isSudo ? 'rgba(249,115,22,0.04)' : 'transparent' }}>
-                      <span style={{ color:'#333', flexShrink:0, minWidth:62 }}>{ts}</span>
+                      <span style={{ color:'rgba(26,22,18,0.7)', flexShrink:0, minWidth:62 }}>{ts}</span>
                       <span style={{ flexShrink:0, minWidth:14 }}>{CAT_ICON[log.category] || '●'}</span>
                       <span style={{ color:sc, flexShrink:0, minWidth:52, textTransform:'uppercase', fontSize:'0.58rem', paddingTop:1 }}>{log.severity}</span>
                       <span style={{ color:'#4A7EC8', flexShrink:0, minWidth:55, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{log.source}</span>
@@ -490,7 +490,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
                 {cmdLoading==='collect_now' ? <Loader2 size={10} className="spinner"/> : <RefreshCw size={10}/>} Collect Now
               </button>
             </div>
-            <div style={{ background:'#030303', border:'1px solid rgba(26,22,18,0.08)', borderRadius:8, overflow:'hidden' }}>
+            <div style={{ background:'var(--surface)', border:'1px solid rgba(26,22,18,0.08)', borderRadius:8, overflow:'hidden' }}>
               <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'0.72rem', ...MONO }}>
                 <thead>
                   <tr style={{ background:'rgba(26,22,18,0.04)' }}>
@@ -540,7 +540,7 @@ function EndpointDetail({ ep, onClose, onDelete, addToast }) {
             <div style={{ display:'flex', justifyContent:'space-between', marginBottom:10, alignItems:'center' }}>
               <span style={{ fontSize:'0.68rem', color:'var(--text-muted)', ...MONO }}>{detail?.connections?.length ?? 0} active connections</span>
             </div>
-            <div style={{ background:'#030303', border:'1px solid rgba(26,22,18,0.08)', borderRadius:8, overflow:'hidden' }}>
+            <div style={{ background:'var(--surface)', border:'1px solid rgba(26,22,18,0.08)', borderRadius:8, overflow:'hidden' }}>
               <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'0.72rem', ...MONO }}>
                 <thead>
                   <tr style={{ background:'rgba(26,22,18,0.04)' }}>
@@ -932,7 +932,7 @@ function MemoryForensicsPanel({ hostname }) {
                 </div>
                 {/* Expanded: Volatility analysis */}
                 {isExpanded && (
-                  <div style={{ marginTop:12, padding:12, background:'#030308',
+                  <div style={{ marginTop:12, padding:12, background:'var(--surface)',
                     borderRadius:6, border:'1px solid rgba(26,22,18,0.07)' }}>
                     {analysisObj ? (
                       <>
@@ -1089,7 +1089,7 @@ function SetupGuideModal({ onClose, ingestKey, onFetchKey }) {
             </div>
           ) : (
             <div style={{ position:'relative' }}>
-              <div style={{ padding:'16px 100px 16px 16px', background:'#030303', border:'1px solid rgba(90,138,159,0.2)', borderRadius:9, fontFamily:'JetBrains Mono', fontSize:'0.72rem', color:'#8FAFC0', wordBreak:'break-all', lineHeight:1.7 }}>
+              <div style={{ padding:'16px 100px 16px 16px', background:'var(--surface)', border:'1px solid rgba(90,138,159,0.2)', borderRadius:9, fontFamily:'JetBrains Mono', fontSize:'0.72rem', color:'#8FAFC0', wordBreak:'break-all', lineHeight:1.7 }}>
                 {cmd}
               </div>
               <button onClick={copy}

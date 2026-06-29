@@ -9,7 +9,7 @@ import api from '../../api/client';
 
 /* ─── Constants ─────────────────────────────────────────────────────────── */
 const MONO  = { fontFamily: 'JetBrains Mono, monospace' };
-const COLOR = '#8BB8E8'; // purple — Shadow AI brand accent
+const COLOR = 'rgba(26,22,18,0.7)'; // purple — Shadow AI brand accent
 
 // Known AI services with display labels
 const AI_SERVICE = {
@@ -20,7 +20,7 @@ const AI_SERVICE = {
   'api.mistral.ai':                       { label: 'Mistral',      color: '#FF6B35' },
   'api.cohere.ai':                        { label: 'Cohere',       color: '#22C55E' },
   'huggingface.co':                       { label: 'HuggingFace',  color: '#EAB308' },
-  'api.together.xyz':                     { label: 'Together AI',  color: '#8BB8E8' },
+  'api.together.xyz':                     { label: 'Together AI',  color: 'rgba(26,22,18,0.7)' },
   'api.perplexity.ai':                    { label: 'Perplexity',   color: '#06B6D4' },
   'api.replicate.com':                    { label: 'Replicate',    color: '#6366F1' },
   'inference.cerebras.ai':                { label: 'Cerebras',     color: '#0EA5E9' },

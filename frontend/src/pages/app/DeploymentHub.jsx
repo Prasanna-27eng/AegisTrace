@@ -14,7 +14,7 @@ const FADE = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 } };
 const EASE = { duration: 0.3, ease: [0.23, 1, 0.32, 1] };
 
 const BLUE  = '#4A7EC8';
-const BLUE_L = '#8BB8E8';
+const BLUE_L = 'rgba(26,22,18,0.7)';
 const GREEN = '#10B981';
 const AMBER = '#F59E0B';
 const RED   = '#EF4444';
@@ -55,7 +55,7 @@ function CodeBlock({ code, label }) {
         </div>
       )}
       <div style={{
-        background: '#040408',
+        background: 'var(--surface)',
         border: '1px solid rgba(26,22,18,0.12)',
         borderRadius: 8, overflow: 'hidden',
       }}>
@@ -95,7 +95,7 @@ function Section({ icon: Icon, title, color = BLUE, children, delay = 0 }) {
   return (
     <motion.div {...FADE} transition={{ ...EASE, delay }}
       style={{
-        background: '#0A0A12',
+        background: 'var(--surface)',
         border: '1px solid rgba(26,22,18,0.08)',
         borderRadius: 12,
         overflow: 'hidden',
@@ -327,7 +327,7 @@ sudo nginx -t && sudo systemctl reload nginx`;
               { label: 'Active Endpoints', value: loading ? '—' : active, color: GREEN },
               { label: 'Total Enrolled',   value: loading ? '—' : endpoints.length, color: BLUE_L },
             ].map(({ label, value, color }) => (
-              <div key={label} style={{ background: '#0A0A12', border: '1px solid rgba(26,22,18,0.08)',
+              <div key={label} style={{ background: 'var(--surface)', border: '1px solid rgba(26,22,18,0.08)',
                 borderRadius: 10, padding: '10px 18px', textAlign: 'center', minWidth: 90 }}>
                 <div style={{ ...UI, fontSize: '1.5rem', fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
                 <div style={{ ...MONO, fontSize: 9, color: MUTED, marginTop: 4, letterSpacing: '0.08em',
@@ -341,7 +341,7 @@ sudo nginx -t && sudo systemctl reload nginx`;
       {/* Enrolled endpoints strip */}
       {!loading && endpoints.length > 0 && (
         <motion.div {...FADE} transition={{ ...EASE, delay: 0.05 }}
-          style={{ background: '#0A0A12', border: '1px solid rgba(26,22,18,0.08)',
+          style={{ background: 'var(--surface)', border: '1px solid rgba(26,22,18,0.08)',
             borderRadius: 10, padding: '14px 18px', marginBottom: 20 }}>
           <div style={{ ...MONO, fontSize: 10, color: MUTED, letterSpacing: '0.1em',
             textTransform: 'uppercase', marginBottom: 10 }}>Enrolled Endpoints</div>

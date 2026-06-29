@@ -19,7 +19,7 @@ export default function Logo({ size = 28, showText = true, className = '' }) {
         <line x1="4"  y1="16" x2="28" y2="20" stroke="#C0392B" strokeWidth="0.75" strokeDasharray="3 2" opacity="0.3" />
       </svg>
       {showText && (
-        <span style={{ fontWeight: 600, fontSize: size * 0.54, letterSpacing: '-0.02em', color: '#EBEBEB' }}>
+        <span style={{ fontWeight: 600, fontSize: size * 0.54, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
           AegisTrace
         </span>
       )}

@@ -6,7 +6,7 @@ import useStore from '../../../store/useStore';
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 
 const RULE_TYPES = [
-  { key: 'yara',       label: 'YARA',        color: '#8BB8E8', note: 'Malware detection' },
+  { key: 'yara',       label: 'YARA',        color: 'rgba(26,22,18,0.7)', note: 'Malware detection' },
   { key: 'sigma',      label: 'Sigma',        color: '#F59E0B', note: 'SIEM universal format' },
   { key: 'kql',        label: 'KQL',          color: '#A78BFA', note: 'Microsoft Sentinel' },
   { key: 'splunk_spl', label: 'Splunk SPL',   color: '#22C55E', note: 'Splunk query' },
@@ -20,7 +20,7 @@ function CopyButton({ text }) {
     setTimeout(() => setCopied(false), 2000);
   };
   return (
-    <button onClick={copy} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, color: '#787878', cursor: 'pointer', padding: '3px 8px', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: 4 }}>
+    <button onClick={copy} style={{ background: 'none', border: '1px solid rgba(26,22,18,0.1)', borderRadius: 4, color: '#787878', cursor: 'pointer', padding: '3px 8px', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: 4 }}>
       {copied ? <><Check size={11} style={{ color: '#22C55E' }}/> Copied</> : <><Copy size={11}/> Copy</>}
     </button>
   );
@@ -40,8 +40,8 @@ function RuleBlock({ label, code, color, note }) {
       </div>
       {open && (
         <pre style={{
-          background: '#0A0A0A',
-          border: '1px solid rgba(255,255,255,0.07)',
+          background: 'var(--surface)',
+          border: '1px solid rgba(26,22,18,0.07)',
           borderRadius: 6,
           padding: '14px 16px',
           fontSize: '0.72rem',
@@ -82,7 +82,7 @@ export default function RulesTab({ caseData, caseId }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <FileCode size={18} style={{ color: '#8BB8E8' }} />
+          <FileCode size={18} style={{ color: 'rgba(26,22,18,0.7)' }} />
           <div>
             <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>Detection Rule Generator</div>
             <div style={{ fontSize: '0.72rem', color: '#787878', marginTop: 1 }}>
@@ -126,7 +126,7 @@ export default function RulesTab({ caseData, caseId }) {
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
               {(result.platforms || []).map(p => (
-                <span key={p} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4, padding: '2px 8px', fontSize: '0.68rem', color: '#555', ...MONO }}>{p}</span>
+                <span key={p} style={{ background: 'rgba(26,22,18,0.04)', border: '1px solid rgba(26,22,18,0.08)', borderRadius: 4, padding: '2px 8px', fontSize: '0.68rem', color: '#555', ...MONO }}>{p}</span>
               ))}
             </div>
           </div>
