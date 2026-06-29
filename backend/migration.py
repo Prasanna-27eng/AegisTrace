@@ -169,8 +169,8 @@ def run_migrations(engine):
     if "case" in existing_tables:
         case_cols = [c["name"] for c in inspector.get_columns("case")]
         sla_cols = {
-            "closed_at":      "DATETIME DEFAULT NULL",
-            "first_event_at": "DATETIME DEFAULT NULL",
+            "closed_at":      "TIMESTAMP DEFAULT NULL",
+            "first_event_at": "TIMESTAMP DEFAULT NULL",
         }
         for col, definition in sla_cols.items():
             if col not in case_cols:
