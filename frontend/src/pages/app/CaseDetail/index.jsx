@@ -20,6 +20,7 @@ import ProvenanceTab    from './ProvenanceTab';
 import VisionTab        from './VisionTab';
 import RulesTab         from './RulesTab';
 import AttackGraphTab   from './AttackGraphTab';
+import DefenseTab       from './DefenseTab';
 
 const TABS = [
   { id: 'overview',      label: 'Overview' },
@@ -32,6 +33,7 @@ const TABS = [
   { id: 'playbook',      label: 'Playbook' },
   { id: 'ai',            label: 'AI Analysis' },
   { id: 'chat',          label: 'AI Chat' },
+  { id: 'defense',       label: '🛡 Defense' },
   { id: 'vision',        label: '👁 Vision' },
   { id: 'rules',         label: '⚡ Rules' },
   { id: 'comments',      label: 'Comments' },
@@ -215,6 +217,7 @@ export default function CaseDetail() {
         {tab === 'playbook'      && <PlaybookTab {...tabProps} />}
         {tab === 'ai'            && <AIAnalysisTab {...tabProps} />}
         {tab === 'chat'          && <AIChatTab {...tabProps} />}
+        {tab === 'defense'       && <div style={{ padding: '24px 28px' }}><DefenseTab caseData={caseData} /></div>}
         {tab === 'vision'        && <VisionTab {...tabProps} />}
         {tab === 'rules'         && <RulesTab {...tabProps} />}
         {tab === 'comments'      && <CommentsTab caseId={id} />}

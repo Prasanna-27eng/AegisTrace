@@ -1,0 +1,122 @@
+# AegisTrace SIEM Connector Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+# Copy this file to connectors.yaml and populate your credentials.
+# On startup, AegisTrace upserts these connectors into the database.
+# Existing connectors are identified by name — they are updated, not duplicated.
+#
+# SECURITY NOTE: Never commit connectors.yaml with real credentials.
+# Use environment variable substitution (${VAR_NAME}) for secrets.
+#
+# Supported connector types:
+#   splunk       — Splunk Enterprise or Splunk Cloud
+#   qradar       — IBM QRadar SIEM
+#   sentinel     — Microsoft Sentinel (Azure)
+#   elastic_siem — Elastic Security SIEM
+#   okta         — Okta Identity Provider
+#   google_ws    — Google Workspace (Admin SDK)
+#   azure_ad     — Azure Active Directory
+#   crowdstrike  — CrowdStrike Falcon SIEM Connector
+#   custom       — Generic webhook or API connector
+
+connectors:
+  # ── Splunk Enterprise ─────────────────────────────────────────────────────
+  - name: "Splunk Production"
+    type: splunk
+    enabled: true
+    org_id: 1
+    config:
+      url: "https://splunk.yourdomain.com:8089"
+      token: "${SPLUNK_TOKEN}"
+      index: "main"
+      search_query: 'index=main sourcetype=WinEventLog EventCode=4625 | head 100'
+      earliest: "-15m"
+      latest: "now"
+      sync_interval_minutes: 15
+      verify_ssl: true
+
+  # ── IBM QRadar ────────────────────────────────────────────────────────────
+  - name: "QRadar SIEM"
+    type: qradar
+    enabled: false
+    org_id: 1
+    config:
+      url: "https://qradar.yourdomain.com"
+      token: "${QRADAR_SEC_TOKEN}"
+      query: "SELECT DATEFORMAT(devicetime,'yyyy-MM-dd HH:mm:ss') AS date, sourceip, destinationip, username, eventcount FROM events WHERE LOGSOURCETYPENAME(devicetype) = 'Microsoft Windows Security Event Log' LAST 30 MINUTES"
+      filter: "severity > 3"
+      sync_interval_minutes: 10
+
+  # ── Microsoft Sentinel ────────────────────────────────────────────────────
+  - name: "Azure Sentinel"
+    type: sentinel
+    enabled: false
+    org_id: 1
+    config:
+      workspace_id: "${SENTINEL_WORKSPACE_ID}"
+      subscription_id: "${AZURE_SUBSCRIPTION_ID}"
+      resource_group: "security-rg"
+      tenant_id: "${AZURE_TENANT_ID}"
+      client_id: "${AZURE_CLIENT_ID}"
+      client_secret: "${AZURE_CLIENT_SECRET}"
+      query: "SecurityEvent | where TimeGenerated > ago(15m) | where EventID in (4625, 4648, 4720) | limit 100"
+      sync_interval_minutes: 15
+
+  # ── Elastic Security ──────────────────────────────────────────────────────
+  - name: "Elastic SIEM"
+    type: elastic_siem
+    enabled: false
+    org_id: 1
+    config:
+      url: "https://elastic.yourdomain.com:9200"
+      api_key: "${ELASTIC_API_KEY}"
+      index_pattern: ".siem-signals-*"
+      query:
+        status: "open"
+        severity: ["high", "critical"]
+      sync_interval_minutes: 10
+      verify_ssl: true
+
+  # ── Okta ──────────────────────────────────────────────────────────────────
+  - name: "Okta Identity"
+    type: okta
+    enabled: false
+    org_id: 1
+    config:
+      domain: "yourdomain.okta.com"
+      api_token: "${OKTA_API_TOKEN}"
+      filter: "outcome.result eq \"FAILURE\""
+      event_types:
+        - "user.session.start"
+        - "user.authentication.auth_via_mfa"
+        - "user.mfa.factor.deactivate"
+        - "user.account.lock"
+      sync_interval_minutes: 5
+
+  # ── CrowdStrike Falcon ────────────────────────────────────────────────────
+  - name: "CrowdStrike Falcon"
+    type: crowdstrike
+    enabled: false
+    org_id: 1
+    config:
+      base_url: "https://api.crowdstrike.com"
+      client_id: "${CROWDSTRIKE_CLIENT_ID}"
+      client_secret: "${CROWDSTRIKE_CLIENT_SECRET}"
+      filter: "status:'new'+severity:>'50'"
+      sync_interval_minutes: 10
+
+  # ── Custom Webhook / Generic API ──────────────────────────────────────────
+  - name: "Custom SIEM Webhook"
+    type: custom
+    enabled: false
+    org_id: 1
+    config:
+      url: "https://your-siem.example.com/api/alerts"
+      method: "GET"
+      headers:
+        Authorization: "Bearer ${CUSTOM_SIEM_TOKEN}"
+        Accept: "application/json"
+      response_mapping:
+        title: "alert_name"
+        severity: "risk_level"
+        description: "details"
+      sync_interval_minutes: 15

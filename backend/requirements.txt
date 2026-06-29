@@ -23,3 +23,4 @@ cryptography==46.0.7
 qdrant-client>=1.9.0
 duckdb==1.5.3
 geoip2==4.8.0
+pyyaml>=6.0.0

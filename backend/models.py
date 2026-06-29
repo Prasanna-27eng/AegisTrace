@@ -891,6 +891,50 @@ class MemoryDump(SQLModel, table=True):
     agent_version:    str           = Field(default="")
 
 
+# ── Feature 1: D3FEND Defense Recommendations ────────────────────────────────
+class DefenseRecommendation(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    case_id: int = Field(foreign_key="case.id", index=True)
+    technique_id: str = Field(default="")
+    technique_name: str = Field(default="")
+    d3fend_id: str = Field(default="")
+    countermeasure_name: str = Field(default="")
+    description: str = Field(default="", sa_column=Column(Text))
+    tier: str = Field(default="recommend")  # observe/recommend/auto-safe/auto-veto/human-required
+    blast_radius: str = Field(default="low")  # low/medium/high
+    status: str = Field(default="pending")  # pending/approved/rejected/executed/vetoed
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# ── Feature 3: Case Knowledge Base ───────────────────────────────────────────
+class CaseKnowledge(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    case_id: int = Field(foreign_key="case.id", index=True)
+    title: str = Field(default="")
+    threat_pattern: str = Field(default="", sa_column=Column(Text))
+    identity_type: str = Field(default="user")  # user/service_account/api_key/machine/ai_agent
+    root_cause: str = Field(default="", sa_column=Column(Text))
+    resolution_steps: str = Field(default="[]", sa_column=Column(Text))  # JSON string
+    tags: str = Field(default="[]", sa_column=Column(Text))  # JSON string (list of tags)
+    times_referenced: int = Field(default=0)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# ── Feature 4: SLA new fields on Case (handled via migration) ─────────────────
+# Case.first_event_at and Case.closed_at are added via migration.py
+
+# ── Feature 5: AI Usage Cost Tracking ────────────────────────────────────────
+class AIUsageLog(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    case_id: Optional[int] = Field(default=None, foreign_key="case.id")
+    operation: str = Field(default="")  # triage/email_analysis/knowledge_extract/chat/defense_recommend
+    model: str = Field(default="")  # e.g. "llama-3.3-70b-versatile"
+    input_tokens: int = Field(default=0)
+    output_tokens: int = Field(default=0)
+    cost_usd: float = Field(default=0.0)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 # ── NVIDIA Phase 2: Case Embeddings ──────────────────────────────────────────
 class CaseEmbedding(SQLModel, table=True):
     """Stores NV-EmbedQA-E5-v5 embeddings for semantic case similarity search."""

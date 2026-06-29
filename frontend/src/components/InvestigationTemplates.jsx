@@ -1,11 +1,11 @@
 /**
  * InvestigationTemplates — modal template picker for new cases
- * Purely frontend — no backend needed. 6 scaffold types.
+ * Plus knowledge base tab showing learnings from closed cases.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Mail, Key, Bug, Database, UserX, Monitor,
-  ChevronRight, X, Check, AlertTriangle
+  ChevronRight, X, Check, AlertTriangle, BookOpen, RefreshCw
 } from 'lucide-react';
 
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };
@@ -91,9 +91,70 @@ const TEMPLATES = [
   },
 ];
 
+const IDENTITY_TYPE_COLORS = {
+  user:            '#4A7EC8',
+  service_account: '#F59E0B',
+  api_key:         '#22C55E',
+  machine:         '#8B5CF6',
+  ai_agent:        '#EF4444',
+};
+
+function KnowledgeCard({ entry }) {
+  return (
+    <div style={{ padding: '12px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, marginBottom: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#E8E8F0', flex: 1 }}>{entry.title}</span>
+        <span style={{ fontSize: '0.62rem', ...MONO, padding: '2px 7px', borderRadius: 4, background: `${IDENTITY_TYPE_COLORS[entry.identity_type] || '#6B7280'}18`, color: IDENTITY_TYPE_COLORS[entry.identity_type] || '#6B7280', border: `1px solid ${IDENTITY_TYPE_COLORS[entry.identity_type] || '#6B7280'}33` }}>
+          {entry.identity_type}
+        </span>
+        {entry.times_referenced > 0 && (
+          <span style={{ fontSize: '0.62rem', color: '#4B5563', ...MONO }}>{entry.times_referenced}× ref</span>
+        )}
+      </div>
+      <div style={{ fontSize: '0.72rem', color: '#9CA3AF', marginBottom: 6 }}>{entry.threat_pattern}</div>
+      <div style={{ fontSize: '0.68rem', color: '#6B7280', marginBottom: 6 }}>
+        <span style={{ color: '#F59E0B' }}>Root cause:</span> {entry.root_cause}
+      </div>
+      {entry.resolution_steps?.length > 0 && (
+        <div style={{ marginBottom: 6 }}>
+          {entry.resolution_steps.slice(0, 3).map((s, i) => (
+            <div key={i} style={{ fontSize: '0.68rem', color: '#6B7280', display: 'flex', gap: 5 }}>
+              <span style={{ color: '#22C55E', ...MONO }}>{i + 1}.</span> {s}
+            </div>
+          ))}
+        </div>
+      )}
+      {entry.tags?.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+          {entry.tags.map(t => (
+            <span key={t} style={{ fontSize: '0.6rem', ...MONO, padding: '1px 6px', borderRadius: 3, background: 'rgba(74,126,200,0.1)', color: '#4A7EC8', border: '1px solid rgba(74,126,200,0.2)' }}>{t}</span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function InvestigationTemplates({ onSelect, onClose }) {
   const [selected, setSelected] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [activeTab, setActiveTab] = useState('templates');
+  const [knowledge, setKnowledge] = useState([]);
+  const [loadingKnowledge, setLoadingKnowledge] = useState(false);
+  const [knowledgeFilter, setKnowledgeFilter] = useState('');
+
+  useEffect(() => {
+    if (activeTab === 'knowledge') {
+      setLoadingKnowledge(true);
+      fetch('/api/knowledge', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+      })
+        .then(r => r.json())
+        .then(data => { setKnowledge(Array.isArray(data) ? data : []); })
+        .catch(() => {})
+        .finally(() => setLoadingKnowledge(false));
+    }
+  }, [activeTab]);
 
   const apply = () => {
     if (!selected) return;
@@ -109,10 +170,55 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
             <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: 4 }}>Investigation Templates</div>
             <div style={{ fontSize: '0.72rem', color: '#787878', ...MONO }}>Pick a scaffold to pre-fill your case — you can edit everything after</div>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', padding: 4 }}><X size={16} /></button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* Tab switcher */}
+            <div style={{ display: 'flex', gap: 2, background: 'rgba(255,255,255,0.04)', borderRadius: 7, padding: 3 }}>
+              {[{ id: 'templates', label: 'Templates' }, { id: 'knowledge', label: 'Knowledge Base' }].map(t => (
+                <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ padding: '4px 12px', borderRadius: 5, border: 'none', background: activeTab === t.id ? 'rgba(74,126,200,0.2)' : 'none', color: activeTab === t.id ? '#8BB8E8' : '#787878', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer' }}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#787878', cursor: 'pointer', padding: 4 }}><X size={16} /></button>
+          </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+        {activeTab === 'knowledge' && (
+          <div style={{ padding: '16px 24px', maxHeight: '65vh', overflow: 'auto' }}>
+            <div style={{ marginBottom: 14 }}>
+              <input
+                type="text"
+                placeholder="Filter by title, type, or tag…"
+                value={knowledgeFilter}
+                onChange={e => setKnowledgeFilter(e.target.value)}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 7, padding: '7px 12px', color: '#E8E8F0', fontSize: '0.78rem', outline: 'none', boxSizing: 'border-box' }}
+              />
+            </div>
+            {loadingKnowledge ? (
+              <div style={{ textAlign: 'center', padding: 24, color: '#787878', fontSize: '0.78rem' }}>Loading knowledge base…</div>
+            ) : knowledge.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '32px 16px', color: '#4B5563' }}>
+                <BookOpen size={28} style={{ marginBottom: 8, opacity: 0.4 }} />
+                <div style={{ fontSize: '0.78rem' }}>No knowledge entries yet. Close cases to generate knowledge.</div>
+              </div>
+            ) : (
+              knowledge.filter(k =>
+                !knowledgeFilter ||
+                k.title?.toLowerCase().includes(knowledgeFilter.toLowerCase()) ||
+                k.identity_type?.includes(knowledgeFilter.toLowerCase()) ||
+                (k.tags || []).some(t => t.toLowerCase().includes(knowledgeFilter.toLowerCase()))
+              ).map(entry => <KnowledgeCard key={entry.id} entry={entry} />)
+            )}
+          </div>
+        )}
+
+        {activeTab === 'knowledge' && (
+          <div style={{ padding: '14px 24px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'flex-end' }}>
+            <button className="btn-ghost" onClick={onClose} style={{ fontSize: '0.82rem' }}>Close</button>
+          </div>
+        )}
+
+        {activeTab === 'templates' && <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
           {/* Template list */}
           <div style={{ padding: '16px', borderRight: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: 8 }}>
             {TEMPLATES.map(t => (
@@ -200,6 +306,7 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
             <Check size={13} /> Use Template
           </button>
         </div>
+        </div>}
       </div>
     </div>
   );

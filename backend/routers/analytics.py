@@ -19,7 +19,7 @@ from collections import Counter, defaultdict
 import json
 from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session, select, func
-from models import Case, IOCCorrelation, TimelineEvent, User, AdaptiveThresholdLog
+from models import Case, IOCCorrelation, TimelineEvent, User, AdaptiveThresholdLog, DefenseRecommendation, AIUsageLog
 from database import get_session
 from routers.auth import get_current_user
 import adaptive_config
@@ -238,6 +238,162 @@ def sla_status(
             "pct_used": round(pct * 100, 1),
         })
     return sorted(result, key=lambda x: -x["pct_used"])
+
+
+@router.get("/sla")
+def sla_metrics(
+    session: Session = Depends(get_session),
+    user: User = Depends(get_current_user),
+):
+    """
+    SLA metrics for the last 30 days vs prior 30 days.
+    Returns MTTD, MTTR, MTTC in minutes with trend deltas.
+    """
+    now = datetime.utcnow()
+    period_start   = now - timedelta(days=30)
+    prior_start    = now - timedelta(days=60)
+    prior_end      = period_start
+
+    def compute_metrics(cases_period, recs_map):
+        """Compute MTTC, MTTR for a set of cases."""
+        mttc_values = []
+        mttr_values = []
+        mttd_values = []
+
+        for c in cases_period:
+            # MTTC: closed_at - created_at (minutes)
+            if c.status == "closed":
+                closed_at = getattr(c, "closed_at", None) or c.updated_at
+                if closed_at and c.created_at:
+                    diff_min = (closed_at - c.created_at).total_seconds() / 60
+                    if diff_min > 0:
+                        mttc_values.append(diff_min)
+
+            # MTTR: first DefenseRecommendation created_at - case.created_at (minutes)
+            recs = recs_map.get(c.id, [])
+            if recs and c.created_at:
+                first_rec = min(recs, key=lambda r: r.created_at)
+                diff_min = (first_rec.created_at - c.created_at).total_seconds() / 60
+                if diff_min >= 0:
+                    mttr_values.append(diff_min)
+
+            # MTTD: created_at - first_event_at (minutes)
+            first_event_at = getattr(c, "first_event_at", None)
+            if first_event_at and c.created_at:
+                diff_min = (c.created_at - first_event_at).total_seconds() / 60
+                if diff_min >= 0:
+                    mttd_values.append(diff_min)
+
+        return {
+            "mttc": round(sum(mttc_values) / len(mttc_values), 1) if mttc_values else None,
+            "mttr": round(sum(mttr_values) / len(mttr_values), 1) if mttr_values else None,
+            "mttd": round(sum(mttd_values) / len(mttd_values), 1) if mttd_values else None,
+            "case_count": len(cases_period),
+        }
+
+    # Current period cases
+    current_cases = session.exec(
+        select(Case)
+        .where(Case.org_id == user.org_id)
+        .where(Case.created_at >= period_start)
+    ).all()
+
+    # Prior period cases
+    prior_cases = session.exec(
+        select(Case)
+        .where(Case.org_id == user.org_id)
+        .where(Case.created_at >= prior_start)
+        .where(Case.created_at < prior_end)
+    ).all()
+
+    # Build recs map (case_id -> list of DefenseRecommendation)
+    all_case_ids = [c.id for c in current_cases + prior_cases]
+    recs_map: dict = defaultdict(list)
+    if all_case_ids:
+        recs = session.exec(
+            select(DefenseRecommendation).where(
+                DefenseRecommendation.case_id.in_(all_case_ids)
+            )
+        ).all()
+        for r in recs:
+            recs_map[r.case_id].append(r)
+
+    current_metrics = compute_metrics(current_cases, recs_map)
+    prior_metrics   = compute_metrics(prior_cases, recs_map)
+
+    def delta(current, prior):
+        if current is None or prior is None or prior == 0:
+            return None
+        return round((current - prior) / prior * 100, 1)
+
+    return {
+        "mttd_minutes": current_metrics["mttd"],
+        "mttr_minutes": current_metrics["mttr"],
+        "mttc_minutes": current_metrics["mttc"],
+        "cases_analyzed": current_metrics["case_count"],
+        "period_days": 30,
+        "trend": {
+            "mttd_delta_pct": delta(current_metrics["mttd"], prior_metrics["mttd"]),
+            "mttr_delta_pct": delta(current_metrics["mttr"], prior_metrics["mttr"]),
+            "mttc_delta_pct": delta(current_metrics["mttc"], prior_metrics["mttc"]),
+        },
+    }
+
+
+@router.get("/cost")
+def cost_metrics(
+    session: Session = Depends(get_session),
+    user: User = Depends(get_current_user),
+):
+    """Cost intelligence: AI usage cost breakdown for last 30 days."""
+    cutoff = datetime.utcnow() - timedelta(days=30)
+    logs = session.exec(
+        select(AIUsageLog).where(AIUsageLog.created_at >= cutoff)
+    ).all()
+
+    if not logs:
+        return {
+            "total_cost_usd_30d": 0.0,
+            "cost_per_case_avg": 0.0,
+            "cost_per_alert_avg": 0.0,
+            "breakdown_by_operation": [],
+            "daily_cost": [],
+        }
+
+    total_cost = sum(l.cost_usd for l in logs)
+
+    # Per-operation breakdown
+    by_op: dict = defaultdict(lambda: {"count": 0, "total_cost_usd": 0.0})
+    for l in logs:
+        by_op[l.operation]["count"] += 1
+        by_op[l.operation]["total_cost_usd"] += l.cost_usd
+    breakdown = [
+        {"operation": op, "count": v["count"], "total_cost_usd": round(v["total_cost_usd"], 6)}
+        for op, v in sorted(by_op.items(), key=lambda x: -x[1]["total_cost_usd"])
+    ]
+
+    # Unique cases that had AI usage
+    case_ids = {l.case_id for l in logs if l.case_id}
+    cost_per_case = round(total_cost / len(case_ids), 6) if case_ids else 0.0
+
+    # Per-alert average (total_count as proxy for alerts)
+    total_ops = len(logs)
+    cost_per_alert = round(total_cost / total_ops, 6) if total_ops else 0.0
+
+    # Daily cost for last 30 days
+    daily: dict = defaultdict(float)
+    for l in logs:
+        day = l.created_at.strftime("%Y-%m-%d")
+        daily[day] += l.cost_usd
+    daily_list = [{"date": d, "cost_usd": round(v, 6)} for d, v in sorted(daily.items())]
+
+    return {
+        "total_cost_usd_30d": round(total_cost, 6),
+        "cost_per_case_avg": cost_per_case,
+        "cost_per_alert_avg": cost_per_alert,
+        "breakdown_by_operation": breakdown,
+        "daily_cost": daily_list,
+    }
 
 
 @router.get("/adaptive-thresholds")

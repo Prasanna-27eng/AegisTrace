@@ -30,16 +30,32 @@ import time
 import asyncio
 from collections import defaultdict
 from datetime import datetime
-from typing import Optional
+from pathlib import Path
+from typing import Optional, List
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlmodel import Session, select
 
 from database import get_session
-from models import DefenseEvent, AuditLog, ProvenanceLedger, User
+from models import DefenseEvent, AuditLog, ProvenanceLedger, User, DefenseRecommendation
 from routers.auth import get_current_user
 from ai_router import call_ai_json
 import adaptive_config
+
+# ── D3FEND mapping loader ─────────────────────────────────────────────────────
+_D3FEND_MAP: dict = {}
+
+def _load_d3fend_map() -> dict:
+    global _D3FEND_MAP
+    if not _D3FEND_MAP:
+        mapping_path = Path(__file__).parent.parent / "data" / "d3fend_mapping.json"
+        try:
+            with open(mapping_path, "r") as f:
+                _D3FEND_MAP = json.load(f)
+        except Exception as e:
+            print(f"[defense] Failed to load d3fend_mapping.json: {e}")
+            _D3FEND_MAP = {}
+    return _D3FEND_MAP
 
 router = APIRouter(prefix="/api/defense", tags=["defense-engine"])
 
@@ -479,6 +495,145 @@ def trigger_test_event(
     db.commit()
     db.refresh(event)
     return {"message": "Test event created", "event": _event_to_dict(event)}
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# D3FEND COUNTERMEASURE MAPPING API
+# ══════════════════════════════════════════════════════════════════════════════
+
+@router.get("/mapping/{technique_id}")
+def get_d3fend_mapping(
+    technique_id: str,
+    current_user: User = Depends(get_current_user),
+):
+    """Return D3FEND countermeasures for a given ATT&CK technique ID."""
+    mapping = _load_d3fend_map()
+    tid = technique_id.upper()
+    entry = mapping.get(tid)
+    if not entry:
+        raise HTTPException(404, f"No D3FEND mapping found for technique {technique_id}")
+    return {"technique_id": tid, **entry}
+
+
+@router.post("/recommend")
+def create_recommendations(
+    payload: dict,
+    db: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Create DefenseRecommendation rows for a case based on its MITRE techniques.
+    Body: {"case_id": int, "techniques": ["T1078", "T1110", ...]}
+    Skips if recommendations already exist for that case+technique combo.
+    """
+    case_id = payload.get("case_id")
+    techniques = payload.get("techniques", [])
+    if not case_id:
+        raise HTTPException(400, "case_id required")
+
+    mapping = _load_d3fend_map()
+    created = []
+
+    for tid in techniques:
+        tid_upper = tid.upper() if isinstance(tid, str) else (tid.get("id", "").upper() if isinstance(tid, dict) else "")
+        if not tid_upper:
+            continue
+        entry = mapping.get(tid_upper)
+        if not entry:
+            continue
+
+        for cm in entry.get("countermeasures", []):
+            # Skip if already exists for this case + technique + d3fend combo
+            existing = db.exec(
+                select(DefenseRecommendation).where(
+                    DefenseRecommendation.case_id == case_id,
+                    DefenseRecommendation.technique_id == tid_upper,
+                    DefenseRecommendation.d3fend_id == cm["d3fend_id"],
+                )
+            ).first()
+            if existing:
+                continue
+
+            rec = DefenseRecommendation(
+                case_id=case_id,
+                technique_id=tid_upper,
+                technique_name=entry.get("name", ""),
+                d3fend_id=cm["d3fend_id"],
+                countermeasure_name=cm["name"],
+                description=cm["description"],
+                tier=cm["tier"],
+                blast_radius=cm["blast_radius"],
+                status="pending",
+            )
+            db.add(rec)
+            created.append(rec)
+
+    db.commit()
+    for rec in created:
+        db.refresh(rec)
+    return {"created": len(created), "recommendations": [_rec_to_dict(r) for r in created]}
+
+
+@router.get("/recommendations/{case_id}")
+def list_recommendations(
+    case_id: int,
+    db: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """List all D3FEND recommendations for a case."""
+    recs = db.exec(
+        select(DefenseRecommendation)
+        .where(DefenseRecommendation.case_id == case_id)
+        .order_by(DefenseRecommendation.created_at.desc())
+    ).all()
+    return [_rec_to_dict(r) for r in recs]
+
+
+@router.patch("/recommendations/{rec_id}/status")
+def update_recommendation_status(
+    rec_id: int,
+    payload: dict,
+    db: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Update status of a defense recommendation. Body: {"status": str}"""
+    rec = db.get(DefenseRecommendation, rec_id)
+    if not rec:
+        raise HTTPException(404, "Recommendation not found")
+    new_status = payload.get("status", "")
+    valid_statuses = {"pending", "approved", "rejected", "executed", "vetoed"}
+    if new_status not in valid_statuses:
+        raise HTTPException(400, f"Status must be one of: {valid_statuses}")
+    rec.status = new_status
+    db.add(rec)
+    # Audit log
+    db.add(AuditLog(
+        action=f"defense_rec_{new_status}",
+        entity_type="defense_recommendation",
+        entity_id=str(rec_id),
+        user_id=current_user.id,
+        user_email=current_user.email,
+        new_value=f"Technique {rec.technique_id} / {rec.countermeasure_name} → {new_status}",
+    ))
+    db.commit()
+    db.refresh(rec)
+    return _rec_to_dict(rec)
+
+
+def _rec_to_dict(r: DefenseRecommendation) -> dict:
+    return {
+        "id": r.id,
+        "case_id": r.case_id,
+        "technique_id": r.technique_id,
+        "technique_name": r.technique_name,
+        "d3fend_id": r.d3fend_id,
+        "countermeasure_name": r.countermeasure_name,
+        "description": r.description,
+        "tier": r.tier,
+        "blast_radius": r.blast_radius,
+        "status": r.status,
+        "created_at": r.created_at.isoformat() if r.created_at else None,
+    }
 
 
 # ── Serialiser ────────────────────────────────────────────────────────────────

@@ -489,6 +489,7 @@ export default function Dashboard() {
   const [lastRefreshed, setLastRefreshed]   = useState(null);
   const [refreshAge, setRefreshAge]         = useState(0);
   const [aiQueue, setAiQueue]               = useState([]);
+  const [slaMetrics, setSlaMetrics]         = useState(null);
 
   const loadDashboard = () => {
     Promise.all([
@@ -513,6 +514,7 @@ export default function Dashboard() {
     ]).then(([sevRes, slaRes]) => {
       setAnalytics({ severity: sevRes.data, sla: slaRes.data });
     }).catch(() => {});
+    api.get('/api/analytics/sla').then(r => setSlaMetrics(r.data)).catch(() => {});
   };
 
   useEffect(() => {
@@ -815,8 +817,68 @@ export default function Dashboard() {
         </div>
       </RevealSection>
 
-      {/* ── ROW 3: Recent Endpoint Activity ── */}
+      {/* ── ROW 3: SLA Metrics + Recent Endpoint Activity ── */}
       <RevealSection delay={0.2}>
+        {slaMetrics && (
+          <div style={{ ...CARD, marginBottom: 16, padding: '14px 0' }}>
+            <div style={{ padding: '0 16px 10px', borderBottom: '1px solid var(--border)' }}>
+              <SectionLabel action="Analytics" onAction={() => navigate('/app/analytics')}>SLA Metrics (30-day)</SectionLabel>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 0 }}>
+              {[
+                {
+                  label: 'MTTD',
+                  desc:  'Mean Time to Detect',
+                  value: slaMetrics.mttd_minutes !== null ? `${Math.round(slaMetrics.mttd_minutes)}m` : '—',
+                  delta: slaMetrics.trend?.mttd_delta_pct,
+                },
+                {
+                  label: 'MTTR',
+                  desc:  'Mean Time to Respond',
+                  value: slaMetrics.mttr_minutes !== null ? `${Math.round(slaMetrics.mttr_minutes)}m` : '—',
+                  delta: slaMetrics.trend?.mttr_delta_pct,
+                },
+                {
+                  label: 'MTTC',
+                  desc:  'Mean Time to Close',
+                  value: slaMetrics.mttc_minutes !== null
+                    ? slaMetrics.mttc_minutes < 120
+                      ? `${Math.round(slaMetrics.mttc_minutes)}m`
+                      : `${(slaMetrics.mttc_minutes / 60).toFixed(1)}h`
+                    : '—',
+                  delta: slaMetrics.trend?.mttc_delta_pct,
+                },
+              ].map((metric, idx) => {
+                // For SLA metrics, lower is better — so positive delta (increased) is bad
+                const trendColor = metric.delta === null ? 'var(--text-muted)' :
+                  metric.delta < 0 ? '#10B981' : '#EF4444';
+                return (
+                  <div key={metric.label} style={{
+                    padding: '16px 24px',
+                    borderRight: idx < 2 ? '1px solid var(--border)' : 'none',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
+                      <span style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 700, color: 'var(--text-primary)' }}>
+                        {metric.value}
+                      </span>
+                      {metric.delta !== null && (
+                        <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: trendColor, fontWeight: 600 }}>
+                          {metric.delta > 0 ? '+' : ''}{metric.delta}%
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent-light)', marginBottom: 2 }}>
+                      {metric.label}
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-ui)', fontSize: 11, color: 'var(--text-muted)' }}>
+                      {metric.desc}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
         <div style={{ ...CARD, overflow: 'hidden' }}>
           <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
             <SectionLabel action="Endpoints" onAction={() => navigate('/app/endpoints')}>Recent Endpoint Activity</SectionLabel>

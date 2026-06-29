@@ -1,0 +1,270 @@
+{
+  "T1078": {
+    "name": "Valid Accounts",
+    "tactic": "Defense Evasion / Persistence / Privilege Escalation / Initial Access",
+    "countermeasures": [
+      {"d3fend_id": "D3-MFA", "name": "Multi-Factor Authentication", "description": "Require additional authentication factors beyond passwords to prevent account misuse", "tier": "auto-safe", "blast_radius": "low"},
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Baseline normal user behaviour and alert on deviations indicating account takeover", "tier": "recommend", "blast_radius": "low"},
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Control and audit privileged account usage to limit blast radius of compromised credentials", "tier": "human-required", "blast_radius": "medium"},
+      {"d3fend_id": "D3-IDA", "name": "Identity Attestation", "description": "Continuously attest identity validity and flag anomalous access patterns", "tier": "recommend", "blast_radius": "low"}
+    ]
+  },
+  "T1110": {
+    "name": "Brute Force",
+    "tactic": "Credential Access",
+    "countermeasures": [
+      {"d3fend_id": "D3-AL", "name": "Account Locking", "description": "Lock accounts after N failed authentication attempts to block brute force progression", "tier": "auto-safe", "blast_radius": "low"},
+      {"d3fend_id": "D3-SPP", "name": "Strong Password Policy", "description": "Enforce minimum complexity and length requirements to increase brute force cost", "tier": "recommend", "blast_radius": "low"},
+      {"d3fend_id": "D3-MFA", "name": "Multi-Factor Authentication", "description": "Require additional factor so password compromise alone is insufficient", "tier": "auto-safe", "blast_radius": "low"},
+      {"d3fend_id": "D3-NTPM", "name": "Network Traffic Policy Management", "description": "Rate-limit and block repeated authentication requests from single sources", "tier": "auto-safe", "blast_radius": "medium"}
+    ]
+  },
+  "T1566": {
+    "name": "Phishing",
+    "tactic": "Initial Access",
+    "countermeasures": [
+      {"d3fend_id": "D3-PH", "name": "Phishing Training", "description": "Regular security awareness training to reduce susceptibility to phishing attacks", "tier": "recommend", "blast_radius": "low"},
+      {"d3fend_id": "D3-MFA", "name": "Multi-Factor Authentication", "description": "Prevent credential harvesting from yielding immediate access without second factor", "tier": "auto-safe", "blast_radius": "low"},
+      {"d3fend_id": "D3-SAML", "name": "SAML Authentication", "description": "Federated SSO with SAML reduces credential exposure in phishing scenarios", "tier": "recommend", "blast_radius": "low"}
+    ]
+  },
+  "T1134": {
+    "name": "Access Token Manipulation",
+    "tactic": "Defense Evasion / Privilege Escalation",
+    "countermeasures": [
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Control token issuance and revocation for privileged accounts", "tier": "human-required", "blast_radius": "high"},
+      {"d3fend_id": "D3-IDA", "name": "Identity Attestation", "description": "Continuously validate token authenticity and detect forged or stolen tokens", "tier": "recommend", "blast_radius": "medium"},
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Detect anomalous token usage patterns indicative of manipulation", "tier": "recommend", "blast_radius": "low"}
+    ]
+  },
+  "T1098": {
+    "name": "Account Manipulation",
+    "tactic": "Persistence",
+    "countermeasures": [
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Restrict who can modify account attributes and require approval for changes", "tier": "human-required", "blast_radius": "high"},
+      {"d3fend_id": "D3-IDA", "name": "Identity Attestation", "description": "Alert on unexpected modifications to account attributes or permissions", "tier": "recommend", "blast_radius": "medium"},
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Baseline expected account modification patterns and alert on deviations", "tier": "observe", "blast_radius": "low"}
+    ]
+  },
+  "T1136": {
+    "name": "Create Account",
+    "tactic": "Persistence",
+    "countermeasures": [
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Require approval workflow for account creation to prevent unauthorized additions", "tier": "human-required", "blast_radius": "medium"},
+      {"d3fend_id": "D3-IDA", "name": "Identity Attestation", "description": "Detect and alert on creation of new accounts outside normal provisioning workflows", "tier": "auto-safe", "blast_radius": "low"},
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Flag account creation events during off-hours or by unusual actors", "tier": "recommend", "blast_radius": "low"}
+    ]
+  },
+  "T1531": {
+    "name": "Account Access Removal",
+    "tactic": "Impact",
+    "countermeasures": [
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Require privileged approval and multi-party authorization for mass account removal", "tier": "human-required", "blast_radius": "high"},
+      {"d3fend_id": "D3-IDA", "name": "Identity Attestation", "description": "Detect unusual bulk account deletion or lockout activity immediately", "tier": "auto-safe", "blast_radius": "low"},
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Alert on unexpected account removal patterns inconsistent with normal HR operations", "tier": "recommend", "blast_radius": "medium"}
+    ]
+  },
+  "T1207": {
+    "name": "Rogue Domain Controller",
+    "tactic": "Defense Evasion",
+    "countermeasures": [
+      {"d3fend_id": "D3-IDA", "name": "Identity Attestation", "description": "Validate domain controller authenticity using cryptographic attestation", "tier": "human-required", "blast_radius": "high"},
+      {"d3fend_id": "D3-NTPM", "name": "Network Traffic Policy Management", "description": "Monitor and restrict replication traffic to only authorized domain controllers", "tier": "recommend", "blast_radius": "medium"},
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Restrict and audit domain controller promotion privileges", "tier": "human-required", "blast_radius": "high"}
+    ]
+  },
+  "T1197": {
+    "name": "BITS Jobs",
+    "tactic": "Defense Evasion / Persistence",
+    "countermeasures": [
+      {"d3fend_id": "D3-NTPM", "name": "Network Traffic Policy Management", "description": "Monitor and restrict BITS transfer traffic to approved destinations", "tier": "auto-safe", "blast_radius": "medium"},
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Detect unusual BITS job creation by non-system processes", "tier": "recommend", "blast_radius": "low"},
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Restrict BITS service access to authorized processes and accounts", "tier": "recommend", "blast_radius": "low"}
+    ]
+  },
+  "T1484": {
+    "name": "Domain Policy Modification",
+    "tactic": "Defense Evasion / Privilege Escalation",
+    "countermeasures": [
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Require high-privilege approval and change management for domain policy modifications", "tier": "human-required", "blast_radius": "high"},
+      {"d3fend_id": "D3-IDA", "name": "Identity Attestation", "description": "Alert on unauthorized domain policy changes with full audit trail", "tier": "auto-safe", "blast_radius": "low"},
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Detect domain policy modification events inconsistent with change management windows", "tier": "recommend", "blast_radius": "medium"}
+    ]
+  },
+  "T1525": {
+    "name": "Implant Internal Image",
+    "tactic": "Persistence",
+    "countermeasures": [
+      {"d3fend_id": "D3-IDA", "name": "Identity Attestation", "description": "Cryptographically sign and verify container/VM images to detect tampering", "tier": "auto-safe", "blast_radius": "low"},
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Restrict who can push images to internal registries", "tier": "recommend", "blast_radius": "medium"},
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Alert on image push events outside of approved CI/CD pipelines", "tier": "recommend", "blast_radius": "medium"}
+    ]
+  },
+  "T1556": {
+    "name": "Modify Authentication Process",
+    "tactic": "Credential Access / Defense Evasion / Persistence",
+    "countermeasures": [
+      {"d3fend_id": "D3-MFA", "name": "Multi-Factor Authentication", "description": "Ensure MFA is not solely reliant on the compromised authentication component", "tier": "auto-safe", "blast_radius": "low"},
+      {"d3fend_id": "D3-IDA", "name": "Identity Attestation", "description": "Continuously validate authentication module integrity and detect unauthorized modifications", "tier": "recommend", "blast_radius": "medium"},
+      {"d3fend_id": "D3-OTP", "name": "One-Time Password", "description": "Use OTP-based MFA to make stolen credentials immediately useless after single use", "tier": "auto-safe", "blast_radius": "low"}
+    ]
+  },
+  "T1558": {
+    "name": "Steal or Forge Kerberos Tickets",
+    "tactic": "Credential Access",
+    "countermeasures": [
+      {"d3fend_id": "D3-IDA", "name": "Identity Attestation", "description": "Monitor for anomalous Kerberos ticket requests and unusual service account usage", "tier": "auto-safe", "blast_radius": "low"},
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Limit service account privileges and rotate service account passwords regularly", "tier": "recommend", "blast_radius": "medium"},
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Detect golden ticket and pass-the-ticket attacks via anomalous authentication patterns", "tier": "auto-safe", "blast_radius": "low"},
+      {"d3fend_id": "D3-MFA", "name": "Multi-Factor Authentication", "description": "Enforce MFA for high-value service access even with valid Kerberos tickets", "tier": "human-required", "blast_radius": "medium"}
+    ]
+  },
+  "T1553": {
+    "name": "Subvert Trust Controls",
+    "tactic": "Defense Evasion",
+    "countermeasures": [
+      {"d3fend_id": "D3-IDA", "name": "Identity Attestation", "description": "Use certificate pinning and continuous attestation to detect trust control subversion", "tier": "recommend", "blast_radius": "medium"},
+      {"d3fend_id": "D3-NTPM", "name": "Network Traffic Policy Management", "description": "Block connections using invalid or unexpected certificates", "tier": "auto-safe", "blast_radius": "medium"},
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Restrict who can install certificates and modify trust stores", "tier": "human-required", "blast_radius": "high"}
+    ]
+  },
+  "T1548": {
+    "name": "Abuse Elevation Control Mechanism",
+    "tactic": "Privilege Escalation / Defense Evasion",
+    "countermeasures": [
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Implement least-privilege and require justification for elevation requests", "tier": "human-required", "blast_radius": "high"},
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Detect unexpected elevation patterns inconsistent with user role and normal behaviour", "tier": "auto-safe", "blast_radius": "low"},
+      {"d3fend_id": "D3-MFA", "name": "Multi-Factor Authentication", "description": "Require re-authentication at point of elevation to prevent automated escalation", "tier": "auto-safe", "blast_radius": "low"}
+    ]
+  },
+  "T1068": {
+    "name": "Exploitation for Privilege Escalation",
+    "tactic": "Privilege Escalation",
+    "countermeasures": [
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Limit the number of accounts that run with elevated privileges to reduce exploitation surface", "tier": "recommend", "blast_radius": "medium"},
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Detect post-exploitation privilege use anomalies indicating successful escalation", "tier": "auto-safe", "blast_radius": "low"},
+      {"d3fend_id": "D3-NTPM", "name": "Network Traffic Policy Management", "description": "Segment network to limit lateral movement post privilege escalation", "tier": "recommend", "blast_radius": "medium"}
+    ]
+  },
+  "T1055": {
+    "name": "Process Injection",
+    "tactic": "Defense Evasion / Privilege Escalation",
+    "countermeasures": [
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Detect anomalous process behaviour consistent with injection via memory analysis", "tier": "auto-safe", "blast_radius": "low"},
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Restrict processes that can inject into other processes to authorized security tools only", "tier": "recommend", "blast_radius": "medium"},
+      {"d3fend_id": "D3-IDA", "name": "Identity Attestation", "description": "Validate process identity and detect identity spoofing via injection", "tier": "recommend", "blast_radius": "medium"}
+    ]
+  },
+  "T1547": {
+    "name": "Boot or Logon Autostart Execution",
+    "tactic": "Persistence / Privilege Escalation",
+    "countermeasures": [
+      {"d3fend_id": "D3-IDA", "name": "Identity Attestation", "description": "Cryptographically verify autostart entries and alert on unauthorized additions", "tier": "auto-safe", "blast_radius": "low"},
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Detect new persistence mechanisms inconsistent with approved software deployment", "tier": "recommend", "blast_radius": "low"},
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Restrict write access to autostart registry keys and startup directories", "tier": "auto-safe", "blast_radius": "low"}
+    ]
+  },
+  "T1543": {
+    "name": "Create or Modify System Process",
+    "tactic": "Persistence / Privilege Escalation",
+    "countermeasures": [
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Restrict service creation and modification to authorized administrators only", "tier": "human-required", "blast_radius": "high"},
+      {"d3fend_id": "D3-IDA", "name": "Identity Attestation", "description": "Validate service binary hashes and alert on modifications to system services", "tier": "auto-safe", "blast_radius": "low"},
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Detect unauthorized service creation events outside change management windows", "tier": "recommend", "blast_radius": "medium"}
+    ]
+  },
+  "T1574": {
+    "name": "Hijack Execution Flow",
+    "tactic": "Defense Evasion / Persistence / Privilege Escalation",
+    "countermeasures": [
+      {"d3fend_id": "D3-IDA", "name": "Identity Attestation", "description": "Validate DLL and library signatures to detect hijacked execution flow", "tier": "auto-safe", "blast_radius": "low"},
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Apply least privilege to prevent writing to locations used for DLL search order hijacking", "tier": "recommend", "blast_radius": "medium"},
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Detect anomalous library load events inconsistent with application behavior baselines", "tier": "recommend", "blast_radius": "low"}
+    ]
+  },
+  "T1112": {
+    "name": "Modify Registry",
+    "tactic": "Defense Evasion",
+    "countermeasures": [
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Restrict registry write access to authorized processes and administrators", "tier": "recommend", "blast_radius": "medium"},
+      {"d3fend_id": "D3-IDA", "name": "Identity Attestation", "description": "Audit registry modifications and alert on changes to security-critical keys", "tier": "auto-safe", "blast_radius": "low"},
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Detect unusual registry modification patterns indicative of persistence or evasion", "tier": "recommend", "blast_radius": "low"}
+    ]
+  },
+  "T1082": {
+    "name": "System Information Discovery",
+    "tactic": "Discovery",
+    "countermeasures": [
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Detect bulk system information collection inconsistent with user role and context", "tier": "observe", "blast_radius": "low"},
+      {"d3fend_id": "D3-NTPM", "name": "Network Traffic Policy Management", "description": "Restrict access to system information endpoints to authorized management tools", "tier": "recommend", "blast_radius": "low"},
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Limit which accounts can query sensitive system configuration information", "tier": "recommend", "blast_radius": "low"}
+    ]
+  },
+  "T1087": {
+    "name": "Account Discovery",
+    "tactic": "Discovery",
+    "countermeasures": [
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Detect mass account enumeration queries inconsistent with normal administrative activity", "tier": "auto-safe", "blast_radius": "low"},
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Restrict directory query permissions to authorized identity management systems", "tier": "recommend", "blast_radius": "low"},
+      {"d3fend_id": "D3-NTPM", "name": "Network Traffic Policy Management", "description": "Rate-limit LDAP/AD queries to prevent automated account harvesting", "tier": "auto-safe", "blast_radius": "medium"}
+    ]
+  },
+  "T1069": {
+    "name": "Permission Groups Discovery",
+    "tactic": "Discovery",
+    "countermeasures": [
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Restrict group membership queries to authorized identity management accounts", "tier": "recommend", "blast_radius": "low"},
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Detect bulk group enumeration which may precede privilege escalation", "tier": "auto-safe", "blast_radius": "low"},
+      {"d3fend_id": "D3-NTPM", "name": "Network Traffic Policy Management", "description": "Monitor and throttle directory service queries from non-admin accounts", "tier": "recommend", "blast_radius": "low"}
+    ]
+  },
+  "T1057": {
+    "name": "Process Discovery",
+    "tactic": "Discovery",
+    "countermeasures": [
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Detect enumeration of running processes outside authorized monitoring tools", "tier": "observe", "blast_radius": "low"},
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Limit process visibility to user-owned processes for standard accounts", "tier": "recommend", "blast_radius": "low"}
+    ]
+  },
+  "T1012": {
+    "name": "Query Registry",
+    "tactic": "Discovery",
+    "countermeasures": [
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Detect bulk registry queries inconsistent with normal application behaviour", "tier": "observe", "blast_radius": "low"},
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Restrict read access to security-sensitive registry keys", "tier": "recommend", "blast_radius": "low"}
+    ]
+  },
+  "T1007": {
+    "name": "System Service Discovery",
+    "tactic": "Discovery",
+    "countermeasures": [
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Alert on service enumeration commands run by non-administrative accounts", "tier": "observe", "blast_radius": "low"},
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Restrict service configuration query permissions to authorized administrators", "tier": "recommend", "blast_radius": "low"}
+    ]
+  },
+  "T1016": {
+    "name": "System Network Configuration Discovery",
+    "tactic": "Discovery",
+    "countermeasures": [
+      {"d3fend_id": "D3-NTPM", "name": "Network Traffic Policy Management", "description": "Restrict access to network configuration APIs and restrict SNMP community strings", "tier": "recommend", "blast_radius": "low"},
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Detect systematic network configuration enumeration by non-admin processes", "tier": "observe", "blast_radius": "low"}
+    ]
+  },
+  "T1049": {
+    "name": "System Network Connections Discovery",
+    "tactic": "Discovery",
+    "countermeasures": [
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Detect mass connection enumeration inconsistent with authorized network monitoring", "tier": "observe", "blast_radius": "low"},
+      {"d3fend_id": "D3-NTPM", "name": "Network Traffic Policy Management", "description": "Monitor and alert on unusual patterns of netstat or connection enumeration commands", "tier": "recommend", "blast_radius": "low"}
+    ]
+  },
+  "T1033": {
+    "name": "System Owner / User Discovery",
+    "tactic": "Discovery",
+    "countermeasures": [
+      {"d3fend_id": "D3-UBA", "name": "User Behavior Analysis", "description": "Alert on systematic querying of user identity information by non-admin processes", "tier": "observe", "blast_radius": "low"},
+      {"d3fend_id": "D3-PAM", "name": "Privileged Access Management", "description": "Restrict directory queries to authorized identity management and HR systems", "tier": "recommend", "blast_radius": "low"},
+      {"d3fend_id": "D3-MFA", "name": "Multi-Factor Authentication", "description": "Ensure user identity verification cannot be determined from session tokens alone", "tier": "auto-safe", "blast_radius": "low"}
+    ]
+  }
+}
