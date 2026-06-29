@@ -306,7 +306,7 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
             <Check size={13} /> Use Template
           </button>
         </div>
-        </div></>}
+        </>}
       </div>
     </div>
   );
