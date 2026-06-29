@@ -1946,15 +1946,15 @@ async def receive_memory_dump(
         ep = session.exec(select(Endpoint).where(Endpoint.hostname == agent_id)).first()
 
     # Accept if token matches global ingest key (agent self-registered)
+    # Auth is always enforced — no dev bypass; memory dump contains sensitive data.
     try:
         expected_key = _get_ingest_key()
-        if x_agent_token and not hmac.compare_digest(x_agent_token, expected_key):
-            raise HTTPException(403, "Invalid agent token")
-    except HTTPException as e:
-        if e.status_code == 503:
-            pass  # INGEST_API_KEY not set — skip token check in dev
-        else:
-            raise
+    except HTTPException:
+        raise HTTPException(503, "Ingest service not configured — INGEST_API_KEY not set")
+    if not x_agent_token:
+        raise HTTPException(401, "X-Agent-Token header required")
+    if not hmac.compare_digest(x_agent_token, expected_key):
+        raise HTTPException(403, "Invalid agent token")
 
     data = await request.json()
 

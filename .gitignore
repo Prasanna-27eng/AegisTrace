@@ -10,3 +10,6 @@ __pycache__/
 .opencode/
 opencode.jsonc
 frontend/public/incoming/
+
+# Security audit reports (local only)
+.gstack/

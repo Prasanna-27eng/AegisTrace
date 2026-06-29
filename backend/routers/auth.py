@@ -13,6 +13,7 @@ from collections import defaultdict
 from typing import Optional
 import bcrypt
 import pyotp
+from core.encryption import enc as _enc   # Fernet encryption for MFA secrets at rest
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, Header, Request
 from sqlmodel import Session, select
@@ -58,10 +59,20 @@ TTL       = 60 * 60 * 48        # 48 hours (was 7 days — excessive session win
 
 
 def _get_real_ip(request: Request) -> str:
-    """Extract the real client IP, respecting X-Forwarded-For from Render/proxy."""
+    """Extract the real client IP from the trusted proxy header.
+
+    X-Real-IP is set by nginx to $remote_addr (the actual socket IP) and cannot
+    be forged by the client.  X-Forwarded-For is NOT used because nginx appends
+    to any existing header, so .split(',')[0] returns the attacker-controlled
+    first entry — allowing brute-force rate-limit bypass.
+    """
+    real_ip = request.headers.get("X-Real-IP", "").strip()
+    if real_ip:
+        return real_ip
+    # Fallback: take the LAST entry of X-Forwarded-For (set by nginx, not client)
     forwarded = request.headers.get("X-Forwarded-For", "")
     if forwarded:
-        return forwarded.split(",")[0].strip()
+        return forwarded.split(",")[-1].strip()
     return getattr(request.client, "host", "unknown")
 
 
@@ -469,8 +480,8 @@ def mfa_setup(user: User = Depends(get_current_user),
     Does NOT enable MFA yet — user must verify a code first via /mfa/verify.
     """
     secret = pyotp.random_base32()
-    # Store the pending secret (not yet active — mfa_enabled stays False)
-    user.mfa_secret = secret
+    # Store encrypted — mfa_secret at rest is Fernet-encrypted, not plaintext
+    user.mfa_secret = _enc.encrypt(secret)
     session.add(user)
     session.commit()
 
@@ -505,7 +516,7 @@ def mfa_verify(data: dict,
     if not user.mfa_secret:
         raise HTTPException(400, "Run /mfa/setup first to generate a secret")
 
-    totp = pyotp.TOTP(user.mfa_secret)
+    totp = pyotp.TOTP(_enc.decrypt(user.mfa_secret))
     if not totp.verify(code, valid_window=1):   # ±30 s drift tolerance
         raise HTTPException(401, "Invalid or expired TOTP code")
 
@@ -550,7 +561,7 @@ def login_mfa(data: dict, request: Request, session: Session = Depends(get_sessi
     if not user or not user.is_active or not user.mfa_enabled or not user.mfa_secret:
         raise HTTPException(401, "Invalid session")
 
-    totp = pyotp.TOTP(user.mfa_secret)
+    totp = pyotp.TOTP(_enc.decrypt(user.mfa_secret))
     if not totp.verify(code, valid_window=1):
         raise HTTPException(401, "Invalid or expired TOTP code")
 
@@ -593,7 +604,7 @@ def mfa_disable(data: dict,
     if not user.mfa_enabled or not user.mfa_secret:
         raise HTTPException(400, "2FA is not currently enabled on this account")
 
-    totp = pyotp.TOTP(user.mfa_secret)
+    totp = pyotp.TOTP(_enc.decrypt(user.mfa_secret))
     if not totp.verify(code, valid_window=1):
         raise HTTPException(401, "Invalid TOTP code — cannot disable 2FA")
 
