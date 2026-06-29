@@ -165,4 +165,27 @@ def run_migrations(engine):
                     conn.commit()
                 print(f"[migration] Added org_id to {table} table")
 
+    # ── Feature 4: SLA Metrics — closed_at and first_event_at on case ──────────
+    if "case" in existing_tables:
+        case_cols = [c["name"] for c in inspector.get_columns("case")]
+        sla_cols = {
+            "closed_at":      "DATETIME DEFAULT NULL",
+            "first_event_at": "DATETIME DEFAULT NULL",
+        }
+        for col, definition in sla_cols.items():
+            if col not in case_cols:
+                with engine.connect() as conn:
+                    conn.execute(text(f'ALTER TABLE "case" ADD COLUMN {col} {definition}'))
+                    conn.commit()
+                print(f"[migration] Added {col} to case table")
+
+    # ── Feature 2: response_tier on case ─────────────────────────────────────
+    if "case" in existing_tables:
+        case_cols = [c["name"] for c in inspector.get_columns("case")]
+        if "response_tier" not in case_cols:
+            with engine.connect() as conn:
+                conn.execute(text("ALTER TABLE \"case\" ADD COLUMN response_tier TEXT DEFAULT 'recommend'"))
+                conn.commit()
+            print("[migration] Added response_tier to case table")
+
     print("[migration] All migrations complete.")

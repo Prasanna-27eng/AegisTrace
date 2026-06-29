@@ -54,6 +54,8 @@ from routers.graph import router as graph_router
 from routers.orchestration import router as orchestration_router
 from routers.memory import router as memory_router
 from routers.delegation import router as delegation_router
+from routers.response_tiers import router as response_tiers_router
+from routers.knowledge import router as knowledge_router
 from adaptive_agent import start_adaptive_agent
 from hardware_tools import router as hardware_router
 from ai_router import call_ai_json
@@ -233,7 +235,8 @@ for r in [auth_router, cases_router, vt_router, email_router, ioc_router,
           connectors_router, nhi_router, health_router, simulation_router,
           defense_router, demo_router, semantic_router,
           vision_router, rules_router, graph_router, orchestration_router,
-          memory_router, delegation_router]:
+          memory_router, delegation_router,
+          response_tiers_router, knowledge_router]:
     app.include_router(r)
 
 
@@ -443,6 +446,86 @@ else:
         return {"message": "AegisTrace v2.0 API", "docs": "/api/docs"}
 
 
+# ── Feature 7: YAML Connector Loader ──────────────────────────────────────────
+def _load_yaml_connectors():
+    """
+    Load connectors.yaml at startup and upsert to DB.
+    Identified by name — existing connectors are updated, not duplicated.
+    Silently skips if file doesn't exist.
+    """
+    yaml_path = Path(__file__).parent / "connectors.yaml"
+    if not yaml_path.exists():
+        return  # no yaml file — skip silently
+
+    try:
+        import yaml, os, re
+        from sqlmodel import Session, select
+        from models import IdentityConnector
+
+        with open(yaml_path, "r") as f:
+            raw = f.read()
+
+        # Substitute ${ENV_VAR} references
+        def _sub_env(m):
+            return os.getenv(m.group(1), m.group(0))
+        raw = re.sub(r"\$\{([A-Z0-9_]+)\}", _sub_env, raw)
+
+        data = yaml.safe_load(raw)
+        if not isinstance(data, dict) or "connectors" not in data:
+            print("[connectors.yaml] Invalid format — expected top-level 'connectors:' list")
+            return
+
+        connectors_cfg = data.get("connectors") or []
+        loaded = 0
+        skipped = 0
+
+        with Session(engine) as session:
+            for cfg in connectors_cfg:
+                if not isinstance(cfg, dict) or not cfg.get("name"):
+                    continue
+                if not cfg.get("enabled", True):
+                    skipped += 1
+                    continue
+
+                name     = cfg["name"]
+                org_id   = cfg.get("org_id", 1)
+                ctype    = cfg.get("type", "custom")
+                raw_cfg  = cfg.get("config", {})
+
+                # Upsert by name + org_id
+                existing = session.exec(
+                    select(IdentityConnector)
+                    .where(IdentityConnector.name == name)
+                    .where(IdentityConnector.org_id == org_id)
+                ).first()
+
+                if existing:
+                    import json as _json
+                    existing.connector_type = ctype
+                    existing.config         = _json.dumps(raw_cfg)
+                    session.add(existing)
+                    print(f"[connectors.yaml] Updated connector: {name}")
+                else:
+                    import json as _json
+                    connector = IdentityConnector(
+                        name           = name,
+                        connector_type = ctype,
+                        status         = "active",
+                        config         = _json.dumps(raw_cfg),
+                        org_id         = org_id,
+                    )
+                    session.add(connector)
+                    print(f"[connectors.yaml] Created connector: {name}")
+                loaded += 1
+
+            session.commit()
+
+        print(f"[connectors.yaml] Loaded {loaded} connector(s), skipped {skipped} disabled")
+
+    except Exception as e:
+        print(f"[connectors.yaml] Load warning: {e}")
+
+
 # ── Startup ───────────────────────────────────────────────────────────────────
 @app.on_event("startup")
 async def startup():
@@ -565,6 +648,9 @@ async def startup():
         print("[AegisTrace] File store initialised")
     except Exception as e:
         print(f"[AegisTrace] File store init warning: {e}")
+
+    # ── Feature 7: Multi-SIEM YAML Connector Config ────────────────────────────
+    _load_yaml_connectors()
 
     print("[AegisTrace v5.4] Server ready.")
     print(f"[AegisTrace] Allowed origins: {ALLOWED_ORIGINS}")

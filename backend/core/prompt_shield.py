@@ -46,7 +46,7 @@ _PATTERNS = [
     (re.compile(r"you\s+are\s+now\s+(a|an)\s+\w+", re.I), "role_hijack", "high"),
     (re.compile(r"act\s+as\s+(a|an|if)\s+", re.I), "role_hijack", "medium"),
     (re.compile(r"pretend\s+(you\s+are|to\s+be)\s+", re.I), "role_hijack", "medium"),
-    (re.compile(r"your\s+(new\s+)?(role|persona|identity|name)\s+is\s+", re.I), "role_hijack", "medium"),
+    (re.compile(r"your\s+(new\s+)?(role|persona|identity|name)\s+is[\s:]+", re.I), "role_hijack", "medium"),
     (re.compile(r"from\s+now\s+on\s+(you|act|respond|behave)\s+", re.I), "role_hijack", "medium"),
 
     # Jailbreak keywords
@@ -73,6 +73,28 @@ _PATTERNS = [
 
     # Encoding bypass attempts
     (re.compile(r"base64\s*decode|atob\s*\(|fromCharCode", re.I), "encoding_bypass", "high"),
+
+    # ── Additional hardening patterns (Feature 6) ────────────────────────────
+    # Goal hijacking
+    (re.compile(r"(change|switch|update|modify)\s+(your\s+)?(goal|objective|purpose|mission|task)\s+(to|is)", re.I), "goal_hijack", "high"),
+    (re.compile(r"(your\s+)?(primary|only|real|actual|true)\s+(goal|objective|purpose|task)\s+(is|should\s+be|must\s+be)", re.I), "goal_hijack", "medium"),
+
+    # Reward hacking / manipulation language
+    (re.compile(r"you\s+will\s+(be\s+rewarded|earn|get\s+points?|be\s+paid)\s+(if|for|when|every\s+time)", re.I), "reward_hack", "medium"),
+    (re.compile(r"(as\s+a\s+reward|in\s+return|in\s+exchange)\s+(for\s+)?(following|completing|doing)", re.I), "reward_hack", "low"),
+
+    # Multi-turn context injection
+    (re.compile(r"remember\s+for\s+(the\s+)?(rest|duration|entirety)\s+(of\s+\w+\s+)?(conversation|session|chat|exchange|thread|interaction)?", re.I), "context_persist", "high"),
+    (re.compile(r"(from\s+this\s+(point|message|turn)\s+(on|forward|onwards?)|in\s+all\s+future\s+(responses?|replies?|messages?))", re.I), "context_persist", "high"),
+    (re.compile(r"(store|save|remember|keep\s+in\s+mind)\s+(this|the\s+following)\s+(instruction|rule|fact|directive)", re.I), "context_persist", "medium"),
+
+    # Unicode / homoglyph obfuscation
+    (re.compile(r"[Ѐ-ӿͰ-Ͽ]{3,}", re.I), "unicode_homoglyph", "medium"),  # Cyrillic/Greek clusters
+    (re.compile(r"(?:&#[0-9]+;|&#x[0-9a-f]+;){3,}", re.I), "html_entity_inject", "high"),
+
+    # Nested prompt / recursive injection
+    (re.compile(r"(the\s+following\s+is\s+a\s+)?(new\s+)?(system|instruction)\s+(message|prompt|context|block)\s*:", re.I), "nested_prompt", "high"),
+    (re.compile(r"\[OVERRIDE\]|\[INJECT\]|\[ADMIN\]|\[ROOT\]|\[SUPERUSER\]", re.I), "privilege_escalation_tag", "critical"),
 ]
 
 # Max input length for different contexts
@@ -181,7 +203,7 @@ class PromptShield:
 
         if result.injections and db:
             try:
-                from models import DefenseEvent
+                from models import DefenseEvent, AuditLog
                 event = DefenseEvent(
                     attacker_ip=source_ip,
                     attack_type="prompt_injection",
@@ -205,6 +227,22 @@ class PromptShield:
                     severity=result.risk_level,
                 )
                 db.add(event)
+
+                # Feature 6: Also write AuditLog for security observability
+                audit = AuditLog(
+                    action="prompt_injection_detected",
+                    entity_type="prompt_shield",
+                    entity_id=context,
+                    user_id=None,
+                    user_email="system",
+                    new_value=json.dumps({
+                        "risk_level": result.risk_level,
+                        "patterns": list(set(i["pattern"] for i in result.injections)),
+                        "count": len(result.injections),
+                        "source_ip": source_ip,
+                    }),
+                )
+                db.add(audit)
                 db.commit()
             except Exception as e:
                 logger.error(f"[PromptShield] Failed to log defense event: {e}")

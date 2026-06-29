@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 from sqlmodel import Session, select, func, or_
 from models import Case, EvidenceArtifact, TimelineEvent, IOCCorrelation, AuditLog
 from database import get_session
@@ -405,6 +405,7 @@ def toggle_share(
 def close_case(
     case_id: int,
     data: dict,
+    background_tasks: BackgroundTasks,
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
@@ -428,6 +429,14 @@ def close_case(
     _audit(session, "case_closed", "case", str(case.id), user.id, user.email)
     session.commit()
     session.refresh(case)
+
+    # Feature 3: Extract knowledge from closed case in background
+    try:
+        from routers.knowledge import extract_case_knowledge
+        background_tasks.add_task(extract_case_knowledge, case.id, session)
+    except Exception:
+        pass
+
     try:
         from routers.webhooks import fire_event
         fire_event("case_closed", {

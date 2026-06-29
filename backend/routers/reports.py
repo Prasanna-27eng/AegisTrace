@@ -967,4 +967,254 @@ async def generate_regulatory_package(
            f"Regulatory evidence package ({regulation}) for {case.case_number}")
     session.commit()
 
+
+# ── Feature 8: Compliance Evidence Export PDF ──────────────────────────────────
+COMPLIANCE_FRAMEWORKS = {
+    "soc2": {
+        "name": "SOC 2 Type II",
+        "controls": [
+            ("CC6.1", "Logical and Physical Access Controls"),
+            ("CC6.7", "Access to Information Assets"),
+            ("CC7.2", "Security Incident Management"),
+            ("CC7.4", "Response to Security Incidents"),
+            ("CC9.2", "Risk Management Process"),
+        ],
+    },
+    "iso27001": {
+        "name": "ISO/IEC 27001:2022",
+        "controls": [
+            ("A.5.25", "Assessment and decision on information security events"),
+            ("A.5.26", "Response to information security incidents"),
+            ("A.5.28", "Collection of evidence"),
+            ("A.8.15", "Logging"),
+            ("A.8.16", "Monitoring activities"),
+        ],
+    },
+    "nist": {
+        "name": "NIST Cybersecurity Framework 2.0",
+        "controls": [
+            ("ID.RA", "Risk Assessment"),
+            ("DE.AE", "Anomalies and Events"),
+            ("RS.AN", "Incident Analysis"),
+            ("RS.MI", "Incident Mitigation"),
+            ("RC.RP", "Recovery Planning"),
+        ],
+    },
+    "dora": {
+        "name": "DORA (EU) 2022/2554",
+        "controls": [
+            ("Art. 17", "ICT-related incident management process"),
+            ("Art. 18", "Classification of ICT-related incidents"),
+            ("Art. 19", "Reporting of major ICT-related incidents"),
+            ("Art. 20", "Harmonisation of reporting content"),
+            ("Art. 28", "General principles"),
+        ],
+    },
+}
+
+
+@router.post("/compliance-evidence")
+def compliance_evidence_export(
+    data: dict,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """
+    Generate an audit-ready PDF compliance evidence package.
+    Body: {"framework": "soc2|iso27001|nist|dora"}
+    Returns a PDF file download.
+    """
+    framework_id = (data.get("framework") or "soc2").lower()
+    framework = COMPLIANCE_FRAMEWORKS.get(framework_id)
+    if not framework:
+        raise HTTPException(400, f"Unknown framework '{framework_id}'. Options: {list(COMPLIANCE_FRAMEWORKS.keys())}")
+
+    try:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib.styles import ParagraphStyle
+        from reportlab.lib.units import cm
+        from reportlab.lib import colors
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+        from reportlab.lib.enums import TA_CENTER, TA_LEFT
+    except ImportError:
+        raise HTTPException(503, "reportlab not installed")
+
+    # Fetch all closed cases in last 90 days
+    cutoff = datetime.utcnow() - timedelta(days=90)
+    cases = session.exec(
+        select(Case)
+        .where(Case.org_id == user.org_id)
+        .where(Case.created_at >= cutoff)
+        .order_by(Case.created_at.desc())
+    ).all()
+
+    closed_cases = [c for c in cases if c.status == "closed"]
+    open_cases   = [c for c in cases if c.status != "closed"]
+    critical_c   = [c for c in cases if c.severity == "critical"]
+
+    # Basic SLA numbers
+    ttc_hours = []
+    for c in closed_cases:
+        if c.created_at and c.updated_at:
+            h = (c.updated_at - c.created_at).total_seconds() / 3600
+            if h > 0:
+                ttc_hours.append(h)
+    avg_ttc = round(sum(ttc_hours) / len(ttc_hours), 1) if ttc_hours else None
+
+    # Audit log count
+    audit_count = session.exec(
+        select(AuditLog).where(AuditLog.timestamp >= cutoff)
+    ).all()
+
+    # Build PDF
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=A4,
+                            rightMargin=2*cm, leftMargin=2*cm,
+                            topMargin=2*cm, bottomMargin=2*cm)
+
+    dark  = colors.Color(0.06, 0.06, 0.10)
+    blue  = colors.Color(0.29, 0.49, 0.78)
+    gray  = colors.Color(0.45, 0.45, 0.45)
+    light = colors.Color(0.96, 0.97, 0.99)
+    green = colors.Color(0.13, 0.77, 0.37)
+    red   = colors.Color(0.94, 0.27, 0.27)
+
+    def sty(name, **kw):
+        base = {"fontName": "Helvetica", "fontSize": 9, "textColor": gray, "spaceAfter": 4, "leading": 14}
+        base.update(kw)
+        return ParagraphStyle(name, **base)
+
+    H1   = sty("H1", fontName="Helvetica-Bold", fontSize=16, textColor=dark, spaceAfter=6)
+    H2   = sty("H2", fontName="Helvetica-Bold", fontSize=12, textColor=blue, spaceBefore=14, spaceAfter=4)
+    H3   = sty("H3", fontName="Helvetica-Bold", fontSize=10, textColor=dark, spaceAfter=3)
+    body = sty("body")
+    mono = sty("mono", fontName="Courier", fontSize=8, leading=12)
+    note = sty("note", fontSize=8, textColor=gray, fontName="Helvetica-Oblique")
+
+    story = []
+    W = 17 * cm  # content width
+
+    def hr(): return HRFlowable(width="100%", thickness=0.5, color=colors.Color(0.85, 0.85, 0.90))
+
+    # Cover
+    story += [
+        Paragraph("AegisTrace ITDR Platform", sty("cover_sub", fontSize=10, textColor=blue)),
+        Paragraph(f"{framework['name']} Compliance Evidence Package", H1),
+        Spacer(1, 0.3*cm),
+        hr(),
+        Spacer(1, 0.2*cm),
+        Paragraph(f"<b>Organization:</b> {user.org_id} | <b>Generated:</b> {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')} | <b>Period:</b> Last 90 days", body),
+        Paragraph(f"<b>Prepared by:</b> {user.name or user.email} | <b>Framework Version:</b> {framework['name']}", body),
+        Spacer(1, 0.5*cm),
+    ]
+
+    # Executive Summary
+    story += [
+        Paragraph("Executive Summary", H2),
+        Paragraph(
+            f"This evidence package documents AegisTrace security incident management activities "
+            f"for the 90-day period ending {datetime.utcnow().strftime('%Y-%m-%d')}. "
+            f"During this period, {len(cases)} security cases were managed: "
+            f"{len(closed_cases)} closed, {len(open_cases)} currently active, "
+            f"{len(critical_c)} classified as critical severity.",
+            body,
+        ),
+        Spacer(1, 0.3*cm),
+    ]
+
+    # Key Metrics Table
+    metrics = [
+        ["Metric", "Value"],
+        ["Total Cases (90 days)", str(len(cases))],
+        ["Cases Closed",          str(len(closed_cases))],
+        ["Cases Open",            str(len(open_cases))],
+        ["Critical Incidents",    str(len(critical_c))],
+        ["Avg Close Time",        f"{avg_ttc}h" if avg_ttc else "—"],
+        ["Audit Log Entries",     str(len(audit_count))],
+    ]
+    t = Table(metrics, colWidths=[8*cm, 5*cm])
+    t.setStyle(TableStyle([
+        ("BACKGROUND",  (0, 0), (-1, 0), blue),
+        ("TEXTCOLOR",   (0, 0), (-1, 0), colors.white),
+        ("FONTNAME",    (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE",    (0, 0), (-1, -1), 9),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, light]),
+        ("GRID",        (0, 0), (-1, -1), 0.5, colors.Color(0.85, 0.85, 0.9)),
+        ("LEFTPADDING", (0, 0), (-1, -1), 8),
+        ("RIGHTPADDING",(0, 0), (-1, -1), 8),
+        ("TOPPADDING",  (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING",(0, 0),(-1, -1), 5),
+    ]))
+    story += [t, Spacer(1, 0.4*cm)]
+
+    # Framework Control Mapping
+    story += [Paragraph(f"{framework['name']} Control Mapping", H2)]
+    for ctrl_id, ctrl_name in framework["controls"]:
+        story += [
+            Paragraph(f"<b>{ctrl_id}</b> — {ctrl_name}", H3),
+            Paragraph(
+                f"AegisTrace maintains automated evidence for this control: {len(audit_count)} "
+                f"audit log entries capturing all access, incident, and response activities "
+                f"within the review period. See case summary section for incident-level evidence.",
+                body,
+            ),
+            Spacer(1, 0.15*cm),
+        ]
+
+    # Case Evidence Table
+    story += [hr(), Paragraph("Incident Case Evidence (Last 90 Days)", H2)]
+    if not cases:
+        story.append(Paragraph("No cases in the review period.", body))
+    else:
+        case_rows = [["Case #", "Title", "Severity", "Status", "Closed"]]
+        for c in cases[:40]:
+            closed_date = ""
+            if c.status == "closed" and c.updated_at:
+                closed_date = c.updated_at.strftime("%Y-%m-%d")
+            case_rows.append([
+                c.case_number or "",
+                (c.title or "")[:52],
+                (c.severity or "").upper(),
+                c.status or "",
+                closed_date,
+            ])
+        ct = Table(case_rows, colWidths=[2.2*cm, 7*cm, 2.2*cm, 2.2*cm, 2.5*cm])
+        ct.setStyle(TableStyle([
+            ("BACKGROUND",  (0, 0), (-1, 0), blue),
+            ("TEXTCOLOR",   (0, 0), (-1, 0), colors.white),
+            ("FONTNAME",    (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE",    (0, 0), (-1, -1), 8),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, light]),
+            ("GRID",        (0, 0), (-1, -1), 0.4, colors.Color(0.88, 0.88, 0.92)),
+            ("LEFTPADDING", (0, 0), (-1, -1), 5),
+            ("TOPPADDING",  (0, 0), (-1, -1), 4),
+            ("BOTTOMPADDING",(0, 0),(-1, -1), 4),
+        ]))
+        story += [ct, Spacer(1, 0.3*cm)]
+
+    # Footer declaration
+    story += [
+        hr(), Spacer(1, 0.2*cm),
+        Paragraph(
+            f"This evidence package was auto-generated by AegisTrace v5.4 on "
+            f"{datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}. "
+            f"It should be reviewed by a qualified compliance officer before submission to auditors.",
+            sty("footer", fontSize=8, textColor=gray, fontName="Helvetica-Oblique"),
+        ),
+    ]
+
+    doc.build(story)
+    buf.seek(0)
+
+    _audit(session, "compliance_evidence_exported", "org", str(user.org_id),
+           user.id, user.email, f"Framework: {framework_id}")
+    session.commit()
+
+    filename = f"aegistrace-{framework_id}-evidence-{datetime.utcnow().strftime('%Y%m%d')}.pdf"
+    return StreamingResponse(
+        buf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
     return package

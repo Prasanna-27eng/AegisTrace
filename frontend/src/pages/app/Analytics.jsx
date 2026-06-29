@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   BarChart2, TrendingUp, Clock, AlertTriangle, Shield,
   CheckCircle, Users, RefreshCw, Loader2, Activity,
-  Target, Zap
+  Target, Zap, DollarSign, FileText, Download
 } from 'lucide-react';
 import api from '../../api/client';
 
@@ -89,6 +89,9 @@ export default function Analytics() {
   const [trend, setTrend]             = useState([]);
   const [loading, setLoading]         = useState(true);
   const [lastRefresh, setLastRefresh] = useState(null);
+  const [costData, setCostData]       = useState(null);
+  const [complianceGenerating, setComplianceGenerating] = useState(false);
+  const [complianceMsg, setComplianceMsg] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -110,6 +113,8 @@ export default function Analytics() {
       if (ttcRes.status === 'fulfilled')   setTtc(ttcRes.value.data);
       if (trendRes.status === 'fulfilled') setTrend(trendRes.value.data);
       setLastRefresh(new Date());
+      // Feature 5: cost data
+      api.get('/api/analytics/cost').then(r => setCostData(r.data)).catch(() => {});
     } catch (e) {
       console.error('Analytics load error:', e);
     }
@@ -304,7 +309,7 @@ export default function Analytics() {
 
           {/* MITRE Heatmap */}
           {mitre.length > 0 && (
-            <Panel>
+            <Panel style={{ marginBottom: 16 }}>
               <SectionHeader icon={Target} label="MITRE ATT&CK — Top Techniques" color="#EF4444" />
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8 }}>
                 {mitre.map(m => {
@@ -325,6 +330,121 @@ export default function Analytics() {
               </div>
             </Panel>
           )}
+
+          {/* ── Feature 5: Cost Intelligence ─────────────────────────────── */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+            <Panel>
+              <SectionHeader icon={DollarSign} label="AI Cost Intelligence (30 days)" color="#F59E0B" />
+              {!costData || costData.total_cost_usd_30d === 0 ? (
+                <div style={{ fontSize: '0.75rem', color: '#787878', ...MONO, textAlign: 'center', padding: '16px 0' }}>
+                  No AI usage logged yet. Cost tracking activates on first LLM call.
+                </div>
+              ) : (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 14 }}>
+                    {[
+                      { label: 'Total (30d)', value: `$${costData.total_cost_usd_30d?.toFixed(4)}`, color: '#F59E0B' },
+                      { label: 'Per Case', value: `$${costData.cost_per_case_avg?.toFixed(5)}`, color: '#8BB8E8' },
+                      { label: 'Per Alert', value: `$${costData.cost_per_alert_avg?.toFixed(6)}`, color: '#22C55E' },
+                    ].map(stat => (
+                      <div key={stat.label} style={{ background: `${stat.color}08`, border: `1px solid ${stat.color}20`, borderRadius: 8, padding: '10px 12px' }}>
+                        <div style={{ fontSize: '0.58rem', color: '#787878', ...MONO, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>{stat.label}</div>
+                        <div style={{ fontSize: '0.95rem', fontWeight: 700, color: stat.color, ...MONO }}>{stat.value}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ fontSize: '0.62rem', color: '#787878', ...MONO, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>By Operation</div>
+                  {(costData.breakdown_by_operation || []).slice(0, 6).map(op => {
+                    const maxCost = Math.max(...costData.breakdown_by_operation.map(o => o.total_cost_usd));
+                    return (
+                      <div key={op.operation} style={{ marginBottom: 7 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                          <span style={{ fontSize: '0.72rem', color: '#7A9DB8', textTransform: 'capitalize' }}>{op.operation}</span>
+                          <span style={{ fontSize: '0.68rem', color: '#F59E0B', ...MONO }}>${op.total_cost_usd.toFixed(4)} ({op.count})</span>
+                        </div>
+                        <div style={{ height: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 2, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${maxCost > 0 ? (op.total_cost_usd / maxCost) * 100 : 0}%`, background: '#F59E0B', borderRadius: 2 }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              )}
+            </Panel>
+
+            {/* ── Feature 8: Compliance Evidence Export ─────────────────── */}
+            <Panel>
+              <SectionHeader icon={FileText} label="Compliance Evidence Export" color="#8B5CF6" />
+              <div style={{ fontSize: '0.72rem', color: '#6B7280', marginBottom: 16, lineHeight: 1.5 }}>
+                Generate audit-ready PDF evidence packages for regulatory frameworks. Includes case summaries, MITRE mappings, SLA metrics, and response timelines.
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  { id: 'soc2',     label: 'SOC 2 Type II',    desc: 'Access controls, incident response, monitoring' },
+                  { id: 'iso27001', label: 'ISO 27001',         desc: 'ISMS evidence package' },
+                  { id: 'nist',     label: 'NIST CSF',          desc: 'Identify/Protect/Detect/Respond/Recover' },
+                  { id: 'dora',     label: 'DORA',              desc: 'Digital Operational Resilience Act (EU)' },
+                ].map(framework => (
+                  <div key={framework.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'rgba(139,92,246,0.04)', border: '1px solid rgba(139,92,246,0.12)', borderRadius: 8 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#E8E8F0', marginBottom: 2 }}>{framework.label}</div>
+                      <div style={{ fontSize: '0.65rem', color: '#6B7280' }}>{framework.desc}</div>
+                    </div>
+                    <button
+                      disabled={complianceGenerating}
+                      onClick={async () => {
+                        setComplianceGenerating(true);
+                        setComplianceMsg(null);
+                        try {
+                          const res = await fetch('/api/reports/compliance-evidence', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                            },
+                            body: JSON.stringify({ framework: framework.id }),
+                          });
+                          if (res.ok) {
+                            const blob = await res.blob();
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `aegistrace-${framework.id}-evidence.pdf`;
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                            URL.revokeObjectURL(url);
+                            setComplianceMsg({ type: 'success', text: `${framework.label} package downloaded.` });
+                          } else {
+                            const err = await res.json();
+                            setComplianceMsg({ type: 'error', text: err.detail || 'Generation failed.' });
+                          }
+                        } catch {
+                          setComplianceMsg({ type: 'error', text: 'Request failed.' });
+                        } finally {
+                          setComplianceGenerating(false);
+                        }
+                      }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px',
+                        background: complianceGenerating ? 'rgba(139,92,246,0.05)' : 'rgba(139,92,246,0.12)',
+                        border: '1px solid rgba(139,92,246,0.3)', borderRadius: 6,
+                        color: '#A78BFA', fontSize: '0.7rem', fontWeight: 600, cursor: complianceGenerating ? 'wait' : 'pointer',
+                      }}
+                    >
+                      {complianceGenerating ? <Loader2 size={11} style={{ animation: 'spin 1s linear infinite' }} /> : <Download size={11} />}
+                      PDF
+                    </button>
+                  </div>
+                ))}
+              </div>
+              {complianceMsg && (
+                <div style={{ marginTop: 10, padding: '8px 12px', background: complianceMsg.type === 'success' ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)', border: `1px solid ${complianceMsg.type === 'success' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`, borderRadius: 6, fontSize: '0.72rem', color: complianceMsg.type === 'success' ? '#22C55E' : '#EF4444' }}>
+                  {complianceMsg.text}
+                </div>
+              )}
+            </Panel>
+          </div>
         </>
       )}
     </div>
