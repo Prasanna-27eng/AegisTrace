@@ -1,5 +1,5 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v11.0 | **Last updated:** June 2026 (v11.0 = PostgreSQL migration, 8 new ITDR features, AegisTrace × React Bits design system applied to all 7 public pages + app, systemd-managed VPS deployment, Dock redesign, loading screen first-visit only, Deploy/EDR/logo nav fixes)
+**Version:** v11.1 | **Last updated:** June 2026 (v11.1 = Anthropic warm cream theme complete across all app pages, /cso red team audit + 4 security fixes, permanent Docker systemd service, AI-speed threat frontier strategic roadmap)
 **Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files. **This is the single master doc for this project — all other planning/session/deploy docs have been folded into this file and removed.**
 
 ---
@@ -15,7 +15,7 @@ You are working on AegisTrace, a security product built by Prasanna. Here is exa
 4. Never re-read the full codebase — this file is sufficient. If you need a specific file, read only that file.
 
 **Rules for every session:**
-- Theme is now **Enterprise v5.0** (June 2026): App uses QRadar-dark navy (`#0B0F1A`/`#111827`/`#1A2235`). Website hero uses deep navy gradient (`#0A1628 → #0F3470 → #2563EB`). Content sections alternate dark navy / light `#F0F4F9`. NEVER use pure black (`#000000`) anywhere.
+- **App theme is now Anthropic Warm Cream (v11.1):** `--bg: #F5F0E8` · `--surface: #EDE7DC` · `--card: #E8E0D4` · `--text: #1A1612` · `--accent: #CC785C` (coral). NEVER use `rgba(8,8,8,...)`, `rgba(90,138,159,...)`, `rgba(148,163,184,...)`, or any dark card backgrounds. Replace with `var(--card)` / `var(--surface)`. For muted text use `rgba(26,22,18,0.5)`. Blue informational accent = `#2563EB`. Public website pages: deep navy gradient (`#0A1628 → #0F3470 → #2563EB`). Content sections alternate dark navy / light `#F0F4F9`.
 - Fonts: **Plus Jakarta Sans** (display headings) + **IBM Plex Sans** (UI/body) + **IBM Plex Mono** (data/code). Clash Display + Cabinet Grotesk are GONE from all pages.
 - Design tokens in `frontend/src/styles/tokens.css` — ALWAYS import first. Never re-declare `:root` color vars in other files.
 - App accent: `#2563EB` (Microsoft blue) + `#7C3AED` (QRadar purple). Gold `#F59E0B` is brand-only for dark hero sections.
@@ -55,9 +55,9 @@ You are working on AegisTrace, a security product built by Prasanna. Here is exa
 9. [Frontend Dependencies](#frontend-dependencies) — package.json packages
 10. [Components](#new-components) — Reusable UI components (v10.7)
 11. [Website Narrative](#website-narrative) — Messaging, hero copy, nav links
-12. [Security Audit Log](#security-fixes) — All completed security fixes
-13. [Changelog](#changelog) — Version history newest-first
-14. [Future Work Backlog](#full-future-work-backlog) — Priorities + PyPI companion projects
+12. [Security Audit Log](#security-fixes) — All completed security fixes (v4.3 → v11.1)
+13. [Changelog](#changelog) — Version history newest-first (current: v11.1)
+14. [Future Work Backlog](#full-future-work-backlog) — Priorities + AI-speed frontier + PyPI companion projects
 15. [How to Resume](#how-to-resume-building) — Quick start for new sessions
 16. [Builder Profile](#builder-profile) — Prasanna Kumar Surendran
 
@@ -375,7 +375,28 @@ Shareable via token, PDF downloadable, AI summary callout at top
 
 ## CHANGELOG
 
-> **Current version: v11.0** — Newest entries at the top. All listed items are ✅ complete unless marked [ ].
+> **Current version: v11.1** — Newest entries at the top. All listed items are ✅ complete unless marked [ ].
+
+---
+
+### v11.1 Completed (June 2026 — Cream Theme + Security Hardening)
+
+**Anthropic Warm Cream Theme — Complete App Overhaul (2 passes, 57 files)**
+- [x] Round 1 (prior session): Replaced pure-black/dark hex values (`#000`, `#0A0A0A`, `#0E0E16`) with cream CSS vars across 55 files; fixed JSX unquoted CSS-variable syntax (`background: var(--surface)` → `background: 'var(--surface)'`)
+- [x] Round 2 (this session): Eliminated ALL remaining dark rgba patterns — `rgba(8,8,8,0.7)` card overlays → cream, `rgba(148,163,184,...)` slate borders → dark-on-cream (`rgba(26,22,18,...)`), `rgba(90,138,159,...)` steel-blue accents → neutral, `rgba(74,126,200,...)` / `rgba(77,163,255,...)` blue-on-dark → neutral; legacy dark text colors `#7A9DB8`, `#BDD4E8`, `#787878`, `#888888` → warm `rgba(26,22,18,X)` variants; blue accent text `#4A7EC8`/`#4DA3FF` → readable `#2563EB`; AuditLog heatmap bar → coral `rgba(204,120,92,...)`
+- [x] All 11 reported pages now fully cream: Analytics, Cases, Threat Hunt, Email Analysis, ITDR, Playbook Engine, Simulation, Admin, Policies, Agent Security, Audit Log — plus all shared components
+- [x] Active cream palette: `--bg: #F5F0E8` · `--surface: #EDE7DC` · `--card: #E8E0D4` · `--text: #1A1612` · `--accent: #CC785C`
+
+**Security Hardening — /cso Red Team Audit (4 confirmed vulnerabilities fixed)**
+- [x] **X-Forwarded-For IP spoofing** (`auth.py`): `_get_real_ip()` was using `XFF.split(",")[0]` (attacker-controlled). Fixed to use `X-Real-IP` header (nginx `$remote_addr`, cannot be forged). Falls back to `XFF.split(",")[-1].strip()` (rightmost, network-set) if absent.
+- [x] **INGEST_API_KEY auth bypass** (`routers/ingest.py`): `except HTTPException as e: if e.status_code == 503: pass` silently removed auth when `INGEST_API_KEY` was unset. Fixed: hard-fail 503 if key unset; always enforce `X-Agent-Token` header + HMAC comparison.
+- [x] **Plaintext TOTP secrets** (`routers/auth.py`): `mfa_secret` stored plaintext in DB. Fixed: `mfa_setup()` encrypts with `core.encryption.enc.encrypt()`; all reads decrypt first. Legacy-plaintext fallback in `FieldEncryption.decrypt()` = zero-downtime upgrade for existing MFA users.
+- [x] **Missing nginx security headers** (VPS `/etc/nginx/sites-enabled/aegistrace`): Added `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=()`, full `Content-Security-Policy`.
+- [x] `.gitignore`: added `.gstack/` to prevent security audit reports from being committed
+
+**Infrastructure**
+- [x] **Permanent Docker port fix**: Removed `aegistrace.service` systemd unit (was running uvicorn directly on port 8000 outside Docker, causing `address already in use` on every restart). Created `aegistrace-docker.service` (`WantedBy=multi-user.target`, `ExecStart=docker compose up -d --remove-orphans`) — Docker Compose now owns startup/shutdown; no more port 8000 conflicts
+- [x] VPS `.env` corrections: `ADMIN_PIN` typo fixed (`Surenndran` → `Surendran@2703`); `PUBLIC_URL` corrected from stale Render URL to `https://aegistrace.uk`
 
 ---
 
@@ -1095,7 +1116,79 @@ patch set. Ordered by priority for the next dedicated session.
 
 ---
 
+## SECURITY AUDIT v11.1 (June 2026) — /cso Red Team Pass
+
+Four confirmed vulnerabilities found and fixed in a senior-engineer / red-team audit pass:
+
+**(a) X-Forwarded-For IP spoofing — `backend/routers/auth.py`:**
+- [x] `_get_real_ip()` took `X-Forwarded-For.split(",")[0]` — leftmost entry is **attacker-controlled** (any client can forge it, so rate limits and lockout rules were trivially bypassed). Fixed: use `X-Real-IP` (nginx `$remote_addr` via `proxy_set_header X-Real-IP $remote_addr`, cannot be forged by client). Falls back to `XFF.split(",")[-1].strip()` (network-controlled rightmost hop) only if `X-Real-IP` absent.
+
+**(b) INGEST_API_KEY auth bypass — `backend/routers/ingest.py`:**
+- [x] Memory dump endpoint's auth block had `except HTTPException as e: if e.status_code == 503: pass` — when `INGEST_API_KEY` unset, `_get_ingest_key()` raised `HTTPException(503)`, the `pass` silently swallowed it and removed the auth check. Any request succeeded. Fixed: hard-fail 503 if key not configured; always enforce `X-Agent-Token` required + HMAC constant-time comparison.
+
+**(c) Plaintext TOTP secrets — `backend/routers/auth.py`:**
+- [x] `User.mfa_secret` stored plaintext. If DB is dumped, attacker gets live TOTP codes. Fixed: `mfa_setup()` writes `_enc.encrypt(secret)` via `core.encryption.FieldEncryption`; `mfa_verify()`, `login_mfa()`, `mfa_disable()` all call `_enc.decrypt(user.mfa_secret)` before `pyotp.TOTP()`. The existing `FieldEncryption.decrypt()` falls back to returning plaintext for pre-fix secrets — zero-downtime upgrade for existing enrolled users.
+
+**(d) Missing nginx security headers — VPS `/etc/nginx/sites-enabled/aegistrace`:**
+- [x] Added all missing security headers to the nginx config: `X-Frame-Options: SAMEORIGIN` (clickjacking), `X-Content-Type-Options: nosniff` (MIME sniffing), `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=()`, and a full `Content-Security-Policy` directive. `Strict-Transport-Security` was already present from v5.4.
+
+**Note:** The 6 SOC Mitigation Plan items from v10.2 remain open (see `## SOC MITIGATION PLAN` section above).
+
+---
+
 ## FULL FUTURE WORK BACKLOG
+
+### Priority 0.5 — AI-Speed Threat Frontier (Strategic Roadmap — June 2026)
+
+**The core problem:** AegisTrace is built for human-speed security in a world about to be attacked at machine speed. Current architecture (30-second telemetry cycles, HITL approval queues, human-analyst review gates) assumes AI agents act slowly enough for humans to intervene. That assumption breaks when attacker AI operates at sub-second speed.
+
+**The strategic pivot:** Stop positioning AegisTrace as "human approval for AI actions." Start positioning it as **"AI immune system for AI infrastructure."** Humans review the scoreboard after the match, not each move during it.
+
+**Recommended build order:**
+
+#### 1. RAG / Qdrant Poisoning Protection (build FIRST — live vulnerability)
+- **Problem:** Any case submitted today can poison future investigations via crafted description text stored in Qdrant. An attacker submits a case with carefully crafted `description`/`findings` text → your embedding model stores it in Qdrant → future case investigations retrieve this poisoned embedding and get attacker-controlled "similar cases" injected into the triage prompt.
+- **Fix:** (a) Sanitise every Qdrant retrieval through `prompt_shield.py` before it reaches the triage agent prompt. (b) Store cryptographic hashes on embeddings at write time; detect outlier embeddings that don't match their source text on retrieval.
+- **Files:** `backend/qdrant_store.py` (sanitise at `search_similar` retrieval), `backend/embeddings.py` (hash on `store_case_embedding`).
+- **Effort:** 1–2 weeks
+
+#### 2. DefenseAgent — Autonomous Sub-Second Response (HOTL model)
+- **Problem:** Current model is HITL (human-in-the-loop): every detection waits for human approval. An attacker AI exfiltrates data in 3 seconds; the breach is over before the approval card is swiped. ApprovalQueue.jsx with swipe cards is useless at machine speed.
+- **What to build:** `AUTO_RESPOND = True` mode in the endpoint agent with 10 **pre-approved kill rules** (no backend round-trip, no human approval required for these):
+  - `honey_token_accessed` → immediate isolate + SIGKILL
+  - `YARA_match(reverse_shell)` → SIGKILL + block outbound iptables
+  - `DNS_DGA_score > 92` → iptables DROP + async backend log
+  - `FIM_change(critical_binary)` → snapshot + CRITICAL alert
+  - (define remaining 6 for v1)
+- Actions still write to ProvenanceLedger **asynchronously** (not blocking the response).
+- Human reviews in Defense Console with "undo" capability — HOTL (human-on-the-loop).
+- **Files:** `agent/aegistrace_agent.py` (AUTO_RESPOND flag, `_auto_respond()` dispatcher), `backend/routers/defense.py` (async provenance write path).
+- **Effort:** 2 weeks (reuses existing YARA-lite, FIM, honey token, auto-block infrastructure)
+
+#### 3. Model Attestation (high enterprise-sales value, low effort)
+- **Problem:** AegisTrace routes to Groq/NVIDIA models but doesn't verify: (a) which model weights were actually loaded, (b) whether a fine-tuned model was tampered with, (c) whether the API is serving a different model than advertised (model substitution attack).
+- **What to build:** Per-model baseline fingerprint (perplexity distribution, token-length distribution, response-time distribution) recorded on first use. Every subsequent `nvidia_chat()` / `call_ai()` optionally samples response against baseline. If statistical divergence > 2σ → raise `ModelSubstitutionAlert` to Defense Console. Include signed inference metadata (model version claim + timestamp) in ProvenanceLedger entries.
+- **Effort:** 1–2 weeks
+
+#### 4. Inter-Agent MCP Communication Monitor (platform play — defer until platform path confirmed)
+- **Problem:** `prompt_shield.py` checks one prompt at a time. Multi-agent swarms of 50+ agents can chain benign-looking interactions into a kill chain. Agent A reads a file, returns a "benign" summary to Agent B — but the summary contains a steganographic payload that hijacks Agent B's next tool call.
+- **What to build:** MCP proxy layer (extends `mcp-aegis`) that analyses *patterns across agent conversation chains*, not individual prompts. Track agent trust decay: if Agent A's outputs correlate with subsequent bad actions by Agent B → downgrade Agent A's trust score.
+- **Effort:** 4–6 weeks. Only build this on the platform path (enterprises routing all AI traffic through AegisTrace MCP proxy).
+
+#### 5. Dynamic AI Honeypots (deception-as-a-service — defer until DefenseAgent done)
+- **Problem:** Current honeypot endpoints (`/api/v1/admin/export` etc.) are static. A smart attacker AI fingerprints and ignores them in seconds.
+- **What to build:** Background agent that analyses real API patterns and generates fake endpoints statistically indistinguishable from real ones. When attacker AI hits a honeypot, the deception AI responds with fake data + poisoned IOCs to waste attacker compute cycles.
+- **Effort:** 3–4 weeks (NVIDIA NIM generative model)
+
+#### 6. Browser/LLM Runtime Visibility (future product surface — long-term)
+- **Problem:** Endpoint agent monitors processes/network/files but is blind to AI agents running in browser extensions (ChatGPT sidebar, Copilot, Claude Desktop, Slack/Teams AI bots) — these have network + file + credential access.
+- **What to build:** Browser extension companion to `mcp-aegis`; intercept AI tool calls in browser context; monitor clipboard/file upload events; cross-tab data exfiltration detection.
+- **Effort:** 3–4 weeks (separate product surface — different distribution + trust model)
+- **Defer:** Treat as a 2027 product line; don't let it block core platform work.
+
+**Key decision required before building item 4:** Platform vs Product path. Platform = expose rule engine via API, enterprises route all AI traffic through AegisTrace. Product = 10 opinionated rules, sell as a complete solution. Items 2+3 are valid on either path; item 4 requires the platform path.
+
+---
 
 ### Priority 0 — v10.0 Session Plan (ACTIVE — June 2026)
 
@@ -1467,12 +1560,20 @@ Start a new Claude session and paste this file. Then say:
 
 > "Read AEGISTRACE_CONTEXT.md — I want to work on [task from backlog above]"
 
-**Current version: v10.7** — Highest priority next items:
-1. **Ollama local AI integration** — `backend/core/ollama_client.py`, fallback chain: Ollama → Groq → NVIDIA NIM. Enables air-gap claim for regulated industries.
-2. **Auto-Rule Generation Trigger** (Priority 4 in backlog) — nightly job auto-generates detection rules when 3+ cases share a MITRE technique within 7 days.
-3. **Agent Verified Boot Chain** — agent hashes own binary on startup, refuses to run if tampered, fires CRITICAL ITDRAlert.
-4. **DPDPA Compliance Report** — India market accelerator (only remaining item from v4.3).
-5. **Native Python Embedding Engine** — replace NVIDIA NV-EmbedQA with TF-IDF + cosine for air-gapped operation.
+**Current version: v11.1** — Highest priority next items:
+
+**Security (build first):**
+1. **RAG/Qdrant poisoning protection** — sanitise every Qdrant retrieval through `prompt_shield.py` + hash embeddings at write time. Live vulnerability. 1–2 weeks. (see Priority 0.5 → item 1)
+
+**Strategic features:**
+2. **DefenseAgent** — `AUTO_RESPOND = True` in endpoint agent with 10 pre-approved kill rules. Converts HITL → HOTL. Reuses existing YARA/FIM/honey-token/auto-block. 2 weeks. (see Priority 0.5 → item 2)
+3. **Model attestation** — statistical fingerprinting (perplexity/token distribution) to detect model substitution. Signed inference metadata in ProvenanceLedger. 1–2 weeks. (see Priority 0.5 → item 3)
+
+**Backlog items:**
+4. **Auto-Rule Generation Trigger** (Priority 0 item 4) — nightly job auto-generates detection rules when 3+ cases share a MITRE technique within 7 days.
+5. **Ollama local AI integration** — `backend/core/ollama_client.py`, fallback chain: Ollama → Groq → NVIDIA NIM. Enables air-gap claim for regulated industries.
+6. **Agent Verified Boot Chain** — agent hashes own binary on startup, refuses to run if tampered, fires CRITICAL ITDRAlert.
+7. **DPDPA Compliance Report** — India market accelerator (only remaining item from v4.3).
 
 **Deploy after changes:** `git push origin main` → SSH `root@2.24.131.243` → `cd /opt/aegistrace && bash deploy/update.sh`
 
