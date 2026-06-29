@@ -1,43 +1,40 @@
-/**
- * Dock — React Bits-style macOS dock with framer-motion magnification
- * Place at bottom of screen. All navigation lives here.
- * Props:
- *   items  : [{ to, icon: ReactNode, label, badge? }]
- *   onCmd  : () => void   (open command palette)
- */
 import React, { useRef, useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 
-const ICON_SIZE    = 48;
-const ICON_GAP     = 10;
-const MAX_SCALE    = 1.75;
-const SCALE_RANGE  = 140; // px from center that magnification applies
+const ICON_SIZE   = 44;
+const ICON_GAP    = 6;
+const MAX_SCALE   = 1.45;
+const SCALE_RANGE = 110;
 
-function DockItem({ item, mouseX, index }) {
-  const ref = useRef(null);
+// Neutral palette — no blue saturation on inactive icons
+const ICON_COLOR_INACTIVE = 'rgba(175,180,195,0.72)';
+const ICON_COLOR_ACTIVE   = 'rgba(230,232,240,0.95)';
+const TILE_BG_INACTIVE    = 'rgba(18,18,26,0.0)';
+const TILE_BG_ACTIVE      = 'rgba(255,255,255,0.09)';
+const TILE_BORDER_INACTIVE = 'rgba(255,255,255,0.0)';
+const TILE_BORDER_ACTIVE  = 'rgba(255,255,255,0.13)';
 
+function DockItem({ item, mouseX }) {
+  const ref      = useRef(null);
   const distance = useMotionValue(Infinity);
 
-  const scale = useTransform(distance, [-SCALE_RANGE, 0, SCALE_RANGE], [1, MAX_SCALE, 1]);
-  const scaleSpring = useSpring(scale, { mass: 0.1, stiffness: 150, damping: 12 });
-
-  const y = useTransform(scaleSpring, [1, MAX_SCALE], [0, -(ICON_SIZE * (MAX_SCALE - 1)) / 2]);
-  const ySpring = useSpring(y, { mass: 0.1, stiffness: 150, damping: 12 });
+  const scale       = useTransform(distance, [-SCALE_RANGE, 0, SCALE_RANGE], [1, MAX_SCALE, 1]);
+  const scaleSpring = useSpring(scale, { mass: 0.08, stiffness: 180, damping: 14 });
+  const y           = useTransform(scaleSpring, [1, MAX_SCALE], [0, -(ICON_SIZE * (MAX_SCALE - 1)) / 2]);
+  const ySpring     = useSpring(y, { mass: 0.08, stiffness: 180, damping: 14 });
 
   const [hovered, setHovered] = useState(false);
 
-  // Update distance from cursor to icon center
   React.useEffect(() => {
     return mouseX.on('change', (mx) => {
       if (!ref.current) return;
       const rect = ref.current.getBoundingClientRect();
-      const center = rect.left + rect.width / 2;
-      distance.set(mx - center);
+      distance.set(mx - (rect.left + rect.width / 2));
     });
   }, [mouseX, distance]);
 
-  const icon = (
+  const renderIcon = (isActive) => (
     <motion.div
       ref={ref}
       style={{
@@ -58,25 +55,25 @@ function DockItem({ item, mouseX, index }) {
       {/* Tooltip */}
       <motion.div
         initial={{ opacity: 0, y: 4 }}
-        animate={{ opacity: hovered ? 1 : 0, y: hovered ? -4 : 4 }}
-        transition={{ duration: 0.15 }}
+        animate={{ opacity: hovered ? 1 : 0, y: hovered ? -2 : 4 }}
+        transition={{ duration: 0.12 }}
         style={{
           position: 'absolute',
           bottom: '100%',
           left: '50%',
           transform: 'translateX(-50%)',
-          marginBottom: 8,
-          background: 'rgba(10,10,18,0.92)',
-          border: '1px solid rgba(74,126,200,0.25)',
-          borderRadius: 8,
-          padding: '4px 10px',
+          marginBottom: 6,
+          background: 'rgba(12,12,18,0.94)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 6,
+          padding: '3px 9px',
           fontSize: 11,
           fontFamily: 'var(--font-mono)',
           fontWeight: 500,
-          color: '#E8E8F0',
+          color: '#D0D4DF',
           whiteSpace: 'nowrap',
-          letterSpacing: '0.05em',
-          backdropFilter: 'blur(8px)',
+          letterSpacing: '0.04em',
+          backdropFilter: 'blur(12px)',
           pointerEvents: 'none',
           zIndex: 100,
         }}
@@ -88,30 +85,36 @@ function DockItem({ item, mouseX, index }) {
       <div style={{
         width: '100%',
         height: '100%',
-        borderRadius: 14,
+        borderRadius: 12,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
-        background: 'rgba(14,14,22,0.75)',
-        backdropFilter: 'blur(16px)',
-        border: '1px solid rgba(74,126,200,0.12)',
-        transition: 'background 0.2s, border-color 0.2s, box-shadow 0.2s',
+        background: isActive ? TILE_BG_ACTIVE : hovered ? 'rgba(255,255,255,0.05)' : TILE_BG_INACTIVE,
+        border: `1px solid ${isActive ? TILE_BORDER_ACTIVE : hovered ? 'rgba(255,255,255,0.07)' : TILE_BORDER_INACTIVE}`,
+        transition: 'background 0.18s, border-color 0.18s',
+        color: isActive ? ICON_COLOR_ACTIVE : ICON_COLOR_INACTIVE,
       }}>
-        {item.icon}
+        {/* Clone icon with correct color */}
+        {React.cloneElement(item.icon, {
+          style: {
+            ...item.icon.props.style,
+            color: isActive ? ICON_COLOR_ACTIVE : hovered ? 'rgba(210,215,225,0.85)' : ICON_COLOR_INACTIVE,
+            transition: 'color 0.18s',
+          }
+        })}
 
-        {/* Active dot indicator */}
-        {item.active && (
+        {/* Active indicator dot */}
+        {isActive && (
           <div style={{
             position: 'absolute',
-            bottom: -8,
+            bottom: -7,
             left: '50%',
             transform: 'translateX(-50%)',
-            width: 4,
-            height: 4,
+            width: 3,
+            height: 3,
             borderRadius: '50%',
-            background: '#4A7EC8',
-            boxShadow: '0 0 6px #4A7EC8',
+            background: 'rgba(200,205,220,0.7)',
           }} />
         )}
 
@@ -119,14 +122,14 @@ function DockItem({ item, mouseX, index }) {
         {item.badge != null && item.badge > 0 && (
           <div style={{
             position: 'absolute',
-            top: -4,
-            right: -4,
-            minWidth: 16,
-            height: 16,
+            top: -3,
+            right: -3,
+            minWidth: 15,
+            height: 15,
             borderRadius: 8,
             background: '#E53E3E',
             color: '#fff',
-            fontSize: 9,
+            fontSize: 8,
             fontFamily: 'var(--font-mono)',
             fontWeight: 700,
             display: 'flex',
@@ -144,31 +147,15 @@ function DockItem({ item, mouseX, index }) {
 
   if (item.onClick) {
     return (
-      <div onClick={item.onClick} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        {icon}
+      <div onClick={item.onClick} style={{ display: 'flex', alignItems: 'center' }}>
+        {renderIcon(false)}
       </div>
     );
   }
 
   return (
-    <NavLink
-      to={item.to}
-      style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
-    >
-      {({ isActive }) => React.cloneElement(icon, {}, ...React.Children.toArray(icon.props.children).map((child, ci) => {
-        if (ci === 1) {
-          // inject isActive into the tile div
-          return React.cloneElement(child, {
-            style: {
-              ...child.props.style,
-              background: isActive ? 'rgba(74,126,200,0.18)' : 'rgba(14,14,22,0.75)',
-              borderColor: isActive ? 'rgba(74,126,200,0.45)' : 'rgba(74,126,200,0.12)',
-              boxShadow: isActive ? '0 0 20px rgba(74,126,200,0.15), inset 0 1px 0 rgba(139,184,232,0.08)' : 'none',
-            }
-          });
-        }
-        return child;
-      }))}
+    <NavLink to={item.to} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+      {({ isActive }) => renderIcon(isActive)}
     </NavLink>
   );
 }
@@ -177,40 +164,37 @@ function DockDivider() {
   return (
     <div style={{
       width: 1,
-      height: ICON_SIZE * 0.65,
-      background: 'linear-gradient(to bottom, transparent, rgba(74,126,200,0.2), transparent)',
+      height: ICON_SIZE * 0.55,
+      background: 'rgba(255,255,255,0.08)',
       alignSelf: 'flex-end',
-      marginBottom: 6,
+      marginBottom: 5,
       flexShrink: 0,
     }} />
   );
 }
 
-export default function Dock({ items = [], dividers = [] }) {
+export default function Dock({ items = [] }) {
   const mouseX = useMotionValue(Infinity);
-  const dockRef = useRef(null);
-
-  const flatItems = items.flat(); // support nested arrays for divider groups
 
   return (
-    <div style={{
-      position: 'fixed',
-      bottom: 20,
-      left: '50%',
-      transform: 'translateX(-50%)',
-      zIndex: 9990,
-      display: 'flex',
-      alignItems: 'flex-end',
-      gap: ICON_GAP,
-      padding: '10px 14px',
-      background: 'rgba(8,8,14,0.72)',
-      backdropFilter: 'blur(24px) saturate(1.4)',
-      WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
-      borderRadius: 22,
-      border: '1px solid rgba(74,126,200,0.15)',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.6), 0 1px 0 rgba(139,184,232,0.06) inset, 0 0 0 0.5px rgba(74,126,200,0.08)',
-    }}
-      ref={dockRef}
+    <div
+      style={{
+        position: 'fixed',
+        bottom: 16,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 9990,
+        display: 'flex',
+        alignItems: 'flex-end',
+        gap: ICON_GAP,
+        padding: '8px 12px',
+        background: 'rgba(10,10,16,0.82)',
+        backdropFilter: 'blur(28px) saturate(1.2)',
+        WebkitBackdropFilter: 'blur(28px) saturate(1.2)',
+        borderRadius: 18,
+        border: '1px solid rgba(255,255,255,0.08)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.04) inset',
+      }}
       onMouseMove={(e) => mouseX.set(e.clientX)}
       onMouseLeave={() => mouseX.set(Infinity)}
     >
@@ -219,14 +203,13 @@ export default function Dock({ items = [], dividers = [] }) {
           return (
             <React.Fragment key={`group-${gi}`}>
               {gi > 0 && <DockDivider />}
-              {itemOrGroup.map((item, ii) => (
-                <DockItem key={item.to || item.label} item={item} mouseX={mouseX} index={ii} />
+              {itemOrGroup.map((item) => (
+                <DockItem key={item.to || item.label} item={item} mouseX={mouseX} />
               ))}
             </React.Fragment>
           );
         }
-        const item = itemOrGroup;
-        return <DockItem key={item.to || item.label} item={item} mouseX={mouseX} index={gi} />;
+        return <DockItem key={itemOrGroup.to || itemOrGroup.label} item={itemOrGroup} mouseX={mouseX} />;
       })}
     </div>
   );

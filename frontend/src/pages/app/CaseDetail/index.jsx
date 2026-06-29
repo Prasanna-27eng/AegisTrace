@@ -39,7 +39,7 @@ const TABS = [
   { id: 'comments',      label: 'Comments' },
   { id: 'provenance',    label: 'Provenance' },
   { id: 'report',        label: 'Report' },
-  { id: 'edr',           label: '🛡 EDR', newTab: true },
+  { id: 'edr',           label: 'EDR' },
 ];
 
 export default function CaseDetail() {
@@ -191,14 +191,7 @@ export default function CaseDetail() {
           <button
             key={t.id}
             className={`tab-btn ${tab === t.id ? 'active' : ''}`}
-            title={t.newTab ? 'Opens in a new tab' : undefined}
-            onClick={() => {
-              if (t.newTab) {
-                window.open(`${window.location.origin}/app/edr/${id}`, '_blank', 'noopener,noreferrer');
-              } else {
-                setTab(t.id);
-              }
-            }}
+            onClick={() => setTab(t.id)}
           >
             {t.label}
           </button>
@@ -223,6 +216,19 @@ export default function CaseDetail() {
         {tab === 'comments'      && <CommentsTab caseId={id} />}
         {tab === 'provenance'    && <ProvenanceTab caseId={id} />}
         {tab === 'report'        && <ReportTab {...tabProps} />}
+        {tab === 'edr'           && (
+          <div style={{ padding: '24px 28px' }}>
+            <div style={{ fontSize: '0.78rem', color: '#787878', fontFamily: 'var(--font-mono)', marginBottom: 16 }}>
+              Showing all endpoints — filter by case hostname in the endpoint list.
+            </div>
+            <button
+              onClick={() => navigate('/app/edr')}
+              style={{ padding: '8px 18px', background: 'rgba(74,126,200,0.12)', border: '1px solid rgba(74,126,200,0.3)', borderRadius: 8, color: '#8BB8E8', fontSize: '0.82rem', cursor: 'pointer', fontFamily: 'var(--font-mono)' }}
+            >
+              Open Full EDR Console →
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

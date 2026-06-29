@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { motion } from 'framer-motion';
 import {
   Copy, Check, Terminal, Shield, Monitor, Server,
   ChevronDown, ChevronRight, ExternalLink, Activity,
@@ -23,13 +22,11 @@ const BORDER  = 'var(--border, rgba(74,126,200,0.1))';
 
 /* ── Reveal wrapper ──────────────────────────────────────────────────────── */
 function Reveal({ children, delay = 0, style = {} }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-40px' });
   return (
-    <motion.div ref={ref}
-      initial={{ opacity: 0, y: 14 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.45, delay, ease: E }}
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, delay, ease: E }}
       style={style}
     >{children}</motion.div>
   );

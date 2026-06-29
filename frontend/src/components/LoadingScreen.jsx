@@ -21,11 +21,18 @@ function SealRing({ progress }) {
 
 export function useLoading() {
   const reduced = useReducedMotion();
-  const [done, setDone] = useState(false);
+  const [done, setDone] = useState(() => {
+    // Only show on first-ever visit
+    return reduced || localStorage.getItem('at_visited') === '1';
+  });
   useEffect(() => {
-    const t = setTimeout(() => setDone(true), reduced ? 80 : 2700);
+    if (done) return;
+    const t = setTimeout(() => {
+      setDone(true);
+      localStorage.setItem('at_visited', '1');
+    }, 2700);
     return () => clearTimeout(t);
-  }, [reduced]);
+  }, [done]);
   return { done };
 }
 
