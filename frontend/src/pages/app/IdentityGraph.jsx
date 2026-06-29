@@ -395,7 +395,7 @@ function GraphCanvas({ nodes, edges, onNodeClick, selectedId, riskFilter, typeFi
     function draw() {
       const W = canvas.offsetWidth, H = canvas.offsetHeight;
       ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = var(--card);
+      ctx.fillStyle = '#E8E0D4';
       ctx.fillRect(0, 0, W, H);
 
       // Edges
