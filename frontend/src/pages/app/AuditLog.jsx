@@ -48,7 +48,7 @@ function ActivityChart({ data }) {
         {data.map((d, i) => (
           <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
             <div style={{
-              width: '100%', background: `rgba(90,138,159,${0.3 + (d.count / max) * 0.7})`,
+              width: '100%', background: `rgba(204,120,92,${0.3 + (d.count / max) * 0.7})`,
               borderRadius: '3px 3px 0 0',
               height: `${Math.max(4, (d.count / max) * 56)}px`,
               transition: 'height 0.4s ease',
