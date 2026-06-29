@@ -16,7 +16,7 @@ def run_migrations(engine):
         user_cols = [c["name"] for c in inspector.get_columns("user")]
         if "hashed_password" not in user_cols:
             with engine.connect() as conn:
-                conn.execute(text("ALTER TABLE user ADD COLUMN hashed_password TEXT"))
+                conn.execute(text('ALTER TABLE "user" ADD COLUMN hashed_password TEXT'))
                 conn.commit()
             print("[migration] Added hashed_password to user table")
 
@@ -51,7 +51,7 @@ def run_migrations(engine):
         user_cols = [c["name"] for c in inspector.get_columns("user")]
         if "org_id" not in user_cols:
             with engine.connect() as conn:
-                conn.execute(text("ALTER TABLE user ADD COLUMN org_id INTEGER DEFAULT 1"))
+                conn.execute(text('ALTER TABLE "user" ADD COLUMN org_id INTEGER DEFAULT 1'))
                 conn.commit()
             print("[migration] Added org_id to user table")
 
@@ -131,7 +131,7 @@ def run_migrations(engine):
         ep_cols = [c["name"] for c in inspector.get_columns("endpoint")]
         vuln_cols = {
             "vuln_findings":  "TEXT DEFAULT '[]'",
-            "last_vuln_scan": "DATETIME DEFAULT NULL",
+            "last_vuln_scan": "TIMESTAMP DEFAULT NULL",
         }
         for col, definition in vuln_cols.items():
             if col not in ep_cols:

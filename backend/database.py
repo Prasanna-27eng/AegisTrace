@@ -1,48 +1,69 @@
 import os, stat
 from sqlmodel import SQLModel, create_engine, Session
-from sqlalchemy import event
+from sqlalchemy import event, pool
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:////var/data/aegistrace.db")
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://aegistrace:aegistrace@localhost/aegistrace_db",
+)
 
-# ── Ensure data directory exists ──────────────────────────────────────────────
-if DATABASE_URL.startswith("sqlite:////var/data"):
-    os.makedirs("/var/data", exist_ok=True)
+# Normalise Heroku/Render-style postgres:// → postgresql://
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-engine = create_engine(DATABASE_URL, echo=False, connect_args={"check_same_thread": False})
+_IS_SQLITE = DATABASE_URL.startswith("sqlite://")
 
+# ── Engine ─────────────────────────────────────────────────────────────────────
+if _IS_SQLITE:
+    # Local dev fallback — keep SQLite working unchanged
+    _db_path_dir = None
+    if DATABASE_URL.startswith("sqlite:////var/data"):
+        os.makedirs("/var/data", exist_ok=True)
+    engine = create_engine(
+        DATABASE_URL,
+        echo=False,
+        connect_args={"check_same_thread": False},
+    )
 
-# ── SQLite WAL mode + performance PRAGMAs ─────────────────────────────────────
-@event.listens_for(engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    cursor = dbapi_connection.cursor()
-    try:
-        cursor.execute("PRAGMA journal_mode = WAL")
-    except Exception:
-        cursor.execute("PRAGMA journal_mode = DELETE")  # fallback for network drives
-    cursor.execute("PRAGMA synchronous = NORMAL")
-    cursor.execute("PRAGMA busy_timeout = 5000")
-    cursor.execute("PRAGMA foreign_keys = ON")
-    cursor.execute("PRAGMA cache_size = -64000")   # 64 MB page cache
-    cursor.execute("PRAGMA temp_store = MEMORY")
-    cursor.close()
+    @event.listens_for(engine, "connect")
+    def _sqlite_pragmas(dbapi_conn, _rec):
+        cur = dbapi_conn.cursor()
+        try:
+            cur.execute("PRAGMA journal_mode = WAL")
+        except Exception:
+            cur.execute("PRAGMA journal_mode = DELETE")
+        cur.execute("PRAGMA synchronous = NORMAL")
+        cur.execute("PRAGMA busy_timeout = 5000")
+        cur.execute("PRAGMA foreign_keys = ON")
+        cur.execute("PRAGMA cache_size = -64000")
+        cur.execute("PRAGMA temp_store = MEMORY")
+        cur.close()
+
+else:
+    # PostgreSQL — production configuration
+    engine = create_engine(
+        DATABASE_URL,
+        echo=False,
+        pool_size=10,
+        max_overflow=20,
+        pool_pre_ping=True,          # detects stale connections
+        pool_recycle=1800,           # recycle connections every 30 min
+        poolclass=pool.QueuePool,
+    )
 
 
 def _harden_db_file_permissions():
-    """
-    Restrict the SQLite DB file to owner read/write only (0o600).
-    Prevents other OS-level processes from reading the database file directly.
-    No-ops gracefully on Windows or if the file doesn't exist yet.
-    """
+    """Restrict SQLite DB file to 0o600. No-op for PostgreSQL."""
+    if not _IS_SQLITE:
+        return
     try:
-        # Extract file path from URL: sqlite:////var/data/aegistrace.db → /var/data/aegistrace.db
         if DATABASE_URL.startswith("sqlite:///"):
             db_path = DATABASE_URL[len("sqlite:///"):]
             if db_path and os.path.exists(db_path):
-                current = stat.S_IMODE(os.stat(db_path).st_mode)
-                if current != 0o600:
+                if stat.S_IMODE(os.stat(db_path).st_mode) != 0o600:
                     os.chmod(db_path, 0o600)
     except (OSError, AttributeError):
-        pass  # Non-critical — ignore on Windows or read-only filesystems
+        pass
 
 
 def create_db_and_tables():
