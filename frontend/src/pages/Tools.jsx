@@ -1,891 +1,318 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { ArrowRight, ArrowUpRight, Copy, Check } from '../components/icons';
-import { Link } from 'react-router-dom';
-import { ScrollProgressBar } from '../components/SceneController';
+import { motion, useMotionValue, useTransform, useSpring, useInView } from 'framer-motion';
 import CardNav from '../components/CardNav';
+import { ArrowRight, Github, Copy, Check, Terminal, Shield, Brain, Network, Database, Fingerprint } from '../components/icons';
 
-const E    = [0.16, 1, 0.3, 1];
-const GOLD = '#CC785C';
-const BG   = '#141210';
-const INK  = '#F0EBE3';
+const T = {
+  bg:        '#141210',
+  surface:   '#1C1916',
+  card:      '#222018',
+  cardHover: '#2A271F',
+  inset:     '#0E0C0A',
+  accent:    '#CC785C',
+  pubBg:     '#FAF7F2',
+  pubAlt:    '#F2EDE5',
+  pubText:   '#1A1612',
+  pubMuted:  '#6B6258',
+  darkText:  '#F0EBE3',
+  darkMuted: 'rgba(240,235,227,0.62)',
+  border:    'rgba(240,235,227,0.08)',
+  borderMed: 'rgba(240,235,227,0.12)',
+  pubBorder: 'rgba(26,22,18,0.09)',
+  fontD:     "'DM Serif Display', Georgia, serif",
+  fontUI:    "'DM Sans', system-ui, sans-serif",
+  fontMono:  "'IBM Plex Mono', monospace",
+  ease:      [0.23, 1, 0.32, 1],
+};
+const GRAIN = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
 
-/* ─── Smooth wheel scroll ─────────────────────────────────────────────────── */
-function useSmoothScroll() {
-  useEffect(() => {
-    let target = window.scrollY;
-    let current = target;
-    let raf = 0;
-    const LERP = 0.08;
-    const onWheel = e => {
-      if (e.ctrlKey) return;
-      e.preventDefault();
-      target = Math.max(0, Math.min(document.body.scrollHeight - window.innerHeight, target + e.deltaY));
-    };
-    const loop = () => {
-      current += (target - current) * LERP;
-      if (Math.abs(target - current) > 0.5) window.scrollTo(0, current);
-      raf = requestAnimationFrame(loop);
-    };
-    window.addEventListener('wheel', onWheel, { passive: false });
-    raf = requestAnimationFrame(loop);
-    return () => { window.removeEventListener('wheel', onWheel); cancelAnimationFrame(raf); };
-  }, []);
+function useIsMobile() {
+  const [m, setM] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 768);
+  useEffect(() => { const fn = () => setM(window.innerWidth <= 768); window.addEventListener('resize', fn); return () => window.removeEventListener('resize', fn); }, []);
+  return m;
 }
-
-/* ─── Reveal ─────────────────────────────────────────────────────────────── */
+function useIsTouch() {
+  const [t, setT] = useState(false);
+  useEffect(() => { setT(window.matchMedia('(hover: none)').matches); }, []);
+  return t;
+}
 function Reveal({ children, delay = 0, y = 30, style = {} }) {
-  const ref    = useRef(null);
+  const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-60px' });
   return (
     <motion.div ref={ref}
       initial={{ opacity: 0, y }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.7, delay, ease: E }}
+      transition={{ duration: 0.85, delay, ease: T.ease }}
       style={style}
     >{children}</motion.div>
   );
 }
 
-/* ─── Copy button ─────────────────────────────────────────────────────────── */
-function CopyButton({ text, style = {} }) {
-  const [copied, setCopied] = useState(false);
-  const copy = useCallback(() => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  }, [text]);
-
-  return (
-    <button
-      onClick={copy}
-      data-cursor="link"
-      style={{
-        background: copied ? 'rgba(204,120,92,0.15)' : 'rgba(240,235,227,0.06)',
-        border: `1px solid ${copied ? 'rgba(204,120,92,0.4)' : 'rgba(240,235,227,0.12)'}`,
-        color: copied ? GOLD : 'rgba(240,235,227,0.55)',
-        padding: '6px 12px', cursor: 'pointer',
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
-        transition: 'all 160ms ease',
-        ...style,
-      }}
-    >
-      {copied ? <Check size={12}/> : <Copy size={12}/>}
-      {copied ? 'Copied!' : 'Copy'}
-    </button>
-  );
-}
-
-/* ─── CopyAll button ─────────────────────────────────────────────────────── */
-function CopyAllButton({ text }) {
+function CopyButton({ code }) {
   const [copied, setCopied] = useState(false);
   const copy = () => {
-    navigator.clipboard.writeText(text).then(() => {
+    navigator.clipboard.writeText(code).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
   };
   return (
-    <button
-      onClick={copy}
-      data-cursor="link"
+    <button onClick={copy}
       style={{
-        background: copied ? 'rgba(204,120,92,0.12)' : 'transparent',
-        border: `1px solid ${copied ? GOLD : 'rgba(240,235,227,0.18)'}`,
-        color: copied ? GOLD : 'rgba(240,235,227,0.7)',
-        padding: '10px 20px', cursor: 'pointer',
-        display: 'inline-flex', alignItems: 'center', gap: 8,
-        fontFamily: "'IBM Plex Mono', monospace", fontSize: 13, fontWeight: 600,
-        transition: 'all 160ms ease',
+        background: 'transparent', border: 'none', cursor: 'pointer',
+        color: copied ? '#10B981' : 'rgba(240,235,227,0.4)',
+        padding: '4px', borderRadius: 6, display: 'flex', alignItems: 'center',
+        transition: 'color 0.2s',
       }}
     >
-      {copied ? <Check size={14}/> : <Copy size={14}/>}
-      {copied ? 'All copied!' : 'Copy all installs'}
+      {copied ? <Check size={14} /> : <Copy size={14} />}
     </button>
   );
 }
 
-/* ─── Terminal line colors ───────────────────────────────────────────────── */
-function lineColor(text) {
-  if (text.startsWith('[+]')) return '#4ade80';
-  if (text.startsWith('[!]')) return '#f87171';
-  if (text.startsWith('[*]')) return 'rgba(240,235,227,0.42)';
-  if (text.startsWith('$'))   return '#CC785C';
-  if (text.startsWith('  ')) return 'rgba(240,235,227,0.55)';
-  return INK;
-}
-
-/* ─── Terminal component ─────────────────────────────────────────────────── */
-function Terminal({ lines, delay = 0, title = 'terminal' }) {
-  const ref    = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-80px' });
-  const [cursor, setCursor] = useState(true);
-
-  useEffect(() => {
-    const id = setInterval(() => setCursor(c => !c), 530);
-    return () => clearInterval(id);
-  }, []);
-
-  const fullText = lines.join('\n');
-
-  return (
-    <div ref={ref} style={{
-      background: '#030308',
-      border: '1px solid rgba(204,120,92,0.18)',
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 12.5,
-      lineHeight: 1.7,
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
-      {/* Title bar */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '10px 16px',
-        borderBottom: '1px solid rgba(204,120,92,0.1)',
-        background: 'rgba(204,120,92,0.03)',
-      }}>
-        <div style={{ display: 'flex', gap: 7 }}>
-          {['#f87171','#fbbf24','#4ade80'].map((c, i) => (
-            <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: c, opacity: 0.7 }}/>
-          ))}
-          <span style={{ marginLeft: 8, color: 'rgba(240,235,227,0.3)', fontSize: 11 }}>{title}</span>
-        </div>
-        <CopyButton text={fullText}/>
-      </div>
-
-      {/* Lines */}
-      <div style={{ padding: '16px 20px', overflowX: 'auto' }}>
-        {lines.map((line, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, x: -6 }}
-            animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.35, delay: delay + i * 0.08, ease: 'easeOut' }}
-            style={{ color: lineColor(line), whiteSpace: 'pre' }}
-          >
-            {line}
-          </motion.div>
-        ))}
-        {/* Blinking cursor on last line */}
-        <motion.span
-          initial={{ opacity: 0 }}
-          animate={inView ? { opacity: 1 } : {}}
-          transition={{ delay: delay + lines.length * 0.08 + 0.1 }}
-          style={{ color: '#CC785C' }}
-        >
-          {cursor ? '█' : ' '}
-        </motion.span>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Install box ─────────────────────────────────────────────────────────── */
-function InstallBox({ cmd, pypiUrl, githubUrl }) {
+function CodeBlock({ code }) {
   return (
     <div style={{
-      background: '#030308',
-      border: '1px solid rgba(204,120,92,0.18)',
+      background: T.inset, border: `1px solid rgba(240,235,227,0.08)`,
+      borderRadius: 10, padding: '14px 16px',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      flexWrap: 'wrap', gap: 12,
-      padding: '14px 20px',
+      gap: 12, marginTop: 16,
     }}>
-      <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 13, color: INK }}>
-        <span style={{ color: '#CC785C' }}>$ </span>{cmd}
-      </span>
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-        <CopyButton text={cmd}/>
-        {pypiUrl && (
-          <a href={pypiUrl} target="_blank" rel="noopener noreferrer"
-            data-cursor="link"
-            style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: 'rgba(240,235,227,0.45)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'color 140ms' }}
-            onMouseEnter={e => e.currentTarget.style.color = GOLD}
-            onMouseLeave={e => e.currentTarget.style.color = 'rgba(240,235,227,0.45)'}
-          >
-            PyPI <ArrowUpRight size={11}/>
-          </a>
-        )}
-        {githubUrl && (
-          <a href={githubUrl} target="_blank" rel="noopener noreferrer"
-            data-cursor="link"
-            style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: 'rgba(240,235,227,0.45)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'color 140ms' }}
-            onMouseEnter={e => e.currentTarget.style.color = INK}
-            onMouseLeave={e => e.currentTarget.style.color = 'rgba(240,235,227,0.45)'}
-          >
-            GitHub <ArrowUpRight size={11}/>
-          </a>
-        )}
-      </div>
+      <code style={{ fontFamily: T.fontMono, fontSize: '0.82rem', color: 'rgba(240,235,227,0.75)', flex: 1, overflowX: 'auto' }}>
+        {code}
+      </code>
+      <CopyButton code={code} />
     </div>
   );
 }
 
-/* ─── Module pills ─────────────────────────────────────────────────────────── */
-function ModulePill({ label }) {
-  return (
-    <span style={{
-      fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
-      color: 'rgba(240,235,227,0.65)',
-      border: '1px solid rgba(204,120,92,0.16)',
-      padding: '5px 12px',
-      letterSpacing: '0.05em',
-    }}>{label}</span>
-  );
-}
-
-/* ─── Tool section ─────────────────────────────────────────────────────────── */
-function ToolSection({ tool, flip = false, idx }) {
-  const ref    = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-60px' });
-
-  return (
-    <section ref={ref} style={{
-      padding: 'clamp(72px,10vw,120px) clamp(24px,5vw,72px)',
-      borderTop: '1px solid rgba(204,120,92,0.08)',
-      background: idx % 2 === 0 ? BG : '#141210',
-    }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-
-        {/* Layer badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.05, ease: E }}
-          style={{
-            fontFamily: "'IBM Plex Mono', monospace",
-            fontSize: 10, letterSpacing: '0.28em',
-            color: 'rgba(240,235,227,0.28)',
-            marginBottom: 14,
-          }}
-        >{tool.layer}</motion.div>
-
-        {/* Two-column layout */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 440px), 1fr))',
-          gap: 'clamp(40px,6vw,80px)',
-          alignItems: 'start',
-        }}>
-
-          {/* Copy side */}
-          <div style={{ order: flip ? 2 : 1 }}>
-            {/* Tool name */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.1, ease: E }}
-              style={{
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 'clamp(32px,4vw,48px)',
-                fontWeight: 700,
-                color: INK,
-                marginBottom: 12,
-                letterSpacing: '-0.02em',
-              }}
-            >
-              <img src="/assets/brand/aegistrace-icon-transparent.png" alt=""
-                style={{ width: 20, height: 20, objectFit: 'contain', opacity: 0.4, marginRight: 8, verticalAlign: 'middle' }}/>
-              {tool.name}
-            </motion.div>
-
-            {/* One-liner */}
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.16, ease: E }}
-              style={{
-                fontFamily: "'DM Serif Display', Georgia, serif",
-                fontSize: 'clamp(17px,1.8vw,21px)',
-                fontWeight: 600,
-                color: INK,
-                lineHeight: 1.35,
-                marginBottom: 20,
-                letterSpacing: '-0.01em',
-              }}
-            >{tool.oneLiner}</motion.p>
-
-            {/* Paragraphs */}
-            {tool.body.map((para, i) => (
-              <motion.p key={i}
-                initial={{ opacity: 0, y: 12 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: 0.22 + i * 0.06, ease: E }}
-                style={{
-                  fontFamily: "'DM Sans', system-ui, sans-serif",
-                  fontSize: 'clamp(14px,1.3vw,15.5px)',
-                  color: 'rgba(240,235,227,0.52)',
-                  lineHeight: 1.72,
-                  marginBottom: 16,
-                }}
-              >{para}</motion.p>
-            ))}
-
-            {/* Modules */}
-            {tool.modules && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: 0.32, ease: E }}
-                style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 28 }}
-              >
-                {tool.modules.map(m => <ModulePill key={m} label={m}/>)}
-              </motion.div>
-            )}
-
-            {/* Install */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.38, ease: E }}
-            >
-              <InstallBox cmd={tool.cmd} pypiUrl={tool.pypi} githubUrl={tool.github}/>
-            </motion.div>
-          </div>
-
-          {/* Terminal side */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.65, delay: 0.18, ease: E }}
-            style={{ order: flip ? 1 : 2 }}
-          >
-            <Terminal lines={tool.terminal} delay={0.25} title={tool.name}/>
-          </motion.div>
-
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ─── Tool data ─────────────────────────────────────────────────────────────── */
 const TOOLS = [
   {
-    layer: 'LAYER 01 — ATTACKS THE TOOLS',
-    name: 'mcp-sploit',
-    oneLiner: 'Metasploit-style exploitation framework for MCP servers.',
-    body: [
-      'MCP (Model Context Protocol) servers expose tools to AI agents — file writes, shell commands, API calls. mcp-sploit scans them the way Metasploit scans network services: enumerate everything, probe each tool for dangerous capabilities, and test whether prompt injection can bypass the guardrails.',
-      'Five modules cover the full attack surface: enum discovers exposed tools, exfil tests data extraction, rce probes for command execution, prompt-injection tries to hijack the agent, and policy-probe tests whether safety boundaries hold under adversarial input.',
-    ],
-    modules: ['enum', 'exfil', 'rce', 'prompt-injection', 'policy-probe'],
-    cmd: 'pip install mcp-sploit',
-    pypi: 'https://pypi.org/project/mcp-sploit/',
-    github: 'https://github.com/Prasanna-27eng/mcp-sploit',
-    terminal: [
-      '$ mcp-sploit enum --target localhost:3000',
-      '[*] Scanning MCP server...',
-      '[*] Probing tool endpoints...',
-      '[+] Found 7 exposed tools',
-      '[+] Tool: file_read        — READ ACCESS',
-      '[+] Tool: file_write       — DANGEROUS',
-      '[+] Tool: execute_command  — CRITICAL',
-      '[+] Tool: web_fetch        — MODERATE',
-      '[+] Tool: list_directory   — INFORMATIONAL',
-      '[!] Policy bypass: prompt injection possible on execute_command',
-      '[!] Recommend: immediate tool scoping + input validation',
-    ],
+    icon: Shield,
+    name: 'aegistrace-cli',
+    pypi: 'aegistrace-cli',
+    tagline: 'Command-line ITDR control plane',
+    desc: 'Full-featured CLI for querying detections, managing cases, triggering playbooks, and generating compliance reports — all from your terminal.',
+    install: 'pip install aegistrace-cli',
+    commands: ['aegis detections list --severity high', 'aegis case create --alert <id>', 'aegis report generate --framework soc2'],
   },
   {
-    layer: 'LAYER 02 — ATTACKS THE BRAIN',
-    name: 'prompt-fuzz',
-    oneLiner: '51 curated adversarial payloads across 10 attack categories.',
-    body: [
-      'prompt-fuzz is an async fuzzer for AI guardrails. It fires 51 carefully curated payloads at a model endpoint — spanning jailbreaks, role-play injection, adversarial prefix attacks, and extraction attempts — then reports exactly which ones got through.',
-      'The async engine fires all payloads concurrently and aggregates bypass rates per category. Red teams use it to benchmark guardrail coverage before deployment. Blue teams use it to identify which payload classes their model is blind to.',
-    ],
-    modules: ['injection', 'jailbreak', 'role-play', 'adversarial', 'extraction', 'prefix-attack', 'token-smuggling', 'instruction-ignore', 'system-override', 'context-hijack'],
-    cmd: 'pip install prompt-fuzz-cli',
-    pypi: 'https://pypi.org/project/prompt-fuzz-cli/',
-    github: 'https://github.com/Prasanna-27eng/prompt-fuzz',
-    terminal: [
-      '$ prompt-fuzz run --target https://api.example.com/v1/chat',
-      '[*] Loading 51 payloads across 10 categories...',
-      '[*] Running async fuzzer (concurrency: 12)...',
-      '[+] injection       → 3/7 bypassed  (42.8%)',
-      '[+] jailbreak       → 2/6 bypassed  (33.3%)',
-      '[!] role-play       → 5/5 bypassed  (100%)',
-      '[+] adversarial     → 1/4 bypassed  (25.0%)',
-      '[!] prefix-attack   → 4/5 bypassed  (80.0%)',
-      '[+] extraction      → 0/6 bypassed  (0.0%)',
-      '[*] Overall bypass rate: 15/51 (29.4%)',
-      '[!] HIGH RISK: role-play and prefix-attack categories need patching',
-    ],
+    icon: Brain,
+    name: 'aegis-triage',
+    pypi: 'aegis-triage',
+    tagline: 'AI alert triage as a library',
+    desc: 'Drop-in Python library for AI-powered alert summarization, severity scoring, and containment recommendations. Bring your own model.',
+    install: 'pip install aegis-triage',
+    commands: ['from aegis_triage import Analyst', 'analyst = Analyst(model="claude-3-5-sonnet")', 'result = analyst.triage(alert_dict)'],
   },
   {
-    layer: 'LAYER 03 — ATTACKS THE IDENTITY LAYER',
-    name: 'nhi-hunter',
-    oneLiner: 'AWS IAM privilege-escalation pathfinder — finds the chains to Admin.',
-    body: [
-      'Non-human identities — service accounts, API keys, IAM roles — are the attack surface nobody audits. nhi-hunter builds the full IAM graph for an AWS environment, then runs path analysis to find every role chain that ends at an administrative privilege.',
-      'It outputs the exact escalation path as a JSON structure, so red teams know which service account to compromise first and blue teams know which trust relationships to cut. The same path data feeds directly into AegisTrace\'s NHI Lifecycle Health Dashboard.',
-    ],
-    modules: ['graph-build', 'path-analysis', 'role-chains', 'trust-map', 'admin-paths'],
-    cmd: 'pip install nhi-hunter',
-    pypi: 'https://pypi.org/project/nhi-hunter/',
-    github: 'https://github.com/Prasanna-27eng/nhi-hunter',
-    terminal: [
-      '$ nhi-hunter scan --profile prod --region eu-west-1',
-      '[*] Enumerating IAM entities...',
-      '[*] Building privilege graph (312 nodes, 847 edges)...',
-      '[+] Found 4 privilege escalation paths to Admin',
-      '[!] CRITICAL PATH FOUND:',
-      '  svc-deployment-agent',
-      '  → sts:AssumeRole → cicd-execution-role',
-      '  → iam:PassRole  → lambda-admin-role',
-      '  → iam:*         → AdministratorAccess',
-      '[!] Path length: 3 hops | Exploitability: HIGH',
-      '[*] Full report → nhi-report-2026-06-20.json',
-    ],
+    icon: Network,
+    name: 'identity-graph',
+    pypi: 'identity-graph',
+    tagline: 'Build and query your identity graph',
+    desc: 'Lightweight library for constructing, querying, and visualizing identity relationships, attack paths, and blast radius from any data source.',
+    install: 'pip install identity-graph',
+    commands: ['from identity_graph import IdentityGraph', 'g = IdentityGraph()', 'g.blast_radius(user="admin@corp.com")'],
   },
   {
-    layer: 'LAYER 04 — WATCHES THE DATA',
-    name: 'shadow-sniffer',
-    oneLiner: 'Offline shadow-AI detector scanning 39 AI service domains.',
-    body: [
-      'Shadow AI is any AI service being used without security team approval. shadow-sniffer parses connection logs offline — no data leaves the network — and cross-references every domain against a curated catalog of 39 AI API endpoints.',
-      'It accepts your approved-service allowlist and flags every hit that isn\'t on it. Three or more unapproved AI service hits in 24 hours auto-escalates in AegisTrace\'s Shadow AI Detection Dashboard. The same detection logic that powers the platform is available as a standalone CLI for any environment.',
-    ],
-    modules: ['log-parse', 'domain-match', 'allowlist-diff', 'risk-score', 'timeline-export'],
-    cmd: 'pip install shadow-sniffer',
-    pypi: 'https://pypi.org/project/shadow-sniffer/',
-    github: 'https://github.com/Prasanna-27eng/shadow-sniffer',
-    terminal: [
-      '$ shadow-sniffer scan --log proxy.log --allowlist approved.txt',
-      '[*] Loading 39-domain AI service catalog...',
-      '[*] Parsing 142,847 connection records...',
-      '[+] Scanning against allowlist (8 approved services)...',
-      '[!] UNAPPROVED: api.openai.com        — 847 hits (last: 14:32)',
-      '[!] UNAPPROVED: api.anthropic.com     — 124 hits (last: 14:28)',
-      '[!] UNAPPROVED: generativelanguage.googleapis.com — 67 hits',
-      '[+] APPROVED:   groq.com             — 2,341 hits',
-      '[+] APPROVED:   api.nvidia.com       — 891 hits',
-      '[*] Risk score: CRITICAL (3 unapproved services > threshold)',
-      '[!] Escalation triggered → AegisTrace Shadow AI Dashboard',
-    ],
+    icon: Database,
+    name: 'okta-detective',
+    pypi: 'okta-detective',
+    tagline: 'Advanced Okta log analysis',
+    desc: 'Purpose-built Okta log parser and anomaly detector. Finds impossible travel, MFA bypass attempts, session fixation, and suspicious OAuth grants.',
+    install: 'pip install okta-detective',
+    commands: ['from okta_detective import LogAnalyzer', 'analyzer = LogAnalyzer(api_token="...")', 'alerts = analyzer.scan_last_24h()'],
+  },
+  {
+    icon: Fingerprint,
+    name: 'atsp-agent',
+    pypi: 'atsp-agent',
+    tagline: 'ATSP protocol agent for AI systems',
+    desc: 'Reference implementation of the AegisTrace Security Protocol for AI agents. Enforces identity attestation, permission scoping, and activity logging.',
+    install: 'pip install atsp-agent',
+    commands: ['from atsp_agent import ATSPAgent', 'agent = ATSPAgent(identity="my-agent-v1")', 'agent.request_permission("read:emails")'],
   },
 ];
 
-/* ─── Purple team section ───────────────────────────────────────────────────── */
-function PurpleTeamSection() {
-  return (
-    <section style={{
-      padding: 'clamp(72px,10vw,120px) clamp(24px,5vw,72px)',
-      background: '#141210',
-      borderTop: '1px solid rgba(204,120,92,0.08)',
-    }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-        <Reveal>
-          <div className="mono" style={{ fontSize: 10, letterSpacing: '0.28em', color: 'rgba(240,235,227,0.28)', marginBottom: 14 }}>
-            PURPLE TEAM
-          </div>
-          <h2 className="cd" style={{
-            fontSize: 'clamp(28px,4vw,52px)', fontWeight: 700,
-            color: INK, margin: '0 0 16px',
-            letterSpacing: '-0.03em', lineHeight: 1.0,
-          }}>
-            These tools attack what AegisTrace defends.
-          </h2>
-          <p className="cg" style={{
-            fontSize: 'clamp(15px,1.4vw,17px)',
-            color: 'rgba(240,235,227,0.5)',
-            lineHeight: 1.7, maxWidth: 600, margin: '0 0 56px',
-          }}>
-            The offensive toolkit and the defensive platform are designed to test each other. That's what purple team means — the same person built both sides of the engagement.
-          </p>
-        </Reveal>
-
-        <Reveal delay={0.12}>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))',
-            gap: 2,
-          }}>
-            {/* Offensive side */}
-            <div style={{
-              background: 'rgba(239,68,68,0.04)',
-              border: '1px solid rgba(239,68,68,0.14)',
-              padding: '32px 28px',
-            }}>
-              <div className="mono" style={{ fontSize: 10, letterSpacing: '0.22em', color: '#f87171', marginBottom: 20, opacity: 0.8 }}>OFFENSIVE</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {[
-                  { name: 'mcp-sploit',     target: 'MCP server tool surfaces' },
-                  { name: 'prompt-fuzz',    target: 'AI model guardrails' },
-                  { name: 'nhi-hunter',     target: 'IAM privilege paths' },
-                  { name: 'shadow-sniffer', target: 'Shadow AI endpoints' },
-                ].map(t => (
-                  <div key={t.name} style={{ display: 'flex', gap: 12, alignItems: 'baseline' }}>
-                    <span className="mono" style={{ fontSize: 13, fontWeight: 700, color: INK, minWidth: 130 }}>{t.name}</span>
-                    <span className="cg" style={{ fontSize: 13, color: 'rgba(240,235,227,0.38)' }}>→ {t.target}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Arrow */}
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              padding: '32px 12px',
-              background: 'rgba(204,120,92,0.03)',
-              border: '1px solid rgba(204,120,92,0.1)',
-              minHeight: 140,
-            }}>
-              <div style={{ textAlign: 'center' }}>
-                <div className="mono" style={{ fontSize: 18, color: GOLD, letterSpacing: '0.1em' }}>⟷</div>
-                <div className="mono" style={{ fontSize: 10, letterSpacing: '0.24em', color: 'rgba(204,120,92,0.6)', marginTop: 8 }}>PURPLE TEAM</div>
-              </div>
-            </div>
-
-            {/* Defensive side */}
-            <div style={{
-              background: 'rgba(204,120,92,0.03)',
-              border: '1px solid rgba(204,120,92,0.14)',
-              padding: '32px 28px',
-            }}>
-              <div className="mono" style={{ fontSize: 10, letterSpacing: '0.22em', color: GOLD, marginBottom: 20, opacity: 0.8 }}>DEFENSIVE</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {[
-                  { name: 'AegisTrace',     cap: 'AI Defense Console + Agent Security' },
-                  { name: 'Shadow AI',      cap: 'Detection Dashboard — 14+ AI API domains' },
-                  { name: 'NHI Dashboard',  cap: 'Sprawl scores + trust-decay tracking' },
-                  { name: 'mcp-aegis',      cap: 'The defensive MCP gateway these tools are tested against' },
-                ].map(t => (
-                  <div key={t.name} style={{ display: 'flex', gap: 12, alignItems: 'baseline' }}>
-                    <span className="mono" style={{ fontSize: 13, fontWeight: 700, color: GOLD, minWidth: 130 }}>{t.name}</span>
-                    <span className="cg" style={{ fontSize: 13, color: 'rgba(240,235,227,0.38)' }}>{t.cap}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </Reveal>
-
-        <Reveal delay={0.2}>
-          <div style={{
-            marginTop: 28,
-            padding: '20px 28px',
-            background: 'rgba(204,120,92,0.04)',
-            border: '1px solid rgba(204,120,92,0.12)',
-            display: 'flex', gap: 16, alignItems: 'flex-start',
-          }}>
-            <span className="mono" style={{ color: GOLD, fontSize: 12, flexShrink: 0, marginTop: 2 }}>[NOTE]</span>
-            <p className="cg" style={{ fontSize: 14, color: 'rgba(240,235,227,0.5)', lineHeight: 1.65, margin: 0 }}>
-              <strong style={{ color: INK, fontWeight: 600 }}>mcp-aegis</strong> — the defensive MCP gateway these tools are tested against — is the final piece. Every vulnerability mcp-sploit finds, mcp-aegis is hardened against. Purple team in a box.
-            </p>
-          </div>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
-/* ─── Install all section ───────────────────────────────────────────────────── */
-const ALL_INSTALLS = `pip install mcp-sploit
-pip install prompt-fuzz-cli
-pip install nhi-hunter
-pip install shadow-sniffer`;
-
-function InstallAllSection() {
-  return (
-    <section style={{
-      padding: 'clamp(72px,10vw,120px) clamp(24px,5vw,72px)',
-      borderTop: '1px solid rgba(204,120,92,0.08)',
-    }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-        <Reveal>
-          <div className="mono" style={{ fontSize: 10, letterSpacing: '0.28em', color: 'rgba(240,235,227,0.28)', marginBottom: 14 }}>
-            INSTALL ALL FOUR
-          </div>
-          <h2 className="cd" style={{
-            fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700,
-            color: INK, margin: '0 0 12px',
-            letterSpacing: '-0.03em',
-          }}>The full offensive stack.</h2>
-          <p className="cg" style={{
-            fontSize: 15, color: 'rgba(240,235,227,0.46)',
-            lineHeight: 1.65, marginBottom: 32, maxWidth: 520,
-          }}>
-            Four tools, one pip command each. No dependency conflicts — each tool is self-contained.
-          </p>
-        </Reveal>
-
-        <Reveal delay={0.1}>
-          <div style={{
-            background: '#030308',
-            border: '1px solid rgba(204,120,92,0.18)',
-            overflow: 'hidden',
-          }}>
-            {/* Terminal header */}
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '10px 16px',
-              borderBottom: '1px solid rgba(204,120,92,0.1)',
-              background: 'rgba(204,120,92,0.03)',
-            }}>
-              <div style={{ display: 'flex', gap: 7 }}>
-                {['#f87171','#fbbf24','#4ade80'].map((c, i) => (
-                  <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: c, opacity: 0.7 }}/>
-                ))}
-                <span style={{ marginLeft: 8, fontFamily: "'IBM Plex Mono', monospace", color: 'rgba(240,235,227,0.3)', fontSize: 11 }}>install-all.sh</span>
-              </div>
-              <CopyAllButton text={ALL_INSTALLS}/>
-            </div>
-            <div style={{ padding: '20px 24px' }}>
-              {ALL_INSTALLS.split('\n').map((line, i) => (
-                <div key={i} style={{
-                  fontFamily: "'IBM Plex Mono', monospace", fontSize: 13,
-                  color: INK, lineHeight: 2,
-                }}>
-                  <span style={{ color: '#CC785C', userSelect: 'none' }}>$ </span>{line}
-                </div>
-              ))}
-            </div>
-          </div>
-        </Reveal>
-
-        <Reveal delay={0.18} style={{ marginTop: 20 }}>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            {[
-              { label: 'Python 3.9+', note: 'required' },
-              { label: 'No dependencies shared', note: 'safe to install together' },
-              { label: 'MIT license', note: 'all four tools' },
-              { label: 'PyPI verified', note: 'published packages' },
-            ].map(tag => (
-              <span key={tag.label} style={{
-                fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
-                color: 'rgba(240,235,227,0.45)',
-                border: '1px solid rgba(204,120,92,0.12)',
-                padding: '5px 12px',
-              }}>
-                {tag.label} — <span style={{ color: 'rgba(240,235,227,0.28)' }}>{tag.note}</span>
-              </span>
-            ))}
-          </div>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
-/* ════════════════════════════════════════════════════════════════════════
-   MAIN
-════════════════════════════════════════════════════════════════════════ */
 export default function Tools() {
+  const isMobile = useIsMobile();
+  const isTouch  = useIsTouch();
+  const heroRef  = useRef(null);
+  const rawX = useMotionValue(0), rawY = useMotionValue(0);
+  const rX = useSpring(useTransform(rawY, [-1,1], [3,-3]), { stiffness: 100, damping: 26 });
+  const rY = useSpring(useTransform(rawX, [-1,1], [-3,3]), { stiffness: 100, damping: 26 });
+  const dX = useSpring(useTransform(rawX, [-1,1], [-16,16]), { stiffness: 70, damping: 18 });
+  const dY = useSpring(useTransform(rawY, [-1,1], [-12,12]), { stiffness: 70, damping: 18 });
+  const onMM = useCallback((e) => {
+    if (isTouch) return;
+    const r = heroRef.current?.getBoundingClientRect(); if (!r) return;
+    rawX.set(((e.clientX - r.left) / r.width) * 2 - 1);
+    rawY.set(((e.clientY - r.top) / r.height) * 2 - 1);
+  }, [isTouch, rawX, rawY]);
+  const onML = useCallback(() => { rawX.set(0); rawY.set(0); }, [rawX, rawY]);
 
   return (
-    <div style={{ background: BG, color: INK, overflowX: 'clip', position: 'relative', isolation: 'isolate' }}>
-      <ScrollProgressBar/>
+    <div style={{ fontFamily: T.fontUI, background: T.bg, overflowX: 'hidden' }}>
+      <CardNav />
 
-      <style>{`
-        .cd   { font-family: 'DM Serif Display', Georgia, serif; }
-        .cg   { font-family: 'DM Sans', system-ui, sans-serif; }
-        .mono { font-family: 'IBM Plex Mono', monospace; }
+      {/* HERO (dark) */}
+      <section ref={heroRef} onMouseMove={onMM} onMouseLeave={onML}
+        style={{
+          position: 'relative', background: T.bg, minHeight: '78vh', overflow: 'hidden',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 'clamp(100px,14vw,160px) clamp(20px,5vw,80px) clamp(80px,10vw,120px)',
+        }}>
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.025, pointerEvents: 'none', zIndex: 1 }} />
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 65% 55% at 50% 45%, rgba(204,120,92,0.1) 0%, transparent 65%)' }} />
+        <motion.div style={{
+          position: 'absolute', inset: -40, zIndex: 0,
+          backgroundImage: 'radial-gradient(circle, rgba(204,120,92,0.14) 1px, transparent 1px)',
+          backgroundSize: '34px 34px', x: isTouch ? 0 : dX, y: isTouch ? 0 : dY,
+        }} />
 
-        .gold-btn {
-          display: inline-flex; align-items: center; gap: 9px;
-          background: ${GOLD}; color: #000; font-weight: 700;
-          font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px;
-          padding: 13px 26px; border: none; cursor: pointer;
-          text-decoration: none; letter-spacing: 0.03em;
-          transition: background 140ms, transform 90ms, box-shadow 140ms;
-        }
-        .gold-btn:hover  { background: #FBBF24; box-shadow: 0 0 24px rgba(204,120,92,0.35); transform: translateY(-2px); }
-        .gold-btn:active { transform: scale(0.97); }
-
-        .ghost-btn {
-          display: inline-flex; align-items: center; gap: 8px;
-          background: transparent; color: rgba(240,235,227,0.75);
-          font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px; font-weight: 500;
-          padding: 12px 24px; border: 1px solid rgba(240,235,227,0.18);
-          cursor: pointer; text-decoration: none; letter-spacing: 0.03em;
-          transition: border-color 140ms, color 140ms, transform 90ms;
-        }
-        .ghost-btn:hover  { border-color: rgba(240,235,227,0.42); color: #BDD4E8; transform: translateY(-2px); }
-        .ghost-btn:active { transform: scale(0.97); }
-
-        .nav-link {
-          font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px; font-weight: 500;
-          color: rgba(240,235,227,0.6); text-decoration: none; position: relative;
-          transition: color 140ms;
-        }
-        .nav-link:hover { color: #BDD4E8; }
-        .nav-link::after {
-          content: ''; position: absolute; left: 0; right: 100%; bottom: -4px;
-          height: 1px; background: #F59E0B;
-          transition: right 260ms cubic-bezier(0.16,1,0.3,1);
-        }
-        .nav-link:hover::after { right: 0; }
-
-        ::selection { background: rgba(204,120,92,0.35); color: #BDD4E8; }
-
-        @media (prefers-reduced-motion: reduce) {
-          *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-        }
-      `}</style>
-
-      {/* ── NAV ── */}
-      <CardNav/>
-
-      {/* ── HERO ── */}
-      <section style={{
-        padding: 'clamp(140px,18vh,200px) clamp(24px,5vw,72px) clamp(80px,10vh,120px)',
-        position: 'relative', overflow: 'hidden',
-      }}>
-        {/* Subtle grid bg */}
-        <div aria-hidden style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `
-            linear-gradient(rgba(204,120,92,0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(204,120,92,0.04) 1px, transparent 1px)
-          `,
-          backgroundSize: '60px 60px',
-          pointerEvents: 'none',
-        }}/>
-        <div aria-hidden style={{
-          position: 'absolute', inset: 0,
-          background: 'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(204,120,92,0.06) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }}/>
-
-        <div style={{ maxWidth: 1280, margin: '0 auto', position: 'relative' }}>
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: E }}
-            style={{
-              fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: 10, letterSpacing: '0.3em',
-              color: GOLD, marginBottom: 20,
-            }}
-          >
-            OFFENSIVE SECURITY TOOLKIT
+        <motion.div style={{
+          position: 'relative', zIndex: 2, maxWidth: 780, width: '100%', textAlign: 'center',
+          rotateX: isTouch ? 0 : rX, rotateY: isTouch ? 0 : rY, transformStyle: 'preserve-3d', perspective: 1200,
+        }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1, ease: T.ease }} style={{ display: 'inline-flex', marginBottom: 32 }}>
+            <span style={{ fontFamily: T.fontUI, fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: T.accent, background: 'rgba(204,120,92,0.1)', border: '1px solid rgba(204,120,92,0.25)', borderRadius: 100, padding: '6px 16px' }}>Open Source Tools</span>
           </motion.div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.18, ease: E }}
-            className="cd"
-            style={{
-              fontSize: 'clamp(44px,7vw,72px)', fontWeight: 700,
-              letterSpacing: '-0.03em', lineHeight: 0.95,
-              color: INK, margin: '0 0 24px', maxWidth: 800,
-            }}
-          >
-            Four tools.<br/>Four attack layers.
+          <motion.h1 initial={{ opacity: 0, y: 36 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.0, delay: 0.2, ease: T.ease }}
+            style={{ fontFamily: T.fontD, fontStyle: 'normal', fontSize: 'clamp(2.2rem, 6vw, 4.6rem)', lineHeight: 1.12, color: T.darkText, margin: '0 0 28px', fontWeight: 400, letterSpacing: '-0.02em' }}>
+            Five open-source tools to extend<br />
+            <em style={{ fontStyle: 'italic', color: T.accent }}>your security stack</em>
           </motion.h1>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.28, ease: E }}
-            className="cg"
-            style={{
-              fontSize: 'clamp(16px,1.6vw,19px)',
-              color: 'rgba(240,235,227,0.52)',
-              lineHeight: 1.65, maxWidth: 540, margin: '0 0 40px',
-            }}
-          >
-            Each tool attacks a different surface of the AI security stack. Each finding feeds back into AegisTrace.
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.36, ease: T.ease }}
+            style={{ fontFamily: T.fontUI, fontSize: 'clamp(1rem, 2vw, 1.15rem)', color: T.darkMuted, lineHeight: 1.75, maxWidth: 540, margin: '0 auto 40px' }}>
+            All available on PyPI. Use them standalone, or as building blocks
+            in your own security automation stack.
           </motion.p>
 
-          {/* Stats row */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.38, ease: E }}
-            style={{ display: 'flex', gap: 'clamp(24px,4vw,48px)', flexWrap: 'wrap' }}
-          >
-            {[
-              { val: '4', label: 'tools on PyPI' },
-              { val: '51', label: 'fuzz payloads' },
-              { val: '39', label: 'AI domains tracked' },
-              { val: '5', label: 'MCP attack modules' },
-            ].map(s => (
-              <div key={s.label}>
-                <div className="mono" style={{ fontSize: 'clamp(22px,3vw,32px)', fontWeight: 700, color: GOLD, lineHeight: 1 }}>{s.val}</div>
-                <div className="cg" style={{ fontSize: 12, color: 'rgba(240,235,227,0.38)', marginTop: 4 }}>{s.label}</div>
-              </div>
-            ))}
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.48, ease: T.ease }} style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <a href="https://pypi.org/user/aegistrace" target="_blank" rel="noopener noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: T.accent, color: '#fff', fontFamily: T.fontUI, fontWeight: 600, fontSize: '0.95rem', padding: '13px 24px', borderRadius: 12, textDecoration: 'none', boxShadow: '0 4px 20px rgba(204,120,92,0.4)', transition: 'transform 0.22s, box-shadow 0.22s' }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(204,120,92,0.55)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 20px rgba(204,120,92,0.4)'; }}
+            ><Terminal size={16} /> Browse PyPI</a>
+            <a href="https://github.com/prasxdev/aegistrace" target="_blank" rel="noopener noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', color: T.darkMuted, fontFamily: T.fontUI, fontWeight: 500, fontSize: '0.95rem', padding: '13px 22px', borderRadius: 12, border: `1px solid ${T.border}`, textDecoration: 'none', transition: 'color 0.22s, border-color 0.22s' }}
+              onMouseEnter={e => { e.currentTarget.style.color = T.darkText; e.currentTarget.style.borderColor = T.borderMed; }}
+              onMouseLeave={e => { e.currentTarget.style.color = T.darkMuted; e.currentTarget.style.borderColor = T.border; }}
+            ><Github size={16} /> GitHub</a>
           </motion.div>
-        </div>
+        </motion.div>
       </section>
 
-      {/* ── TOOL SECTIONS ── */}
-      {TOOLS.map((tool, i) => (
-        <ToolSection key={tool.name} tool={tool} flip={i % 2 === 1} idx={i}/>
-      ))}
+      {/* TOOL CARDS (alternating light/dark sections) */}
+      {TOOLS.map((tool, i) => {
+        const isDark = i % 2 === 0;
+        const bg = isDark ? T.surface : T.pubBg;
+        const titleColor = isDark ? T.darkText : T.pubText;
+        const mutedColor = isDark ? T.darkMuted : T.pubMuted;
+        const accentColor = T.accent;
+        return (
+          <section key={tool.name} style={{
+            background: bg,
+            padding: 'clamp(70px,9vw,100px) clamp(20px,5vw,80px)',
+            position: 'relative', overflow: 'hidden',
+            borderTop: `1px solid ${isDark ? T.border : T.pubBorder}`,
+          }}>
+            {isDark && <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.02, pointerEvents: 'none' }} />}
+            <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: isMobile ? '1fr' : '1fr 1.2fr',
+                gap: 64, alignItems: 'center',
+                direction: (!isMobile && i % 2 !== 0) ? 'rtl' : 'ltr',
+              }}>
+                {/* Content */}
+                <Reveal delay={0}>
+                  <div style={{ direction: 'ltr' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+                      <div style={{ width: 48, height: 48, borderRadius: 14, background: 'rgba(204,120,92,0.1)', border: '1px solid rgba(204,120,92,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <tool.icon size={24} color={accentColor} />
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: T.fontMono, fontSize: '0.78rem', color: accentColor, marginBottom: 2 }}>pip install {tool.pypi}</div>
+                        <div style={{ fontFamily: T.fontD, fontSize: '1.4rem', color: titleColor }}>{tool.name}</div>
+                      </div>
+                    </div>
+                    <div style={{ fontFamily: T.fontD, fontStyle: 'italic', fontSize: '1.1rem', color: isDark ? T.accentL || T.accent : T.accent, marginBottom: 14, lineHeight: 1.4 }}>{tool.tagline}</div>
+                    <p style={{ fontFamily: T.fontUI, fontSize: '1rem', color: mutedColor, lineHeight: 1.78, margin: '0 0 24px' }}>{tool.desc}</p>
+                  </div>
+                </Reveal>
 
-      {/* ── PURPLE TEAM ── */}
-      <PurpleTeamSection/>
+                {/* Code block */}
+                <Reveal delay={0.12}>
+                  <div style={{ direction: 'ltr' }}>
+                    <div style={{
+                      background: isDark ? T.inset : T.bg, border: `1px solid ${isDark ? T.border : T.border}`,
+                      borderRadius: 16, padding: '28px', overflow: 'hidden',
+                    }}>
+                      <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
+                        {['#EF4444','#F59E0B','#10B981'].map(c => <div key={c} style={{ width: 10, height: 10, borderRadius: '50%', background: c, opacity: 0.7 }} />)}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                        <code style={{ fontFamily: T.fontMono, fontSize: '0.8rem', color: 'rgba(240,235,227,0.45)' }}>$ </code>
+                        <CopyButton code={tool.install} />
+                      </div>
+                      <code style={{ fontFamily: T.fontMono, fontSize: '0.88rem', color: T.accent, display: 'block', marginBottom: 20 }}>{tool.install}</code>
+                      <div style={{ borderTop: `1px solid rgba(240,235,227,0.07)`, paddingTop: 16 }}>
+                        {tool.commands.map((cmd, ci) => (
+                          <div key={ci} style={{ display: 'flex', gap: 8, marginBottom: ci < tool.commands.length - 1 ? 6 : 0 }}>
+                            <span style={{ fontFamily: T.fontMono, fontSize: '0.78rem', color: 'rgba(240,235,227,0.3)' }}>{ci === 0 ? '>>>' : '...'}</span>
+                            <code style={{ fontFamily: T.fontMono, fontSize: '0.78rem', color: 'rgba(240,235,227,0.65)' }}>{cmd}</code>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </Reveal>
+              </div>
+            </div>
+          </section>
+        );
+      })}
 
-      {/* ── INSTALL ALL ── */}
-      <InstallAllSection/>
-
-      {/* ── CTA ── */}
-      <section style={{
-        padding: 'clamp(96px,12vw,160px) clamp(24px,5vw,72px)',
-        borderTop: '1px solid rgba(204,120,92,0.08)',
-        background: '#141210',
-        position: 'relative', overflow: 'hidden',
-        textAlign: 'center',
-      }}>
-        <div aria-hidden style={{
-          position: 'absolute', top: '50%', left: '50%',
-          transform: 'translate(-50%,-50%)',
-          width: 600, height: 400,
-          background: 'radial-gradient(ellipse, rgba(204,120,92,0.08) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }}/>
-        <div style={{ position: 'relative', maxWidth: 680, margin: '0 auto' }}>
+      {/* CTA */}
+      <section style={{ background: T.bg, padding: 'clamp(80px,10vw,100px) clamp(20px,5vw,80px)', position: 'relative', overflow: 'hidden', textAlign: 'center' }}>
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.025, pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 55% 50% at 50% 60%, rgba(204,120,92,0.09) 0%, transparent 70%)' }} />
+        <div style={{ maxWidth: 600, margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <Reveal>
-            <h2 className="cd" style={{
-              fontSize: 'clamp(32px,5vw,56px)', fontWeight: 700,
-              color: INK, letterSpacing: '-0.03em', lineHeight: 0.96,
-              margin: '0 0 20px',
-            }}>
-              Built the offense.<br/>Built the defense.<br/>
-              <span style={{ color: GOLD }}>Access the platform.</span>
+            <h2 style={{ fontFamily: T.fontD, fontStyle: 'italic', fontSize: 'clamp(1.8rem, 4vw, 3rem)', color: T.darkText, fontWeight: 400, margin: '0 0 20px', lineHeight: 1.2 }}>
+              Start building your security stack
             </h2>
           </Reveal>
           <Reveal delay={0.1}>
-            <p className="cg" style={{
-              fontSize: 15, color: 'rgba(240,235,227,0.44)',
-              lineHeight: 1.7, maxWidth: 460, margin: '0 auto 40px',
-            }}>
-              AegisTrace is where these tools report their findings. One platform defending every layer these tools attack.
+            <p style={{ fontFamily: T.fontUI, fontSize: '1rem', color: T.darkMuted, lineHeight: 1.75, margin: '0 0 36px' }}>
+              All five tools are MIT licensed. Use them, fork them, build on them.
             </p>
           </Reveal>
           <Reveal delay={0.18}>
-            <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <a href="/app/login" target="_blank" rel="noopener noreferrer" className="gold-btn" style={{ fontSize: 14, padding: '15px 34px' }}>
-                Book a Demo <ArrowRight size={16}/>
-              </a>
-              <Link to="/mission" className="ghost-btn" style={{ fontSize: 14, padding: '14px 26px' }}>
-                Our Mission
-              </Link>
+            <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <a href="https://pypi.org/user/aegistrace" target="_blank" rel="noopener noreferrer"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: T.accent, color: '#fff', fontFamily: T.fontUI, fontWeight: 600, fontSize: '0.98rem', padding: '14px 28px', borderRadius: 12, textDecoration: 'none', boxShadow: '0 4px 20px rgba(204,120,92,0.4)', transition: 'transform 0.22s, box-shadow 0.22s' }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(204,120,92,0.55)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 20px rgba(204,120,92,0.4)'; }}
+              ><Terminal size={16} /> Browse PyPI <ArrowRight size={15} /></a>
+              <a href="/app/login" target="_blank" rel="noopener noreferrer"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', color: T.darkMuted, fontFamily: T.fontUI, fontWeight: 500, fontSize: '0.98rem', padding: '14px 24px', borderRadius: 12, border: `1px solid ${T.border}`, textDecoration: 'none', transition: 'color 0.22s, border-color 0.22s' }}
+                onMouseEnter={e => { e.currentTarget.style.color = T.darkText; e.currentTarget.style.borderColor = T.borderMed; }}
+                onMouseLeave={e => { e.currentTarget.style.color = T.darkMuted; e.currentTarget.style.borderColor = T.border; }}
+              >Enter Platform</a>
             </div>
           </Reveal>
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
-      <footer style={{ borderTop: '1px solid rgba(204,120,92,0.08)', padding: '32px clamp(24px,5vw,72px)' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <img src="/assets/brand/aegistrace-icon-transparent.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain', opacity: 0.5 }}/>
-            <span style={{ fontFamily: "'IBM Plex Mono',monospace", color: 'rgba(240,235,227,0.28)', fontSize: 11, letterSpacing: '0.16em' }}>AEGISTRACE</span>
-          </div>
-          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-            {[['/', 'Home'], ['/mission', 'Mission'], ['/features', 'Features'], ['/platform', 'Platform']].map(([to, label]) => (
-              <Link key={to} to={to} style={{ fontFamily: "'DM Sans',sans-serif", color: 'rgba(240,235,227,0.26)', fontSize: 12, textDecoration: 'none' }}>{label}</Link>
-            ))}
-          </div>
-          <span style={{ fontFamily: "'DM Sans',sans-serif", color: 'rgba(240,235,227,0.15)', fontSize: 11 }}>© 2026 Prasanna Kumar</span>
+      <footer style={{ background: T.surface, borderTop: `1px solid rgba(240,235,227,0.08)`, padding: 'clamp(36px,5vw,52px) clamp(20px,5vw,80px)' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+          <div style={{ fontFamily: T.fontD, fontSize: '1.1rem', color: T.darkText }}>AegisTrace</div>
+          <div style={{ fontFamily: T.fontUI, fontSize: '0.84rem', color: T.darkMuted }}>© 2025 Prasanna Kumar · MIT License</div>
         </div>
       </footer>
     </div>
