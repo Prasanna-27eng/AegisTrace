@@ -218,7 +218,7 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
           </div>
         )}
 
-        {activeTab === 'templates' && <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+        {activeTab === 'templates' && <><div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
           {/* Template list */}
           <div style={{ padding: '16px', borderRight: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: 8 }}>
             {TEMPLATES.map(t => (
@@ -306,7 +306,7 @@ export default function InvestigationTemplates({ onSelect, onClose }) {
             <Check size={13} /> Use Template
           </button>
         </div>
-        </div>}
+        </div></>}
       </div>
     </div>
   );
