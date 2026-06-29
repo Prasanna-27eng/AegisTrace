@@ -260,7 +260,7 @@ function HeroSection() {
       </Reveal>
 
       <Reveal delay={0.45} style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-        <Link to="/app/login" style={{
+        <a href="/app/login" target="_blank" rel="noopener noreferrer" style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
           background: GOLD, color: '#BDD4E8',
           fontFamily: "'IBM Plex Sans', sans-serif",
@@ -273,7 +273,7 @@ function HeroSection() {
           onMouseLeave={e => { e.currentTarget.style.background = GOLD; e.currentTarget.style.transform = 'translateY(0)'; }}
         >
           Access Platform <ArrowRight size={14}/>
-        </Link>
+        </a>
         <a href="https://github.com/prasannakumar-s/aegistrace" target="_blank" rel="noopener noreferrer" style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
           background: 'transparent',
@@ -850,7 +850,7 @@ function CTASection() {
         </Reveal>
 
         <Reveal delay={0.2}>
-          <Link to="/app/login" style={{
+          <a href="/app/login" target="_blank" rel="noopener noreferrer" style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
             background: GOLD, color: '#BDD4E8',
             fontFamily: "'IBM Plex Sans', sans-serif",
@@ -871,7 +871,7 @@ function CTASection() {
             }}
           >
             Access Platform <ArrowRight size={15}/>
-          </Link>
+          </a>
         </Reveal>
       </div>
     </section>

@@ -862,9 +862,9 @@ export default function Tools() {
           </Reveal>
           <Reveal delay={0.18}>
             <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Link to="/app/login" className="gold-btn" style={{ fontSize: 14, padding: '15px 34px' }}>
+              <a href="/app/login" target="_blank" rel="noopener noreferrer" className="gold-btn" style={{ fontSize: 14, padding: '15px 34px' }}>
                 Book a Demo <ArrowRight size={16}/>
-              </Link>
+              </a>
               <Link to="/mission" className="ghost-btn" style={{ fontSize: 14, padding: '14px 26px' }}>
                 Our Mission
               </Link>

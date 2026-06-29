@@ -851,7 +851,7 @@ function CTASection() {
             Book a private demo with the founder. See the full platform in a live environment.
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <Link to="/app/login" className="gold-btn" style={{ fontSize: 14, padding: '14px 32px' }}>Book a Private Demo <ArrowRight size={15}/></Link>
+            <a href="/app/login" target="_blank" rel="noopener noreferrer" className="gold-btn" style={{ fontSize: 14, padding: '14px 32px' }}>Book a Private Demo <ArrowRight size={15}/></a>
             <Link to="/platform" className="ghost-btn" style={{ fontSize: 14, padding: '13px 24px' }}>About the Platform →</Link>
           </div>
         </motion.div>
@@ -963,7 +963,7 @@ export default function Mission() {
           <div style={{ display: 'flex', gap: 24 }}>
             <Link to="/" className="cg" style={{ color: 'rgba(189,212,232,0.25)', fontSize: 12, textDecoration: 'none' }}>Home</Link>
             <Link to="/portfolio" className="cg" style={{ color: 'rgba(189,212,232,0.25)', fontSize: 12, textDecoration: 'none' }}>Portfolio</Link>
-            <Link to="/app/login" className="cg" style={{ color: 'rgba(189,212,232,0.25)', fontSize: 12, textDecoration: 'none' }}>Platform</Link>
+            <a href="/app/login" target="_blank" rel="noopener noreferrer" className="cg" style={{ color: 'rgba(189,212,232,0.25)', fontSize: 12, textDecoration: 'none' }}>Platform</a>
           </div>
           <span className="cg" style={{ color: 'rgba(189,212,232,0.15)', fontSize: 11 }}>© 2026 Prasanna Kumar</span>
         </div>

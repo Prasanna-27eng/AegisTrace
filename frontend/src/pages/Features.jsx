@@ -543,7 +543,7 @@ export default function Features() {
             <p style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 16, color: '#7A9DB8', lineHeight: 1.7, marginBottom: 36 }}>
               Book a private demo with the founder. Every module shown live, every question answered.
             </p>
-            <Link to="/app/login" style={{
+            <a href="/app/login" target="_blank" rel="noopener noreferrer" style={{
               display: 'inline-flex', alignItems: 'center', gap: 10,
               background: GOLD, color: '#000', fontWeight: 700,
               fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 15,
@@ -551,7 +551,7 @@ export default function Features() {
               letterSpacing: '0.02em',
             }}>
               Book a Private Demo <ArrowRight size={16}/>
-            </Link>
+            </a>
           </Reveal>
         </div>
       </section>

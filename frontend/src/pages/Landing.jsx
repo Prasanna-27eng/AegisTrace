@@ -321,7 +321,7 @@ function HeroScene() {
               Every identity scored. Every decision explained. Every action reversible.
             </p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
-              <Link to="/app/login"
+              <a href="/app/login" target="_blank" rel="noopener noreferrer"
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 8,
                   background: BLUE, color: '#fff',
@@ -335,7 +335,7 @@ function HeroScene() {
                 onMouseLeave={e => { e.currentTarget.style.background = BLUE; e.currentTarget.style.transform = 'translateY(0)'; }}
               >
                 Book a Private Demo <ArrowRight size={14}/>
-              </Link>
+              </a>
               <Link to="/mission"
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 8,
@@ -427,7 +427,7 @@ function MobileHero() {
           Every identity scored. Every decision explained. Every action reversible.
         </p>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', marginTop: 4 }}>
-          <Link to="/app/login"
+          <a href="/app/login" target="_blank" rel="noopener noreferrer"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
               background: BLUE, color: '#fff',
@@ -436,7 +436,7 @@ function MobileHero() {
               textDecoration: 'none', borderRadius: 4,
             }}>
             Book a Private Demo <ArrowRight size={14}/>
-          </Link>
+          </a>
           <Link to="/mission"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
@@ -1227,7 +1227,7 @@ function CTABand() {
         </Reveal>
         <Reveal delay={0.1}>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 14, flexWrap: 'wrap', marginBottom: 24 }}>
-            <Link to="/app/login"
+            <a href="/app/login" target="_blank" rel="noopener noreferrer"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
                 background: BLUE, color: '#fff',
@@ -1240,7 +1240,7 @@ function CTABand() {
               onMouseLeave={e => { e.currentTarget.style.background = BLUE; e.currentTarget.style.transform = 'translateY(0)'; }}
             >
               Book a Private Demo <ArrowRight size={16}/>
-            </Link>
+            </a>
             <a href="mailto:Prasanna80564@gmail.com"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,

@@ -745,7 +745,7 @@ export default function Portfolio() {
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
             <Link to="/" className="cg" style={{ color: 'rgba(189,212,232,0.26)', fontSize: 12, textDecoration: 'none' }}>Home</Link>
             <Link to="/mission" className="cg" style={{ color: 'rgba(189,212,232,0.26)', fontSize: 12, textDecoration: 'none' }}>Mission</Link>
-            <Link to="/app/login" className="cg" style={{ color: 'rgba(189,212,232,0.26)', fontSize: 12, textDecoration: 'none' }}>Platform</Link>
+            <a href="/app/login" target="_blank" rel="noopener noreferrer" className="cg" style={{ color: 'rgba(189,212,232,0.26)', fontSize: 12, textDecoration: 'none' }}>Platform</a>
           </div>
         </div>
       </footer>

@@ -2,53 +2,41 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   Copy, Check, Terminal, Shield, Monitor, Server,
-  ChevronDown, ChevronRight, ExternalLink, Activity,
-  Zap, CheckCircle, AlertTriangle, Circle, Download,
-  Cpu, GitBranch, Package, Settings, RefreshCw,
+  ChevronDown, ChevronRight, Activity, CheckCircle,
+  AlertTriangle, Circle, Download, Cpu, Package,
+  Settings, RefreshCw, Key, Zap,
 } from 'lucide-react';
 import api from '../../api/client';
 
-const E = [0.23, 1, 0.32, 1];
-const MONO = { fontFamily: "'IBM Plex Mono', 'JetBrains Mono', monospace" };
+const MONO = { fontFamily: "'IBM Plex Mono', monospace" };
 const UI   = { fontFamily: "'IBM Plex Sans', system-ui, sans-serif" };
+const FADE = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 } };
+const EASE = { duration: 0.3, ease: [0.23, 1, 0.32, 1] };
 
-const ACCENT  = '#4A7EC8';
-const ACCENT_L = '#8BB8E8';
-const PURPLE  = '#A78BFA';
-const SUCCESS = '#10B981';
-const WARN    = '#F59E0B';
-const CARD_BG = 'var(--surface, #0E0E16)';
-const BORDER  = 'var(--border, rgba(74,126,200,0.1))';
-
-/* ── Reveal wrapper ──────────────────────────────────────────────────────── */
-function Reveal({ children, delay = 0, style = {} }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay, ease: E }}
-      style={style}
-    >{children}</motion.div>
-  );
-}
+const BLUE  = '#4A7EC8';
+const BLUE_L = '#8BB8E8';
+const GREEN = '#10B981';
+const AMBER = '#F59E0B';
+const RED   = '#EF4444';
+const MUTED = 'rgba(148,163,184,0.55)';
 
 /* ── Copy button ─────────────────────────────────────────────────────────── */
-function CopyBtn({ text, small = false }) {
+function CopyBtn({ text }) {
   const [copied, setCopied] = useState(false);
   const copy = useCallback(() => {
-    navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(text).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, [text]);
   return (
     <button onClick={copy} style={{
-      background: copied ? 'rgba(16,185,129,0.12)' : 'rgba(74,126,200,0.08)',
-      border: `1px solid ${copied ? 'rgba(16,185,129,0.3)' : BORDER}`,
-      color: copied ? SUCCESS : ACCENT_L,
+      background: copied ? 'rgba(16,185,129,0.1)' : 'rgba(74,126,200,0.08)',
+      border: `1px solid ${copied ? 'rgba(16,185,129,0.25)' : 'rgba(74,126,200,0.2)'}`,
+      color: copied ? GREEN : BLUE_L,
       borderRadius: 4, cursor: 'pointer',
-      padding: small ? '3px 8px' : '6px 12px',
-      display: 'inline-flex', alignItems: 'center', gap: 5,
-      fontSize: small ? 10 : 11, transition: 'all 140ms ease',
+      padding: '4px 10px',
+      display: 'inline-flex', alignItems: 'center', gap: 4,
+      fontSize: 11, transition: 'all 140ms',
       ...MONO,
     }}>
       {copied ? <><Check size={10}/> Copied</> : <><Copy size={10}/> Copy</>}
@@ -56,42 +44,43 @@ function CopyBtn({ text, small = false }) {
   );
 }
 
-/* ── Terminal code block ─────────────────────────────────────────────────── */
-function CodeBlock({ code, label, lang = 'bash', highlight = [] }) {
+/* ── Code block ──────────────────────────────────────────────────────────── */
+function CodeBlock({ code, label }) {
   return (
-    <div style={{ marginBottom: 16 }}>
+    <div style={{ marginBottom: 14 }}>
       {label && (
-        <div style={{ ...MONO, fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.12em',
-          textTransform: 'uppercase', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ display: 'inline-block', width: 2, height: 10, background: ACCENT, borderRadius: 1 }}/>
+        <div style={{ ...MONO, fontSize: 10, color: MUTED, letterSpacing: '0.1em',
+          textTransform: 'uppercase', marginBottom: 6 }}>
           {label}
         </div>
       )}
       <div style={{
-        background: '#030308', border: `1px solid rgba(74,126,200,0.2)`,
-        borderRadius: 6, overflow: 'hidden',
-        boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+        background: '#040408',
+        border: '1px solid rgba(74,126,200,0.15)',
+        borderRadius: 8, overflow: 'hidden',
       }}>
-        {/* Chrome */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '8px 14px', borderBottom: `1px solid rgba(74,126,200,0.1)`,
+          padding: '8px 14px', borderBottom: '1px solid rgba(74,126,200,0.08)',
           background: 'rgba(74,126,200,0.03)' }}>
           <div style={{ display: 'flex', gap: 5 }}>
             {['#F87171','#FBBF24','#34D399'].map(c => (
-              <div key={c} style={{ width: 9, height: 9, borderRadius: '50%', background: c, opacity: 0.7 }}/>
+              <div key={c} style={{ width: 8, height: 8, borderRadius: '50%', background: c, opacity: 0.6 }}/>
             ))}
           </div>
-          <CopyBtn text={code} small/>
+          <CopyBtn text={code} />
         </div>
-        {/* Code */}
         <pre style={{
           margin: 0, padding: '14px 18px',
-          ...MONO, fontSize: 12.5, lineHeight: 1.7,
-          color: 'var(--text-secondary, #94A3B8)',
+          ...MONO, fontSize: 12.5, lineHeight: 1.75,
+          color: '#94A3B8',
           overflowX: 'auto', whiteSpace: 'pre',
         }}>
           {code.split('\n').map((line, i) => (
-            <div key={i} style={{ color: line.startsWith('#') ? 'var(--text-muted)' : line.startsWith('$') || line.startsWith('sudo') ? ACCENT_L : 'var(--text-secondary)' }}>
+            <div key={i} style={{
+              color: line.startsWith('#') ? MUTED
+                   : line.startsWith('$') || line.startsWith('sudo') ? BLUE_L
+                   : '#94A3B8',
+            }}>
               {line || ' '}
             </div>
           ))}
@@ -101,562 +90,401 @@ function CodeBlock({ code, label, lang = 'bash', highlight = [] }) {
   );
 }
 
-/* ── Step card ───────────────────────────────────────────────────────────── */
-function Step({ n, title, icon: Icon, done = false, active = false, children }) {
-  const [open, setOpen] = useState(active);
+/* ── Section card ────────────────────────────────────────────────────────── */
+function Section({ icon: Icon, title, color = BLUE, children, delay = 0 }) {
   return (
-    <div style={{ border: `1px solid ${open ? 'rgba(74,126,200,0.25)' : BORDER}`,
-      borderRadius: 8, overflow: 'hidden', marginBottom: 10,
-      background: open ? 'rgba(74,126,200,0.03)' : CARD_BG,
-      transition: 'border-color 200ms ease, background 200ms ease' }}>
-      <button onClick={() => setOpen(o => !o)} style={{
-        width: '100%', display: 'flex', alignItems: 'center', gap: 14,
-        padding: '14px 18px', background: 'none', border: 'none', cursor: 'pointer',
-        textAlign: 'left',
+    <motion.div {...FADE} transition={{ ...EASE, delay }}
+      style={{
+        background: '#0A0A12',
+        border: '1px solid rgba(255,255,255,0.07)',
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginBottom: 20,
+      }}
+    >
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 10,
+        padding: '16px 22px',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        background: 'rgba(255,255,255,0.02)',
       }}>
-        {/* Step indicator */}
-        <div style={{
-          width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+        <div style={{ width: 30, height: 30, borderRadius: 8,
+          background: `${color}14`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Icon size={15} color={color} />
+        </div>
+        <span style={{ ...UI, fontWeight: 600, fontSize: '0.92rem', color: '#D0D4DF' }}>{title}</span>
+      </div>
+      <div style={{ padding: '20px 22px' }}>{children}</div>
+    </motion.div>
+  );
+}
+
+/* ── Step row ────────────────────────────────────────────────────────────── */
+function Step({ n, title, children }) {
+  const [open, setOpen] = useState(n <= 2);
+  return (
+    <div style={{ marginBottom: 12, border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, overflow: 'hidden' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{ width: '100%', background: open ? 'rgba(74,126,200,0.06)' : 'rgba(255,255,255,0.02)',
+          border: 'none', cursor: 'pointer', padding: '12px 16px',
+          display: 'flex', alignItems: 'center', gap: 12, transition: 'background 0.15s' }}
+      >
+        <div style={{ width: 24, height: 24, borderRadius: '50%',
+          background: open ? 'rgba(74,126,200,0.2)' : 'rgba(255,255,255,0.07)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: done ? 'rgba(16,185,129,0.12)' : active ? 'rgba(74,126,200,0.12)' : 'rgba(74,126,200,0.06)',
-          border: `1px solid ${done ? 'rgba(16,185,129,0.3)' : active ? 'rgba(74,126,200,0.3)' : BORDER}`,
-        }}>
-          {done
-            ? <CheckCircle size={15} color={SUCCESS}/>
-            : Icon
-              ? <Icon size={15} color={active ? ACCENT_L : 'var(--text-muted)'}/>
-              : <span style={{ ...MONO, fontSize: 12, fontWeight: 700, color: active ? ACCENT_L : 'var(--text-muted)' }}>{n}</span>
-          }
+          flexShrink: 0 }}>
+          <span style={{ ...MONO, fontSize: 11, fontWeight: 700, color: open ? BLUE_L : MUTED }}>{n}</span>
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ ...UI, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 1 }}>{title}</div>
-        </div>
-        {open ? <ChevronDown size={14} color="var(--text-muted)"/> : <ChevronRight size={14} color="var(--text-muted)"/>}
+        <span style={{ ...UI, fontSize: '0.85rem', fontWeight: 500, color: open ? '#D0D4DF' : '#8090A8', flex: 1, textAlign: 'left' }}>{title}</span>
+        {open ? <ChevronDown size={14} color={MUTED} /> : <ChevronRight size={14} color={MUTED} />}
       </button>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2, ease: E }}
-          style={{ padding: '0 18px 18px' }}
-        >
-          {children}
-        </motion.div>
-      )}
+      {open && <div style={{ padding: '4px 16px 16px 52px' }}>{children}</div>}
     </div>
   );
 }
 
 /* ── OS pill ─────────────────────────────────────────────────────────────── */
-function OsPill({ label, icon: Icon, active, onClick }) {
+function OsPill({ label, active, onClick }) {
   return (
     <button onClick={onClick} style={{
-      display: 'flex', alignItems: 'center', gap: 7,
-      padding: '8px 16px', borderRadius: 6, cursor: 'pointer',
-      background: active ? 'rgba(74,126,200,0.12)' : 'transparent',
-      border: `1px solid ${active ? 'rgba(74,126,200,0.35)' : BORDER}`,
-      color: active ? ACCENT_L : 'var(--text-muted)',
-      fontSize: 12, fontWeight: active ? 600 : 400, transition: 'all 140ms ease',
-      ...UI,
-    }}>
-      <Icon size={13}/>{label}
-    </button>
+      padding: '5px 14px', borderRadius: 6, cursor: 'pointer',
+      background: active ? 'rgba(74,126,200,0.15)' : 'rgba(255,255,255,0.04)',
+      border: `1px solid ${active ? 'rgba(74,126,200,0.4)' : 'rgba(255,255,255,0.08)'}`,
+      color: active ? BLUE_L : MUTED,
+      fontSize: 12, ...MONO, transition: 'all 140ms',
+    }}>{label}</button>
   );
 }
 
-/* ── Status dot ──────────────────────────────────────────────────────────── */
+/* ── Status badge ────────────────────────────────────────────────────────── */
 function StatusDot({ active }) {
   return (
-    <div style={{ position: 'relative', width: 10, height: 10, flexShrink: 0 }}>
-      <div style={{ width: 10, height: 10, borderRadius: '50%',
-        background: active ? SUCCESS : 'var(--text-muted)', opacity: active ? 1 : 0.4 }}/>
-      {active && (
-        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%',
-          background: SUCCESS, animation: 'ping 1.5s cubic-bezier(0,0,0.2,1) infinite', opacity: 0.4 }}/>
-      )}
-      <style>{`@keyframes ping { 75%,100% { transform: scale(2); opacity: 0; } }`}</style>
-    </div>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+      <span style={{ width: 7, height: 7, borderRadius: '50%',
+        background: active ? GREEN : MUTED,
+        boxShadow: active ? `0 0 6px ${GREEN}` : 'none' }} />
+      <span style={{ ...MONO, fontSize: 11, color: active ? GREEN : MUTED }}>
+        {active ? 'active' : 'none'}
+      </span>
+    </span>
   );
 }
 
-/* ── Section heading ─────────────────────────────────────────────────────── */
-function SectionHead({ icon: Icon, title, badge, color = ACCENT, children }) {
-  return (
-    <div style={{ marginBottom: 20 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-        <div style={{ width: 34, height: 34, borderRadius: 8, background: `${color}18`,
-          border: `1px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Icon size={16} color={color}/>
-        </div>
-        <h2 style={{ ...UI, fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{title}</h2>
-        {badge && (
-          <span style={{ ...MONO, fontSize: 9, fontWeight: 700, color, background: `${color}18`,
-            border: `1px solid ${color}30`, padding: '2px 7px', borderRadius: 3, letterSpacing: '0.08em' }}>
-            {badge}
-          </span>
-        )}
-      </div>
-      {children && <p style={{ ...UI, fontSize: 13.5, color: 'var(--text-muted)', margin: 0, lineHeight: 1.65 }}>{children}</p>}
-    </div>
-  );
-}
-
-/* ════════════════════════════════════════════════════════════════════════════
-   MAIN PAGE
-════════════════════════════════════════════════════════════════════════════ */
+/* ── Main component ──────────────────────────────────────────────────────── */
 export default function DeploymentHub() {
-  const [agentOs, setAgentOs]     = useState('linux');
-  const [falcoOs, setFalcoOs]     = useState('ubuntu');
+  const [agentOs, setAgentOs] = useState('linux');
   const [endpoints, setEndpoints] = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [serverUrl, setServerUrl] = useState(window.location.origin);
+  const [loading, setLoading] = useState(true);
+  const origin = window.location.origin;
 
   useEffect(() => {
     api.get('/api/endpoints')
       .then(r => setEndpoints(Array.isArray(r.data) ? r.data : []))
-      .catch(() => setEndpoints([]))
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  const activeEndpoints   = endpoints.filter(e => e.is_active);
-  const falcoEndpoints    = endpoints.filter(e => {
-    try { return JSON.parse(e.last_system_info || '{}').falco_layer3_active; }
-    catch { return false; }
-  });
+  const active = endpoints.filter(e => e.is_active).length;
 
-  /* ── Agent install commands ─────────────────────────────────────────────── */
   const AGENT_CMDS = {
-    linux: `# Download the agent
-curl -fsSL ${serverUrl}/agent/install.sh | sudo bash
+    linux: `# 1. Download and run the install script
+curl -fsSL ${origin}/agent/install.sh | sudo bash
 
-# Or manually:
-curl -O ${serverUrl}/agent/aegistrace_agent.py
-sudo AEGISTRACE_SERVER=${serverUrl} \\
+# Or install manually:
+curl -O ${origin}/agent/aegistrace_agent.py
+sudo AEGISTRACE_SERVER=${origin} \\
      AEGISTRACE_API_KEY=<your-ingest-key> \\
-     python3 aegistrace_agent.py`,
+     python3 aegistrace_agent.py --install`,
 
-    macos: `# Download the agent
-curl -fsSL ${serverUrl}/agent/install.sh | bash
+    mac: `# 1. Download the agent
+curl -fsSL ${origin}/agent/aegistrace_agent.py -o aegistrace_agent.py
 
-# Set env vars and run
-AEGISTRACE_SERVER=${serverUrl} \\
+# 2. Run with your server details
+AEGISTRACE_SERVER=${origin} \\
 AEGISTRACE_API_KEY=<your-ingest-key> \\
-python3 aegistrace_agent.py`,
+python3 aegistrace_agent.py
 
-    windows: `# PowerShell (run as Administrator)
-$env:AEGISTRACE_SERVER = "${serverUrl}"
+# 3. Install as a LaunchDaemon (persistent)
+sudo AEGISTRACE_SERVER=${origin} \\
+     AEGISTRACE_API_KEY=<your-ingest-key> \\
+     python3 aegistrace_agent.py --install`,
+
+    windows: `# PowerShell (Run as Administrator)
+
+# 1. Download the agent
+Invoke-WebRequest -Uri "${origin}/agent/aegistrace_agent.py" \`
+  -OutFile C:\\aegistrace\\aegistrace_agent.py
+
+# 2. Set environment variables
+$env:AEGISTRACE_SERVER = "${origin}"
 $env:AEGISTRACE_API_KEY = "<your-ingest-key>"
 
-Invoke-WebRequest -Uri "${serverUrl}/agent/aegistrace_agent.py" -OutFile agent.py
-python agent.py`,
+# 3. Install as a Windows Service
+python3 C:\\aegistrace\\aegistrace_agent.py --install`,
   };
 
-  const AGENT_SYSTEMD = `# Create systemd service for persistent agent
-sudo tee /etc/systemd/system/aegistrace-agent.service > /dev/null << 'EOF'
+  const VERIFY_CMD = `# Verify agent is reporting
+curl -s ${origin}/api/endpoints | python3 -m json.tool | grep -E "hostname|is_active"
+
+# Check agent logs (Linux/macOS)
+sudo journalctl -u aegistrace-agent -f
+
+# Expected output:
+# [agent] Connected to ${origin}
+# [agent] Sending heartbeat... OK
+# [agent] Telemetry sent: cpu=12% mem=45% procs=142`;
+
+  const INGEST_KEY_CMD = `# Generate a new ingest key via the API
+curl -s -X POST ${origin}/api/ingest/keys \\
+     -H "Authorization: Bearer <your-jwt-token>" \\
+     -H "Content-Type: application/json" \\
+     -d '{"label": "my-endpoint", "description": "Production server"}' | python3 -m json.tool`;
+
+  const DOCKER_CMD = `# Deploy AegisTrace as Docker containers
+git clone https://github.com/Prasanna-27eng/AegisTrace.git
+cd AegisTrace
+
+# Copy example env and fill in values
+cp backend/.env.example backend/.env
+nano backend/.env   # set DATABASE_URL, GROQ_API_KEY, SECRET_KEY
+
+# Build and run
+docker-compose up -d
+
+# Check status
+docker-compose ps
+docker-compose logs -f backend`;
+
+  const SYSTEMD_CMD = `# Create systemd service for AegisTrace backend
+sudo tee /etc/systemd/system/aegistrace.service << 'EOF'
 [Unit]
-Description=AegisTrace Endpoint Agent v6.2
-After=network.target
+Description=AegisTrace ITDR Backend
+After=network.target postgresql.service
 
 [Service]
 Type=simple
-Environment=AEGISTRACE_SERVER=${serverUrl}
-Environment=AEGISTRACE_API_KEY=<your-ingest-key>
-Environment=AEGISTRACE_AUTO_BLOCK=alert
-Environment=AEGISTRACE_HONEY_TOKENS=true
-ExecStart=/usr/bin/python3 /opt/aegistrace/aegistrace_agent.py
+User=root
+WorkingDirectory=/opt/aegistrace/backend
+EnvironmentFile=/opt/aegistrace/backend/.env
+ExecStart=/opt/aegistrace/backend/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2
 Restart=always
-RestartSec=10
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
 sudo systemctl daemon-reload
-sudo systemctl enable --now aegistrace-agent
-sudo systemctl status aegistrace-agent`;
+sudo systemctl enable --now aegistrace
+sudo systemctl status aegistrace`;
 
-  /* ── Falco install commands ─────────────────────────────────────────────── */
-  const FALCO_CMDS = {
-    ubuntu: `# Step 1: Add Falco repository
-curl -fsSL https://falco.org/repo/falcosecurity-packages.asc | \\
-  sudo gpg --dearmor -o /usr/share/keyrings/falco-archive-keyring.gpg
+  const NGINX_CMD = `# Nginx reverse proxy config
+sudo tee /etc/nginx/sites-available/aegistrace << 'EOF'
+server {
+    listen 443 ssl http2;
+    server_name your-domain.com;
 
-echo "deb [signed-by=/usr/share/keyrings/falco-archive-keyring.gpg] \\
-  https://download.falco.org/packages/deb stable main" | \\
-  sudo tee /etc/apt/sources.list.d/falcosecurity.list
+    root /opt/aegistrace/frontend/build;
+    index index.html;
 
-# Step 2: Install Falco
-sudo apt update && sudo apt install -y falco
+    location /api/ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
 
-# Step 3: Enable eBPF driver (kernel 6.x — no module signing issues)
-sudo falco-driver-loader bpf
+    location /ws/ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
 
-# Step 4: Start Falco with JSON output (required for AegisTrace integration)
-sudo systemctl enable --now falco
-# Verify: Falco writes JSON to /var/log/falco.log`,
+    location / { try_files $uri $uri/ /index.html; }
+}
+EOF
 
-    rhel: `# Step 1: Add Falco repository
-sudo rpm --import https://falco.org/repo/falcosecurity-packages.asc
-sudo curl -s -o /etc/yum.repos.d/falcosecurity.repo \\
-  https://download.falco.org/packages/rpm/falcosecurity.repo
-
-# Step 2: Install Falco
-sudo yum install -y falco
-
-# Step 3: Enable eBPF driver
-sudo falco-driver-loader bpf
-
-# Step 4: Start Falco
-sudo systemctl enable --now falco`,
-
-    docker: `# Run Falco in a privileged container (dev/test environments)
-docker run --rm -it --privileged \\
-  -v /var/run/docker.sock:/host/var/run/docker.sock \\
-  -v /dev:/host/dev \\
-  -v /proc:/host/proc:ro \\
-  -v /boot:/host/boot:ro \\
-  -v /lib/modules:/host/lib/modules:ro \\
-  -v /usr:/host/usr:ro \\
-  -v /var/log:/var/log \\
-  -e HOST_ROOT=/host \\
-  --name falco falcosecurity/falco:latest \\
-  falco -o json_output=true -o json_include_output_property=true`,
-  };
-
-  const FALCO_CONFIG = `# /etc/falco/falco.yaml — required settings for AegisTrace integration
-json_output: true                    # REQUIRED: AegisTrace reads JSON
-json_include_output_property: true   # Include full output string
-log_level: info
-file_output:
-  enabled: true
-  keep_alive: false
-  filename: /var/log/falco.log       # AegisTrace agent tails this file
-
-# Verify config and test:
-sudo falco --validate /etc/falco/falco.yaml
-sudo systemctl restart falco
-sudo journalctl -u falco -f          # Watch for events`;
-
-  const FALCO_VERIFY = `# Trigger a test Falco alert (open a shell in a container)
-docker run --rm -it ubuntu bash     # Triggers: "Terminal shell in container"
-
-# Check Falco is writing JSON:
-tail -f /var/log/falco.log | python3 -m json.tool
-
-# Check AegisTrace is receiving Falco events (in agent logs):
-journalctl -u aegistrace-agent -f | grep -i falco
-
-# Expected output:
-# [falco] Layer 3 active — tailing /var/log/falco.log
-# [falco] 1 new Falco event(s) forwarded`;
+sudo ln -s /etc/nginx/sites-available/aegistrace /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx`;
 
   return (
-    <div style={{ padding: 24, maxWidth: 1000, margin: '0 auto' }}>
-      <style>{`
-        .tab-row { display: flex; gap: 8; flex-wrap: wrap; margin-bottom: 18px; }
-      `}</style>
+    <div style={{ padding: '24px 28px', maxWidth: 960, margin: '0 auto' }}>
 
-      {/* ── Page header ──────────────────────────────────────────────────── */}
-      <Reveal>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-          marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <img src="/assets/brand/aegistrace-icon-transparent.png" alt=""
-              style={{ width: 36, height: 36, objectFit: 'contain',
-                filter: 'drop-shadow(0 0 8px rgba(74,126,200,0.6))' }}/>
-            <div>
-              <h1 style={{ ...UI, fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-                Deployment Hub
-              </h1>
-              <p style={{ ...UI, fontSize: 13, color: 'var(--text-muted)', margin: '3px 0 0' }}>
-                Endpoint Agent v6.2 · Falco Layer 3 eBPF
-              </p>
-            </div>
+      {/* Header */}
+      <motion.div {...FADE} transition={EASE} style={{ marginBottom: 28 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+          <div>
+            <h1 style={{ ...UI, fontSize: '1.4rem', fontWeight: 700, color: '#E0E4EE', margin: 0, marginBottom: 4 }}>
+              Deployment Hub
+            </h1>
+            <p style={{ ...UI, fontSize: '0.82rem', color: MUTED, margin: 0 }}>
+              Endpoint agent setup, server deployment, and integration commands
+            </p>
           </div>
-
-          {/* Live endpoint stats */}
           <div style={{ display: 'flex', gap: 12 }}>
             {[
-              { label: 'Active Endpoints', value: loading ? '—' : activeEndpoints.length, color: SUCCESS },
-              { label: 'Falco Layer 3',    value: loading ? '—' : falcoEndpoints.length,  color: PURPLE },
+              { label: 'Active Endpoints', value: loading ? '—' : active, color: GREEN },
+              { label: 'Total Enrolled',   value: loading ? '—' : endpoints.length, color: BLUE_L },
             ].map(({ label, value, color }) => (
-              <div key={label} style={{ background: CARD_BG, border: `1px solid ${BORDER}`,
-                borderRadius: 8, padding: '10px 16px', textAlign: 'center' }}>
-                <div style={{ ...UI, fontSize: 22, fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
-                <div style={{ ...MONO, fontSize: 9, color: 'var(--text-muted)', marginTop: 3, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{label}</div>
+              <div key={label} style={{ background: '#0A0A12', border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: 10, padding: '10px 18px', textAlign: 'center', minWidth: 90 }}>
+                <div style={{ ...UI, fontSize: '1.5rem', fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
+                <div style={{ ...MONO, fontSize: 9, color: MUTED, marginTop: 4, letterSpacing: '0.08em',
+                  textTransform: 'uppercase' }}>{label}</div>
               </div>
             ))}
           </div>
         </div>
-      </Reveal>
+      </motion.div>
 
-      {/* ── Live endpoints strip ──────────────────────────────────────────── */}
+      {/* Enrolled endpoints strip */}
       {!loading && endpoints.length > 0 && (
-        <Reveal delay={0.05}>
-          <div style={{ background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 8, padding: '14px 18px', marginBottom: 24 }}>
-            <div style={{ ...MONO, fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10 }}>
-              Connected Endpoints
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {endpoints.slice(0, 12).map(ep => {
-                let falcoActive = false;
-                try { falcoActive = JSON.parse(ep.last_system_info || '{}').falco_layer3_active; } catch {}
-                return (
-                  <div key={ep.id} style={{ display: 'flex', alignItems: 'center', gap: 7,
-                    background: 'rgba(74,126,200,0.06)', border: `1px solid ${BORDER}`,
-                    borderRadius: 5, padding: '5px 10px' }}>
-                    <StatusDot active={ep.is_active}/>
-                    <span style={{ ...MONO, fontSize: 11, color: 'var(--text-secondary)' }}>{ep.hostname}</span>
-                    {falcoActive && (
-                      <span style={{ ...MONO, fontSize: 9, color: PURPLE, background: 'rgba(167,139,250,0.12)',
-                        border: '1px solid rgba(167,139,250,0.2)', padding: '1px 5px', borderRadius: 3 }}>eBPF</span>
-                    )}
-                  </div>
-                );
-              })}
-              {endpoints.length > 12 && (
-                <div style={{ ...UI, fontSize: 12, color: 'var(--text-muted)', padding: '5px 8px' }}>
-                  +{endpoints.length - 12} more
-                </div>
-              )}
-            </div>
-          </div>
-        </Reveal>
-      )}
-
-      {/* ════════════════════════════════════════════════════════════════════
-          SECTION 1: ENDPOINT AGENT
-      ════════════════════════════════════════════════════════════════════ */}
-      <Reveal delay={0.08}>
-        <div style={{ background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 10, padding: 24, marginBottom: 20 }}>
-          <SectionHead icon={Shield} title="Endpoint Agent" badge="v6.2" color={ACCENT}>
-            Lightweight Python agent — deploys in seconds, ships telemetry every 30s. Includes honey tokens,
-            YARA-lite, DNS/DGA detection, auto-block, vulnerability scanner, and HMAC-signed telemetry.
-          </SectionHead>
-
-          {/* What it detects */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px,1fr))', gap: 8, marginBottom: 22 }}>
-            {[
-              ['🍯', 'Honey Token Trap'],
-              ['📋', 'YARA-lite (~40 rules)'],
-              ['🌐', 'DNS/DGA Detection'],
-              ['🔒', 'Auto-Block Engine'],
-              ['🔍', 'Vulnerability Scanner'],
-              ['💾', 'Persistence Monitor'],
-              ['⚡', 'HMAC-Signed Telemetry'],
-              ['🛡️', 'Guardian Process'],
-              ['🧠', 'Memory Forensics (Layer 4)'],
-            ].map(([icon, label]) => (
-              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8,
-                padding: '8px 12px', background: 'rgba(74,126,200,0.04)',
-                border: `1px solid ${BORDER}`, borderRadius: 6 }}>
-                <span style={{ fontSize: 14 }}>{icon}</span>
-                <span style={{ ...UI, fontSize: 12, color: 'var(--text-secondary)' }}>{label}</span>
+        <motion.div {...FADE} transition={{ ...EASE, delay: 0.05 }}
+          style={{ background: '#0A0A12', border: '1px solid rgba(255,255,255,0.07)',
+            borderRadius: 10, padding: '14px 18px', marginBottom: 20 }}>
+          <div style={{ ...MONO, fontSize: 10, color: MUTED, letterSpacing: '0.1em',
+            textTransform: 'uppercase', marginBottom: 10 }}>Enrolled Endpoints</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {endpoints.slice(0, 12).map(ep => (
+              <div key={ep.id} style={{ display: 'flex', alignItems: 'center', gap: 7,
+                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+                borderRadius: 6, padding: '5px 10px' }}>
+                <StatusDot active={ep.is_active} />
+                <span style={{ ...MONO, fontSize: 11, color: '#94A3B8' }}>{ep.hostname || ep.host_ip}</span>
               </div>
             ))}
-          </div>
-
-          {/* OS tabs */}
-          <div className="tab-row">
-            {[['linux','Linux', Server], ['macos','macOS', Monitor], ['windows','Windows', Cpu]].map(([id, label, Icon]) => (
-              <OsPill key={id} label={label} icon={Icon} active={agentOs === id} onClick={() => setAgentOs(id)}/>
-            ))}
-          </div>
-
-          <Step n={1} title="Download & run the agent" icon={Download} active>
-            <CodeBlock code={AGENT_CMDS[agentOs]} label="Install"/>
-            {ingestKey && (
-              <div style={{ background: 'rgba(74,126,200,0.06)', border: `1px solid rgba(74,126,200,0.2)`,
-                borderRadius: 6, padding: '10px 14px', marginTop: 8 }}>
-                <div style={{ ...MONO, fontSize: 10, color: ACCENT_L, marginBottom: 4 }}>YOUR INGEST KEY</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <code style={{ ...MONO, fontSize: 12, color: 'var(--text-primary)', flex: 1, wordBreak: 'break-all' }}>{ingestKey}</code>
-                  <CopyBtn text={ingestKey} small/>
-                </div>
+            {endpoints.length > 12 && (
+              <div style={{ ...MONO, fontSize: 11, color: MUTED, padding: '5px 10px' }}>
+                +{endpoints.length - 12} more
               </div>
             )}
-          </Step>
-
-          {agentOs === 'linux' && (
-            <Step n={2} title="Register as a systemd service (persistent)" icon={Settings}>
-              <CodeBlock code={AGENT_SYSTEMD} label="systemd service"/>
-            </Step>
-          )}
-
-          <Step n={agentOs === 'linux' ? 3 : 2} title="Verify the agent is reporting" icon={Activity}>
-            <CodeBlock code={`# Check the agent is sending telemetry
-curl -s ${serverUrl}/api/health | python3 -m json.tool
-
-# In the AegisTrace dashboard: Endpoints → look for your hostname
-# The agent should appear within 30 seconds of first run`} label="Verify"/>
-          </Step>
-
-          {/* Environment variables reference */}
-          <details style={{ marginTop: 16 }}>
-            <summary style={{ ...UI, fontSize: 13, fontWeight: 500, color: ACCENT_L, cursor: 'pointer',
-              listStyle: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <ChevronRight size={13}/> Environment variable reference
-            </summary>
-            <div style={{ marginTop: 12, overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', ...MONO, fontSize: 11 }}>
-                <thead>
-                  <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
-                    {['Variable', 'Default', 'Description'].map(h => (
-                      <th key={h} style={{ padding: '6px 10px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', fontSize: 9 }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    ['AEGISTRACE_SERVER', window.location.origin, 'AegisTrace server URL'],
-                    ['AEGISTRACE_API_KEY', '—', 'Ingest API key (required)'],
-                    ['AEGISTRACE_AUTO_BLOCK', 'off', 'off | alert | block'],
-                    ['AEGISTRACE_HONEY_TOKENS', 'true', 'Plant canary credential files'],
-                    ['AEGISTRACE_INTERVAL', '30', 'Telemetry interval in seconds'],
-                  ].map(([k, v, d]) => (
-                    <tr key={k} style={{ borderBottom: `1px solid ${BORDER}` }}>
-                      <td style={{ padding: '7px 10px', color: ACCENT_L }}>{k}</td>
-                      <td style={{ padding: '7px 10px', color: 'var(--text-muted)' }}>{v}</td>
-                      <td style={{ padding: '7px 10px', color: 'var(--text-secondary)', ...UI, fontSize: 12 }}>{d}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </details>
-        </div>
-      </Reveal>
-
-      {/* ════════════════════════════════════════════════════════════════════
-          SECTION 2: FALCO LAYER 3
-      ════════════════════════════════════════════════════════════════════ */}
-      <Reveal delay={0.12}>
-        <div style={{ background: CARD_BG, border: `1px solid rgba(167,139,250,0.2)`, borderRadius: 10, padding: 24, marginBottom: 20 }}>
-          <SectionHead icon={Zap} title="Falco Layer 3 — eBPF / Kernel Visibility" badge="v6.2 NEW" color={PURPLE}>
-            Falco uses eBPF to intercept system calls at the kernel level — process spawns, file opens,
-            network connections, privilege escalation. AegisTrace picks up Falco's JSON output automatically
-            once installed. No agent restart needed.
-          </SectionHead>
-
-          {/* How it works diagram */}
-          <div style={{ background: '#030308', border: `1px solid rgba(167,139,250,0.15)`, borderRadius: 8,
-            padding: '16px 20px', marginBottom: 22, ...MONO, fontSize: 12 }}>
-            <div style={{ color: 'var(--text-muted)', marginBottom: 8, fontSize: 10, letterSpacing: '0.1em' }}>HOW IT WORKS</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', color: 'var(--text-secondary)' }}>
-              <span style={{ color: PURPLE }}>Kernel syscalls (eBPF)</span>
-              <ChevronRight size={12} color="var(--text-muted)"/>
-              <span>Falco rules engine</span>
-              <ChevronRight size={12} color="var(--text-muted)"/>
-              <span style={{ color: ACCENT_L }}>/var/log/falco.log (JSON)</span>
-              <ChevronRight size={12} color="var(--text-muted)"/>
-              <span>AegisTrace agent (tails file)</span>
-              <ChevronRight size={12} color="var(--text-muted)"/>
-              <span style={{ color: SUCCESS }}>ITDRAlert created</span>
-            </div>
           </div>
+        </motion.div>
+      )}
 
-          {/* Requirement: kernel version */}
-          <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
-            {[
-              { label: 'Linux kernel ≥ 4.14', ok: true, note: 'eBPF requires 4.14+; best on 5.8+' },
-              { label: 'Requires root / CAP_SYS_ADMIN', ok: true, note: 'eBPF programs need kernel privileges' },
-              { label: 'Not macOS / Windows', ok: false, note: 'eBPF is Linux-only' },
-            ].map(({ label, ok, note }) => (
-              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7,
-                padding: '7px 12px', background: ok ? 'rgba(16,185,129,0.06)' : 'rgba(239,68,68,0.06)',
-                border: `1px solid ${ok ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`, borderRadius: 5 }}>
-                {ok ? <CheckCircle size={12} color={SUCCESS}/> : <AlertTriangle size={12} color="#EF4444"/>}
-                <div>
-                  <div style={{ ...UI, fontSize: 12, fontWeight: 500, color: ok ? SUCCESS : '#EF4444' }}>{label}</div>
-                  <div style={{ ...UI, fontSize: 10, color: 'var(--text-muted)' }}>{note}</div>
-                </div>
+      {/* ── Section 1: Endpoint Agent ── */}
+      <Section icon={Monitor} title="Endpoint Agent Installation" delay={0.08}>
+        <p style={{ ...UI, fontSize: '0.82rem', color: MUTED, marginTop: 0, marginBottom: 16, lineHeight: 1.6 }}>
+          The AegisTrace agent collects process telemetry, network connections, login events,
+          and file integrity data. It streams to this server every 30 seconds.
+        </p>
+
+        <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
+          {[['linux','Linux'], ['mac','macOS'], ['windows','Windows']].map(([id, label]) => (
+            <OsPill key={id} label={label} active={agentOs === id} onClick={() => setAgentOs(id)} />
+          ))}
+        </div>
+
+        <Step n={1} title="Generate an Ingest API Key">
+          <p style={{ ...UI, fontSize: '0.8rem', color: MUTED, marginBottom: 10, lineHeight: 1.5 }}>
+            Each endpoint needs a unique ingest key. Generate one from Settings → API Keys,
+            or via the API:
+          </p>
+          <CodeBlock code={INGEST_KEY_CMD} />
+        </Step>
+
+        <Step n={2} title="Install the Agent">
+          <CodeBlock code={AGENT_CMDS[agentOs]} label={`${agentOs} installation`} />
+        </Step>
+
+        <Step n={3} title="Verify the Connection">
+          <CodeBlock code={VERIFY_CMD} />
+          <p style={{ ...UI, fontSize: '0.78rem', color: MUTED, marginTop: 10 }}>
+            The endpoint should appear in the Endpoints dashboard within 60 seconds.
+          </p>
+        </Step>
+      </Section>
+
+      {/* ── Section 2: Server Deployment ── */}
+      <Section icon={Server} title="Server Deployment" color={AMBER} delay={0.12}>
+
+        <Step n={1} title="systemd Service (Recommended for VPS)">
+          <p style={{ ...UI, fontSize: '0.8rem', color: MUTED, marginBottom: 10 }}>
+            Manages the backend process, auto-restarts on failure, survives reboots.
+          </p>
+          <CodeBlock code={SYSTEMD_CMD} label="systemd setup" />
+        </Step>
+
+        <Step n={2} title="Nginx Reverse Proxy">
+          <p style={{ ...UI, fontSize: '0.8rem', color: MUTED, marginBottom: 10 }}>
+            Serves the React frontend as static files and proxies API calls to the backend.
+          </p>
+          <CodeBlock code={NGINX_CMD} label="nginx config" />
+        </Step>
+
+        <Step n={3} title="Docker Compose (Alternative)">
+          <CodeBlock code={DOCKER_CMD} label="docker deployment" />
+        </Step>
+      </Section>
+
+      {/* ── Section 3: Environment Variables ── */}
+      <Section icon={Key} title="Required Environment Variables" color={GREEN} delay={0.16}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 }}>
+          {[
+            { key: 'DATABASE_URL',     example: 'postgresql://user:pass@localhost/aegistrace_db', required: true,  note: 'PostgreSQL connection string' },
+            { key: 'SECRET_KEY',       example: 'openssl rand -hex 32',                           required: true,  note: 'JWT signing secret (32+ bytes)' },
+            { key: 'GROQ_API_KEY',     example: 'gsk_xxxxxxxxxxxx',                               required: true,  note: 'AI features — free at console.groq.com' },
+            { key: 'VT_API_KEY',       example: '<virustotal key>',                               required: false, note: 'VirusTotal IOC enrichment (optional)' },
+            { key: 'SHODAN_API_KEY',   example: '<shodan key>',                                   required: false, note: 'Shodan host intelligence (optional)' },
+            { key: 'ALLOWED_ORIGINS',  example: `https://your-domain.com`,                        required: false, note: 'CORS origins (defaults to *)' },
+          ].map(({ key, example, required, note }) => (
+            <div key={key} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)',
+              borderRadius: 8, padding: '12px 14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <code style={{ ...MONO, fontSize: 12, color: required ? BLUE_L : MUTED }}>{key}</code>
+                {required && (
+                  <span style={{ ...MONO, fontSize: 9, background: 'rgba(239,68,68,0.1)',
+                    color: RED, border: '1px solid rgba(239,68,68,0.2)', borderRadius: 3, padding: '1px 5px' }}>
+                    required
+                  </span>
+                )}
               </div>
-            ))}
-          </div>
-
-          {/* OS tabs */}
-          <div className="tab-row">
-            {[['ubuntu','Ubuntu / Debian', Server], ['rhel','RHEL / CentOS', Server], ['docker','Docker', Package]].map(([id, label, Icon]) => (
-              <OsPill key={id} label={label} icon={Icon} active={falcoOs === id} onClick={() => setFalcoOs(id)}/>
-            ))}
-          </div>
-
-          <Step n={1} title="Install Falco" icon={Download} active>
-            <CodeBlock code={FALCO_CMDS[falcoOs]} label={falcoOs === 'ubuntu' ? 'Ubuntu / Debian' : falcoOs === 'rhel' ? 'RHEL / CentOS' : 'Docker'}/>
-          </Step>
-
-          <Step n={2} title="Configure Falco for JSON output (required)" icon={Settings}>
-            <div style={{ ...UI, fontSize: 13, color: 'var(--text-muted)', marginBottom: 12, lineHeight: 1.6 }}>
-              AegisTrace reads <code style={MONO}>/var/log/falco.log</code> and expects JSON format.
-              Ensure these settings are in <code style={MONO}>/etc/falco/falco.yaml</code>:
+              <div style={{ ...UI, fontSize: '0.75rem', color: MUTED, marginBottom: 6 }}>{note}</div>
+              <code style={{ ...MONO, fontSize: 10, color: '#5A6A7E' }}>{example}</code>
             </div>
-            <CodeBlock code={FALCO_CONFIG} label="falco.yaml"/>
-          </Step>
-
-          <Step n={3} title="Verify integration" icon={Activity}>
-            <CodeBlock code={FALCO_VERIFY} label="Verification"/>
-          </Step>
-
-          {/* MITRE coverage */}
-          <details style={{ marginTop: 16 }}>
-            <summary style={{ ...UI, fontSize: 13, fontWeight: 500, color: PURPLE, cursor: 'pointer',
-              listStyle: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <ChevronRight size={13}/> Falco rule → MITRE ATT&CK mapping (22 rules)
-            </summary>
-            <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px,1fr))', gap: 6 }}>
-              {[
-                ['Write below binary dir',       'T1543', 'Create/Modify System Process'],
-                ['Read sensitive file',           'T1552.001', 'Credentials in Files'],
-                ['Terminal shell in container',   'T1059.004', 'Unix Shell'],
-                ['Ptrace attached to process',    'T1055.008', 'Ptrace System Calls'],
-                ['Fileless execution via memfd',  'T1620', 'Reflective Code Loading'],
-                ['Linux Kernel Module Injection', 'T1215', 'Kernel Modules'],
-                ['Outbound Connection to C2',     'T1041', 'C2 Exfiltration'],
-                ['Sudo Privilege Escalation',     'T1548.003', 'Sudo Caching'],
-                ['Container Drift Detected',      'T1610', 'Deploy Container'],
-                ['Mount Sensitive Paths',         'T1611', 'Escape to Host'],
-              ].map(([rule, id, name]) => (
-                <div key={rule} style={{ display: 'flex', gap: 8, padding: '7px 10px',
-                  background: 'rgba(167,139,250,0.04)', border: `1px solid rgba(167,139,250,0.12)`, borderRadius: 5 }}>
-                  <code style={{ ...MONO, fontSize: 10, color: PURPLE, flexShrink: 0, paddingTop: 1 }}>{id}</code>
-                  <div>
-                    <div style={{ ...UI, fontSize: 11, color: 'var(--text-secondary)', fontWeight: 500 }}>{rule}</div>
-                    <div style={{ ...UI, fontSize: 10, color: 'var(--text-muted)' }}>{name}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </details>
+          ))}
         </div>
-      </Reveal>
+      </Section>
 
-      {/* ── Quick reference card ──────────────────────────────────────────── */}
-      <Reveal delay={0.16}>
-        <div style={{ background: 'rgba(74,126,200,0.04)', border: `1px solid rgba(74,126,200,0.15)`,
-          borderRadius: 10, padding: 20 }}>
-          <div style={{ ...MONO, fontSize: 10, color: ACCENT_L, letterSpacing: '0.12em',
-            textTransform: 'uppercase', marginBottom: 14 }}>Quick Reference</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px,1fr))', gap: 12 }}>
-            {[
-              { icon: Activity,    label: 'Endpoints dashboard', path: '/app/endpoints', color: ACCENT },
-              { icon: Shield,      label: 'ITDR alerts (incl. Falco)', path: '/app/itdr', color: ACCENT },
-              { icon: GitBranch,   label: 'Identity Graph',       path: '/app/identity-graph', color: ACCENT_L },
-              { icon: Terminal,    label: 'Terminal Lab',          path: '/app/terminal-lab', color: ACCENT_L },
-            ].map(({ icon: Icon, label, path, color }) => (
-              <a key={path} href={path} style={{ display: 'flex', alignItems: 'center', gap: 10,
-                padding: '10px 14px', background: 'rgba(74,126,200,0.06)',
-                border: `1px solid ${BORDER}`, borderRadius: 6,
-                textDecoration: 'none', transition: 'border-color 140ms, background 140ms' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(74,126,200,0.3)'; e.currentTarget.style.background = 'rgba(74,126,200,0.1)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.background = 'rgba(74,126,200,0.06)'; }}
-              >
-                <Icon size={15} color={color}/>
-                <span style={{ ...UI, fontSize: 13, color: 'var(--text-secondary)' }}>{label}</span>
-                <ChevronRight size={12} color="var(--text-muted)" style={{ marginLeft: 'auto' }}/>
-              </a>
-            ))}
-          </div>
+      {/* ── Section 4: Health check ── */}
+      <Section icon={Activity} title="Health Check & Troubleshooting" color={BLUE_L} delay={0.2}>
+        <CodeBlock code={`# Check all services
+systemctl status aegistrace nginx postgresql
+
+# View backend logs
+journalctl -u aegistrace -n 50 --no-pager
+
+# Test the API
+curl -s ${origin}/api/health
+curl -s ${origin}/api/cases | python3 -m json.tool | head -20
+
+# Check PostgreSQL connection
+sudo -u postgres psql -c "\\l"
+sudo -u postgres psql aegistrace_db -c "SELECT COUNT(*) FROM \\"case\\";"`} />
+
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 }}>
+          {[
+            { icon: Zap,      label: 'Dashboard',       path: '/app/dashboard',    color: BLUE   },
+            { icon: Monitor,  label: 'Endpoints',        path: '/app/endpoints',    color: GREEN  },
+            { icon: Shield,   label: 'ITDR Alerts',      path: '/app/itdr',         color: AMBER  },
+            { icon: Terminal, label: 'Terminal Lab',      path: '/app/terminal-lab', color: BLUE_L },
+          ].map(({ icon: Icon, label, path, color }) => (
+            <a key={path} href={path} style={{ display: 'flex', alignItems: 'center', gap: 10,
+              padding: '10px 14px', background: 'rgba(255,255,255,0.02)',
+              border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8,
+              textDecoration: 'none', transition: 'border-color 150ms, background 150ms' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(74,126,200,0.25)'; e.currentTarget.style.background = 'rgba(74,126,200,0.05)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
+            >
+              <Icon size={14} color={color} />
+              <span style={{ ...UI, fontSize: '0.82rem', color: '#8090A8' }}>{label}</span>
+              <ChevronRight size={12} color={MUTED} style={{ marginLeft: 'auto' }} />
+            </a>
+          ))}
         </div>
-      </Reveal>
+      </Section>
+
     </div>
   );
 }
