@@ -188,4 +188,38 @@ def run_migrations(engine):
                 conn.commit()
             print("[migration] Added response_tier to case table")
 
+    # ── Fix FK constraints to use CASCADE (PostgreSQL only) ──────────────────
+    # SQLite has no FK enforcement so we only run this on PostgreSQL.
+    # Checks pg_constraint so it's idempotent — skips if CASCADE already set.
+    from sqlalchemy.engine import Engine
+    from sqlalchemy.dialects import postgresql
+    dialect = engine.dialect.name
+    if dialect == "postgresql":
+        cascade_fixes = [
+            # (table, constraint_name, col, ref_table)
+            ("defenserecommendation", "defenserecommendation_case_id_fkey", "case_id", "case", "CASCADE"),
+            ("caseknowledge",         "caseknowledge_case_id_fkey",         "case_id", "case", "CASCADE"),
+            ("aiusagelog",            "aiusagelog_case_id_fkey",            "case_id", "case", "SET NULL"),
+        ]
+        for table, constraint, col, ref, action in cascade_fixes:
+            if table not in existing_tables:
+                continue
+            with engine.connect() as conn:
+                row = conn.execute(text(
+                    "SELECT confdeltype FROM pg_constraint "
+                    "WHERE conname = :name AND contype = 'f'"
+                ), {"name": constraint}).fetchone()
+                if row is None:
+                    continue  # constraint doesn't exist yet (table may be brand new)
+                # confdeltype: 'a'=NO ACTION, 'c'=CASCADE, 'n'=SET NULL
+                wanted = 'c' if action == 'CASCADE' else 'n'
+                if row[0] != wanted:
+                    conn.execute(text(f'ALTER TABLE "{table}" DROP CONSTRAINT IF EXISTS "{constraint}"'))
+                    conn.execute(text(
+                        f'ALTER TABLE "{table}" ADD CONSTRAINT "{constraint}" '
+                        f'FOREIGN KEY ({col}) REFERENCES "{ref}"(id) ON DELETE {action}'
+                    ))
+                    conn.commit()
+                    print(f"[migration] Fixed {constraint} → ON DELETE {action}")
+
     print("[migration] All migrations complete.")

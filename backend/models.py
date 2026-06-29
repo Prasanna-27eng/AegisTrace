@@ -894,7 +894,7 @@ class MemoryDump(SQLModel, table=True):
 # ── Feature 1: D3FEND Defense Recommendations ────────────────────────────────
 class DefenseRecommendation(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    case_id: int = Field(foreign_key="case.id", index=True)
+    case_id: int = Field(foreign_key="case.id", index=True, sa_column_kwargs={"ondelete": "CASCADE"})
     technique_id: str = Field(default="")
     technique_name: str = Field(default="")
     d3fend_id: str = Field(default="")
@@ -909,7 +909,7 @@ class DefenseRecommendation(SQLModel, table=True):
 # ── Feature 3: Case Knowledge Base ───────────────────────────────────────────
 class CaseKnowledge(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    case_id: int = Field(foreign_key="case.id", index=True)
+    case_id: int = Field(foreign_key="case.id", index=True, sa_column_kwargs={"ondelete": "CASCADE"})
     title: str = Field(default="")
     threat_pattern: str = Field(default="", sa_column=Column(Text))
     identity_type: str = Field(default="user")  # user/service_account/api_key/machine/ai_agent
@@ -926,7 +926,7 @@ class CaseKnowledge(SQLModel, table=True):
 # ── Feature 5: AI Usage Cost Tracking ────────────────────────────────────────
 class AIUsageLog(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    case_id: Optional[int] = Field(default=None, foreign_key="case.id")
+    case_id: Optional[int] = Field(default=None, foreign_key="case.id", sa_column_kwargs={"ondelete": "SET NULL"})
     operation: str = Field(default="")  # triage/email_analysis/knowledge_extract/chat/defense_recommend
     model: str = Field(default="")  # e.g. "llama-3.3-70b-versatile"
     input_tokens: int = Field(default=0)
