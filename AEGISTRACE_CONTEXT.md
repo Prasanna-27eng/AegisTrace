@@ -1,5 +1,5 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v10.7 | **Last updated:** June 2026 (v10.7 = Frontend visual overhaul: MetallicPaint logo animation in loading screen, PillNav shared navigation across all public pages, InfiniteMenu 3D background on all public routes, dolly zoom removed from all hero scenes)
+**Version:** v11.0 | **Last updated:** June 2026 (v11.0 = PostgreSQL migration, 8 new ITDR features, AegisTrace × React Bits design system applied to all 7 public pages + app, systemd-managed VPS deployment, Dock redesign, loading screen first-visit only, Deploy/EDR/logo nav fixes)
 **Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files. **This is the single master doc for this project — all other planning/session/deploy docs have been folded into this file and removed.**
 
 ---
@@ -19,7 +19,7 @@ You are working on AegisTrace, a security product built by Prasanna. Here is exa
 - Fonts: **Plus Jakarta Sans** (display headings) + **IBM Plex Sans** (UI/body) + **IBM Plex Mono** (data/code). Clash Display + Cabinet Grotesk are GONE from all pages.
 - Design tokens in `frontend/src/styles/tokens.css` — ALWAYS import first. Never re-declare `:root` color vars in other files.
 - App accent: `#2563EB` (Microsoft blue) + `#7C3AED` (QRadar purple). Gold `#F59E0B` is brand-only for dark hero sections.
-- New micro-interaction components: `ApprovalQueue.jsx` (swipe cards, spring physics), `FocusRing.css` (blue glow `:focus-visible`), `Toast.jsx` (bottom-right slide-up, auto-dismiss progress bar), `PageTransition.jsx` (navy curtain on route change), `LoadingScreen.jsx` (MetallicPaint logo animation + letter-stagger + progress bar), `PillNav.jsx` (shared pill navigation for all public pages — sliding framer-motion layoutId pill), `InfiniteMenu.jsx` (3D rotating cylinder background for all public routes, pointer-events: none, opacity 0.065), `MetallicPaint.jsx` (canvas per-pixel metallic animation component — fbm noise + sweeping specular band, works with both transparent PNG and black-bg PNG logos)
+- New micro-interaction components: `ApprovalQueue.jsx` (swipe cards, spring physics), `FocusRing.css` (blue glow `:focus-visible`), `Toast.jsx` (bottom-right slide-up, auto-dismiss progress bar), `PageTransition.jsx` (navy curtain on route change), `LoadingScreen.jsx` (MetallicPaint logo animation + letter-stagger — **v11.0: localStorage flag, only shows on FIRST visit ever**), `CardNav.jsx` (frosted card nav with MODULES mega-menu 4-col grid, replaces PillNav on all public pages), `InfiniteMenu.jsx` (3D rotating cylinder background on all public routes), `MetallicPaint.jsx` (canvas per-pixel metallic animation), `LaserFlow.jsx` (animated laser beam background with dot grid 44px, pointer-reactive spotlight — used on Landing hero + Login left panel), `BorderGlow.jsx` (spinning conic-gradient border for cards, severity-mapped: critical=red, high=amber, normal=blue, info=green), `Dock.jsx` (macOS-style floating bottom dock — v11.0: neutral gray icons, reduced magnification 1.45x, no blue saturation on inactive items, active item gets white highlight), `MagicRings.jsx` (animated rings background for AppShell)
 - Sidebar: collapsible groups (click group header to expand/collapse), Lucide icons only (no emoji), active item = `#2563EB` left border + `rgba(37,99,235,0.1)` bg
 - All "Access Platform" / "Book a Demo" CTAs use `<Link to="/app/login">` — never `<a href="https://aegistrace-7qvn.onrender.com">` 
 - Positioning: "Accountability Infrastructure for the AI-agent era" (NOT "Trust Operating System" — that's retired)
@@ -27,7 +27,9 @@ You are working on AegisTrace, a security product built by Prasanna. Here is exa
 - Do NOT add `@tanstack/react-query`, `recharts`, `alembic`, or any new npm packages without explicit approval
 - All models go in `backend/models.py` — never create separate model files
 - No Alembic migrations — SQLModel's `create_all()` handles new tables automatically on startup
-- SQLite is the database — `func.date_trunc` does NOT work, use `strftime('%Y-%W', ...)` instead
+- **Database is now PostgreSQL** (migrated from SQLite in v11.0). Connection pool configured in `backend/database.py` (pool_size=10, max_overflow=20, pool_pre_ping=True, pool_recycle=1800). SQLite still works as local dev fallback. PostgreSQL DB: host=localhost, db=aegistrace_db, user=aegistrace. `func.date_trunc` works in PostgreSQL. Never use `strftime` — that was SQLite-only.
+- All `ALTER TABLE ... ADD COLUMN` in migration.py must use `IF NOT EXISTS` (PostgreSQL doesn't allow duplicates)
+- All `DATETIME` type in migration.py must be `TIMESTAMP` (PostgreSQL doesn't have DATETIME type)
 - After completing work, update this file: mark tasks done, add new discoveries
 
 **When Prasanna says "start the next task":**
@@ -72,7 +74,7 @@ AegisTrace is **free, open-source Accountability Infrastructure for the AI-agent
 **Built by:** Prasanna Kumar Surendran, Blue Team analyst, Dublin, Ireland  
 **Live at:** https://aegistrace.uk  
 **GitHub:** https://github.com/Prasanna-27eng/AegisTrace  
-**Stack:** React 18 · FastAPI · SQLite/SQLModel · Groq API · NVIDIA NIM · Docker · Hostinger KVM 2 VPS (Ubuntu)
+**Stack:** React 18 · FastAPI · **PostgreSQL**/SQLModel · Groq API · NVIDIA NIM · Docker · Hostinger KVM 2 VPS (Ubuntu 24.04, IP 2.24.131.243, domain aegistrace.uk)
 
 **Companion project:** `mcp-aegis` — MCP security gateway (`~/Documents/Claude/Projects/aegistrace-mcp-gateway/`)
 
@@ -177,6 +179,12 @@ backend/agents/
 | semantic | /api/semantic + /api/ingest/normalize | NVIDIA Phase 2+5: similar-case search, case embedding, alert normalization (v7.0) |
 | vision | /api/vision | NVIDIA Phase 8: screenshot analysis via Llama 3.2 Vision 11B — verdict, IOCs, MITRE, recommended actions (v8.0) |
 | rules | /api/rules | NVIDIA Phase 9: detection rule generation via Codestral 22B — YARA, Sigma, KQL, Splunk SPL (v8.0) |
+| defense (v11.0) | /api/defense | D3FEND countermeasure mapping: GET /mapping/{technique_id}, POST /recommend, GET /recommendations/{case_id}, PATCH /recommendations/{rec_id}/status |
+| response_tiers (v11.0) | /api/response-tiers | Approval tiers: GET /pending, POST /execute/{id}, POST /veto/{id} |
+| knowledge (v11.0) | /api/knowledge | Case knowledge: GET / (list), GET /relevant?case_id= (top 3 similar), auto-extracts on case close |
+| analytics (v11.0) | /api/analytics/sla | SLA metrics: MTTD/MTTR/MTTC in minutes, 30-day trend deltas |
+| analytics (v11.0) | /api/analytics/cost | Cost intelligence: total_cost_30d, cost_per_case, cost_per_alert, breakdown_by_operation |
+| reports (v11.0) | /api/reports/compliance-evidence | Compliance evidence export: SOC2/ISO27001/NIST CSF, JSON + PDF formats |
 
 ---
 
@@ -191,6 +199,13 @@ backend/agents/
 **v5.3 additions:** `DefenseEvent` — attacker_ip, attack_type, threat_source, endpoint_hit, request_count, user_agent, request_pattern (JSON), ai_threat_type, ai_confidence, ai_reasoning, ai_recommended_action, ai_model_used, status (detecting|pending_review|auto_handled|approved|dismissed), response_action, reviewed_by, review_notes, severity, detected_at, reviewed_at
 
 **v7.0 additions:** `CaseEmbedding` — case_id (FK), embedding (JSON Text, 1024-dim NV-EmbedQA vector), summary_text (Text), created_at, updated_at
+
+**v11.0 additions:**
+- `DefenseRecommendation` — id, case_id (FK), technique_id, technique_name, d3fend_id, countermeasure_name, description, tier (observe/recommend/auto-safe/auto-veto/human-required), blast_radius (low/medium/high), status (pending/approved/rejected/executed), created_at
+- `CaseKnowledge` — id, case_id (FK), title, threat_pattern, identity_type (user/service_account/api_key/machine), root_cause, resolution_steps (JSON Text), tags (JSON Text), times_referenced (int default 0), created_at
+- `AIUsageLog` — id, case_id (nullable FK), operation, model, input_tokens, output_tokens, cost_usd (float), created_at
+
+**v11.0 Case model new fields:** `response_tier` (default "recommend"), `closed_at` (TIMESTAMP), `first_event_at` (TIMESTAMP), `org_id` (int default 1), `playbook_state` (JSON Text)
 
 **v5.5 field updates:** `TerminalSession` — added `created_by_id` (FK user.id) for session ownership enforcement
 
@@ -360,7 +375,47 @@ Shareable via token, PDF downloadable, AI summary callout at top
 
 ## CHANGELOG
 
-> **Current version: v10.7** — Newest entries at the top. All listed items are ✅ complete unless marked [ ].
+> **Current version: v11.0** — Newest entries at the top. All listed items are ✅ complete unless marked [ ].
+
+---
+
+### v11.0 Completed (June 2026 VPS deployment session)
+
+**Infrastructure**
+- [x] Migrated database from SQLite → PostgreSQL (psycopg2-binary, pool_size=10, max_overflow=20, pool_pre_ping, pool_recycle=1800)
+- [x] systemd service `/etc/systemd/system/aegistrace.service` — EnvironmentFile, Restart=always, restarts on reboot
+- [x] Fixed nginx config: static file serving for React SPA + proxy only `/api/` and `/ws/` to backend port 8000
+- [x] Fixed migration.py: `DATETIME` → `TIMESTAMP`, `ADD COLUMN IF NOT EXISTS` throughout for idempotent PostgreSQL migrations
+- [x] Password reset via bcrypt Python script (user: prasanna80564@gmail.com)
+- [x] Node.js 20.x installed via nodesource, React app built for production
+
+**8 New ITDR Features**
+- [x] D3FEND Countermeasures — maps MITRE ATT&CK techniques to D3FEND mitigations, 5 response tiers (Observe/Recommend/Auto-Safe/Auto-Veto/Human-Required), `DefenseRecommendation` model
+- [x] Approval Tiers — human-in-the-loop gate for Auto-Veto/Human-Required tier actions, `/api/response-tiers/pending`, execute/veto endpoints
+- [x] Case Knowledge Base — auto-extracts threat patterns on case close, semantic search similar cases, `CaseKnowledge` model, `/api/knowledge/relevant?case_id=`
+- [x] SLA Intelligence — MTTD/MTTR/MTTC tracking in minutes, 30-day trend deltas, `/api/analytics/sla`
+- [x] Cost Intelligence — per-operation AI cost tracking, `AIUsageLog` model, `/api/analytics/cost` with breakdown_by_operation
+- [x] Prompt Shield hardening — `backend/core/prompt_shield.py` blocks injection attempts before all Groq calls
+- [x] YAML Connector Config — connectors configurable via YAML files, `backend/routers/connectors.py` updated
+- [x] Compliance Evidence — `/api/reports/compliance-evidence` exports SOC2/ISO27001/NIST CSF evidence packages
+
+**Frontend UX Fixes**
+- [x] DeploymentHub: complete rewrite, mount-based framer-motion animations (fixes black screen on dock Deploy click caused by useInView failing inside overflow:auto container)
+- [x] LoadingScreen: first-visit only via `localStorage` flag `at_visited=1` — no replay on route changes
+- [x] Dock (`frontend/src/components/Dock.jsx`): neutral gray professional palette, MAX_SCALE 1.75→1.45
+- [x] Logo click inside app (AppShell.jsx): `navigate('/')` → `navigate('/app/dashboard')`
+- [x] EDR tab in CaseDetail: removed `window.open()` to broken URL, now inline tab with navigate button to `/app/edr`
+- [x] Public pages: all "Enter Platform / Sign In" CTAs use `<a target="_blank">` to open app in new tab (Landing, Platform, Features, Mission, Tools, Portfolio)
+- [x] AI features root cause: `GROQ_API_KEY` must be set in VPS `/opt/aegistrace/backend/.env` for chat/analysis to work
+
+**VPS Deploy Commands (run when ready)**
+```bash
+cd /opt/aegistrace && git pull
+cd frontend && npm run build
+systemctl restart aegistrace
+# To enable AI features:
+echo 'GROQ_API_KEY=gsk_...' >> /opt/aegistrace/backend/.env && systemctl restart aegistrace
+```
 
 ---
 
