@@ -8,19 +8,19 @@ import {
 } from '../components/icons';
 
 const T = {
-  bg:        '#141210',
-  surface:   '#1C1916',
-  card:      '#222018',
-  cardHover: '#2A271F',
+  bg:        '#F5F0E8',
+  surface:   '#EDE7DC',
+  card:      '#E8E0D4',
+  cardHover: '#DDD4C4',
   accent:    '#CC785C',
   pubBg:     '#FAF7F2',
   pubAlt:    '#F2EDE5',
   pubText:   '#1A1612',
   pubMuted:  '#6B6258',
-  darkText:  '#F0EBE3',
-  darkMuted: 'rgba(240,235,227,0.62)',
-  border:    'rgba(240,235,227,0.08)',
-  borderMed: 'rgba(240,235,227,0.12)',
+  darkText:  '#1A1612',
+  darkMuted: '#6B6258',
+  border:    'rgba(26,22,18,0.09)',
+  borderMed: 'rgba(26,22,18,0.14)',
   pubBorder: 'rgba(26,22,18,0.09)',
   fontD:     "'DM Serif Display', Georgia, serif",
   fontUI:    "'DM Sans', system-ui, sans-serif",
@@ -135,7 +135,7 @@ export default function Features() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: 'clamp(100px,14vw,160px) clamp(20px,5vw,80px) clamp(80px,10vw,120px)',
         }}>
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.025, pointerEvents: 'none', zIndex: 1 }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.04, pointerEvents: 'none', zIndex: 1 }} />
         <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 65% 55% at 50% 45%, rgba(204,120,92,0.1) 0%, transparent 65%)' }} />
         <motion.div style={{
           position: 'absolute', inset: -40, zIndex: 0,
@@ -180,7 +180,7 @@ export default function Features() {
 
       {/* INTEGRATIONS (dark) */}
       <section style={{ background: T.bg, padding: 'clamp(80px,10vw,120px) clamp(20px,5vw,80px)', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.025, pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.04, pointerEvents: 'none' }} />
         <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative', zIndex: 1, textAlign: 'center' }}>
           <Reveal><p style={{ fontFamily: T.fontUI, fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: T.accent, marginBottom: 16 }}>Integrations</p></Reveal>
           <Reveal delay={0.08}>

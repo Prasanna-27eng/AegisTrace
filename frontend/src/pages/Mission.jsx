@@ -5,18 +5,18 @@ import { ArrowRight, Shield, Brain, Eye } from '../components/icons';
 
 /* ─── Tokens ──────────────────────────────────────────────────────────────── */
 const T = {
-  bg:        '#141210',
-  surface:   '#1C1916',
-  card:      '#222018',
+  bg:        '#F5F0E8',
+  surface:   '#EDE7DC',
+  card:      '#E8E0D4',
   accent:    '#CC785C',
   pubBg:     '#FAF7F2',
   pubAlt:    '#F2EDE5',
   pubText:   '#1A1612',
   pubMuted:  '#6B6258',
-  darkText:  '#F0EBE3',
-  darkMuted: 'rgba(240,235,227,0.62)',
-  border:    'rgba(240,235,227,0.08)',
-  borderMed: 'rgba(240,235,227,0.12)',
+  darkText:  '#1A1612',
+  darkMuted: '#6B6258',
+  border:    'rgba(26,22,18,0.09)',
+  borderMed: 'rgba(26,22,18,0.14)',
   pubBorder: 'rgba(26,22,18,0.09)',
   fontD:     "'DM Serif Display', Georgia, serif",
   fontUI:    "'DM Sans', system-ui, sans-serif",
@@ -121,7 +121,7 @@ export default function Mission() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: 'clamp(100px,14vw,160px) clamp(20px,5vw,80px) clamp(80px,10vw,120px)',
         }}>
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.025, pointerEvents: 'none', zIndex: 1 }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.04, pointerEvents: 'none', zIndex: 1 }} />
         <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 65% 55% at 50% 45%, rgba(204,120,92,0.1) 0%, transparent 65%)' }} />
         <motion.div style={{
           position: 'absolute', inset: -40, zIndex: 0,
@@ -188,7 +188,7 @@ export default function Mission() {
 
       {/* BUILDER PROFILE (dark) */}
       <section style={{ background: T.bg, padding: 'clamp(80px,10vw,120px) clamp(20px,5vw,80px)', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.025, pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.04, pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 50% 60% at 20% 50%, rgba(204,120,92,0.07) 0%, transparent 60%)' }} />
         <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 64, alignItems: 'center' }}>
@@ -236,7 +236,7 @@ export default function Mission() {
 
       {/* CTA */}
       <section style={{ background: T.bg, padding: 'clamp(80px,10vw,100px) clamp(20px,5vw,80px)', position: 'relative', overflow: 'hidden', textAlign: 'center' }}>
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.025, pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.04, pointerEvents: 'none' }} />
         <div style={{ maxWidth: 600, margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <Reveal>
             <h2 style={{ fontFamily: T.fontD, fontStyle: 'italic', fontSize: 'clamp(1.8rem, 4vw, 3rem)', color: T.darkText, fontWeight: 400, margin: '0 0 20px', lineHeight: 1.2 }}>

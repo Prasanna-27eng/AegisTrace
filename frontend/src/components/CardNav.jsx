@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Grid3X3, X } from './icons';
@@ -18,13 +18,25 @@ const MODULES_GRID = [
   { group: 'Enterprise', items: ['SCIM Sync', 'RBAC + Orgs', 'Audit Log', 'Compliance Reports'] },
 ];
 
-const BLUE = '#4A7EC8';
-const INK  = '#BDD4E8';
-const E    = [0.23, 1, 0.32, 1];
+const CORAL  = '#CC785C';
+const INK    = '#1A1612';
+const MUTED  = '#6B6258';
+const BG     = 'rgba(245,240,232,0.92)';
+const E      = [0.23, 1, 0.32, 1];
+const SERIF  = "'DM Serif Display', Georgia, serif";
+const MONO   = "'IBM Plex Mono', monospace";
+const SANS   = "'DM Sans', system-ui, sans-serif";
 
 export default function CardNav() {
   const { pathname } = useLocation();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen]       = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 12);
+    window.addEventListener('scroll', fn, { passive: true });
+    return () => window.removeEventListener('scroll', fn);
+  }, []);
 
   return (
     <>
@@ -42,14 +54,16 @@ export default function CardNav() {
         <div style={{
           maxWidth: 1180, margin: '0 auto',
           display: 'flex', alignItems: 'center', gap: 12,
-          background: 'rgba(12,12,22,0.92)',
-          backdropFilter: 'blur(20px) saturate(160%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(160%)',
-          border: '1px solid rgba(74,126,200,0.16)',
-          borderRadius: 16,
+          background: scrolled ? BG : 'rgba(245,240,232,0.7)',
+          backdropFilter: 'blur(24px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(160%)',
+          border: `1px solid rgba(26,22,18,${scrolled ? '0.1' : '0.07'})`,
+          borderRadius: 14,
           padding: '0 14px 0 12px',
           height: 52,
           pointerEvents: 'all',
+          boxShadow: scrolled ? '0 4px 24px rgba(26,22,18,0.08)' : 'none',
+          transition: 'background 300ms, border-color 300ms, box-shadow 300ms',
         }}>
           {/* Logo */}
           <Link
@@ -61,12 +75,12 @@ export default function CardNav() {
               alt="AegisTrace"
               style={{
                 width: 26, height: 26, objectFit: 'contain',
-                filter: 'drop-shadow(0 0 6px rgba(74,126,200,0.55))',
+                filter: 'drop-shadow(0 0 4px rgba(204,120,92,0.35))',
               }}
             />
             <span style={{
-              fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: 12, fontWeight: 600, color: INK, letterSpacing: '0.22em',
+              fontFamily: MONO,
+              fontSize: 11.5, fontWeight: 600, color: INK, letterSpacing: '0.22em',
             }}>
               AEGISTRACE
             </span>
@@ -80,8 +94,8 @@ export default function CardNav() {
             aria-label="Main navigation"
             style={{
               display: 'flex', alignItems: 'center', gap: 2,
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(74,126,200,0.08)',
+              background: 'rgba(26,22,18,0.04)',
+              border: '1px solid rgba(26,22,18,0.06)',
               borderRadius: 100,
               padding: 3,
             }}
@@ -95,8 +109,8 @@ export default function CardNav() {
                       layoutId="cardnav-pill"
                       style={{
                         position: 'absolute', inset: 0,
-                        background: 'rgba(74,126,200,0.16)',
-                        border: '1px solid rgba(74,126,200,0.28)',
+                        background: 'rgba(204,120,92,0.12)',
+                        border: '1px solid rgba(204,120,92,0.25)',
                         borderRadius: 100,
                       }}
                       transition={{ type: 'spring', stiffness: 420, damping: 32 }}
@@ -105,9 +119,9 @@ export default function CardNav() {
                   <span style={{
                     position: 'relative', zIndex: 1,
                     display: 'block',
-                    fontFamily: "'IBM Plex Sans', sans-serif",
-                    fontSize: 12.5, fontWeight: active ? 500 : 400,
-                    color: active ? INK : 'rgba(189,212,232,0.45)',
+                    fontFamily: SANS,
+                    fontSize: 13, fontWeight: active ? 500 : 400,
+                    color: active ? CORAL : MUTED,
                     padding: '5px 14px',
                     borderRadius: 100,
                     whiteSpace: 'nowrap',
@@ -130,18 +144,18 @@ export default function CardNav() {
               aria-label="Toggle modules menu"
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
-                background: open ? 'rgba(74,126,200,0.14)' : 'rgba(74,126,200,0.06)',
-                border: '1px solid rgba(74,126,200,0.2)',
+                background: open ? 'rgba(204,120,92,0.1)' : 'transparent',
+                border: `1px solid ${open ? 'rgba(204,120,92,0.25)' : 'rgba(26,22,18,0.12)'}`,
                 borderRadius: 8,
-                color: open ? INK : 'rgba(189,212,232,0.65)',
-                fontFamily: "'IBM Plex Mono', monospace",
+                color: open ? CORAL : MUTED,
+                fontFamily: MONO,
                 fontSize: 10.5, letterSpacing: '0.12em',
                 padding: '6px 12px',
                 cursor: 'pointer',
-                transition: 'background 140ms, color 140ms',
+                transition: 'background 140ms, color 140ms, border-color 140ms',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(74,126,200,0.14)'; e.currentTarget.style.color = INK; }}
-              onMouseLeave={e => { if (!open) { e.currentTarget.style.background = 'rgba(74,126,200,0.06)'; e.currentTarget.style.color = 'rgba(189,212,232,0.65)'; } }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(204,120,92,0.08)'; e.currentTarget.style.color = CORAL; e.currentTarget.style.borderColor = 'rgba(204,120,92,0.2)'; }}
+              onMouseLeave={e => { if (!open) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = MUTED; e.currentTarget.style.borderColor = 'rgba(26,22,18,0.12)'; } }}
             >
               {open ? <X size={12} /> : <Grid3X3 size={12} />}
               MODULES
@@ -149,22 +163,24 @@ export default function CardNav() {
 
             <Link
               to="/app/login"
+              target="_blank"
+              rel="noopener noreferrer"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
-                background: BLUE, color: '#EAF3FF',
-                fontFamily: "'IBM Plex Sans', sans-serif",
-                fontSize: 12, fontWeight: 600,
+                background: INK, color: '#F5F0E8',
+                fontFamily: SANS,
+                fontSize: 13, fontWeight: 600,
                 padding: '7px 16px', borderRadius: 8,
                 textDecoration: 'none', letterSpacing: '0.01em',
                 transition: 'background 140ms, transform 100ms, box-shadow 140ms',
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.background = '#3A6AB8';
+                e.currentTarget.style.background = CORAL;
                 e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 4px 20px rgba(74,126,200,0.3)';
+                e.currentTarget.style.boxShadow = '0 4px 16px rgba(204,120,92,0.3)';
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.background = BLUE;
+                e.currentTarget.style.background = INK;
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = 'none';
               }}
@@ -184,21 +200,22 @@ export default function CardNav() {
               transition={{ duration: 0.22, ease: E }}
               style={{
                 maxWidth: 1180, margin: '6px auto 0',
-                background: 'rgba(10,10,22,0.97)',
+                background: 'rgba(245,240,232,0.97)',
                 backdropFilter: 'blur(28px)',
                 WebkitBackdropFilter: 'blur(28px)',
-                border: '1px solid rgba(74,126,200,0.14)',
+                border: '1px solid rgba(26,22,18,0.1)',
                 borderRadius: 14,
                 padding: '24px 32px',
                 display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 28,
                 pointerEvents: 'all',
+                boxShadow: '0 16px 48px rgba(26,22,18,0.12)',
               }}
             >
               {MODULES_GRID.map(({ group, items }) => (
                 <div key={group}>
                   <div style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: 9.5, color: BLUE, letterSpacing: '0.2em',
+                    fontFamily: MONO,
+                    fontSize: 9.5, color: CORAL, letterSpacing: '0.2em',
                     textTransform: 'uppercase', marginBottom: 14,
                   }}>
                     {group}
@@ -207,18 +224,20 @@ export default function CardNav() {
                     <Link
                       key={item}
                       to="/app/login"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       onClick={() => setOpen(false)}
                       style={{
                         display: 'block',
-                        fontFamily: "'IBM Plex Sans', sans-serif",
-                        fontSize: 13, color: 'rgba(189,212,232,0.5)',
+                        fontFamily: SANS,
+                        fontSize: 13, color: MUTED,
                         textDecoration: 'none',
                         padding: '7px 0',
-                        borderBottom: '1px solid rgba(74,126,200,0.05)',
+                        borderBottom: '1px solid rgba(26,22,18,0.06)',
                         transition: 'color 120ms',
                       }}
                       onMouseEnter={e => (e.currentTarget.style.color = INK)}
-                      onMouseLeave={e => (e.currentTarget.style.color = 'rgba(189,212,232,0.5)')}
+                      onMouseLeave={e => (e.currentTarget.style.color = MUTED)}
                     >
                       {item}
                     </Link>

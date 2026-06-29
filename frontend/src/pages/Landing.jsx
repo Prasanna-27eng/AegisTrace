@@ -9,19 +9,19 @@ import {
 
 /* ─── Design tokens ──────────────────────────────────────────────────────── */
 const T = {
-  bg:         '#141210',
-  surface:    '#1C1916',
-  card:       '#222018',
-  cardHover:  '#2A271F',
+  bg:         '#F5F0E8',
+  surface:    '#EDE7DC',
+  card:       '#E8E0D4',
+  cardHover:  '#DDD4C4',
   accent:     '#CC785C',
   accentL:    '#E8A080',
   pubBg:      '#FAF7F2',
   pubAlt:     '#F2EDE5',
   pubText:    '#1A1612',
   pubMuted:   '#6B6258',
-  darkText:   '#F0EBE3',
-  darkMuted:  'rgba(240,235,227,0.62)',
-  border:     'rgba(240,235,227,0.08)',
+  darkText:   '#1A1612',
+  darkMuted:  '#6B6258',
+  border:     'rgba(26,22,18,0.09)',
   borderMed:  'rgba(240,235,227,0.12)',
   pubBorder:  'rgba(26,22,18,0.09)',
   fontD:      "'DM Serif Display', Georgia, serif",
@@ -100,7 +100,7 @@ function BentoCard({ icon: Icon, title, desc, delay = 0 }) {
           cursor: 'default', height: '100%',
           boxShadow: hovered
             ? '0 8px 32px rgba(204,120,92,0.18), 0 0 0 1px rgba(204,120,92,0.2)'
-            : '0 2px 8px rgba(0,0,0,0.35)',
+            : '0 2px 8px rgba(26,22,18,0.07)',
           transition: 'background 0.22s, border-color 0.22s, box-shadow 0.22s',
         }}
       >
@@ -202,17 +202,17 @@ export default function Landing() {
         }}
       >
         {/* Grain */}
-        <div style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none', backgroundImage: GRAIN, opacity: 0.025 }} />
+        <div style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none', backgroundImage: GRAIN, opacity: 0.04 }} />
         {/* Radial glow */}
         <div style={{
           position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
-          background: 'radial-gradient(ellipse 70% 60% at 50% 40%, rgba(204,120,92,0.12) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse 70% 60% at 50% 40%, rgba(204,120,92,0.08) 0%, transparent 70%)',
         }} />
 
         {/* Parallax dot grid layer 1 */}
         <motion.div style={{
           position: 'absolute', inset: -40, zIndex: 0,
-          backgroundImage: 'radial-gradient(circle, rgba(204,120,92,0.18) 1px, transparent 1px)',
+          backgroundImage: 'radial-gradient(circle, rgba(26,22,18,0.07) 1px, transparent 1px)',
           backgroundSize: '32px 32px',
           x: isTouch ? 0 : sdotX,
           y: isTouch ? 0 : sdotY,
@@ -395,7 +395,7 @@ export default function Landing() {
         padding: 'clamp(80px,10vw,120px) clamp(20px,5vw,80px)',
         position: 'relative',
       }}>
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.025, pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.04, pointerEvents: 'none' }} />
         <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <Reveal>
             <p style={{ fontFamily: T.fontUI, fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: T.accent, marginBottom: 16 }}>Platform Capabilities</p>
@@ -486,7 +486,7 @@ export default function Landing() {
         padding: 'clamp(60px,8vw,96px) clamp(20px,5vw,80px)',
         position: 'relative', overflow: 'hidden',
       }}>
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.025, pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.04, pointerEvents: 'none' }} />
         <div style={{
           maxWidth: 1100, margin: '0 auto', position: 'relative', zIndex: 1,
           display: 'grid',
@@ -528,7 +528,7 @@ export default function Landing() {
           position: 'absolute', inset: 0, pointerEvents: 'none',
           background: 'radial-gradient(ellipse 60% 50% at 50% 60%, rgba(204,120,92,0.1) 0%, transparent 70%)',
         }} />
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.025, pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, opacity: 0.04, pointerEvents: 'none' }} />
         <div style={{ maxWidth: 680, margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <Reveal>
             <h2 style={{

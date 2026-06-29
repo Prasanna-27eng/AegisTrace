@@ -80,15 +80,18 @@
   --shadow-warm: 0 4px 24px rgba(204,120,92,0.22);
   --shadow-glow: 0 0 40px rgba(204,120,92,0.18), 0 0 80px rgba(204,120,92,0.08);
 
-  /* ── Public Page (light warm sections) ────────────────────────── */
-  --pub-bg:           #FAF7F2;
-  --pub-bg-alt:       #F2EDE5;
+  /* ── Public Page — Anthropic warm cream ──────────────────────── */
+  --pub-bg:           #F5F0E8;   /* Anthropic page cream */
+  --pub-bg-alt:       #EDE7DC;   /* slightly tinted sections */
   --pub-surface:      #FFFFFF;
-  --pub-text:         #1A1612;
-  --pub-text-muted:   #6B6258;
-  --pub-text-faint:   rgba(26,22,18,0.38);
+  --pub-card:         #E8E0D4;   /* warm beige card */
+  --pub-card-hover:   #DDD4C4;   /* beige card hover */
+  --pub-text:         #1A1612;   /* near-black text */
+  --pub-text-muted:   #6B6258;   /* warm mid gray */
+  --pub-text-faint:   rgba(26,22,18,0.35);
   --pub-border:       rgba(26,22,18,0.09);
   --pub-border-strong:rgba(26,22,18,0.16);
+  /* App/dark areas keep separate tokens */
   --pub-dark-bg:      #141210;
   --pub-dark-surface: #1C1916;
   --pub-dark-text:    #F0EBE3;
