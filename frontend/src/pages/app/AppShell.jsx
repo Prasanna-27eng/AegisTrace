@@ -240,7 +240,7 @@ export default function AppShell() {
       }}>
 
         {/* Logo */}
-        <div onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', flexShrink: 0, textDecoration: 'none' }}>
+        <div onClick={() => navigate('/app/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', flexShrink: 0, textDecoration: 'none' }}>
           <img
             src="/assets/brand/aegistrace-icon-transparent.png"
             alt="AegisTrace"
