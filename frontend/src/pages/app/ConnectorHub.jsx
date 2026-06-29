@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plug, Check, X, RefreshCw, Upload, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
+import { Plug, Check, X, RefreshCw, Upload, ChevronDown, ChevronUp, AlertCircle } from '../../components/icons';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 

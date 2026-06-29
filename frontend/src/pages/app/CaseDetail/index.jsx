@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Globe, Share2, Download, Save, Loader2 } from 'lucide-react';
+import { ChevronLeft, Globe, Share2, Download, Save, Loader2 } from '../../../components/icons';
 import { SeverityBadge, StatusBadge } from '../../../components/SeverityBadge';
 import api from '../../../api/client';
 import useStore from '../../../store/useStore';

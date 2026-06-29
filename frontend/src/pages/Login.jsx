@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, ArrowLeft } from '../components/icons';
 import api from '../api/client';
 import useStore from '../store/useStore';
 import LaserFlow from '../components/LaserFlow';

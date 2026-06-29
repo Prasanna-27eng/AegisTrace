@@ -4,7 +4,7 @@ import {
   ArrowLeft, Download, Share2, Clock, User, Shield, Brain,
   AlertTriangle, Target, CheckCircle, BookOpen, Lightbulb,
   Search, Flag, ChevronRight, Lock, Globe
-} from 'lucide-react';
+} from '../components/icons';
 import Logo from '../components/Logo';
 import { SeverityBadge, StatusBadge } from '../components/SeverityBadge';
 import api from '../api/client';

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Eye, Upload, Loader2, AlertTriangle, CheckCircle, ShieldAlert, X, ExternalLink } from 'lucide-react';
+import { Eye, Upload, Loader2, AlertTriangle, CheckCircle, ShieldAlert, X, ExternalLink } from '../../../components/icons';
 import api from '../../../api/client';
 import useStore from '../../../store/useStore';
 

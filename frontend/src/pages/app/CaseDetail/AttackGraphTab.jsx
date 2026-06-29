@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { GitBranch, Loader2, Sparkles, Network, Clock, ArrowRight } from 'lucide-react';
+import { GitBranch, Loader2, Sparkles, Network, Clock, ArrowRight } from '../../../components/icons';
 import { SeverityBadge } from '../../../components/SeverityBadge';
 import api from '../../../api/client';
 import useStore from '../../../store/useStore';

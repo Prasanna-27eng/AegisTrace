@@ -3,7 +3,7 @@ import {
   Search, Shield, ShieldOff, Cpu, XCircle, Terminal,
   CheckCircle, AlertTriangle, Loader2, ChevronDown, ChevronRight,
   Activity, Lock, Unlock
-} from 'lucide-react';
+} from '../../../components/icons';
 import api from '../../../api/client';
 
 const PLATFORM_LABELS = {

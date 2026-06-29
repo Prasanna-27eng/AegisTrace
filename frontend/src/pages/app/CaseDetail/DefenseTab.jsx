@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Shield, Zap, CheckCircle, XCircle, Play, RefreshCw } from 'lucide-react';
+import { Shield, Zap, CheckCircle, XCircle, Play, RefreshCw } from '../../../components/icons';
 import api from '../../../api/client';
 
 const TIER_COLORS = {

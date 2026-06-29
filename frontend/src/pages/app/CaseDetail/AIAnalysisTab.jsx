@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Brain, Loader2, Check, ChevronDown, ChevronUp, AlertTriangle, Eye, Database, Zap } from 'lucide-react';
+import { Brain, Loader2, Check, ChevronDown, ChevronUp, AlertTriangle, Eye, Database, Zap } from '../../../components/icons';
 import api from '../../../api/client';
 import useStore from '../../../store/useStore';
 

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, AlertTriangle } from 'lucide-react';
+import { Send, Bot, User, AlertTriangle } from '../../../components/icons';
 import api from '../../../api/client';
 import useStore from '../../../store/useStore';
 

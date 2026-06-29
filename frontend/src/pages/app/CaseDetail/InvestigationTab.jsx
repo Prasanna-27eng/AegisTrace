@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Trash2, Check, X } from 'lucide-react';
+import { Plus, Trash2, Check, X } from '../../../components/icons';
 import api from '../../../api/client';
 import useStore from '../../../store/useStore';
 

@@ -4,7 +4,7 @@ import {
   Brain, AlertTriangle, Eye, EyeOff, CheckCircle, RefreshCw,
   ExternalLink, Shield, Clock, Cpu, Globe, ChevronDown, ChevronRight,
   FolderOpen, Filter, XCircle, AlertCircle
-} from 'lucide-react';
+} from '../../components/icons';
 import api from '../../api/client';
 
 /* ─── Constants ─────────────────────────────────────────────────────────── */

@@ -7,7 +7,7 @@ import {
   ArrowRight, Shield, Brain, Fingerprint,
   CheckCircle, Clock, Zap, Eye, Layers, ShieldCheck,
   User, ShieldOff, UserCheck, Share2,
-} from 'lucide-react';
+} from '../components/icons';
 import { Link } from 'react-router-dom';
 import {
   useSceneCamera, useSectionParallax,

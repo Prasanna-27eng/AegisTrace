@@ -5,7 +5,7 @@ import {
   ChevronDown, ChevronRight, Activity, CheckCircle,
   AlertTriangle, Circle, Download, Cpu, Package,
   Settings, RefreshCw, Key, Zap,
-} from 'lucide-react';
+} from '../../components/icons';
 import api from '../../api/client';
 
 const MONO = { fontFamily: "'IBM Plex Mono', monospace" };

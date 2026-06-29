@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Play, Loader2, AlertTriangle, Shield, Brain, Copy, Plus, History, X } from 'lucide-react';
+import { Upload, Play, Loader2, AlertTriangle, Shield, Brain, Copy, Plus, History, X } from '../../components/icons';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 import { useNavigate } from 'react-router-dom';

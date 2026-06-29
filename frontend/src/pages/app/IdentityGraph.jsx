@@ -5,7 +5,7 @@ import {
   Monitor, Bot, User, Link, Loader2, X, ChevronRight,
   Fingerprint, ShieldAlert, GitMerge, Search, CheckCircle,
   Activity, BarChart2
-} from 'lucide-react';
+} from '../../components/icons';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 

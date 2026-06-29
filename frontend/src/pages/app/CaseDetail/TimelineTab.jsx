@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, Clock, AlertCircle, CheckCircle, TrendingUp, Search, Wrench, Shield } from 'lucide-react';
+import { Plus, X, Clock, AlertCircle, CheckCircle, TrendingUp, Search, Wrench, Shield } from '../../../components/icons';
 import api from '../../../api/client';
 import useStore from '../../../store/useStore';
 

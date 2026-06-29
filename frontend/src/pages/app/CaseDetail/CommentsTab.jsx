@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageSquare, Plus, Pin, Trash2, Loader2, Edit, X, Check } from 'lucide-react';
+import { MessageSquare, Plus, Pin, Trash2, Loader2, Edit, X, Check } from '../../../components/icons';
 import api from '../../../api/client';
 import useStore from '../../../store/useStore';
 

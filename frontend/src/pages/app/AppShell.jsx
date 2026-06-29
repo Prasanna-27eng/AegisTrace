@@ -13,7 +13,7 @@ import {
   Plug, KeyRound, FlaskConical, Wrench, Download,
   Settings2, ScrollText, Lock, ClipboardList,
   Command,
-} from 'lucide-react';
+} from '../../components/icons';
 import CommandPalette from '../../components/CommandPalette';
 import Dock from '../../components/Dock';
 import MagicRings from '../../components/MagicRings';

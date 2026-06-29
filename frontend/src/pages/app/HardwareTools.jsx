@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Cpu, Wifi, Radio, HardDrive, Network, Tag, Monitor, Bot,
          Play, Loader2, Copy, CheckCircle, ExternalLink, AlertTriangle,
-         Shield, ChevronRight, Search, X } from 'lucide-react';
+         Shield, ChevronRight, Search, X } from '../../components/icons';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 import './hardware-tools.css';

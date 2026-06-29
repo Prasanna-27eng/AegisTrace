@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GitBranch, Plus, Loader2, X, Shield, User, Bot, Zap, Check, AlertTriangle, Lock, Key, Activity } from 'lucide-react';
+import { GitBranch, Plus, Loader2, X, Shield, User, Bot, Zap, Check, AlertTriangle, Lock, Key, Activity } from '../../../components/icons';
 import api from '../../../api/client';
 import useStore from '../../../store/useStore';
 

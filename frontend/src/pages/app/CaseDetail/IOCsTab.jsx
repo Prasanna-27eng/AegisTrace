@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Copy, Shield, X, RefreshCw } from 'lucide-react';
+import { Plus, Copy, Shield, X, RefreshCw } from '../../../components/icons';
 import api from '../../../api/client';
 import useStore from '../../../store/useStore';
 

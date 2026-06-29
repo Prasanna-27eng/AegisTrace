@@ -4,7 +4,7 @@ import { motion, useInView } from 'framer-motion';
 import {
   Plus, ExternalLink, FolderOpen, Zap, RefreshCw,
   ChevronUp, ChevronDown, ChevronsUpDown
-} from 'lucide-react';
+} from '../../components/icons';
 import { SeverityBadge, StatusBadge } from '../../components/SeverityBadge';
 import api from '../../api/client';
 import useStore from '../../store/useStore';

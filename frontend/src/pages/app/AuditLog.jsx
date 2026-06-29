@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Activity, RefreshCw, Pause, Play, Filter, Download, Circle } from 'lucide-react';
+import { Activity, RefreshCw, Pause, Play, Filter, Download, Circle } from '../../components/icons';
 import api from '../../api/client';
 
 /* ── Category config ─────────────────────────────────────────────────────── */

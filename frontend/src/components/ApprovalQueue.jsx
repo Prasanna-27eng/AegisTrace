@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
-import { CheckCircle, XCircle, Clock, Shield, AlertTriangle, ChevronRight, Play, Ban, RefreshCw } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Shield, AlertTriangle, ChevronRight, Play, Ban, RefreshCw } from './icons';
 
 // ── Severity dot color ────────────────────────────────────────────────────────
 const SEV_COLOR = {

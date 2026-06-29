@@ -5,7 +5,7 @@ import {
   CheckCircle, XCircle, Clock, RefreshCw, Zap, Eye,
   TrendingUp, Bot, Fingerprint, Server, Wifi, WifiOff,
   ChevronRight, Circle
-} from 'lucide-react';
+} from '../../components/icons';
 import api from '../../api/client';
 
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Grid3X3, X } from 'lucide-react';
+import { ArrowRight, Grid3X3, X } from './icons';
 
 const NAV_ITEMS = [
   { label: 'Platform',  to: '/platform'  },

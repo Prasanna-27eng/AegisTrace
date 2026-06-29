@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, AlertTriangle, XCircle, Info, X } from 'lucide-react';
+import { CheckCircle, AlertTriangle, XCircle, Info, X } from './icons';
 import useStore from '../store/useStore';
 
 const CONFIG = {

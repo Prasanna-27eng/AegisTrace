@@ -7,7 +7,7 @@ import {
   Radar, ShieldAlert, ScanEye, BookOpen,
   Plug, KeyRound, FlaskConical, Wrench, Download,
   Settings2, ScrollText, Lock, ClipboardList,
-} from 'lucide-react';
+} from './icons';
 import useStore from '../store/useStore';
 
 /* ─── Icon map — Lucide icons only, no emoji ────────────────────────────── */

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Shield, ChevronLeft, Loader2, AlertTriangle } from 'lucide-react';
+import { Shield, ChevronLeft, Loader2, AlertTriangle } from '../../components/icons';
 import api from '../../api/client';
 import Logo from '../../components/Logo';
 

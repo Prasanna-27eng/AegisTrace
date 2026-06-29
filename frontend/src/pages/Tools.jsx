@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { ArrowRight, ArrowUpRight, Copy, Check } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Copy, Check } from '../components/icons';
 import { Link } from 'react-router-dom';
 import { ScrollProgressBar } from '../components/SceneController';
 import CardNav from '../components/CardNav';

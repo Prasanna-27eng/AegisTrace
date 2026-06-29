@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ExternalLink, Copy, Search } from 'lucide-react';
+import { ExternalLink, Copy, Search } from '../../components/icons';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 

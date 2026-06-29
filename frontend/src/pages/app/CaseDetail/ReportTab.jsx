@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, FileText, File, Shield, Loader2, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
+import { Download, FileText, File, Shield, Loader2, CheckCircle, AlertCircle, XCircle } from '../../../components/icons';
 import api from '../../../api/client';
 import useStore from '../../../store/useStore';
 

@@ -5,7 +5,7 @@ import {
   Monitor, FileSearch, Crosshair, ScrollText, Globe, Settings,
   Plus, ArrowRight, BookOpen, Terminal, X, Fingerprint, Network, Rss, Cpu,
   BarChart2, ShieldCheck, ShieldAlert, Bot, Keyboard, LogOut
-} from 'lucide-react';
+} from './icons';
 
 const NAV_ITEMS = [
   { label: 'Dashboard',         path: '/app/dashboard',      Icon: LayoutDashboard, group: 'Navigate', hint: 'G D' },

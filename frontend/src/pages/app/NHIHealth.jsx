@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldAlert, RefreshCw, ChevronDown, ChevronUp, ExternalLink, Plus } from 'lucide-react';
+import { ShieldAlert, RefreshCw, ChevronDown, ChevronUp, ExternalLink, Plus } from '../../components/icons';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 

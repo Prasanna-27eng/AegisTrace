@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   RefreshCw, AlertTriangle, Shield, Globe, Bug, Server,
   ExternalLink, Loader2, Clock, ChevronDown, ChevronRight
-} from 'lucide-react';
+} from '../../components/icons';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from './icons';
 
 const NAV_ITEMS = [
   { label: 'Platform',  to: '/platform'  },

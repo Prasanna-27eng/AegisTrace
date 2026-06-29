@@ -4,7 +4,7 @@ import {
   Edit, X, Shield, Key, CheckCircle, XCircle, Globe,
   AlertTriangle, RefreshCw, Loader2, Mail, Plug, Copy,
   ExternalLink, Terminal, ChevronDown, ChevronRight, Lock, Smartphone
-} from 'lucide-react';
+} from '../../components/icons';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 

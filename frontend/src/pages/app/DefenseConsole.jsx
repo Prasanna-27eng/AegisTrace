@@ -4,7 +4,7 @@ import {
   CheckCircle, XCircle, Clock, RefreshCw, Zap, Terminal,
   Activity, ChevronDown, ChevronRight, Target, Cpu, Radio,
   Lock, Unlock, Ban, BookOpen, SlidersHorizontal, History
-} from 'lucide-react';
+} from '../../components/icons';
 import api from '../../api/client';
 
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };

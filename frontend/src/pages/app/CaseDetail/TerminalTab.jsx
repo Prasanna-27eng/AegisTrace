@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Plus, Copy, Loader2 } from 'lucide-react';
+import { Play, Plus, Copy, Loader2 } from '../../../components/icons';
 import api from '../../../api/client';
 import useStore from '../../../store/useStore';
 

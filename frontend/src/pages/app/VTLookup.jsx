@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Shield, Trash2, Copy, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Shield, Trash2, Copy, Loader2, ChevronDown, ChevronUp } from '../../components/icons';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 import { VerdictBadge } from '../../components/SeverityBadge';

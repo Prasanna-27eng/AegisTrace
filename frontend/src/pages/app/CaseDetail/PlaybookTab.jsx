@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { CheckSquare, Square } from 'lucide-react';
+import { CheckSquare, Square } from '../../../components/icons';
 
 const PLAYBOOKS = {
   phishing: [

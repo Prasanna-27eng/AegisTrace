@@ -3,7 +3,7 @@ import {
   Workflow, Plus, Trash2, Edit, X, Check, Loader2, RefreshCw,
   Play, ChevronDown, ChevronRight, ShieldAlert, Sparkles, History,
   Lock, Unlock,
-} from 'lucide-react';
+} from '../../components/icons';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 

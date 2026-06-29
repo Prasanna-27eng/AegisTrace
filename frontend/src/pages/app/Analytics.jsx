@@ -3,7 +3,7 @@ import {
   BarChart2, TrendingUp, Clock, AlertTriangle, Shield,
   CheckCircle, Users, RefreshCw, Loader2, Activity,
   Target, Zap, DollarSign, FileText, Download
-} from 'lucide-react';
+} from '../../components/icons';
 import api from '../../api/client';
 
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };

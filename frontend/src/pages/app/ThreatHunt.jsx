@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Loader2, AlertTriangle, Shield, GitMerge, Activity, Download, Database, Play, ChevronDown, ChevronRight } from 'lucide-react';
+import { Search, Loader2, AlertTriangle, Shield, GitMerge, Activity, Download, Database, Play, ChevronDown, ChevronRight } from '../../components/icons';
 import api from '../../api/client';
 import { SeverityBadge } from '../../components/SeverityBadge';
 import { useNavigate } from 'react-router-dom';

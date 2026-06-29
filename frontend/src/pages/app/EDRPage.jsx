@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Shield } from 'lucide-react';
+import { ChevronLeft, Shield } from '../../components/icons';
 import { SeverityBadge, StatusBadge } from '../../components/SeverityBadge';
 import api from '../../api/client';
 import useStore from '../../store/useStore';

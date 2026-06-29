@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Calendar, User, Lock } from 'lucide-react';
+import { ArrowRight, Calendar, User, Lock } from '../components/icons';
 import Logo from '../components/Logo';
 import api from '../api/client';
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Shield, Plus, Trash2, Edit, X, Check, Loader2,
   RefreshCw, Clock, MapPin, Key, AlertTriangle, Zap
-} from 'lucide-react';
+} from '../../components/icons';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 

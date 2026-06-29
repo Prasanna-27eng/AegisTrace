@@ -3,7 +3,7 @@ import {
   motion, useScroll, useSpring, useTransform,
   useInView, useReducedMotion, useMotionValue,
 } from 'framer-motion';
-import { ArrowRight, ArrowUpRight } from 'lucide-react';
+import { ArrowRight, ArrowUpRight } from '../components/icons';
 import { Link } from 'react-router-dom';
 import {
   useSceneCamera, useSectionParallax,

@@ -4,7 +4,7 @@ import {
   Bot, CheckCircle, XCircle, Clock, Shield, Brain, AlertTriangle,
   Zap, ChevronRight, RefreshCw, Settings, Eye, Lock, Unlock,
   FileText, Search, Activity, Info, Key
-} from 'lucide-react';
+} from '../../components/icons';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 

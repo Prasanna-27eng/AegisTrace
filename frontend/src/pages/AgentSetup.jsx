@@ -4,7 +4,7 @@ import {
   Download, Copy, CheckCircle, Terminal, Shield, ExternalLink,
   Monitor, Apple, Server, Settings, ChevronRight, Menu, XCircle,
   AlertTriangle, Cpu, Wifi, Check, ArrowLeft
-} from 'lucide-react';
+} from '../components/icons';
 import Logo from '../components/Logo';
 import ThreatStream from '../components/ThreatStream';
 

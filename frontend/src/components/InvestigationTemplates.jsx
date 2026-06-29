@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Mail, Key, Bug, Database, UserX, Monitor,
   ChevronRight, X, Check, AlertTriangle, BookOpen, RefreshCw
-} from 'lucide-react';
+} from './icons';
 
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Play, RefreshCw, Trash2, ChevronRight, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Shield, Play, RefreshCw, Trash2, ChevronRight, AlertTriangle, CheckCircle, Clock } from '../../components/icons';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 

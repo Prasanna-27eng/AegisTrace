@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, useInView, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Copy, Check, Github } from 'lucide-react';
+import { ArrowRight, Copy, Check, Github } from '../components/icons';
 import CardNav from '../components/CardNav';
 import BorderGlow from '../components/BorderGlow';
 

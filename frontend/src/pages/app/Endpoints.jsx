@@ -4,7 +4,7 @@ import {
   FileText, ChevronRight, Copy, X, Download, Terminal, Activity,
   Wifi, Lock, Unlock, Zap, Eye, Clock, User, Server, Database,
   Search, ChevronUp, ChevronDown, ChevronsUpDown, Radio, ShieldAlert, ScanLine
-} from 'lucide-react';
+} from '../../components/icons';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 import { useNavigate } from 'react-router-dom';

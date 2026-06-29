@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Plus, Search, Globe, FileText, Share2, Trash2, Lock, Clock, AlertTriangle, FolderOpen, Layers } from 'lucide-react';
+import { Plus, Search, Globe, FileText, Share2, Trash2, Lock, Clock, AlertTriangle, FolderOpen, Layers } from '../../components/icons';
 import { SeverityBadge, StatusBadge } from '../../components/SeverityBadge';
 import api from '../../api/client';
 import useStore from '../../store/useStore';

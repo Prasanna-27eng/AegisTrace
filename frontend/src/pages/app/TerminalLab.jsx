@@ -4,7 +4,7 @@ import {
   Terminal, Plus, Trash2, Save, Copy, ChevronRight, Loader2,
   Shield, AlertTriangle, Brain, FolderOpen, Play, X, Clock,
   Download, CheckCircle, Zap, Eye
-} from 'lucide-react';
+} from '../../components/icons';
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 

@@ -4,7 +4,7 @@ import {
   useInView, useReducedMotion, AnimatePresence,
 } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ChevronDown } from 'lucide-react';
+import { ArrowRight, ChevronDown } from '../components/icons';
 import { useSceneCamera, PinnedScene, ScrollProgressBar } from '../components/SceneController';
 import LoadingScreen, { useLoading } from '../components/LoadingScreen';
 import CardNav from '../components/CardNav';
