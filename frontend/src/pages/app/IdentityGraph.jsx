@@ -148,7 +148,7 @@ function NodeDetailOverlay({ node, onClose }) {
     <div style={{
       position: 'absolute', top: 0, right: 0, bottom: 0,
       width: 340,
-      background: var(--card),
+      background: 'var(--card)',
       borderLeft: '1px solid rgba(26,22,18,0.1)',
       overflowY: 'auto',
       zIndex: 10,
@@ -582,7 +582,7 @@ function NodePanel({ node, onMarkCompromised, onDelete, onClose, onScoreUpdate }
   };
 
   return (
-    <div style={{ width: 300, background: var(--surface), borderLeft: '1px solid rgba(26,22,18,0.1)', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+    <div style={{ width: 300, background: 'var(--surface)', borderLeft: '1px solid rgba(26,22,18,0.1)', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
       {/* Header */}
       <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(26,22,18,0.1)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
         <Icon size={14} style={{ color: meta.color }} />
@@ -815,9 +815,9 @@ export default function IdentityGraph() {
   const pillTypes = FILTER_NODE_TYPES.filter(t => presentTypes.includes(t));
 
   return (
-    <div style={{ display: 'flex', height: '100%', background: var(--card), overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '100%', background: 'var(--card)', overflow: 'hidden' }}>
       {/* Left panel */}
-      <div style={{ width: 220, flexShrink: 0, background: var(--surface), borderRight: '1px solid rgba(26,22,18,0.1)', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ width: 220, flexShrink: 0, background: 'var(--surface)', borderRight: '1px solid rgba(26,22,18,0.1)', display: 'flex', flexDirection: 'column' }}>
         {/* Header */}
         <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(26,22,18,0.1)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -853,7 +853,7 @@ export default function IdentityGraph() {
 
         {/* Search */}
         <div style={{ padding: '8px 10px', borderBottom: '1px solid rgba(74,126,200,0.07)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: var(--card), border: '1px solid rgba(74,126,200,0.1)', borderRadius: 5, padding: '4px 8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--card)', border: '1px solid rgba(74,126,200,0.1)', borderRadius: 5, padding: '4px 8px' }}>
             <Search size={11} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
             <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search nodes…"
               style={{ background: 'none', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '0.72rem', ...MONO, flex: 1 }} />
@@ -1049,7 +1049,7 @@ export default function IdentityGraph() {
       {/* Add Node Modal */}
       {showAdd && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowAdd(false)}>
-          <div style={{ background: var(--surface), border: '1px solid rgba(74,126,200,0.14)', borderRadius: 10, padding: 24, width: 380, maxWidth: '90vw' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: 'var(--surface)', border: '1px solid rgba(74,126,200,0.14)', borderRadius: 10, padding: 24, width: 380, maxWidth: '90vw' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
               <div style={{ fontWeight: 600 }}>Add Identity Node</div>
               <button onClick={() => setShowAdd(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={15} /></button>
@@ -1085,7 +1085,7 @@ export default function IdentityGraph() {
       {/* Add Edge Modal */}
       {showEdge && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowEdge(false)}>
-          <div style={{ background: var(--surface), border: '1px solid rgba(74,126,200,0.14)', borderRadius: 10, padding: 24, width: 360, maxWidth: '90vw' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: 'var(--surface)', border: '1px solid rgba(74,126,200,0.14)', borderRadius: 10, padding: 24, width: 360, maxWidth: '90vw' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
               <div style={{ fontWeight: 600 }}>Link Identity Nodes</div>
               <button onClick={() => setShowEdge(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={15} /></button>

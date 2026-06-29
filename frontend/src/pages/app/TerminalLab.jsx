@@ -43,7 +43,7 @@ function timeAgo(d) {
 // ── Session Sidebar ──────────────────────────────────────────────────────────
 function SessionSidebar({ sessions, activeId, onSelect, onCreate, onDelete }) {
   return (
-    <div style={{ width: 220, flexShrink: 0, background: var(--card), borderRight: '1px solid rgba(26,22,18,0.08)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ width: 220, flexShrink: 0, background: 'var(--card)', borderRight: '1px solid rgba(26,22,18,0.08)', display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '14px 14px 10px', borderBottom: '1px solid rgba(26,22,18,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', ...MONO }}>Sessions</div>
         <button className="btn-accent" onClick={onCreate} style={{ padding: '4px 8px', fontSize: '0.7rem' }}>
@@ -194,7 +194,7 @@ function OutputPane({ command, onPushIOCs, onSaveToCase, caseId }) {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   {iocs.map((ioc, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 8px', background: var(--card), borderRadius: 4, borderLeft: `2px solid ${TYPE_COLOR[ioc.type] || '#888888'}` }}>
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 8px', background: 'var(--card)', borderRadius: 4, borderLeft: `2px solid ${TYPE_COLOR[ioc.type] || '#888888'}` }}>
                       <span style={{ fontSize: '0.6rem', color: TYPE_COLOR[ioc.type] || '#787878', textTransform: 'uppercase', ...MONO, minWidth: 40 }}>{ioc.type}</span>
                       <span style={{ fontSize: '0.72rem', color: 'var(--text-primary)', ...MONO, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ioc.ioc}</span>
                       <button onClick={() => navigator.clipboard.writeText(ioc.ioc)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', marginLeft: 'auto', flexShrink: 0, padding: 2 }}>
@@ -366,7 +366,7 @@ export default function TerminalLab() {
   const commands = sessionData?.commands || [];
 
   return (
-    <div style={{ display: 'flex', height: '100%', background: var(--card), overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '100%', background: 'var(--card)', overflow: 'hidden' }}>
 
       {/* Session Sidebar */}
       <SessionSidebar
@@ -381,7 +381,7 @@ export default function TerminalLab() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
         {/* Header */}
-        <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(26,22,18,0.08)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: var(--card) }}>
+        <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(26,22,18,0.08)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--card)' }}>
           <Terminal size={15} style={{ color: '#22C55E' }} />
           <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>Terminal Lab</div>
           {sessionData && (
@@ -478,7 +478,7 @@ export default function TerminalLab() {
             </div>
 
             {/* Command input row */}
-            <div style={{ padding: '10px 14px', borderTop: '1px solid rgba(26,22,18,0.08)', background: var(--card), flexShrink: 0 }}>
+            <div style={{ padding: '10px 14px', borderTop: '1px solid rgba(26,22,18,0.08)', background: 'var(--card)', flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: showPaste ? 8 : 0 }}>
                 <span style={{ color: 'var(--accent)', ...MONO, fontSize: '0.8rem', flexShrink: 0 }}>aegistrace@lab:~$</span>
                 <input

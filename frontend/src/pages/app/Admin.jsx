@@ -110,7 +110,7 @@ function MFAPanel({ addToast }) {
           <div>
             <div style={{ fontSize: '0.64rem', color: 'var(--text-muted)', ...MONO, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Secret Key</div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <code style={{ flex: 1, background: var(--surface), border: '1px solid rgba(26,22,18,0.1)', borderRadius: 6, padding: '8px 12px', fontSize: '0.88rem', letterSpacing: '0.15em', color: 'var(--text-primary)', ...MONO, wordBreak: 'break-all' }}>
+              <code style={{ flex: 1, background: 'var(--surface)', border: '1px solid rgba(26,22,18,0.1)', borderRadius: 6, padding: '8px 12px', fontSize: '0.88rem', letterSpacing: '0.15em', color: 'var(--text-primary)', ...MONO, wordBreak: 'break-all' }}>
                 {secret}
               </code>
               <button className="btn-ghost" style={{ padding: '7px 10px', flexShrink: 0 }}
@@ -121,7 +121,7 @@ function MFAPanel({ addToast }) {
           </div>
           <div>
             <div style={{ fontSize: '0.64rem', color: 'var(--text-muted)', ...MONO, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>OTPAuth URI (for QR scanners)</div>
-            <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', ...MONO, wordBreak: 'break-all', background: var(--surface), border: '1px solid rgba(26,22,18,0.08)', borderRadius: 6, padding: '6px 10px' }}>
+            <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', ...MONO, wordBreak: 'break-all', background: 'var(--surface)', border: '1px solid rgba(26,22,18,0.08)', borderRadius: 6, padding: '6px 10px' }}>
               {otpUri}
             </div>
           </div>
@@ -312,7 +312,7 @@ function UsersTab({ user, addToast }) {
                     </div>
                   </div>
                 ) : (
-                  <div style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 14px', background:var(--surface), borderRadius:6, border:'1px solid rgba(26,22,18,0.05)' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 14px', background:'var(--surface)', borderRadius:6, border:'1px solid rgba(26,22,18,0.05)' }}>
                     <div style={{ width:32, height:32, borderRadius:'50%', background:`${ROLE_COLOR[u.role]}18`, border:`1px solid ${ROLE_COLOR[u.role]}40`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.72rem', fontWeight:600, color:ROLE_COLOR[u.role], flexShrink:0 }}>{u.name?.[0]}</div>
                     <div style={{ flex:1 }}>
                       <div style={{ fontWeight:500, fontSize:'0.84rem' }}>{u.name}</div>
@@ -493,7 +493,7 @@ function AuditTab() {
       {loading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {[0,1,2,3,4,5].map(i => (
-            <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '8px 12px', background: var(--surface), borderRadius: 6 }}>
+            <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '8px 12px', background: 'var(--surface)', borderRadius: 6 }}>
               <div style={{ flex: 1 }}>
                 <div className="skeleton" style={{ height: 11, width: `${40 + (i % 3) * 15}%`, marginBottom: 5 }} />
                 <div className="skeleton" style={{ height: 9, width: '25%' }} />
@@ -507,7 +507,7 @@ function AuditTab() {
       ) : (
         <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
           {logs.map(l => (
-            <div key={l.id} style={{ display:'flex', gap:12, alignItems:'center', padding:'8px 12px', background:var(--surface), borderRadius:6, borderLeft:`2px solid ${ACTION_COLOR[l.action]||'#888888'}` }}>
+            <div key={l.id} style={{ display:'flex', gap:12, alignItems:'center', padding:'8px 12px', background:'var(--surface)', borderRadius:6, borderLeft:`2px solid ${ACTION_COLOR[l.action]||'#888888'}` }}>
               <div style={{ flex:1 }}>
                 <div style={{ fontSize:'0.78rem', fontWeight:500, color:'var(--text-primary)', display:'flex', gap:8, alignItems:'center' }}>
                   <span style={{ color:ACTION_COLOR[l.action]||'#787878', fontFamily:'JetBrains Mono', fontSize:'0.7rem' }}>{l.action}</span>
@@ -559,7 +559,7 @@ function SystemTab({ addToast }) {
         {loading ? <div style={{ color:'var(--text-muted)', fontSize:'0.8rem' }}>Checking…</div> : (
           <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
             {checks.map(c => (
-              <div key={c.label} style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 14px', background:var(--surface), borderRadius:6 }}>
+              <div key={c.label} style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 14px', background:'var(--surface)', borderRadius:6 }}>
                 {c.ok ? <CheckCircle size={16} style={{ color:'#22C55E', flexShrink:0 }}/> : <XCircle size={16} style={{ color:'#EF4444', flexShrink:0 }}/>}
                 <div style={{ flex:1 }}>
                   <div style={{ fontSize:'0.84rem', fontWeight:500 }}>{c.label}</div>
@@ -598,7 +598,7 @@ function SystemTab({ addToast }) {
           Sends email alerts to admin and analyst accounts when CRITICAL or HIGH severity ITDR events are detected.
           Requires <code style={{ fontFamily:'JetBrains Mono, monospace', fontSize:'0.74rem', background:'rgba(26,22,18,0.07)', padding:'1px 5px', borderRadius:3 }}>SENDGRID_API_KEY</code> or SMTP config on the server.
         </p>
-        <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:'0.72rem', padding:'8px 12px', background:var(--surface), border:'1px solid rgba(26,22,18,0.09)', borderRadius:4, color:'var(--text-muted)', display:'inline-block' }}>
+        <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:'0.72rem', padding:'8px 12px', background:'var(--surface)', border:'1px solid rgba(26,22,18,0.09)', borderRadius:4, color:'var(--text-muted)', display:'inline-block' }}>
           Configure: Set SENDGRID_API_KEY environment variable on the VPS
         </div>
       </div>
@@ -933,7 +933,7 @@ function IntegrationsTab({ addToast }) {
                   <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, ...mono }}>Required Environment Variables</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {platform.envVars.map(({ key, desc }) => (
-                      <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', background: var(--card), borderRadius: 6, border: '1px solid rgba(26,22,18,0.08)' }}>
+                      <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', background: 'var(--card)', borderRadius: 6, border: '1px solid rgba(26,22,18,0.08)' }}>
                         <code style={{ flex: '0 0 auto', fontSize: '0.75rem', color: platform.color, ...mono, minWidth: 260 }}>{key}</code>
                         <div style={{ flex: 1, fontSize: '0.72rem', color: 'var(--text-muted)' }}>{desc}</div>
                         <button

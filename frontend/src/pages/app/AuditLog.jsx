@@ -70,7 +70,7 @@ function LogRow({ log, isNew }) {
     <div style={{
       display: 'flex', gap: 10, alignItems: 'flex-start',
       padding: '9px 14px',
-      background: isNew ? 'rgba(90,138,159,0.06)' : var(--surface),
+      background: isNew ? 'rgba(90,138,159,0.06)' : 'var(--surface)',
       borderRadius: 6,
       borderLeft: `2px solid ${color}`,
       transition: 'background 1s ease',

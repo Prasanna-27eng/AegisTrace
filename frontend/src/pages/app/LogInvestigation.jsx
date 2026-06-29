@@ -211,7 +211,7 @@ export default function LogInvestigation() {
                     <div className="section-label">Suspicious Log Lines</div>
                     <div style={{ display:'flex', flexDirection:'column', gap:6, maxHeight:180, overflowY:'auto' }}>
                       {result.suspicious_entries.map((e,i) => (
-                        <div key={i} style={{ background:var(--surface), borderRadius:5, padding:'7px 10px', borderLeft:`2px solid ${SEVERITY_COLOR[e.severity]||'#888888'}` }}>
+                        <div key={i} style={{ background:'var(--surface)', borderRadius:5, padding:'7px 10px', borderLeft:`2px solid ${SEVERITY_COLOR[e.severity]||'#888888'}` }}>
                           <code style={{ fontSize:'0.7rem', color:'#909090', fontFamily:'JetBrains Mono', display:'block', marginBottom:3 }}>{e.line?.slice(0,100)}</code>
                           <div style={{ fontSize:'0.68rem', color:SEVERITY_COLOR[e.severity]||'#787878' }}>{e.reason}</div>
                         </div>

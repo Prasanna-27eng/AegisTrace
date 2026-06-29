@@ -212,7 +212,7 @@ export default function SimulationHub() {
           { label: 'Not Detected',    value: notDetected,     color: '#FF3333' },
           { label: 'Detection Rate',  value: `${detectionRate}%`, color: detectionRate >= 80 ? '#00FF66' : detectionRate >= 50 ? '#F97316' : '#FF3333' },
         ].map(k => (
-          <div key={k.label} style={{ background: var(--card), padding: '20px 22px' }}>
+          <div key={k.label} style={{ background: 'var(--card)', padding: '20px 22px' }}>
             <div style={{ fontSize: '2rem', fontWeight: 300, color: k.color, letterSpacing: '-0.04em', ...MONO, marginBottom: 6 }}>{k.value}</div>
             <div style={{ fontSize: '0.6rem', color: '#505050', textTransform: 'uppercase', letterSpacing: '0.14em' }}>{k.label}</div>
           </div>
@@ -246,7 +246,7 @@ export default function SimulationHub() {
                 <div key={t.id}
                   onClick={() => setSelected(t.id)}
                   style={{
-                    background: active ? 'rgba(74,126,200,0.06)' : var(--card),
+                    background: active ? 'rgba(74,126,200,0.06)' : 'var(--card)',
                     padding: '16px 18px', cursor: 'pointer',
                     borderLeft: `2px solid ${active ? '#FFFFFF' : (res ? (res.result === 'DETECTED' ? '#00FF66' : '#FF3333') : 'transparent')}`,
                     transition: 'background 0.15s',
@@ -283,7 +283,7 @@ export default function SimulationHub() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
           {/* Result detail */}
-          <div style={{ background: var(--card), border: '1px solid rgba(26,22,18,0.07)', padding: '22px' }}>
+          <div style={{ background: 'var(--card)', border: '1px solid rgba(26,22,18,0.07)', padding: '22px' }}>
             <div style={{ fontSize: '0.6rem', color: '#505050', letterSpacing: '0.16em', textTransform: 'uppercase', ...MONO, marginBottom: 18 }}>
               Simulation Result
             </div>
@@ -358,7 +358,7 @@ export default function SimulationHub() {
           </div>
 
           {/* Run history */}
-          <div style={{ background: var(--card), border: '1px solid rgba(26,22,18,0.07)', padding: '22px' }}>
+          <div style={{ background: 'var(--card)', border: '1px solid rgba(26,22,18,0.07)', padding: '22px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <div style={{ fontSize: '0.6rem', color: '#505050', letterSpacing: '0.16em', textTransform: 'uppercase', ...MONO }}>
                 Run History
@@ -384,7 +384,7 @@ export default function SimulationHub() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: 'rgba(26,22,18,0.04)' }}>
                 {history.slice(0, 12).map(h => (
-                  <div key={h.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 12px', background: var(--card) }}>
+                  <div key={h.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 12px', background: 'var(--card)' }}>
                     <div style={{ width: 5, height: 5, borderRadius: '50%', background: h.result === 'DETECTED' ? '#00FF66' : '#FF3333', flexShrink: 0 }} />
                     <span style={{ fontSize: '0.62rem', color: '#505050', ...MONO, width: 72, flexShrink: 0 }}>{h.technique_id}</span>
                     <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.technique_name}</span>
@@ -416,7 +416,7 @@ export default function SimulationHub() {
             { step: '05', label: 'T1078.004 New Device', desc: 'Persistent access from new attacker device' },
           ].map((s, i) => (
             <React.Fragment key={s.step}>
-              <div style={{ flexShrink: 0, padding: '12px 16px', background: var(--card), border: '1px solid rgba(26,22,18,0.05)', minWidth: 170 }}>
+              <div style={{ flexShrink: 0, padding: '12px 16px', background: 'var(--card)', border: '1px solid rgba(26,22,18,0.05)', minWidth: 170 }}>
                 <div style={{ fontSize: '0.58rem', color: '#383838', ...MONO, marginBottom: 5 }}>STEP {s.step}</div>
                 <div style={{ fontSize: '0.72rem', color: 'var(--text-primary)', fontWeight: 500, marginBottom: 4 }}>{s.label}</div>
                 <div style={{ fontSize: '0.62rem', color: '#505050', lineHeight: 1.5 }}>{s.desc}</div>

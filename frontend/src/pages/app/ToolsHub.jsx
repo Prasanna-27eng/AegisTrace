@@ -97,7 +97,7 @@ export default function ToolsHub() {
                   <button className="btn-ghost" onClick={refang} style={{ flex: 1, justifyContent: 'center', fontSize: '0.78rem' }}>Refang</button>
                 </div>
                 {defangResult && (
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', background: var(--surface), padding: '6px 10px', borderRadius: 5 }}>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', background: 'var(--surface)', padding: '6px 10px', borderRadius: 5 }}>
                     <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.78rem', flex: 1, color: '#22C55E' }}>{defangResult}</span>
                     <button onClick={() => { navigator.clipboard.writeText(defangResult); addToast('Copied!', 'success'); }} className="btn-ghost" style={{ padding: '2px 6px' }}><Copy size={11} /></button>
                   </div>

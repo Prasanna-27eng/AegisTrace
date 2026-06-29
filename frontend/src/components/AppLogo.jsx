@@ -37,7 +37,7 @@ export default function AppLogo({ variant = 'icon', size = 28, glow = true, styl
     <div style={{
       width: size, height: size,
       borderRadius: '50%',
-      background: var(--card),
+      background: 'var(--card)',
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
       overflow: 'hidden',
       flexShrink: 0,

@@ -67,7 +67,7 @@ function ConfirmModal({ title, body, confirmLabel = 'Confirm', danger = true, on
   return (
     <div style={{ position:'fixed', inset:0, zIndex:2000, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.72)', backdropFilter:'blur(4px)' }}
       onClick={e => { if (e.target === e.currentTarget) onCancel(); }}>
-      <div style={{ background:var(--surface), border:`1px solid ${danger ? 'rgba(239,68,68,0.25)' : 'rgba(90,138,159,0.25)'}`, borderRadius:12, padding:'24px 26px', width:'100%', maxWidth:420, boxShadow:'0 24px 64px rgba(0,0,0,0.65)' }}>
+      <div style={{ background:'var(--surface)', border:`1px solid ${danger ? 'rgba(239,68,68,0.25)' : 'rgba(90,138,159,0.25)'}`, borderRadius:12, padding:'24px 26px', width:'100%', maxWidth:420, boxShadow:'0 24px 64px rgba(0,0,0,0.65)' }}>
         <div style={{ fontWeight:700, fontSize:'0.95rem', marginBottom:10, color: danger ? '#EF4444' : '#BDD4E8' }}>{title}</div>
         <div style={{ fontSize:'0.78rem', color:'var(--text-muted)', lineHeight:1.65, marginBottom:22, whiteSpace:'pre-line' }}>{body}</div>
         <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
@@ -1039,7 +1039,7 @@ function SetupGuideModal({ onClose, ingestKey, onFetchKey }) {
   return (
     <div style={{ position:'fixed', inset:0, zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.75)', backdropFilter:'blur(6px)', padding:20 }}
       onClick={e => { if(e.target===e.currentTarget) onClose(); }}>
-      <div style={{ background:var(--surface), border:'1px solid rgba(26,22,18,0.1)', borderRadius:14, width:'100%', maxWidth:660, boxShadow:'0 30px 80px rgba(0,0,0,0.7)' }}>
+      <div style={{ background:'var(--surface)', border:'1px solid rgba(26,22,18,0.1)', borderRadius:14, width:'100%', maxWidth:660, boxShadow:'0 30px 80px rgba(0,0,0,0.7)' }}>
 
         {/* Header */}
         <div style={{ padding:'20px 22px', borderBottom:'1px solid rgba(26,22,18,0.08)', display:'flex', alignItems:'center', gap:12 }}>

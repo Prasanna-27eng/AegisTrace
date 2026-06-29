@@ -140,7 +140,7 @@ export default function PcapAnalysis() {
                     onClick={e => e.stopPropagation()}
                     placeholder="Link to case ID (optional)"
                     style={{
-                      padding: '5px 10px', background: var(--surface),
+                      padding: '5px 10px', background: 'var(--surface)',
                       border: '1px solid rgba(26,22,18,0.1)', borderRadius: 5,
                       color: 'var(--text-primary)', fontSize: '0.75rem', fontFamily: 'JetBrains Mono', width: 200,
                     }}

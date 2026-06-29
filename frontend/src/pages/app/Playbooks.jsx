@@ -198,7 +198,7 @@ function PipelineBuilder({
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: slot === 'trigger' ? '13px' : '0.62rem',
         fontWeight: 700, color: c,
-        background: var(--card),
+        background: 'var(--card)',
         boxShadow: `0 0 10px ${c}55`,
         flexShrink: 0,
         transition: 'all 0.35s ease',

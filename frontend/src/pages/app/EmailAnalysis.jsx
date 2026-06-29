@@ -95,7 +95,7 @@ export default function EmailAnalysis() {
                   <div className="section-label">Authentication</div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, textAlign: 'center' }}>
                     {[['SPF', result.spf_result], ['DKIM', result.dkim_result], ['DMARC', result.dmarc_result]].map(([name, val]) => (
-                      <div key={name} style={{ padding: '10px', background: var(--surface), borderRadius: 6 }}>
+                      <div key={name} style={{ padding: '10px', background: 'var(--surface)', borderRadius: 6 }}>
                         <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: 4 }}>{name}</div>
                         <div style={{ fontSize: '0.85rem', fontWeight: 700, color: authColor(val), fontFamily: 'JetBrains Mono' }}>{val?.toUpperCase() || 'NONE'}</div>
                       </div>

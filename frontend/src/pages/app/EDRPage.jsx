@@ -22,7 +22,7 @@ export default function EDRPage() {
   }, [caseId]);
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: var(--card), padding: '20px 24px' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--card)', padding: '20px 24px' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div className="skeleton" style={{ height: 10, width: 200, marginBottom: 20 }} />
         {[0,1,2].map(i => (
@@ -33,11 +33,11 @@ export default function EDRPage() {
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: var(--card), color: 'var(--text-primary)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--card)', color: 'var(--text-primary)' }}>
 
       {/* Header */}
       <div style={{
-        background: var(--surface), borderBottom: '1px solid rgba(26,22,18,0.08)',
+        background: 'var(--surface)', borderBottom: '1px solid rgba(26,22,18,0.08)',
         padding: '12px 24px', display: 'flex', alignItems: 'center', gap: 12,
       }}>
         <button

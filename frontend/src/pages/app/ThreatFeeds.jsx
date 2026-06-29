@@ -83,7 +83,7 @@ function FeedSection({ feedKey, data, navigate }) {
           {feedKey === 'cisa_kev' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
               {items.map((v, i) => (
-                <div key={i} style={{ display: 'flex', gap: 10, padding: '7px 10px', background: var(--surface), borderRadius: 5, fontSize: '0.74rem', alignItems: 'flex-start' }}>
+                <div key={i} style={{ display: 'flex', gap: 10, padding: '7px 10px', background: 'var(--surface)', borderRadius: 5, fontSize: '0.74rem', alignItems: 'flex-start' }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 2 }}>
                       <span style={{ fontFamily: 'JetBrains Mono', color: '#EF4444', fontWeight: 600, fontSize: '0.7rem' }}>{v.cve_id}</span>
@@ -105,7 +105,7 @@ function FeedSection({ feedKey, data, navigate }) {
           {feedKey === 'urlhaus' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {items.map((u, i) => (
-                <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 10px', background: var(--surface), borderRadius: 5, fontSize: '0.72rem', alignItems: 'center' }}>
+                <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 10px', background: 'var(--surface)', borderRadius: 5, fontSize: '0.72rem', alignItems: 'center' }}>
                   <span style={{
                     fontSize: '0.6rem', padding: '1px 5px', borderRadius: 3, flexShrink: 0,
                     background: u.url_status === 'online' ? 'rgba(239,68,68,0.12)' : 'rgba(136,136,136,0.12)',
@@ -124,7 +124,7 @@ function FeedSection({ feedKey, data, navigate }) {
           {feedKey === 'threatfox' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {items.map((t, i) => (
-                <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 10px', background: var(--surface), borderRadius: 5, fontSize: '0.72rem', alignItems: 'center' }}>
+                <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 10px', background: 'var(--surface)', borderRadius: 5, fontSize: '0.72rem', alignItems: 'center' }}>
                   <span style={{
                     fontSize: '0.6rem', padding: '1px 5px', borderRadius: 3, flexShrink: 0,
                     background: 'rgba(234,179,8,0.1)', color: '#EAB308',
@@ -142,7 +142,7 @@ function FeedSection({ feedKey, data, navigate }) {
           {feedKey === 'malwarebazaar' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {items.map((s, i) => (
-                <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 10px', background: var(--surface), borderRadius: 5, fontSize: '0.72rem', alignItems: 'center' }}>
+                <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 10px', background: 'var(--surface)', borderRadius: 5, fontSize: '0.72rem', alignItems: 'center' }}>
                   <span style={{ fontFamily: 'JetBrains Mono', color: '#8BB8E8', fontSize: '0.62rem', flexShrink: 0, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.sha256?.slice(0, 12)}…</span>
                   <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.file_name || s.sha256}</span>
                   <span style={{ color: '#EF4444', fontSize: '0.7rem', flexShrink: 0 }}>{s.signature || s.file_type}</span>
@@ -156,7 +156,7 @@ function FeedSection({ feedKey, data, navigate }) {
           {feedKey === 'feodotracker' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {items.map((h, i) => (
-                <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 10px', background: var(--surface), borderRadius: 5, fontSize: '0.72rem', alignItems: 'center' }}>
+                <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 10px', background: 'var(--surface)', borderRadius: 5, fontSize: '0.72rem', alignItems: 'center' }}>
                   <span style={{ fontFamily: 'JetBrains Mono', color: '#EF4444', minWidth: 110, fontWeight: 500 }}>{h.ip}{h.port ? `:${h.port}` : ''}</span>
                   <span style={{ color: '#EAB308', flex: 1 }}>{h.malware}</span>
                   <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', flexShrink: 0, fontFamily: 'JetBrains Mono' }}>last online {h.last_online || '—'}</span>

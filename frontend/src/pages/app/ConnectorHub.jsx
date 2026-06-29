@@ -5,7 +5,7 @@ import api from '../../api/client';
 import useStore from '../../store/useStore';
 
 const C = {
-  bg: '#0A0A0A', card: var(--surface), border: '#181818',
+  bg: '#0A0A0A', card: 'var(--surface)', border: '#181818',
   blue: '#4A7EC8', purple: '#8BB8E8', green: '#34D399',
   amber: '#FBBF24', red: '#F87171', muted: '#888888',
   text: '#E5E5E5',

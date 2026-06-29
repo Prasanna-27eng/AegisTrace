@@ -192,7 +192,7 @@ function EventCard({ event, onAction, processing }) {
 
           {/* AI Reasoning */}
           {event.ai_reasoning && (
-            <div style={{ marginTop: 12, padding: '10px 12px', background: var(--card), border: '1px solid #1C1C24', borderRadius: 6 }}>
+            <div style={{ marginTop: 12, padding: '10px 12px', background: 'var(--card)', border: '1px solid #1C1C24', borderRadius: 6 }}>
               <div style={{ fontSize: '0.62rem', color: '#4A6A8A', ...MONO, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 AI Reasoning Chain
               </div>
@@ -282,7 +282,7 @@ function EventCard({ event, onAction, processing }) {
                 onChange={e => setNotes(e.target.value)}
                 placeholder="Optional notes for audit trail..."
                 style={{
-                  width: '100%', height: 60, background: var(--card), color: 'var(--text-primary)',
+                  width: '100%', height: 60, background: 'var(--card)', color: 'var(--text-primary)',
                   border: '1px solid #1C1C24', borderRadius: 4, padding: '8px 10px',
                   fontSize: '0.75rem', fontFamily: 'JetBrains Mono, monospace',
                   resize: 'none', outline: 'none', boxSizing: 'border-box',
@@ -292,7 +292,7 @@ function EventCard({ event, onAction, processing }) {
                 type="submit"
                 disabled={processing}
                 style={{
-                  marginTop: 8, padding: '7px 20px', background: '#BDD4E8', color: var(--card),
+                  marginTop: 8, padding: '7px 20px', background: '#BDD4E8', color: 'var(--card)',
                   border: 'none', borderRadius: 4, fontSize: '0.72rem', fontWeight: 700,
                   fontFamily: 'JetBrains Mono, monospace', cursor: 'pointer',
                   opacity: processing ? 0.5 : 1,
@@ -471,7 +471,7 @@ export default function DefenseConsole() {
   const pendingCount = events.filter(e => e.status === 'pending_review').length;
 
   return (
-    <div style={{ background: var(--card), minHeight: '100vh', padding: '28px 32px', color: 'var(--text-primary)' }}>
+    <div style={{ background: 'var(--card)', minHeight: '100vh', padding: '28px 32px', color: 'var(--text-primary)' }}>
 
       {/* Toast notification */}
       {toast && (

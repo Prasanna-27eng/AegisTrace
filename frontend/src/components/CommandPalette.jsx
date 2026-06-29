@@ -158,7 +158,7 @@ export default function CommandPalette({ open, onClose, recentCases = [], onOpen
       <div
         onClick={e => e.stopPropagation()}
         className="dropdown-pop"
-        style={{ width: '100%', maxWidth: 580, background: var(--surface), border: '1px solid rgba(26,22,18,0.14)', borderRadius: 12, boxShadow: '0 24px 64px rgba(0,0,0,0.8)', overflow: 'hidden' }}
+        style={{ width: '100%', maxWidth: 580, background: 'var(--surface)', border: '1px solid rgba(26,22,18,0.14)', borderRadius: 12, boxShadow: '0 24px 64px rgba(0,0,0,0.8)', overflow: 'hidden' }}
       >
         {/* Search input */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderBottom: '1px solid rgba(26,22,18,0.1)' }}>

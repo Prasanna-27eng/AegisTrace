@@ -376,7 +376,7 @@ function DelegationTokensTab() {
       {/* Issue Token Modal */}
       {showIssue && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: var(--surface), border: '1px solid rgba(26,22,18,0.1)', borderRadius: 10, padding: 28, width: '90%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto' }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid rgba(26,22,18,0.1)', borderRadius: 10, padding: 28, width: '90%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto' }}>
             <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 20px' }}>Issue Agent Delegation Token</h3>
 
             {[

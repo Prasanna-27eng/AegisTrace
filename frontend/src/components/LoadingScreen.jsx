@@ -57,7 +57,7 @@ export default function LoadingScreen() {
   if (reduced) {
     return (
       <motion.div initial={{ opacity: 1 }} exit={{ opacity: 0 }}
-        style={{ position: 'fixed', inset: 0, background: var(--card), display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 20, zIndex: 9999 }}>
+        style={{ position: 'fixed', inset: 0, background: 'var(--card)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 20, zIndex: 9999 }}>
         <img src="/assets/brand/aegistrace-icon-transparent.png" alt="AegisTrace"
           style={{ width: 72, height: 72, filter: 'drop-shadow(0 0 8px rgba(74,126,200,0.6))' }}/>
         <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, color: 'var(--text-primary)', letterSpacing: '0.3em' }}>AEGISTRACE</span>
@@ -70,7 +70,7 @@ export default function LoadingScreen() {
       initial={{ opacity: 1 }}
       exit={{ y: '-100%', opacity: 0 }}
       transition={{ duration: 0.65, ease: [0.76, 0, 0.24, 1], delay: 0.08 }}
-      style={{ position: 'fixed', inset: 0, background: var(--card), display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', zIndex: 9999, overflow: 'hidden' }}
+      style={{ position: 'fixed', inset: 0, background: 'var(--card)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', zIndex: 9999, overflow: 'hidden' }}
     >
       {/* Deep glow bloom */}
       <motion.div aria-hidden
