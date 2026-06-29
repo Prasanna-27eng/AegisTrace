@@ -1,10 +1,6 @@
-/* ── Enterprise Design System — token layer MUST be first ─────────────────── */
+/* ── Design System — token layer MUST be first ──────────────────────────────── */
 @import './styles/tokens.css';
 @import './components/FocusRing.css';
-
-/* ── Public-page fonts: Plus Jakarta Sans + IBM Plex family ─────────────────── */
-/* Clash Display + Cabinet Grotesk kept as fallback for legacy app components */
-@import url('https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&f[]=cabinet-grotesk@400,500,700,800&display=swap');
 
 /* ── AegisTrace Enterprise v5.0 ─────────────────────────────────────────────── */
 /* App theme: QRadar-dark navy · Website theme: IBM enterprise gradient         */
@@ -28,13 +24,20 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
-  font-family: var(--font-ui), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-ui), system-ui, -apple-system, sans-serif;
   background: var(--bg);
   color: var(--text-secondary);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  line-height: 1.6;
+  line-height: 1.65;
+  font-feature-settings: 'kern' 1, 'liga' 1;
+}
+
+/* ── Public page body override ────────────────────────────────────────────── */
+body.pub {
+  background: var(--pub-bg);
+  color: var(--pub-text);
 }
 
 /* ── Scrollbar ─────────────────────────────────────────────────────────────── */
@@ -110,6 +113,132 @@ h1,h2,h3,h4,h5,h6 {
   to   { opacity: 1; transform: translateY(0); }
 }
 .fade-up { animation: fadeUp 0.4s ease both; }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   ANTHROPIC MICRO-INTERACTION LIBRARY
+   Premium feel: warm hover lifts · smooth focus rings · editorial reveals
+══════════════════════════════════════════════════════════════════════════════ */
+
+/* Scroll reveal — use on any element entering the viewport */
+@keyframes atmReveal {
+  from { opacity: 0; transform: translateY(28px); filter: blur(2px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+}
+.atm-reveal {
+  animation: atmReveal 0.65s cubic-bezier(0.16,1,0.3,1) both;
+}
+.atm-reveal-d1 { animation-delay: 0.08s; }
+.atm-reveal-d2 { animation-delay: 0.16s; }
+.atm-reveal-d3 { animation-delay: 0.24s; }
+.atm-reveal-d4 { animation-delay: 0.34s; }
+.atm-reveal-d5 { animation-delay: 0.46s; }
+
+/* Hover lift — add to cards and interactive surfaces */
+.atm-lift {
+  transition: transform 220ms cubic-bezier(0.16,1,0.3,1),
+              box-shadow 220ms cubic-bezier(0.16,1,0.3,1);
+}
+.atm-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 36px rgba(10,8,6,0.55), 0 4px 12px rgba(204,120,92,0.12);
+}
+
+/* Warm card — Anthropic-style bordered card */
+.atm-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  transition: border-color 220ms ease, background 220ms ease, transform 220ms cubic-bezier(0.16,1,0.3,1);
+}
+.atm-card:hover {
+  border-color: rgba(204,120,92,0.25);
+  background: var(--card-hover);
+}
+
+/* Coral glow on focus — for interactive elements */
+.atm-focus:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(204,120,92,0.3);
+}
+
+/* Magnetic button — scale + warm shadow */
+.atm-btn {
+  transition: transform 160ms cubic-bezier(0.16,1,0.3,1),
+              box-shadow 200ms ease,
+              background 160ms ease;
+}
+.atm-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 24px rgba(204,120,92,0.28);
+}
+.atm-btn:active { transform: scale(0.97); }
+
+/* Shimmer text — for serif display headings */
+@keyframes atmShimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.atm-shimmer {
+  background: linear-gradient(90deg, var(--text-primary) 40%, rgba(204,120,92,0.8) 50%, var(--text-primary) 60%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: atmShimmer 3.5s linear infinite;
+}
+
+/* Underline hover — Anthropic link style */
+.atm-link {
+  position: relative;
+  text-decoration: none;
+}
+.atm-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0; right: 0;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 280ms cubic-bezier(0.16,1,0.3,1);
+}
+.atm-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Grain texture overlay helper */
+.atm-grain::before {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px;
+  z-index: 1;
+}
+
+/* Warm scrollbar for public pages */
+.pub-scroll::-webkit-scrollbar { width: 4px; }
+.pub-scroll::-webkit-scrollbar-track { background: transparent; }
+.pub-scroll::-webkit-scrollbar-thumb { background: rgba(26,22,18,0.15); border-radius: 4px; }
+
+/* ── Mobile utilities ─────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .hide-mobile { display: none !important; }
+  .pub-section { padding: 60px 20px !important; }
+  .pub-grid-2, .pub-grid-3 { grid-template-columns: 1fr !important; }
+  .pub-h1 { font-size: clamp(2rem, 10vw, 3.5rem) !important; }
+  .pub-h2 { font-size: clamp(1.6rem, 7vw, 2.8rem) !important; }
+}
+@media (max-width: 480px) {
+  .pub-section { padding: 48px 16px !important; }
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .atm-reveal, .atm-lift, .atm-btn, .atm-shimmer { animation: none !important; transition: none !important; }
+  .atm-lift:hover, .atm-btn:hover { transform: none !important; }
+}
 
 /* App page titles — Clash Display 600 bridges the public/app worlds */
 .cd { font-family: 'Clash Display', sans-serif; font-weight: 600; }

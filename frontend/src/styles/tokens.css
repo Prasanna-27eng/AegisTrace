@@ -1,60 +1,45 @@
 /* ═══════════════════════════════════════════════════════════════════
-   AegisTrace Design Tokens — Aether Seal Edition
-   Brand: Aether Seal orbital mark · Electric Steel Blue · Pure Black
+   AegisTrace Design Tokens — Anthropic Warm Edition
+   Palette: warm dark · coral/terracotta accent · editorial serif
    ═══════════════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 :root {
   /* ── Fonts ─────────────────────────────────────────────────────── */
-  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-ui:      'IBM Plex Sans', system-ui, sans-serif;
+  --font-display: 'DM Serif Display', Georgia, 'Times New Roman', serif;
+  --font-ui:      'DM Sans', system-ui, -apple-system, sans-serif;
   --font-mono:    'IBM Plex Mono', ui-monospace, monospace;
 
-  /* ── Brand Colors (from Aether Seal logo) ──────────────────────── */
-  --brand-blue:       #4A7EC8;   /* icon steel blue */
-  --brand-blue-bright:#8BB8E8;   /* icon highlight edge */
-  --brand-blue-deep:  #2A5A9E;   /* deeper shade */
-  --brand-glow:       rgba(74,126,200,0.35);
-  --brand-glow-soft:  rgba(74,126,200,0.15);
-  --brand-black:      #050505;   /* logo bg */
-  --brand-gunmetal:   #1C1C24;   /* outer ring */
-  --brand-steel:      #BDD4E8;   /* wordmark */
-
-  /* ── App Background hierarchy ──────────────────────────────────── */
-  --bg:            #050505;   /* pure black — logo background */
-  --surface:       #0E0E16;   /* primary card surface */
-  --card:          #141420;   /* raised card */
-  --card-hover:    #1A1A28;   /* card hover */
-  --elevated:      #1C1C2E;   /* modals, dropdowns */
-  --surface-2:     #222236;   /* highest elevation */
-  --inset:         #030308;   /* insets, code wells */
-  --sidebar-bg:    #030308;   /* sidebar — deepest */
+  /* ── Warm Dark Backgrounds (App + dark hero sections) ─────────── */
+  --bg:            #141210;   /* warm near-black */
+  --surface:       #1C1916;   /* primary surface */
+  --card:          #222018;   /* raised card */
+  --card-hover:    #2A271F;   /* card hover */
+  --elevated:      #2E2B22;   /* modals */
+  --surface-2:     #353028;   /* highest elevation */
+  --inset:         #0E0C0A;   /* code wells, insets */
+  --sidebar-bg:    #100E0B;   /* sidebar deepest */
 
   /* ── Topbar ─────────────────────────────────────────────────────── */
-  --topbar-bg: linear-gradient(135deg, #050505 0%, #0A0A18 50%, #0F1428 100%);
-  --topbar-solid: #050505;
+  --topbar-bg:    linear-gradient(135deg, #141210 0%, #1C1916 100%);
+  --topbar-solid: #141210;
 
-  /* ── Blue accent (Aether Seal electric blue) ───────────────────── */
-  --accent:        #4A7EC8;
-  --accent-hover:  #3A6AB8;
-  --accent-light:  #8BB8E8;
-  --accent-soft:   rgba(74,126,200,0.12);
-  --accent-border: rgba(74,126,200,0.25);
-  --accent-glow:   0 0 24px rgba(74,126,200,0.35);
+  /* ── Accent — Anthropic Coral ──────────────────────────────────── */
+  --accent:        #CC785C;
+  --accent-hover:  #B8644A;
+  --accent-light:  #E8A080;
+  --accent-soft:   rgba(204,120,92,0.12);
+  --accent-border: rgba(204,120,92,0.28);
+  --accent-glow:   0 0 28px rgba(204,120,92,0.35);
 
-  /* ── Secondary accent (deeper blue) ────────────────────────────── */
-  --accent2:        #2A5A9E;
-  --accent2-light:  #5A8EC8;
-  --accent2-soft:   rgba(42,90,158,0.12);
-  --accent2-border: rgba(42,90,158,0.25);
+  /* ── Secondary warm accent ──────────────────────────────────────── */
+  --accent2:        #D98B6A;
+  --accent2-light:  #EAA880;
+  --accent2-soft:   rgba(217,139,106,0.12);
+  --accent2-border: rgba(217,139,106,0.25);
 
-  /* ── Teal (tertiary) ────────────────────────────────────────────── */
-  --teal:           #3A8EC8;
-  --teal-light:     #6AAEE8;
-  --teal-soft:      rgba(58,142,200,0.12);
-
-  /* ── Status ─────────────────────────────────────────────────────── */
+  /* ── Status (keep functional colors) ──────────────────────────── */
   --success:        #10B981;
   --success-soft:   rgba(16,185,129,0.12);
   --success-border: rgba(16,185,129,0.25);
@@ -64,46 +49,62 @@
   --error:          #EF4444;
   --error-soft:     rgba(239,68,68,0.12);
   --error-border:   rgba(239,68,68,0.25);
-  --info:           #4A7EC8;
-  --info-soft:      rgba(74,126,200,0.12);
+  --info:           #CC785C;
+  --info-soft:      rgba(204,120,92,0.12);
 
-  /* ── Severity ────────────────────────────────────────────────────── */
+  /* ── Severity (security alerts — never change these) ───────────── */
   --sev-critical:   #EF4444;
   --sev-high:       #F97316;
   --sev-medium:     #F59E0B;
   --sev-low:        #10B981;
-  --sev-info:       #6B7280;
+  --sev-info:       #8B8680;
 
-  /* ── Text (steel white hierarchy) ──────────────────────────────── */
-  --text-primary:   #BDD4E8;   /* wordmark color — main text */
-  --text-secondary: #7A9DB8;   /* muted steel — secondary */
-  --text-muted:     #4A6A8A;   /* dim — labels */
-  --text-disabled:  #2A3A4A;
-  --text-inverse:   #050505;
+  /* ── Warm Dark Text ────────────────────────────────────────────── */
+  --text-primary:   #F0EBE3;   /* warm off-white */
+  --text-secondary: rgba(240,235,227,0.65);
+  --text-muted:     rgba(240,235,227,0.38);
+  --text-disabled:  rgba(240,235,227,0.2);
+  --text-inverse:   #141210;
 
-  /* ── Borders ─────────────────────────────────────────────────────── */
-  --border:         rgba(74,126,200,0.1);
-  --border-light:   rgba(74,126,200,0.07);
-  --border-medium:  rgba(74,126,200,0.18);
-  --border-strong:  rgba(74,126,200,0.3);
+  /* ── Borders (warm) ────────────────────────────────────────────── */
+  --border:         rgba(240,235,227,0.08);
+  --border-light:   rgba(240,235,227,0.05);
+  --border-medium:  rgba(240,235,227,0.12);
+  --border-strong:  rgba(240,235,227,0.22);
 
-  /* ── Shadows ─────────────────────────────────────────────────────── */
-  --shadow-sm:   0 1px 3px rgba(0,0,0,0.6), 0 1px 2px rgba(0,0,0,0.4);
-  --shadow-md:   0 4px 16px rgba(0,0,0,0.7), 0 2px 4px rgba(0,0,0,0.5);
-  --shadow-lg:   0 10px 40px rgba(0,0,0,0.8), 0 4px 8px rgba(0,0,0,0.6);
-  --shadow-card: 0 0 0 1px rgba(74,126,200,0.1), 0 4px 16px rgba(0,0,0,0.6);
-  --shadow-blue: 0 4px 20px rgba(74,126,200,0.3);
-  --shadow-glow: 0 0 40px rgba(74,126,200,0.2), 0 0 80px rgba(74,126,200,0.1);
+  /* ── Shadows (warm undertone) ──────────────────────────────────── */
+  --shadow-sm:   0 1px 3px rgba(10,8,6,0.55), 0 1px 2px rgba(10,8,6,0.4);
+  --shadow-md:   0 4px 16px rgba(10,8,6,0.65), 0 2px 4px rgba(10,8,6,0.45);
+  --shadow-lg:   0 10px 40px rgba(10,8,6,0.75), 0 4px 8px rgba(10,8,6,0.5);
+  --shadow-card: 0 0 0 1px rgba(240,235,227,0.07), 0 4px 16px rgba(10,8,6,0.6);
+  --shadow-warm: 0 4px 24px rgba(204,120,92,0.22);
+  --shadow-glow: 0 0 40px rgba(204,120,92,0.18), 0 0 80px rgba(204,120,92,0.08);
+
+  /* ── Public Page (light warm sections) ────────────────────────── */
+  --pub-bg:           #FAF7F2;
+  --pub-bg-alt:       #F2EDE5;
+  --pub-surface:      #FFFFFF;
+  --pub-text:         #1A1612;
+  --pub-text-muted:   #6B6258;
+  --pub-text-faint:   rgba(26,22,18,0.38);
+  --pub-border:       rgba(26,22,18,0.09);
+  --pub-border-strong:rgba(26,22,18,0.16);
+  --pub-dark-bg:      #141210;
+  --pub-dark-surface: #1C1916;
+  --pub-dark-text:    #F0EBE3;
+  --pub-dark-muted:   rgba(240,235,227,0.6);
+  --pub-dark-border:  rgba(240,235,227,0.1);
 
   /* ── Layout ──────────────────────────────────────────────────────── */
   --radius-sm:  4px;   --radius-md:  8px;
   --radius-lg: 12px;   --radius-xl: 16px;  --radius-2xl: 24px;
-  --sidebar-w:   240px;  --sidebar-w-collapsed: 56px;
-  --topbar-h:     52px;
+  --sidebar-w:  240px;  --sidebar-w-collapsed: 56px;
+  --topbar-h:    52px;
 
   /* ── Spacing ─────────────────────────────────────────────────────── */
   --space-1:4px; --space-2:8px;  --space-3:12px; --space-4:16px;
   --space-5:20px; --space-6:24px; --space-8:32px; --space-10:40px;
+  --space-12:48px; --space-16:64px; --space-20:80px; --space-24:96px;
 
   /* ── Z-index ─────────────────────────────────────────────────────── */
   --z-dropdown:100; --z-sticky:200; --z-overlay:300;
@@ -112,19 +113,33 @@
   /* ── Motion ──────────────────────────────────────────────────────── */
   --ease-out:    cubic-bezier(0.23,1,0.32,1);
   --ease-in-out: cubic-bezier(0.77,0,0.175,1);
-  --dur-fast:120ms; --dur-normal:200ms; --dur-slow:350ms;
+  --ease-spring: cubic-bezier(0.16,1,0.3,1);
+  --ease-expo:   cubic-bezier(0.16,1,0.3,1);
+  --dur-fast:100ms; --dur-normal:220ms; --dur-slow:420ms; --dur-xslow:700ms;
 
-  /* ── Legacy shorthands ───────────────────────────────────────────── */
+  /* ── Legacy shorthands (backward compat) ─────────────────────────── */
   --fast:  150ms cubic-bezier(0.4,0,0.2,1);
   --base:  200ms cubic-bezier(0.4,0,0.2,1);
   --slow:  350ms cubic-bezier(0.4,0,0.2,1);
   --emil:  cubic-bezier(0.16,1,0.3,1);
-  --glass-bg:    rgba(14,14,22,0.92);
-  --glass-border: rgba(74,126,200,0.1);
-  --accent-cyan:      var(--teal);
-  --accent-cyan-soft: var(--teal-soft);
-  --glow-blue:   0 0 24px rgba(74,126,200,0.35);
-  --glow-purple: 0 0 24px rgba(74,126,200,0.2);
-  --glow-cyan:   0 0 24px rgba(58,142,200,0.25);
-  --shadow-soft: 0 10px 30px rgba(0,0,0,0.6);
+  --glass-bg:    rgba(20,18,16,0.92);
+  --glass-border: rgba(240,235,227,0.08);
+  --brand-blue:        #CC785C;
+  --brand-blue-bright: #E8A080;
+  --brand-blue-deep:   #B8644A;
+  --brand-glow:        rgba(204,120,92,0.35);
+  --brand-glow-soft:   rgba(204,120,92,0.15);
+  --brand-black:       #141210;
+  --brand-gunmetal:    #222018;
+  --brand-steel:       #F0EBE3;
+  --accent-cyan:       #CC785C;
+  --accent-cyan-soft:  rgba(204,120,92,0.12);
+  --teal:              #CC785C;
+  --teal-light:        #E8A080;
+  --teal-soft:         rgba(204,120,92,0.12);
+  --glow-blue:   0 0 24px rgba(204,120,92,0.35);
+  --glow-purple: 0 0 24px rgba(204,120,92,0.2);
+  --glow-cyan:   0 0 24px rgba(204,120,92,0.25);
+  --shadow-soft: 0 10px 30px rgba(10,8,6,0.55);
+  --shadow-blue: 0 4px 20px rgba(204,120,92,0.25);
 }

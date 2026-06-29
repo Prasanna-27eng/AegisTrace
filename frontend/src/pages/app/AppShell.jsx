@@ -226,12 +226,12 @@ export default function AppShell() {
         width: 'calc(100% - 48px)',
         maxWidth: 1200,
         height: 48,
-        background: 'rgba(8,8,14,0.70)',
+        background: 'rgba(16,14,11,0.78)',
         backdropFilter: 'blur(20px) saturate(1.6)',
         WebkitBackdropFilter: 'blur(20px) saturate(1.6)',
         borderRadius: 14,
         border: '1px solid rgba(74,126,200,0.12)',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(139,184,232,0.05) inset',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(240,235,227,0.04) inset',
         display: 'flex',
         alignItems: 'center',
         gap: 12,
@@ -244,7 +244,7 @@ export default function AppShell() {
           <img
             src="/assets/brand/aegistrace-icon-transparent.png"
             alt="AegisTrace"
-            style={{ width: 24, height: 24, objectFit: 'contain', filter: 'drop-shadow(0 0 5px rgba(74,126,200,0.7))' }}
+            style={{ width: 24, height: 24, objectFit: 'contain', filter: 'drop-shadow(0 0 5px rgba(204,120,92,0.65))' }}
           />
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '0.2em' }}>
             AEGISTRACE
@@ -272,8 +272,8 @@ export default function AppShell() {
                 outline: 'none',
                 transition: 'background 140ms, border-color 140ms',
               }}
-              onFocus={e => { e.target.style.background = 'rgba(255,255,255,0.1)'; e.target.style.borderColor = 'rgba(74,126,200,0.35)'; }}
-              onBlur={e => { e.target.style.background = 'rgba(255,255,255,0.06)'; e.target.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+              onFocus={e => { e.target.style.background = 'rgba(240,235,227,0.08)'; e.target.style.borderColor = 'rgba(204,120,92,0.35)'; }}
+              onBlur={e => { e.target.style.background = 'rgba(255,255,255,0.06)'; e.target.style.borderColor = 'rgba(240,235,227,0.08)'; }}
             />
             <button
               onClick={() => setPaletteOpen(true)}
@@ -346,8 +346,8 @@ export default function AppShell() {
           <div ref={userRef} style={{ position: 'relative' }}>
             <button
               onClick={() => setUserMenuOpen(o => !o)}
-              style={{ display: 'flex', alignItems: 'center', gap: 7, background: userMenuOpen ? 'rgba(74,126,200,0.15)' : 'rgba(255,255,255,0.06)', border: `1px solid ${userMenuOpen ? 'rgba(74,126,200,0.3)' : 'rgba(255,255,255,0.1)'}`, borderRadius: 8, padding: '4px 10px 4px 5px', cursor: 'pointer', transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(74,126,200,0.12)'; }}
+              style={{ display: 'flex', alignItems: 'center', gap: 7, background: userMenuOpen ? 'rgba(74,126,200,0.15)' : 'rgba(255,255,255,0.06)', border: `1px solid ${userMenuOpen ? 'rgba(204,120,92,0.3)' : 'rgba(240,235,227,0.08)'}`, borderRadius: 8, padding: '4px 10px 4px 5px', cursor: 'pointer', transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(240,235,227,0.08)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = userMenuOpen ? 'rgba(74,126,200,0.15)' : 'rgba(255,255,255,0.06)'; }}
             >
               <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg,#2A5A9E,#4A7EC8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', fontFamily: 'var(--font-mono)' }}>
@@ -429,7 +429,7 @@ function TopbarBtn({ children, onClick, title, active }) {
         transition: 'all 0.15s',
         flexShrink: 0,
       }}
-      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#fff'; }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(240,235,227,0.08)'; e.currentTarget.style.color = '#fff'; }}
       onMouseLeave={e => { e.currentTarget.style.background = active ? 'rgba(239,68,68,0.12)' : 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = active ? '#EF4444' : 'rgba(255,255,255,0.55)'; }}
     >
       {children}

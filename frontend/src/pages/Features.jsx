@@ -5,11 +5,11 @@ import { ArrowRight, CheckCircle } from '../components/icons';
 import CardNav from '../components/CardNav';
 import BorderGlow from '../components/BorderGlow';
 
-const GOLD  = '#F59E0B';
-const DARK  = '#050505';
-const DARK2 = '#0A0A18';
-const LIGHT = '#0E0E16';
-const INK   = '#BDD4E8';
+const GOLD  = '#CC785C';
+const DARK  = '#141210';
+const DARK2 = '#141210';
+const LIGHT = '#141210';
+const INK   = '#F0EBE3';
 const E     = [0.16, 1, 0.3, 1];
 
 /* ─── Reveal ─────────────────────────────────────────────────────────────── */
@@ -46,16 +46,16 @@ function QuickNav({ active }) {
       position: 'sticky', top: 52, zIndex: 100,
       background: 'rgba(5,5,5,0.96)', backdropFilter: 'blur(16px)',
       WebkitBackdropFilter: 'blur(16px)',
-      borderBottom: '1px solid rgba(74,126,200,0.08)',
+      borderBottom: '1px solid rgba(204,120,92,0.08)',
       overflowX: 'auto', scrollbarWidth: 'none',
     }}>
       <div style={{ display: 'flex', gap: 4, padding: '0 clamp(24px,5vw,72px)', height: 44, alignItems: 'center', width: 'max-content', minWidth: '100%' }}>
         {JUMP_LINKS.map(({ label, href }) => (
           <a key={href} href={href} style={{
-            fontFamily: "'IBM Plex Sans', sans-serif",
+            fontFamily: "'DM Sans', system-ui, sans-serif",
             fontSize: 12, fontWeight: 500,
-            color: active === href ? '#000' : 'rgba(189,212,232,0.5)',
-            background: active === href ? '#4A7EC8' : 'transparent',
+            color: active === href ? '#000' : 'rgba(240,235,227,0.5)',
+            background: active === href ? '#CC785C' : 'transparent',
             padding: '4px 12px',
             textDecoration: 'none',
             whiteSpace: 'nowrap',
@@ -71,18 +71,18 @@ function QuickNav({ active }) {
 /* ─── Module Section wrapper ─────────────────────────────────────────────── */
 function ModuleSection({ id, num, name, tagline, dark = false, children }) {
   const bg = dark ? DARK2 : LIGHT;
-  const headingColor = dark ? INK : '#BDD4E8';
+  const headingColor = dark ? INK : '#F0EBE3';
   const numColor = GOLD;
-  const taglineColor = dark ? 'rgba(189,212,232,0.5)' : '#7A9DB8';
+  const taglineColor = dark ? 'rgba(240,235,227,0.5)' : 'rgba(240,235,227,0.5)';
 
   return (
-    <section id={id} style={{ background: bg, padding: 'clamp(80px,10vw,120px) clamp(24px,5vw,72px)', borderTop: dark ? '1px solid rgba(74,126,200,0.08)' : '1px solid rgba(74,126,200,0.06)' }}>
+    <section id={id} style={{ background: bg, padding: 'clamp(80px,10vw,120px) clamp(24px,5vw,72px)', borderTop: dark ? '1px solid rgba(204,120,92,0.08)' : '1px solid rgba(204,120,92,0.06)' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <Reveal>
           <div style={{ marginBottom: 40 }}>
             <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, color: numColor, letterSpacing: '0.18em', marginBottom: 10 }}>MODULE {num}</div>
-            <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 'clamp(28px,3.5vw,44px)', fontWeight: 800, color: headingColor, margin: '0 0 10px', lineHeight: 1.1, letterSpacing: '-0.02em' }}>{name}</h2>
-            <p style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 16, color: taglineColor, margin: 0, fontStyle: 'italic' }}>{tagline}</p>
+            <h2 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 'clamp(28px,3.5vw,44px)', fontWeight: 800, color: headingColor, margin: '0 0 10px', lineHeight: 1.1, letterSpacing: '-0.02em' }}>{name}</h2>
+            <p style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: 16, color: taglineColor, margin: 0, fontStyle: 'italic' }}>{tagline}</p>
           </div>
         </Reveal>
         {children}
@@ -97,9 +97,9 @@ function Pill({ label, dark = false }) {
     <span style={{
       fontFamily: "'IBM Plex Mono', monospace",
       fontSize: 11,
-      color: '#8BB8E8',
-      background: dark ? 'rgba(74,126,200,0.12)' : 'rgba(74,126,200,0.08)',
-      border: dark ? '1px solid rgba(74,126,200,0.2)' : '1px solid rgba(74,126,200,0.15)',
+      color: '#E8A080',
+      background: dark ? 'rgba(204,120,92,0.12)' : 'rgba(204,120,92,0.08)',
+      border: dark ? '1px solid rgba(204,120,92,0.2)' : '1px solid rgba(204,120,92,0.15)',
       padding: '4px 10px',
       display: 'inline-block',
       marginRight: 6, marginBottom: 6,
@@ -112,14 +112,14 @@ function WhyMatters({ text, dark = false }) {
   return (
     <Reveal delay={0.12}>
       <div style={{
-        background: 'rgba(74,126,200,0.06)',
-        border: `1px solid rgba(74,126,200,0.15)`,
+        background: 'rgba(204,120,92,0.06)',
+        border: `1px solid rgba(204,120,92,0.15)`,
         borderLeft: `3px solid ${GOLD}`,
         padding: '16px 20px',
         marginTop: 28,
       }}>
         <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: GOLD, letterSpacing: '0.18em', marginBottom: 6 }}>WHY IT MATTERS</div>
-        <p style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 14, color: 'rgba(189,212,232,0.7)', lineHeight: 1.68, margin: 0 }}>{text}</p>
+        <p style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: 14, color: 'rgba(240,235,227,0.7)', lineHeight: 1.68, margin: 0 }}>{text}</p>
       </div>
     </Reveal>
   );
@@ -129,7 +129,7 @@ function WhyMatters({ text, dark = false }) {
 function Body({ children, dark = false }) {
   return (
     <Reveal delay={0.06}>
-      <p style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 16, color: dark ? '#94A3B8' : '#7A9DB8', lineHeight: 1.72, marginBottom: 20, maxWidth: 760 }}>
+      <p style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: 16, color: dark ? '#94A3B8' : 'rgba(240,235,227,0.5)', lineHeight: 1.72, marginBottom: 20, maxWidth: 760 }}>
         {children}
       </p>
     </Reveal>
@@ -148,24 +148,24 @@ export default function Features() {
       <style>{`
         * { box-sizing: border-box; }
         a { transition: color 140ms; }
-        ::selection { background: rgba(74,126,200,0.3); color: #BDD4E8; }
+        ::selection { background: rgba(204,120,92,0.3); color: #BDD4E8; }
         @media (prefers-reduced-motion: reduce) {
           *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
       `}</style>
 
       {/* ── Hero ── */}
-      <section style={{ background: 'linear-gradient(135deg, #050505, #0F1428)', padding: 'clamp(100px,12vw,140px) clamp(24px,5vw,72px)', paddingTop: 'calc(clamp(100px,12vw,140px) + 52px)' }}>
+      <section style={{ background: 'linear-gradient(160deg, #141210, #1C1916)', padding: 'clamp(100px,12vw,140px) clamp(24px,5vw,72px)', paddingTop: 'calc(clamp(100px,12vw,140px) + 52px)' }}>
         <div style={{ maxWidth: 800 }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2, ease: E }}
           >
-            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: '#8BB8E8', letterSpacing: '0.2em', marginBottom: 16 }}>PLATFORM CAPABILITIES</div>
-            <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 'clamp(40px,5vw,68px)', fontWeight: 800, color: INK, margin: '0 0 20px', lineHeight: 1.05 }}>
+            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: '#E8A080', letterSpacing: '0.2em', marginBottom: 16 }}>PLATFORM CAPABILITIES</div>
+            <h1 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 'clamp(40px,5vw,68px)', fontWeight: 800, color: INK, margin: '0 0 20px', lineHeight: 1.05 }}>
               Every Module.<br/>Every Detail.
             </h1>
-            <p style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 17, color: '#7A9DB8', lineHeight: 1.7, maxWidth: 600, margin: 0 }}>
+            <p style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: 17, color: 'rgba(240,235,227,0.5)', lineHeight: 1.7, maxWidth: 600, margin: 0 }}>
               A complete technical breakdown of the 12 core modules, the Grassroots Security Toolkit, and the enterprise capabilities that make AegisTrace production-ready for regulated industries.
             </p>
           </motion.div>
@@ -184,12 +184,12 @@ export default function Features() {
         </Body>
         <Reveal delay={0.08}>
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 13, fontWeight: 600, color: '#BDD4E8', marginBottom: 10 }}>SLA Tiers</div>
+            <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: 13, fontWeight: 600, color: '#F0EBE3', marginBottom: 10 }}>SLA Tiers</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 }}>
               {[['Critical', '4h', 'critical', '#EF4444'], ['High', '8h', 'high', '#F97316'], ['Medium', '48h', 'info', '#EAB308'], ['Low', '168h', 'info', '#22C55E']].map(([tier, time, sev, col]) => (
                 <BorderGlow key={tier} severity={sev} radius={6} speed={sev === 'critical' ? 2.5 : 4} innerStyle={{ padding: '12px 16px' }}>
                   <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: col, marginBottom: 4 }}>{tier}</div>
-                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 18, fontWeight: 700, color: '#BDD4E8' }}>{time}</div>
+                  <div style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 18, fontWeight: 700, color: '#F0EBE3' }}>{time}</div>
                 </BorderGlow>
               ))}
             </div>
@@ -197,8 +197,8 @@ export default function Features() {
         </Reveal>
         <Reveal delay={0.1}>
           <div style={{ marginBottom: 16 }}>
-            <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 13, fontWeight: 600, color: '#BDD4E8', marginBottom: 10 }}>15 Workspace Tabs</div>
-            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, color: '#7A9DB8', background: '#141420', border: '1px solid rgba(74,126,200,0.12)', padding: '12px 16px', lineHeight: 1.9 }}>
+            <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: 13, fontWeight: 600, color: '#F0EBE3', marginBottom: 10 }}>15 Workspace Tabs</div>
+            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, color: 'rgba(240,235,227,0.5)', background: '#141420', border: '1px solid rgba(204,120,92,0.12)', padding: '12px 16px', lineHeight: 1.9 }}>
               Overview · Investigation · IOCs · Terminal · Timeline · Trust Timeline · Playbook · AI Analysis · AI Chat · Vision · Rules · Comments · Provenance · Report · EDR
             </div>
           </div>
@@ -221,9 +221,9 @@ export default function Features() {
         <Reveal delay={0.08}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 2, marginBottom: 20 }}>
             {['User', 'Service Account', 'API Key', 'Token', 'Device', 'AI Agent', 'Prompt'].map((node, i) => (
-              <div key={node} style={{ background: 'rgba(74,126,200,0.04)', border: '1px solid rgba(74,126,200,0.1)', padding: '14px 16px' }}>
+              <div key={node} style={{ background: 'rgba(204,120,92,0.04)', border: '1px solid rgba(204,120,92,0.1)', padding: '14px 16px' }}>
                 <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: GOLD, letterSpacing: '0.16em', marginBottom: 6 }}>NODE {String(i+1).padStart(2,'0')}</div>
-                <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, fontWeight: 600, color: INK }}>{node}</div>
+                <div style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 14, fontWeight: 600, color: INK }}>{node}</div>
               </div>
             ))}
           </div>
@@ -253,10 +253,10 @@ export default function Features() {
               { name: 'Off-Hours Access', what: 'Authentication outside established user behavioral windows', window: '24h profile' },
               { name: 'Lateral Movement', what: 'Cross-system access chains inconsistent with role profile', window: '2h' },
             ].map(({ name, what, window: w }) => (
-              <div key={name} style={{ background: '#141420', border: '1px solid rgba(74,126,200,0.12)', padding: '16px 20px', borderLeft: `3px solid ${GOLD}` }}>
+              <div key={name} style={{ background: '#141420', border: '1px solid rgba(204,120,92,0.12)', padding: '16px 20px', borderLeft: `3px solid ${GOLD}` }}>
                 <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: GOLD, letterSpacing: '0.15em', marginBottom: 6 }}>WINDOW: {w}</div>
-                <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 700, color: '#BDD4E8', marginBottom: 6 }}>{name}</div>
-                <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 13, color: '#7A9DB8', lineHeight: 1.6 }}>{what}</div>
+                <div style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 15, fontWeight: 700, color: '#F0EBE3', marginBottom: 6 }}>{name}</div>
+                <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: 13, color: 'rgba(240,235,227,0.5)', lineHeight: 1.6 }}>{what}</div>
               </div>
             ))}
           </div>
@@ -279,9 +279,9 @@ export default function Features() {
         <Reveal delay={0.1}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2, marginBottom: 4 }}>
             {[['±5s', 'Temporal correlation window'], ['6', 'Correlated event sources'], ['MITRE', 'ATT&CK technique mapping'], ['AI', 'Narrative chain generation']].map(([val, label]) => (
-              <div key={label} style={{ background: 'rgba(74,126,200,0.04)', border: '1px solid rgba(74,126,200,0.08)', padding: '16px 20px', textAlign: 'center' }}>
+              <div key={label} style={{ background: 'rgba(204,120,92,0.04)', border: '1px solid rgba(204,120,92,0.08)', padding: '16px 20px', textAlign: 'center' }}>
                 <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 26, fontWeight: 700, color: GOLD, marginBottom: 6 }}>{val}</div>
-                <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 12, color: 'rgba(189,212,232,0.45)' }}>{label}</div>
+                <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: 12, color: 'rgba(240,235,227,0.45)' }}>{label}</div>
               </div>
             ))}
           </div>
@@ -319,9 +319,9 @@ export default function Features() {
         <Reveal delay={0.08}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2, marginBottom: 20 }}>
             {[['4h', 'Review cycle'], ['±20%', 'Max adjustment bound'], ['Full', 'Audit trail'], ['Manual', 'Override always available']].map(([val, label]) => (
-              <div key={label} style={{ background: 'rgba(74,126,200,0.04)', border: '1px solid rgba(74,126,200,0.08)', padding: '20px', textAlign: 'center' }}>
+              <div key={label} style={{ background: 'rgba(204,120,92,0.04)', border: '1px solid rgba(204,120,92,0.08)', padding: '20px', textAlign: 'center' }}>
                 <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 22, fontWeight: 700, color: GOLD, marginBottom: 6 }}>{val}</div>
-                <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 12, color: 'rgba(189,212,232,0.45)' }}>{label}</div>
+                <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: 12, color: 'rgba(240,235,227,0.45)' }}>{label}</div>
               </div>
             ))}
           </div>
@@ -349,9 +349,9 @@ export default function Features() {
               { name: 'Replay Protection', desc: '3-layer: ±30s timestamp + monotonic SeqNum + 1000-nonce cache — four independent barriers' },
               { name: 'Guardian Process', desc: 'Watchdog monitors agent health, auto-restarts on tamper or crash' },
             ].map(({ name, desc }) => (
-              <div key={name} style={{ background: '#141420', border: '1px solid rgba(74,126,200,0.12)', padding: '16px 20px' }}>
-                <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, fontWeight: 700, color: '#BDD4E8', marginBottom: 6 }}>{name}</div>
-                <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 13, color: '#7A9DB8', lineHeight: 1.58 }}>{desc}</div>
+              <div key={name} style={{ background: '#141420', border: '1px solid rgba(204,120,92,0.12)', padding: '16px 20px' }}>
+                <div style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 14, fontWeight: 700, color: '#F0EBE3', marginBottom: 6 }}>{name}</div>
+                <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: 13, color: 'rgba(240,235,227,0.5)', lineHeight: 1.58 }}>{desc}</div>
               </div>
             ))}
           </div>
@@ -369,9 +369,9 @@ export default function Features() {
         <Reveal delay={0.08}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 2, marginBottom: 20 }}>
             {[['<1s', 'Groq AI triage latency'], ['≥92%', 'Auto-handle threshold'], ['≥70%', 'HITL queue threshold'], ['8', 'Honeypot endpoints'], ['15s', 'Auto-refresh interval']].map(([val, label]) => (
-              <div key={label} style={{ background: 'rgba(74,126,200,0.04)', border: '1px solid rgba(74,126,200,0.08)', padding: '16px', textAlign: 'center' }}>
+              <div key={label} style={{ background: 'rgba(204,120,92,0.04)', border: '1px solid rgba(204,120,92,0.08)', padding: '16px', textAlign: 'center' }}>
                 <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 20, fontWeight: 700, color: GOLD, marginBottom: 4 }}>{val}</div>
-                <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 11, color: 'rgba(189,212,232,0.4)' }}>{label}</div>
+                <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: 11, color: 'rgba(240,235,227,0.4)' }}>{label}</div>
               </div>
             ))}
           </div>
@@ -410,12 +410,12 @@ export default function Features() {
               { cat: 'RFID / NFC', items: ['Proxmark3 logs', 'ACR122U captures', 'RFID cloning logs', 'NFC intercepts'] },
               { cat: 'Network Attack', items: ['LAN Turtle data'] },
             ].map(({ cat, items }) => (
-              <div key={cat} style={{ background: 'rgba(74,126,200,0.04)', border: '1px solid rgba(74,126,200,0.1)', padding: '16px 20px' }}>
+              <div key={cat} style={{ background: 'rgba(204,120,92,0.04)', border: '1px solid rgba(204,120,92,0.1)', padding: '16px 20px' }}>
                 <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: GOLD, letterSpacing: '0.15em', marginBottom: 10 }}>{cat}</div>
                 {items.map(item => (
                   <div key={item} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
                     <span style={{ color: GOLD, fontSize: 8 }}>▸</span>
-                    <span style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 12, color: 'rgba(189,212,232,0.5)' }}>{item}</span>
+                    <span style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: 12, color: 'rgba(240,235,227,0.5)' }}>{item}</span>
                   </div>
                 ))}
               </div>
@@ -450,7 +450,7 @@ export default function Features() {
         <Reveal delay={0.08}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 2, marginBottom: 20 }}>
             {['VirusTotal', 'Shodan', 'MalwareBazaar', 'URLhaus', 'ThreatFox', 'GreyNoise', 'IPInfo'].map(src => (
-              <div key={src} style={{ background: 'rgba(74,126,200,0.04)', border: '1px solid rgba(74,126,200,0.1)', padding: '14px 16px', textAlign: 'center' }}>
+              <div key={src} style={{ background: 'rgba(204,120,92,0.04)', border: '1px solid rgba(204,120,92,0.1)', padding: '14px 16px', textAlign: 'center' }}>
                 <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 13, fontWeight: 600, color: GOLD }}>{src}</div>
               </div>
             ))}
@@ -467,12 +467,12 @@ export default function Features() {
       {/* ══════════════════════════════════════════════
           GRASSROOTS TOOLKIT
       ══════════════════════════════════════════════ */}
-      <section id="toolkit-section" style={{ background: LIGHT, padding: 'clamp(80px,10vw,120px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(74,126,200,0.06)' }}>
+      <section id="toolkit-section" style={{ background: LIGHT, padding: 'clamp(80px,10vw,120px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(204,120,92,0.06)' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <Reveal>
             <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: GOLD, letterSpacing: '0.2em', marginBottom: 12 }}>OPEN SOURCE</div>
-            <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 'clamp(28px,3.5vw,44px)', fontWeight: 800, color: '#BDD4E8', margin: '0 0 12px', lineHeight: 1.1 }}>The Grassroots Security Toolkit</h2>
-            <p style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 16, color: '#7A9DB8', marginBottom: 40, maxWidth: 640 }}>
+            <h2 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 'clamp(28px,3.5vw,44px)', fontWeight: 800, color: '#F0EBE3', margin: '0 0 12px', lineHeight: 1.1 }}>The Grassroots Security Toolkit</h2>
+            <p style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: 16, color: 'rgba(240,235,227,0.5)', marginBottom: 40, maxWidth: 640 }}>
               5 standalone PyPI packages built from the same codebase as AegisTrace. Free. Open source. Designed for analysts who need specific capabilities without the full platform.
             </p>
           </Reveal>
@@ -485,9 +485,9 @@ export default function Features() {
               { pkg: 'shadow-sniffer', desc: 'Shadow AI detector. Identifies unauthorized LLM API calls in network traffic by matching against 14+ known AI API domains and patterns.', pills: ['14+ domains', 'PCAP input', 'Real-time mode', 'SIEM export'] },
             ].map(({ pkg, desc, pills }) => (
               <Reveal key={pkg} delay={0.04}>
-                <div style={{ background: '#141420', border: '1px solid rgba(74,126,200,0.12)', padding: '24px', height: '100%', borderTop: `3px solid ${GOLD}` }}>
-                  <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 14, fontWeight: 600, color: '#BDD4E8', marginBottom: 10 }}>{pkg}</div>
-                  <p style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 13, color: '#7A9DB8', lineHeight: 1.68, marginBottom: 14 }}>{desc}</p>
+                <div style={{ background: '#141420', border: '1px solid rgba(204,120,92,0.12)', padding: '24px', height: '100%', borderTop: `3px solid ${GOLD}` }}>
+                  <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 14, fontWeight: 600, color: '#F0EBE3', marginBottom: 10 }}>{pkg}</div>
+                  <p style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: 13, color: 'rgba(240,235,227,0.5)', lineHeight: 1.68, marginBottom: 14 }}>{desc}</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap' }}>
                     {pills.map(p => <Pill key={p} label={p}/>)}
                   </div>
@@ -501,11 +501,11 @@ export default function Features() {
       {/* ══════════════════════════════════════════════
           ENTERPRISE CAPABILITIES
       ══════════════════════════════════════════════ */}
-      <section id="enterprise-section" style={{ background: DARK2, padding: 'clamp(80px,10vw,120px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(74,126,200,0.08)' }}>
+      <section id="enterprise-section" style={{ background: DARK2, padding: 'clamp(80px,10vw,120px) clamp(24px,5vw,72px)', borderTop: '1px solid rgba(204,120,92,0.08)' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <Reveal>
             <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: GOLD, letterSpacing: '0.2em', marginBottom: 12 }}>ENTERPRISE</div>
-            <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 'clamp(28px,3.5vw,44px)', fontWeight: 800, color: INK, margin: '0 0 40px', lineHeight: 1.1 }}>Enterprise Capabilities</h2>
+            <h2 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 'clamp(28px,3.5vw,44px)', fontWeight: 800, color: INK, margin: '0 0 40px', lineHeight: 1.1 }}>Enterprise Capabilities</h2>
           </Reveal>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 2 }}>
             {[
@@ -517,9 +517,9 @@ export default function Features() {
               { title: 'Integrations', body: 'REST API for every platform capability. Webhook support for inbound events. Native connectors for Okta, Microsoft Sentinel, and Splunk.', pills: ['REST API', 'Webhooks', 'Okta', 'Sentinel', 'Splunk'] },
             ].map(({ title, body, pills }) => (
               <Reveal key={title} delay={0.05}>
-                <div style={{ background: 'rgba(74,126,200,0.03)', border: '1px solid rgba(74,126,200,0.1)', padding: '28px', height: '100%' }}>
-                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 17, fontWeight: 700, color: INK, marginBottom: 10 }}>{title}</div>
-                  <p style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 14, color: '#7A9DB8', lineHeight: 1.68, marginBottom: 14 }}>{body}</p>
+                <div style={{ background: 'rgba(204,120,92,0.03)', border: '1px solid rgba(204,120,92,0.1)', padding: '28px', height: '100%' }}>
+                  <div style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 17, fontWeight: 700, color: INK, marginBottom: 10 }}>{title}</div>
+                  <p style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: 14, color: 'rgba(240,235,227,0.5)', lineHeight: 1.68, marginBottom: 14 }}>{body}</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap' }}>
                     {pills.map(p => <Pill key={p} label={p} dark/>)}
                   </div>
@@ -533,20 +533,20 @@ export default function Features() {
       {/* ══════════════════════════════════════════════
           FINAL CTA
       ══════════════════════════════════════════════ */}
-      <section style={{ background: DARK, padding: 'clamp(100px,14vw,160px) clamp(24px,5vw,72px)', textAlign: 'center', borderTop: '1px solid rgba(74,126,200,0.06)' }}>
+      <section style={{ background: DARK, padding: 'clamp(100px,14vw,160px) clamp(24px,5vw,72px)', textAlign: 'center', borderTop: '1px solid rgba(204,120,92,0.06)' }}>
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
           <Reveal>
             <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: GOLD, letterSpacing: '0.2em', marginBottom: 20 }}>SEE IT IN ACTION</div>
-            <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 'clamp(32px,4.5vw,56px)', fontWeight: 800, color: INK, margin: '0 0 16px', lineHeight: 1.05, letterSpacing: '-0.02em' }}>
+            <h2 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 'clamp(32px,4.5vw,56px)', fontWeight: 800, color: INK, margin: '0 0 16px', lineHeight: 1.05, letterSpacing: '-0.02em' }}>
               See it in action.
             </h2>
-            <p style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 16, color: '#7A9DB8', lineHeight: 1.7, marginBottom: 36 }}>
+            <p style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: 16, color: 'rgba(240,235,227,0.5)', lineHeight: 1.7, marginBottom: 36 }}>
               Book a private demo with the founder. Every module shown live, every question answered.
             </p>
             <a href="/app/login" target="_blank" rel="noopener noreferrer" style={{
               display: 'inline-flex', alignItems: 'center', gap: 10,
               background: GOLD, color: '#000', fontWeight: 700,
-              fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 15,
+              fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: 15,
               padding: '16px 36px', textDecoration: 'none',
               letterSpacing: '0.02em',
             }}>
@@ -557,18 +557,18 @@ export default function Features() {
       </section>
 
       {/* ── Footer ── */}
-      <footer style={{ borderTop: '1px solid rgba(74,126,200,0.06)', padding: '28px clamp(24px,5vw,72px)', background: DARK }}>
+      <footer style={{ borderTop: '1px solid rgba(204,120,92,0.06)', padding: '28px clamp(24px,5vw,72px)', background: DARK }}>
         <div style={{ maxWidth: 1240, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <img src="/assets/brand/aegistrace-icon-transparent.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain', opacity: 0.5 }}/>
-            <span style={{ fontFamily: "'IBM Plex Mono',monospace", color: 'rgba(189,212,232,0.28)', fontSize: 11, letterSpacing: '0.16em' }}>AEGISTRACE</span>
+            <span style={{ fontFamily: "'IBM Plex Mono',monospace", color: 'rgba(240,235,227,0.28)', fontSize: 11, letterSpacing: '0.16em' }}>AEGISTRACE</span>
           </div>
           <div style={{ display: 'flex', gap: 24 }}>
             {[['/', 'Home'], ['/mission', 'Mission'], ['/features', 'Features'], ['/platform', 'Platform'], ['/tools', 'Tools']].map(([to, label]) => (
-              <Link key={to} to={to} style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: 'rgba(189,212,232,0.25)', fontSize: 12, textDecoration: 'none' }}>{label}</Link>
+              <Link key={to} to={to} style={{ fontFamily: "'DM Sans', system-ui, sans-serif", color: 'rgba(240,235,227,0.25)', fontSize: 12, textDecoration: 'none' }}>{label}</Link>
             ))}
           </div>
-          <span style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: 'rgba(189,212,232,0.15)', fontSize: 11 }}>© 2026 Prasanna Kumar</span>
+          <span style={{ fontFamily: "'DM Sans', system-ui, sans-serif", color: 'rgba(240,235,227,0.15)', fontSize: 11 }}>© 2026 Prasanna Kumar</span>
         </div>
       </footer>
     </div>
