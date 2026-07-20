@@ -98,6 +98,7 @@ const SimulationHub    = lazy(() => import('./pages/app/SimulationHub'));
 const DeploymentHub    = lazy(() => import('./pages/app/DeploymentHub'));
 const DefenseConsole   = lazy(() => import('./pages/app/DefenseConsole'));
 const Playbooks        = lazy(() => import('./pages/app/Playbooks'));
+const DetectionLibrary = lazy(() => import('./pages/app/DetectionLibrary'));
 const LogInvestigation = lazy(() => import('./pages/app/LogInvestigation'));
 const EDRPage          = lazy(() => import('./pages/app/EDRPage'));
 const MalwareTools     = lazy(() => import('./pages/app/MalwareTools'));
@@ -158,6 +159,7 @@ export default function App() {
             <Route path="deploy"            element={<DeploymentHub />} />
             <Route path="defense-console"   element={<DefenseConsole />} />
             <Route path="playbooks"         element={<Playbooks />} />
+            <Route path="detections"        element={<DetectionLibrary />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

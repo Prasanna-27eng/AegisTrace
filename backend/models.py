@@ -851,6 +851,7 @@ class DetectionRule(SQLModel, table=True):
     splunk_spl:       Optional[str] = Field(default=None, sa_column=Column(Text))
     description:      Optional[str] = None
     ai_confidence:    float         = 0.0
+    severity:         Optional[str] = None  # low | medium | high | critical — from vendored rule sources (e.g. Sigma `level`); LLM-generated rules leave this null
     reviewed_by:      Optional[str] = None
     review_notes:     Optional[str] = None
     generated_at:     datetime      = Field(default_factory=datetime.utcnow)

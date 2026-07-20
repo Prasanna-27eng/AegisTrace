@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import cytoscape from 'cytoscape';
+import fcose from 'cytoscape-fcose';
 import {
   Plus, Trash2, RefreshCw, AlertTriangle, Shield, Key,
   Monitor, Bot, User, Link, Loader2, X, ChevronRight,
@@ -9,16 +11,18 @@ import {
 import api from '../../api/client';
 import useStore from '../../store/useStore';
 
+cytoscape.use(fcose);
+
 const MONO = { fontFamily: 'JetBrains Mono, monospace' };
 
 const NODE_TYPES = [
-  { id: 'user',            label: 'Human User',      color: 'var(--accent)',  Icon: User },
+  { id: 'user',            label: 'Human User',      color: '#CC785C',  Icon: User },
   { id: 'service_account', label: 'Service Account', color: '#EAB308',  Icon: Shield },
-  { id: 'api_key',         label: 'API Key',          color: 'rgba(26,22,18,0.7)',  Icon: Key },
+  { id: 'api_key',         label: 'API Key',          color: '#1A1612',  Icon: Key },
   { id: 'token',           label: 'Token',            color: '#F97316',  Icon: Key },
   { id: 'device',          label: 'Device',           color: '#22C55E',  Icon: Monitor },
-  { id: 'agent',           label: 'AI Agent',         color: 'var(--accent)',  Icon: Bot },
-  { id: 'prompt',          label: 'Prompt',           color: 'var(--text-muted)',  Icon: GitMerge },
+  { id: 'agent',           label: 'AI Agent',         color: '#CC785C',  Icon: Bot },
+  { id: 'prompt',          label: 'Prompt',           color: '#928E88',  Icon: GitMerge },
 ];
 
 const TYPE_MAP = Object.fromEntries(NODE_TYPES.map(t => [t.id, t]));
@@ -40,9 +44,71 @@ function NodeIcon({ type, size = 14 }) {
 function riskColor(score) {
   if (score >= 80) return '#EF4444';
   if (score >= 50) return '#EAB308';
-  if (score >= 20) return 'rgba(26,22,18,0.7)';
+  if (score >= 20) return '#1A1612';
   return '#22C55E';
 }
+
+// ── Cytoscape node visual: fill + border + risk-ring, replicated as an SVG
+// data-URI background-image so the ring can sit *outside* the node border
+// (r+4) the same way the original canvas draw did — Cytoscape's own pie-*
+// style props only fill the node interior, which isn't the same visual. ────
+function polarToCartesian(cx, cy, r, angleDeg) {
+  const rad = (angleDeg - 90) * (Math.PI / 180);
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+
+function describeArc(cx, cy, r, endAngleDeg) {
+  const clampedEnd = Math.min(endAngleDeg, 359.9); // avoid degenerate 360° arc
+  const start = polarToCartesian(cx, cy, r, 0);
+  const end = polarToCartesian(cx, cy, r, clampedEnd);
+  const largeArcFlag = clampedEnd > 180 ? 1 : 0;
+  return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`;
+}
+
+function nodeVisualDataUri(n, selected) {
+  const r = 18, ringR = 22, size = 64, c = size / 2;
+  const meta = TYPE_MAP[n.type] || NODE_TYPES[0];
+  const fill = n.is_compromised ? 'rgba(239,68,68,0.2)' : `${meta.color}22`;
+  const stroke = selected ? '#FFFFFF' : (n.is_compromised ? '#EF4444' : meta.color);
+  const strokeWidth = selected ? 2 : (n.is_compromised ? 2 : 1.5);
+  const score = n.risk_score ?? 0;
+  const arcPath = score > 20 ? describeArc(c, c, ringR, (score / 100) * 360) : null;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">` +
+    `<circle cx="${c}" cy="${c}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}"/>` +
+    (arcPath ? `<path d="${arcPath}" fill="none" stroke="${riskColor(score)}88" stroke-width="2"/>` : '') +
+    `</svg>`;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
+
+function isDimmed(n, riskFilter, typeFilter) {
+  const score = n.risk_score ?? 0;
+  const belowRisk = score < riskFilter;
+  const wrongType = typeFilter !== null && n.type !== typeFilter;
+  return belowRisk || wrongType;
+}
+
+// Cytoscape nodes and edges share ONE id namespace — this backend's node and
+// edge ids are both independent auto-increment sequences starting at 1, so
+// without prefixing, node id 1 and edge id 1 collide and cy.add() throws.
+const cyNodeId = id => `n${id}`;
+const cyEdgeId = id => `e${id}`;
+
+const FCOSE_LAYOUT = {
+  name: 'fcose',
+  quality: 'default',
+  randomize: true,
+  animate: true,
+  animationDuration: 400,
+  fit: true,
+  padding: 40,
+  nodeRepulsion: 8000,
+  idealEdgeLength: 120,
+  edgeElasticity: 0.45,
+  gravity: 0.25,
+  numIter: 2500,
+  tile: true,
+  packComponents: true,
+};
 
 // ── Risk Sparkline (SVG) ───────────────────────────────────────────────────────
 function RiskSparkline({ data }) {
@@ -296,221 +362,167 @@ function NodeDetailOverlay({ node, onClose }) {
   );
 }
 
-// ── Simple force-directed graph via Canvas ────────────────────────────────────
+// ── Identity graph via Cytoscape.js ───────────────────────────────────────────
+// Scope is strictly internal to this component — same external props contract
+// (nodes, edges, onNodeClick, selectedId, riskFilter, typeFilter) as the old
+// hand-rolled canvas version, so nothing outside this function needs to change.
 function GraphCanvas({ nodes, edges, onNodeClick, selectedId, riskFilter, typeFilter }) {
-  const canvasRef = useRef(null);
-  const posRef = useRef({});
-  const velRef = useRef({});
-  const dragRef = useRef(null);
-  const animRef = useRef(null);
+  const containerRef = useRef(null);
+  const cyRef = useRef(null);
+  const nodesRef = useRef(nodes);
+  const selectedIdRef = useRef(selectedId);
+  const riskFilterRef = useRef(riskFilter);
+  const typeFilterRef = useRef(typeFilter);
 
-  // Initialize positions
-  useEffect(() => {
-    nodes.forEach(n => {
-      if (!posRef.current[n.id]) {
-        const angle = Math.random() * Math.PI * 2;
-        const r = 100 + Math.random() * 200;
-        posRef.current[n.id] = { x: 400 + Math.cos(angle) * r, y: 300 + Math.sin(angle) * r };
-        velRef.current[n.id] = { x: 0, y: 0 };
-      }
+  useEffect(() => { nodesRef.current = nodes; }, [nodes]);
+  useEffect(() => { selectedIdRef.current = selectedId; }, [selectedId]);
+  useEffect(() => { riskFilterRef.current = riskFilter; }, [riskFilter]);
+  useEffect(() => { typeFilterRef.current = typeFilter; }, [typeFilter]);
+
+  const applyDim = useCallback((cy, rFilter, tFilter) => {
+    cy.batch(() => {
+      cy.nodes().forEach(ele => {
+        ele.toggleClass('dimmed', isDimmed(ele.data(), rFilter, tFilter));
+      });
     });
-  }, [nodes]);
+  }, []);
 
+  // Mount once — create the cytoscape instance, tear down on unmount.
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let running = true;
+    const container = containerRef.current;
+    if (!container) return;
 
-    function resize() {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = canvas.offsetWidth * dpr;
-      canvas.height = canvas.offsetHeight * dpr;
-      ctx.scale(dpr, dpr);
-    }
-    resize();
-    window.addEventListener('resize', resize);
+    const cy = cytoscape({
+      container,
+      elements: [],
+      minZoom: 0.2,
+      maxZoom: 3,
+      style: [
+        {
+          selector: 'node',
+          style: {
+            shape: 'ellipse',
+            width: 36,
+            height: 36,
+            'background-opacity': 0,
+            'background-image': ele => nodeVisualDataUri(ele.data(), ele.hasClass('selected')),
+            'background-width': '178%',
+            'background-height': '178%',
+            'background-clip': 'none',
+            label: ele => {
+              const l = ele.data('label') || '';
+              return l.length > 14 ? l.slice(0, 12) + '…' : l;
+            },
+            'text-valign': 'bottom',
+            'text-margin-y': 6,
+            'font-size': 10,
+            'font-family': 'JetBrains Mono, monospace',
+            color: ele => (ele.hasClass('selected') ? '#FFFFFF' : 'rgba(240,240,248,0.75)'),
+            'font-weight': ele => (ele.hasClass('selected') ? 600 : 400),
+          },
+        },
+        { selector: 'node.dimmed', style: { opacity: 0.15 } },
+        {
+          selector: 'edge',
+          style: {
+            width: 1,
+            'line-color': 'rgba(26,22,18,0.1)',
+            'curve-style': 'straight',
+            'target-arrow-shape': 'none',
+            label: 'data(relationship)',
+            'font-size': 9,
+            'font-family': 'JetBrains Mono, monospace',
+            color: 'rgba(136,136,136,0.7)',
+            'text-background-opacity': 0,
+          },
+        },
+      ],
+      layout: { name: 'preset' },
+    });
 
-    function simulate() {
-      const W = canvas.offsetWidth, H = canvas.offsetHeight;
-      const ids = nodes.map(n => n.id);
+    cy.on('tap', 'node', evt => {
+      const cyId = evt.target.id();
+      const original = nodesRef.current.find(n => cyNodeId(n.id) === cyId);
+      onNodeClick(original || null);
+    });
+    cy.on('tap', evt => {
+      if (evt.target === cy) onNodeClick(null);
+    });
 
-      // Repulsion
-      for (let i = 0; i < ids.length; i++) {
-        for (let j = i + 1; j < ids.length; j++) {
-          const a = posRef.current[ids[i]];
-          const b = posRef.current[ids[j]];
-          if (!a || !b) continue;
-          const dx = a.x - b.x, dy = a.y - b.y;
-          const d = Math.sqrt(dx * dx + dy * dy) || 1;
-          const force = 8000 / (d * d);
-          const fx = (dx / d) * force, fy = (dy / d) * force;
-          velRef.current[ids[i]].x += fx * 0.1;
-          velRef.current[ids[i]].y += fy * 0.1;
-          velRef.current[ids[j]].x -= fx * 0.1;
-          velRef.current[ids[j]].y -= fy * 0.1;
-        }
-      }
+    const onResize = () => cy.resize();
+    window.addEventListener('resize', onResize);
 
-      // Attraction along edges
-      edges.forEach(e => {
-        const a = posRef.current[e.source];
-        const b = posRef.current[e.target];
-        if (!a || !b) return;
-        const dx = b.x - a.x, dy = b.y - a.y;
-        const d = Math.sqrt(dx * dx + dy * dy) || 1;
-        const force = (d - 120) * 0.04;
-        const fx = (dx / d) * force, fy = (dy / d) * force;
-        velRef.current[e.source].x += fx;
-        velRef.current[e.source].y += fy;
-        velRef.current[e.target].x -= fx;
-        velRef.current[e.target].y -= fy;
-      });
-
-      // Centre gravity + damping
-      ids.forEach(id => {
-        const p = posRef.current[id];
-        const v = velRef.current[id];
-        if (!p || !v) return;
-        v.x += (W / 2 - p.x) * 0.002;
-        v.y += (H / 2 - p.y) * 0.002;
-        v.x *= 0.85;
-        v.y *= 0.85;
-        if (dragRef.current !== id) {
-          p.x += v.x;
-          p.y += v.y;
-          p.x = Math.max(30, Math.min(W - 30, p.x));
-          p.y = Math.max(30, Math.min(H - 30, p.y));
-        }
-      });
-    }
-
-    function isDimmed(n) {
-      const score = n.risk_score ?? 0;
-      const belowRisk = score < riskFilter;
-      const wrongType = typeFilter !== null && n.type !== typeFilter;
-      return belowRisk || wrongType;
-    }
-
-    function draw() {
-      const W = canvas.offsetWidth, H = canvas.offsetHeight;
-      ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = '#E8E0D4';
-      ctx.fillRect(0, 0, W, H);
-
-      // Edges
-      edges.forEach(e => {
-        const a = posRef.current[e.source];
-        const b = posRef.current[e.target];
-        if (!a || !b) return;
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
-        ctx.strokeStyle = 'rgba(26,22,18,0.1)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        // Label
-        const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-        ctx.fillStyle = 'rgba(136,136,136,0.7)';
-        ctx.font = '9px JetBrains Mono';
-        ctx.fillText(e.relationship, mx, my);
-      });
-
-      // Nodes
-      nodes.forEach(n => {
-        const p = posRef.current[n.id];
-        if (!p) return;
-        const meta = TYPE_MAP[n.type] || NODE_TYPES[0];
-        const isSelected = n.id === selectedId;
-        const dimmed = isDimmed(n);
-        const r = 18;
-
-        ctx.save();
-        ctx.globalAlpha = dimmed ? 0.15 : 1;
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-        ctx.fillStyle = n.is_compromised ? 'rgba(239,68,68,0.2)' : `${meta.color}22`;
-        ctx.fill();
-        ctx.strokeStyle = isSelected ? '#FFFFFF' : (n.is_compromised ? '#EF4444' : meta.color);
-        ctx.lineWidth = isSelected ? 2 : (n.is_compromised ? 2 : 1.5);
-        ctx.stroke();
-
-        // Risk ring
-        if (n.risk_score > 20) {
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, r + 4, 0, (n.risk_score / 100) * Math.PI * 2);
-          ctx.strokeStyle = riskColor(n.risk_score) + '88';
-          ctx.lineWidth = 2;
-          ctx.stroke();
-        }
-
-        // Label
-        ctx.fillStyle = isSelected ? '#FFFFFF' : 'rgba(240,240,248,0.75)';
-        ctx.font = `${isSelected ? '600 ' : ''}10px JetBrains Mono`;
-        ctx.textAlign = 'center';
-        ctx.fillText(
-          n.label.length > 14 ? n.label.slice(0, 12) + '…' : n.label,
-          p.x, p.y + r + 14
-        );
-        ctx.textAlign = 'left';
-
-        ctx.restore();
-      });
-    }
-
-    function loop() {
-      if (!running) return;
-      simulate();
-      draw();
-      animRef.current = requestAnimationFrame(loop);
-    }
-    animRef.current = requestAnimationFrame(loop);
-
-    // Mouse interaction
-    const getNode = (mx, my) => {
-      const rect = canvas.getBoundingClientRect();
-      const x = mx - rect.left, y = my - rect.top;
-      for (const n of nodes) {
-        const p = posRef.current[n.id];
-        if (!p) continue;
-        const dx = x - p.x, dy = y - p.y;
-        if (Math.sqrt(dx * dx + dy * dy) < 20) return n;
-      }
-      return null;
-    };
-
-    const onMouseDown = e => {
-      const n = getNode(e.clientX, e.clientY);
-      if (n) { dragRef.current = n.id; onNodeClick(n); }
-      else { dragRef.current = null; onNodeClick(null); }
-    };
-    const onMouseMove = e => {
-      if (!dragRef.current) return;
-      const rect = canvas.getBoundingClientRect();
-      const p = posRef.current[dragRef.current];
-      if (p) { p.x = e.clientX - rect.left; p.y = e.clientY - rect.top; }
-    };
-    const onMouseUp = () => { dragRef.current = null; };
-
-    canvas.addEventListener('mousedown', onMouseDown);
-    canvas.addEventListener('mousemove', onMouseMove);
-    canvas.addEventListener('mouseup', onMouseUp);
-
+    cyRef.current = cy;
     return () => {
-      running = false;
-      cancelAnimationFrame(animRef.current);
-      window.removeEventListener('resize', resize);
-      canvas.removeEventListener('mousedown', onMouseDown);
-      canvas.removeEventListener('mousemove', onMouseMove);
-      canvas.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('resize', onResize);
+      cy.destroy();
+      cyRef.current = null;
     };
-  }, [nodes, edges, selectedId, riskFilter, typeFilter]);
+  }, []);
+
+  // Data sync — only wipe + relayout when the actual node/edge *set* changes;
+  // otherwise just patch element data in place so positions (and any in-
+  // progress drag) aren't disturbed by e.g. a risk-score-only update.
+  useEffect(() => {
+    const cy = cyRef.current;
+    if (!cy) return;
+
+    const nodeIds = new Set(nodes.map(n => cyNodeId(n.id)));
+    const edgeIds = new Set(edges.map(e => cyEdgeId(e.id)));
+    const existingNodeIds = new Set(cy.nodes().map(n => n.id()));
+    const existingEdgeIds = new Set(cy.edges().map(e => e.id()));
+
+    const sameSet = (a, b) => a.size === b.size && [...a].every(id => b.has(id));
+
+    if (sameSet(nodeIds, existingNodeIds) && sameSet(edgeIds, existingEdgeIds)) {
+      cy.batch(() => {
+        nodes.forEach(n => cy.getElementById(cyNodeId(n.id)).data({ ...n, id: cyNodeId(n.id) }));
+        edges.forEach(e => cy.getElementById(cyEdgeId(e.id)).data({
+          ...e, id: cyEdgeId(e.id), source: cyNodeId(e.source), target: cyNodeId(e.target),
+        }));
+      });
+      applyDim(cy, riskFilterRef.current, typeFilterRef.current);
+      return;
+    }
+
+    cy.elements().remove();
+    cy.add([
+      ...nodes.map(n => ({ group: 'nodes', data: { ...n, id: cyNodeId(n.id) } })),
+      ...edges.map(e => ({
+        group: 'edges',
+        data: { ...e, id: cyEdgeId(e.id), source: cyNodeId(e.source), target: cyNodeId(e.target) },
+      })),
+    ]);
+    cy.layout(FCOSE_LAYOUT).run();
+
+    if (selectedIdRef.current != null) {
+      cy.getElementById(cyNodeId(selectedIdRef.current)).addClass('selected');
+    }
+    applyDim(cy, riskFilterRef.current, typeFilterRef.current);
+  }, [nodes, edges, applyDim]);
+
+  // Selection — toggle .selected class only, no relayout.
+  useEffect(() => {
+    const cy = cyRef.current;
+    if (!cy) return;
+    cy.batch(() => {
+      cy.nodes().removeClass('selected');
+      if (selectedId != null) cy.getElementById(cyNodeId(selectedId)).addClass('selected');
+    });
+  }, [selectedId]);
+
+  // Filters — dim non-matching nodes, edges deliberately untouched (matches
+  // the original's dim-inconsistency rather than "fixing" it out of scope).
+  useEffect(() => {
+    const cy = cyRef.current;
+    if (!cy) return;
+    applyDim(cy, riskFilter, typeFilter);
+  }, [riskFilter, typeFilter, applyDim]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      style={{ width: '100%', height: '100%', cursor: 'crosshair' }}
+    <div
+      ref={containerRef}
+      style={{ width: '100%', height: '100%', background: '#E8E0D4' }}
     />
   );
 }

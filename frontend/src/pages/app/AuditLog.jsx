@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Activity, RefreshCw, Pause, Play, Filter, Download, Circle } from '../../components/icons';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { createColumnHelper, getCoreRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
+import { Activity, RefreshCw, Pause, Play, Filter, Download, Circle, ChevronUp, ChevronDown } from '../../components/icons';
 import api from '../../api/client';
 
 /* ── Category config ─────────────────────────────────────────────────────── */
@@ -110,6 +111,14 @@ function LogRow({ log, isNew }) {
   );
 }
 
+const columnHelper = createColumnHelper();
+
+const SORT_FIELDS = [
+  { id: 'timestamp', label: 'Time' },
+  { id: 'category',  label: 'Category' },
+  { id: 'action',    label: 'Action' },
+];
+
 /* ── Main page ────────────────────────────────────────────────────────────── */
 export default function AuditLog() {
   const [logs, setLogs]           = useState([]);
@@ -121,6 +130,7 @@ export default function AuditLog() {
   const [lastFetch, setLastFetch] = useState(new Date().toISOString());
   const [liveCount, setLiveCount] = useState(0);
   const [connected, setConnected] = useState(false);
+  const [sorting, setSorting]     = useState([{ id: 'timestamp', desc: true }]);
   const intervalRef               = useRef(null);
   const listRef                   = useRef(null);
 
@@ -177,6 +187,35 @@ export default function AuditLog() {
   };
 
   const filteredLogs = category ? logs.filter(l => l.category === category) : logs;
+
+  /* ── TanStack Table: headless row/column model, real client-side sort ──────
+     (no sort control existed on this page before). Rendering stays LogRow —
+     table only owns which order rows come out in. ────────────────────────── */
+  const columns = useMemo(() => [
+    columnHelper.accessor('timestamp', { id: 'timestamp' }),
+    columnHelper.accessor('category', { id: 'category' }),
+    columnHelper.accessor('action', { id: 'action' }),
+  ], []);
+
+  const table = useReactTable({
+    data: filteredLogs,
+    columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getRowId: row => String(row.id),
+  });
+
+  const sortedLogs = table.getRowModel().rows.map(r => r.original);
+  const currentSort = sorting[0];
+
+  const toggleSort = (fieldId) => {
+    setSorting(prev => {
+      if (prev[0]?.id === fieldId) return [{ id: fieldId, desc: !prev[0].desc }];
+      return [{ id: fieldId, desc: fieldId === 'timestamp' }];
+    });
+  };
 
   return (
     <div style={{ padding: '24px 28px' }}>
@@ -247,6 +286,24 @@ export default function AuditLog() {
             </button>
           ))}
         </div>
+
+        {/* Sort control — new, no equivalent existed before */}
+        <div style={{ display: 'flex', gap: 4 }}>
+          {SORT_FIELDS.map(f => (
+            <button key={f.id} onClick={() => toggleSort(f.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 3,
+                fontSize: '0.72rem', padding: '5px 10px', borderRadius: 5, cursor: 'pointer',
+                fontFamily: 'JetBrains Mono', border: '1px solid rgba(26,22,18,0.09)',
+                background: currentSort?.id === f.id ? 'rgba(26,22,18,0.05)' : 'transparent',
+                color: currentSort?.id === f.id ? 'var(--text-primary)' : 'rgba(26,22,18,0.5)',
+              }}>
+              {f.label}
+              {currentSort?.id === f.id && (currentSort.desc ? <ChevronDown size={11} /> : <ChevronUp size={11} />)}
+            </button>
+          ))}
+        </div>
+
         <select className="at-select" value={days} onChange={e => setDays(Number(e.target.value))} style={{ fontSize: '0.78rem', marginLeft: 'auto' }}>
           <option value={1}>Last 24h</option>
           <option value={7}>Last 7 days</option>
@@ -263,12 +320,12 @@ export default function AuditLog() {
 
       {/* Log list */}
       <div ref={listRef} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {filteredLogs.length === 0 ? (
+        {sortedLogs.length === 0 ? (
           <div className="at-card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
             No events in this period.
           </div>
         ) : (
-          filteredLogs.map(log => (
+          sortedLogs.map(log => (
             <LogRow key={log.id} log={log} isNew={newIds.has(log.id)} />
           ))
         )}

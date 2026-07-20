@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Plus, Search, Globe, FileText, Share2, Trash2, Lock, Clock, AlertTriangle, FolderOpen, Layers } from '../../components/icons';
 import { SeverityBadge, StatusBadge } from '../../components/SeverityBadge';
 import api from '../../api/client';
@@ -68,6 +69,8 @@ const QUICK_FILTERS = [
   { label: 'Closed',           status: 'closed',          severity: '' },
 ];
 
+const columnHelper = createColumnHelper();
+
 export default function CaseList() {
   useEffect(() => { document.title = 'Cases | AegisTrace'; }, []);
   const navigate = useNavigate();
@@ -110,8 +113,6 @@ export default function CaseList() {
     setSeverity(f.severity);
     setStatus(f.status);
   };
-
-  const handleSearch = () => {}; // live search handles it — kept for onKeyDown compatibility
 
   const handleNewCase = async () => {
     try {
@@ -179,6 +180,25 @@ export default function CaseList() {
   const open      = cases.filter(c => c.status === 'open').length;
   const critical  = cases.filter(c => c.severity === 'critical' && c.status !== 'closed').length;
   const pending   = cases.filter(c => c.status === 'pending_closure').length;
+
+  /* ── TanStack Table: headless row/column model only — no <table> markup.        ─
+     Server stays authoritative for sort/filter (manualSorting), this is purely a
+     declarative data-driven replacement for the old inline .map(), rendered into
+     the same at-card div layout so visuals/behavior stay identical. ─────────── */
+  const columns = useMemo(() => [
+    columnHelper.accessor('title', { id: 'info' }),
+    columnHelper.accessor('created_at', { id: 'age' }),
+    columnHelper.accessor('severity', { id: 'badges' }),
+    columnHelper.display({ id: 'actions' }),
+  ], []);
+
+  const table = useReactTable({
+    data: cases,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    manualSorting: true,
+    getRowId: row => String(row.id),
+  });
 
   return (
     <div className="fade-up" style={{ padding: '20px 24px' }}>
@@ -305,7 +325,8 @@ export default function CaseList() {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {cases.map(c => {
+          {table.getRowModel().rows.map(row => {
+            const c = row.original;
             const age     = caseAge(c.created_at);
             const aColor  = ageColor(c.created_at, c.severity);
             const updated = timeAgo(c.updated_at);
@@ -318,7 +339,7 @@ export default function CaseList() {
 
             return (
               <div
-                key={c.id}
+                key={row.id}
                 className={`at-card${pendingApproval ? ' signal-gold' : ''}`}
                 onClick={() => navigate(`/app/cases/${c.id}`)}
                 style={{

@@ -1,0 +1,79 @@
+title: Risk of signup fraud - rapid creation of fake accounts with disposable email domains
+id: e92605d8-716d-11f0-b2ae-723487b9527c
+name: selected_events
+status: experimental
+description: |
+    Detect potential signup fraud by monitoring the use of disposable emails.
+author: Okta
+date: 2025-07-11
+modified: 2025-09-17
+logsource:
+    product: auth0
+references:
+    - https://blog.castle.io/fraudulent-email-domain-tracker-july-2025/
+detection:
+    selection:
+        data.type: ss
+        data.user_name|endswith: # examples of email domains, see reference (the custle blog)
+            - "@mailinator.com"
+            - "@yopmail.com"
+            - "@10minutetempemail.com"
+            - "@guerrillamail.com"
+            - "@temp-mail.org"
+            - "@disposable.com"
+            - "@mailnesia.com"
+            - "@sharklasers.com"
+            - "@getnada.com"
+    condition: selection
+explanation: >
+    The query monitors successful signups events when a disposable email has been used.
+    The Splunk query considers a number of signups within specified time chunks (e.g. 1h)
+    and alerts when the number of users with disposable emails exceeds a threshold.
+splunk: |
+    index=auth0 data.tenant_name="{your-tenant-name}"
+    data.type = ss
+    | fields data.user_name, data.user_id, data.type
+    | bin _time span=1h
+    | search data.user_name IN ("*@mailinator.com", "*@yopmail.com", "*@10minutemail.com",
+    "*@guerrillamail.com", "*@temp-mail.org", "*@disposable.com", "*@mailnesia.com",
+    "*@sharklasers.com", "*@getnada.com", "*@mohmal.com")
+    | stats dc(data.user_name) as user_count values(data.user_name) as user_names
+    values(data.user_id) as user_ids by _time, data.type
+    | where user_count > {thresholds_disposable_emails}
+comments:
+    - The Splunk query above shall be tuned to reflect a valid tenant name.
+    - The value for thresholds_disposable_emails should be set based on the customer's environment and expected behavior.
+    - To learn normality, it is recommended to run the query (excluding "where" clauses) for a period of time
+      and calculate the thresholds based on the observed data.
+    - The query can be adjusted to account for a longer public blocklist, e.g. available on github, using a lookup table.
+    - It also can be extended with a list of fraudulent email domains provided by the reference above (the catle blog).
+tenant_logs: |
+    type:"fs" OR type:"ss" OR type:"signup_pwd_leak"
+prevention:
+    - Use pre-registration actions to block any registration with disposable emails.
+    - Force email OTP validation built-in feature of a Database connection on signup.
+    - Enforce email link based validation on signup and deny access to unverified accounts
+      terminating sessions and revoking tokens.
+    - Block or delete the created fraudulent accounts.
+    - Instead of blocking users, consider to use additional risk signals to increase assurance in
+      further activities from these users.
+    - Enable breached password protection and bot detection to detect and block suspicious activities.
+    - For high-risk applications, consider to enforce identity proofing or closely monitoring activities from such accounts.
+falsepositives:
+    - Legitimate users using disposable email addresses for privacy reasons.
+level: medium
+tags:
+    - attack.resource-development
+    - attack.t1136
+---
+title: Surge in signup events
+correlation:
+    type: value_count
+    rules:
+        - selected_events # Referenced here
+    group-by:
+        - data.ip
+    timespan: 1h
+    condition:
+        gte: 0
+        field: data.user_name

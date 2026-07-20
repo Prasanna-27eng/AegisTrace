@@ -11,7 +11,7 @@ import {
   FolderOpen, Crosshair, Share2, Monitor, Mail, Rss,
   Radar, ShieldAlert, ScanEye, BookOpen,
   Plug, KeyRound, FlaskConical, Wrench, Download,
-  Settings2, ScrollText, Lock, ClipboardList,
+  Settings2, ScrollText, Lock, ClipboardList, Database,
   Command,
 } from '../../components/icons';
 import CommandPalette from '../../components/CommandPalette';
@@ -55,6 +55,7 @@ const DOCK_GROUPS = [
     { to: '/app/defense-console',label: 'AI Defense',     icon: <ShieldAlert style={iconStyle} /> },
     { to: '/app/shadow-ai',      label: 'Shadow AI',      icon: <ScanEye     style={iconStyle} /> },
     { to: '/app/playbooks',      label: 'Playbooks',      icon: <BookOpen    style={iconStyle} /> },
+    { to: '/app/detections',     label: 'Detection Library', icon: <Database style={iconStyle} /> },
   ],
   // Platform
   [

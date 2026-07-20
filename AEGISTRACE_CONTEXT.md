@@ -1,1796 +1,658 @@
 # AEGISTRACE — MASTER CONTEXT FILE
-**Version:** v11.1 | **Last updated:** June 2026 (v11.1 = Anthropic warm cream theme complete across all app pages, /cso red team audit + 4 security fixes, permanent Docker systemd service, AI-speed threat frontier strategic roadmap)
-**Purpose:** Give this file to Claude at the start of any new session. It replaces the need to re-read all source files. **This is the single master doc for this project — all other planning/session/deploy docs have been folded into this file and removed.**
+
+**Version:** v11.1 | **Last updated:** June 2026
+**Purpose:** Paste this file into Claude at the start of any session. It replaces re-reading the full codebase.
 
 ---
 
-## 🤖 INSTRUCTIONS FOR CLAUDE (READ THIS FIRST — EVERY SESSION)
+## INSTRUCTIONS FOR CLAUDE (READ THIS FIRST — EVERY SESSION)
 
-You are working on AegisTrace, a security product built by Prasanna. Here is exactly how to operate:
+**Before doing ANYTHING:** Read this file top to bottom. Then check the Future Work Backlog for what to build next.
 
-**Before doing ANYTHING:**
-1. Read this entire file top to bottom before writing a single line of code
-2. Check the `## FULL FUTURE WORK BACKLOG` section — that is the source of truth for what to build next
-3. Check `## SECURITY FIXES NEEDED` — those are confirmed vulnerabilities, fix them before new features
-4. Never re-read the full codebase — this file is sufficient. If you need a specific file, read only that file.
+### Mandatory rules
 
-**Rules for every session:**
-- **App theme is now Anthropic Warm Cream (v11.1):** `--bg: #F5F0E8` · `--surface: #EDE7DC` · `--card: #E8E0D4` · `--text: #1A1612` · `--accent: #CC785C` (coral). NEVER use `rgba(8,8,8,...)`, `rgba(90,138,159,...)`, `rgba(148,163,184,...)`, or any dark card backgrounds. Replace with `var(--card)` / `var(--surface)`. For muted text use `rgba(26,22,18,0.5)`. Blue informational accent = `#2563EB`. Public website pages: deep navy gradient (`#0A1628 → #0F3470 → #2563EB`). Content sections alternate dark navy / light `#F0F4F9`.
-- Fonts: **Plus Jakarta Sans** (display headings) + **IBM Plex Sans** (UI/body) + **IBM Plex Mono** (data/code). Clash Display + Cabinet Grotesk are GONE from all pages.
-- Design tokens in `frontend/src/styles/tokens.css` — ALWAYS import first. Never re-declare `:root` color vars in other files.
-- App accent: `#2563EB` (Microsoft blue) + `#7C3AED` (QRadar purple). Gold `#F59E0B` is brand-only for dark hero sections.
-- New micro-interaction components: `ApprovalQueue.jsx` (swipe cards, spring physics), `FocusRing.css` (blue glow `:focus-visible`), `Toast.jsx` (bottom-right slide-up, auto-dismiss progress bar), `PageTransition.jsx` (navy curtain on route change), `LoadingScreen.jsx` (MetallicPaint logo animation + letter-stagger — **v11.0: localStorage flag, only shows on FIRST visit ever**), `CardNav.jsx` (frosted card nav with MODULES mega-menu 4-col grid, replaces PillNav on all public pages), `InfiniteMenu.jsx` (3D rotating cylinder background on all public routes), `MetallicPaint.jsx` (canvas per-pixel metallic animation), `LaserFlow.jsx` (animated laser beam background with dot grid 44px, pointer-reactive spotlight — used on Landing hero + Login left panel), `BorderGlow.jsx` (spinning conic-gradient border for cards, severity-mapped: critical=red, high=amber, normal=blue, info=green), `Dock.jsx` (macOS-style floating bottom dock — v11.0: neutral gray icons, reduced magnification 1.45x, no blue saturation on inactive items, active item gets white highlight), `MagicRings.jsx` (animated rings background for AppShell)
-- Sidebar: collapsible groups (click group header to expand/collapse), Lucide icons only (no emoji), active item = `#2563EB` left border + `rgba(37,99,235,0.1)` bg
-- All "Access Platform" / "Book a Demo" CTAs use `<Link to="/app/login">` — never `<a href="https://aegistrace-7qvn.onrender.com">` 
-- Positioning: "Accountability Infrastructure for the AI-agent era" (NOT "Trust Operating System" — that's retired)
-- Use inline styles only — this codebase does NOT use Tailwind CSS
-- Do NOT add `@tanstack/react-query`, `recharts`, `alembic`, or any new npm packages without explicit approval
-- All models go in `backend/models.py` — never create separate model files
-- No Alembic migrations — SQLModel's `create_all()` handles new tables automatically on startup
-- **Database is now PostgreSQL** (migrated from SQLite in v11.0). Connection pool configured in `backend/database.py` (pool_size=10, max_overflow=20, pool_pre_ping=True, pool_recycle=1800). SQLite still works as local dev fallback. PostgreSQL DB: host=localhost, db=aegistrace_db, user=aegistrace. `func.date_trunc` works in PostgreSQL. Never use `strftime` — that was SQLite-only.
-- All `ALTER TABLE ... ADD COLUMN` in migration.py must use `IF NOT EXISTS` (PostgreSQL doesn't allow duplicates)
-- All `DATETIME` type in migration.py must be `TIMESTAMP` (PostgreSQL doesn't have DATETIME type)
-- After completing work, update this file: mark tasks done, add new discoveries
+- **App theme — Anthropic Warm Cream (v11.1):** `--bg: #F5F0E8` · `--surface: #EDE7DC` · `--card: #E8E0D4` · `--text: #1A1612` · `--accent: #CC785C`. NEVER use `rgba(8,8,8,...)`, `rgba(90,138,159,...)`, `rgba(148,163,184,...)`, or any dark card backgrounds in app pages. For muted text use `rgba(26,22,18,0.5)`. Blue informational accent = `#2563EB`. Public website: deep navy gradient `#0A1628 → #0F3470 → #2563EB`.
+- **Fonts:** Plus Jakarta Sans (display headings) + IBM Plex Sans (UI/body) + IBM Plex Mono (data/code)
+- **Inline styles only** — this codebase does NOT use Tailwind CSS
+- **Design tokens** in `frontend/src/styles/tokens.css` — always import first, never re-declare `:root` vars elsewhere
+- **Database:** PostgreSQL on VPS (migrated v11.0). Use `TIMESTAMP` not `DATETIME`. Use `func.date_trunc` not `strftime`. All models go in `backend/models.py` — never create separate model files. No Alembic — `create_all()` handles schema. All `ALTER TABLE` must use `IF NOT EXISTS`.
+- **No new packages** without explicit approval — no `@tanstack/react-query`, `recharts`, `alembic`, or others
+- **JWT:** PyJWT is the standard (`import jwt`, `jwt.decode(...)`, catches `jwt.PyJWTError`). Never reintroduce `python-jose`.
+- **Security:** All Groq calls automatically sanitised by `core/prompt_shield.py`. Connector tokens stored via `core/encryption.py enc.encrypt()`. All passwords minimum 8 characters. `current_user` in all routes MUST be typed as `User`, never `dict`.
+- **Positioning:** "Accountability Infrastructure for the AI-agent era" (NOT "Trust Operating System" — retired)
+- **Git:** `git push origin main` works in session. Never `git add -A`. Deploy to VPS: `ssh root@2.24.131.243` → `cd /opt/aegistrace && docker compose build --no-cache && docker compose down && docker compose up -d`
 
-**When Prasanna says "start the next task":**
-→ Look at the backlog below, pick the highest-priority unchecked item, confirm it with him, then build it.
-
-**When Prasanna says "push to GitHub":**
-→ Claude CAN push directly now — `git push origin main` works in session. Commit with targeted `git add <files>` (never `git add -A` — avoid staging binaries). Deploy to VPS: `ssh root@2.24.131.243` then `cd /opt/aegistrace && bash deploy/update.sh`
-
-**When Prasanna says "what's next?":**
-→ Read the backlog, summarise the top 3 options with time estimates, let him choose.
+**When Prasanna says "start the next task":** Look at the Future Work Backlog, pick highest-priority unchecked item, confirm with him, then build it.
 
 ---
 
 ## TABLE OF CONTENTS
-1. [Instructions for Claude](#instructions-for-claude) — Read first every session
-2. [What is AegisTrace?](#what-is-aegistrace) — Product description + positioning
-3. [The Vision](#the-vision) — Three convictions + strategic direction
-4. [Architecture](#architecture) — File tree, backend routers table
-5. [Database Models](#database-models) — All SQLModel tables
-6. [Frontend Pages](#frontend-pages) — Public pages, app pages, CaseDetail tabs, gotchas
-7. [Key Features](#key-features) — 12 feature modules
-8. [Deployment](#deployment) — VPS, env vars, Docker
-9. [Frontend Dependencies](#frontend-dependencies) — package.json packages
-10. [Components](#new-components) — Reusable UI components (v10.7)
-11. [Website Narrative](#website-narrative) — Messaging, hero copy, nav links
-12. [Security Audit Log](#security-fixes) — All completed security fixes (v4.3 → v11.1)
-13. [Changelog](#changelog) — Version history newest-first (current: v11.1)
-14. [Future Work Backlog](#full-future-work-backlog) — Priorities + AI-speed frontier + PyPI companion projects
-15. [How to Resume](#how-to-resume-building) — Quick start for new sessions
-16. [Builder Profile](#builder-profile) — Prasanna Kumar Surendran
+
+1. [Product Overview](#product-overview) — What is AegisTrace, positioning, vision
+2. [Architecture](#architecture) — File tree, backend routers
+3. [Database Models](#database-models) — All SQLModel tables
+4. [Frontend](#frontend) — Pages, components, gotchas
+5. [Key Features](#key-features) — 12 feature modules
+6. [Deployment](#deployment) — VPS, Docker, env vars
+7. [Security](#security) — All audits + fixes consolidated
+8. [Future Work](#future-work) — Priorities + AI-speed frontier
+9. [Companion Projects](#companion-projects) — mcp-aegis, mcp-sploit, prompt-fuzz, nhi-hunter, shadow-sniffer
+10. [Changelog](#changelog) — Version history (newest first)
+11. [How to Resume](#how-to-resume) — Quick start for new sessions
+12. [Builder Profile](#builder-profile)
 
 ---
 
-## WHAT IS AEGISTRACE?
+## PRODUCT OVERVIEW
 
-AegisTrace is **free, open-source Accountability Infrastructure for the AI-agent era** — the platform that gives every identity a risk score, every AI decision a reasoning chain, and every automated action a human approval gate. It is the only free platform combining identity-first threat detection, explainable AI, SOAR playbooks, hardware attack forensics, a terminal lab, and a human approval queue — all self-hostable, all free.
+**AegisTrace** is a free, open-source **Identity Threat Detection & Response (ITDR)** platform — the accountability layer for AI-agent deployments.
 
-**Core positioning (v10.2):** "Autonomous AI has no audit trail. Until now." — AegisTrace is the accountability layer your stack is missing if you deploy AI agents.
+- **Live at:** https://aegistrace.uk
+- **GitHub:** https://github.com/Prasanna-27eng/AegisTrace
+- **Stack:** React 18 · FastAPI · PostgreSQL/SQLModel · Groq API · NVIDIA NIM · Docker · Hostinger KVM 2 VPS (Ubuntu 24.04, IP `2.24.131.243`)
+- **Companion:** `mcp-aegis` at `~/Documents/Claude/Projects/aegistrace-mcp-gateway/`
 
-**Three convictions:** (1) Every identity must be a first-class security entity. (2) Black-box AI is unacceptable in security. (3) Autonomous doesn't mean unaccountable.
+**Core positioning:** "Autonomous AI has no audit trail. Until now." — AegisTrace gives every identity a risk score, every AI decision a reasoning chain, and every automated action a human approval gate.
 
-**Built by:** Prasanna Kumar Surendran, Blue Team analyst, Dublin, Ireland  
-**Live at:** https://aegistrace.uk  
-**GitHub:** https://github.com/Prasanna-27eng/AegisTrace  
-**Stack:** React 18 · FastAPI · **PostgreSQL**/SQLModel · Groq API · NVIDIA NIM · Docker · Hostinger KVM 2 VPS (Ubuntu 24.04, IP 2.24.131.243, domain aegistrace.uk)
-
-**Companion project:** `mcp-aegis` — MCP security gateway (`~/Documents/Claude/Projects/aegistrace-mcp-gateway/`)
-
----
-
-## THE VISION (precise)
-
-AegisTrace is becoming the **trust control plane for the AI-agent era** — a platform where every identity (human, service, agent, token) is a first-class security entity, every AI decision is explainable and auditable, and every automated action requires human approval before it executes.
-
-The question it is built to answer: **"Which identity, agent, workflow, or prompt caused this breach — and can I trust the AI's conclusion?"**
-
-Three convictions drive every design decision:
-1. **Identity is the perimeter** — 83% of breaches involve stolen credentials or identity abuse. Track identities, not just machines.
-2. **Black-box AI is unacceptable in security** — every verdict must show its evidence, reasoning chain, and confidence. No exceptions.
-3. **Human control must be preserved** — AI suggests, humans confirm. Every automated action has an approval layer and an audit trail.
+**Three convictions:**
+1. Identity is the perimeter — 83% of breaches involve stolen credentials
+2. Black-box AI is unacceptable in security — every verdict must show its reasoning
+3. Human control must be preserved — AI suggests, humans confirm
 
 ---
 
 ## ARCHITECTURE
 
 ```
-frontend/           React 18 SPA (react-router-dom, axios, zustand)
-  src/pages/        Public pages + app pages
-  src/components/   Reusable: Sidebar, CommandPalette, Logo, Toast, etc.
-  src/store/        Zustand slices (split in v4.3): useAuthStore, useCaseStore,
-                    useUIStore, useIdentityStore, useConnectorStore + legacy useStore
+frontend/                  React 18 SPA (react-router-dom, axios, zustand)
+  src/pages/               Public pages + app pages
+  src/components/          Reusable: Sidebar, CommandPalette, Logo, Toast, etc.
+  src/store/               Zustand: useAuthStore, useCaseStore, useUIStore,
+                           useIdentityStore, useConnectorStore + legacy useStore
 
-backend/            FastAPI (Python)
-  main.py           Entry point, router registration, startup, slowapi limiter
-  models.py         SQLModel table definitions (ALL DB tables — never split)
-  database.py       SQLite connection + WAL mode PRAGMAs + create_db_and_tables()
-  routers/          One file per feature area (see below)
+backend/                   FastAPI (Python)
+  main.py                  Entry point, router registration, startup, slowapi limiter
+  models.py                ALL SQLModel table definitions (never split)
+  database.py              PostgreSQL connection pool (pool_size=10, max_overflow=20)
+  ai_router.py             Multi-model Groq routing with prompt shield
+  adaptive_config.py       Runtime threshold config (thread-safe, AI-adjustable)
+  adaptive_agent.py        Background agent — adjusts detection thresholds every 4h
+  nvidia_client.py         NVIDIA NIM singleton (OpenAI-compatible, graceful fallback)
+  qdrant_store.py          Qdrant Cloud vector store (graceful fallback)
+  embeddings.py            NV-EmbedQA-E5-v5 + cosine similarity + reranker
+  guardrails.py            Llama Guard 3 safety classifier
+  ingest_normalizer.py     Alert format normalizer (Wazuh/osquery/Falco/Sysmon)
+  geoip.py                 MaxMind GeoLite2 country lookups
+  linker.py                Temporal Linker — correlated attack chain reconstruction
+  routers/                 One file per feature area (see table below)
   core/
-    identity_engine.py    Pluggable risk detectors
-    cache.py              TTL cache (no new packages)
-    events.py             Internal event bus (singleton event_bus)
-    prompt_shield.py      Prompt injection shield — sanitises all Groq inputs (v5.4)
-    encryption.py         Fernet field encryption for sensitive DB columns (v5.5)
-    ssrf_guard.py         SSRF validation + DNS-rebind recheck shared module (v10.2)
-    file_security.py      FileIdentityVerifier (magic bytes, size limits, decompression bomb) + FilenameSanitiser (v10.3)
-    file_store.py         SecureFileStore — ChaCha20-Poly1305 AEAD, HKDF-SHA256 key, cryptographic shredding (v10.3)
-    file_sandbox.py       FileSandbox — subprocess isolation for file analysis, 30s timeout, SIGKILL (v10.3)
-    connectors/           Connector plugin architecture
-      base.py             BaseConnector abstract class
-      azure_ad.py         Microsoft Graph app-only auth
-      okta.py             Okta API token
-      csv_import.py       CSV upload + column mapping
+    identity_engine.py     Pluggable risk detectors
+    cache.py               TTL cache
+    events.py              Internal event bus
+    prompt_shield.py       Prompt injection shield (v5.4) — ALL Groq calls go through this
+    encryption.py          Fernet field encryption (v5.5)
+    ssrf_guard.py          SSRF + DNS-rebind protection (v10.2)
+    file_security.py       Magic bytes, size limits, decompression bomb checks (v10.3)
+    file_store.py          ChaCha20-Poly1305 AEAD encrypted file storage (v10.3)
+    file_sandbox.py        Subprocess isolation for file analysis, 30s timeout (v10.3)
+    connectors/            azure_ad.py · okta.py · csv_import.py · base.py
+  agents/
+    triage_agent.py        Hermes-3 70B function-calling agentic loop (max 6 iter)
+    specialist.py          EmailAgent, EndpointAgent, IOCAgent, IdentityAgent, ReportAgent
+    coordinator.py         asyncio.gather parallel coordinator + Nemotron synthesis
+    tools.py               7 tool definitions + executors
+  atsp/                    ATSP Protocol library (Stage A — crypto, packet, session, handshake)
 
-agent/              aegistrace_agent.py (v6.1 — ~3700 lines, production-grade EDR + VulnerabilityScanner + PersistenceMonitor + HMAC-signed telemetry)
-                    install.sh — one-command installer (v5.0)
-Dockerfile          Multi-stage: frontend build → FastAPI server
-render.yaml         Render free-tier deploy config (autoDeploy: true)
-
-backend/nvidia_client.py     NVIDIA NIM singleton client (OpenAI-compatible, graceful fallback)
-backend/qdrant_store.py      Qdrant Cloud vector store — init_collection, upsert_case, search_similar; graceful fallback when QDRANT_URL unset (v8.1)
-backend/embeddings.py        Embedding service — Qdrant primary / SQLite fallback; NV-EmbedQA-E5-v5 + NV-RerankQA reranker
-backend/guardrails.py        Llama Guard 3 safety classifier (Phase 3)
-backend/ingest_normalizer.py Alert format normalizer — Wazuh/osquery/Falco/Sysmon → case schema (Phase 5)
-backend/agents/
-  __init__.py
-  tools.py          7 tool definitions + executors — added get_live_processes + analyze_process_anomalies (v9.0)
-  triage_agent.py   Hermes-3 70B (NVIDIA NIM) agentic triage loop (max 6 iterations, Groq fallback)
-  specialist.py     EmailAgent, EndpointAgent (v9.0 agentic loop), IOCAgent, IdentityAgent, ReportAgent
-  coordinator.py    asyncio.gather parallel coordinator + synthesis (Phase 4)
+agent/                     aegistrace_agent.py (v6.1, ~3700 lines, production EDR)
+Dockerfile                 Multi-stage: frontend build → FastAPI server
 ```
 
-### Backend Routers (all registered in main.py)
+### Backend Routers
+
 | Router | Prefix | Purpose |
 |--------|--------|---------|
-| auth | /api/auth | JWT login, bcrypt passwords, logout (token invalidation) |
-| cases | /api/cases | Case CRUD, autosave, share, status |
-| vt | /api/vt | VirusTotal v3 + history (rate limited: 10/min) |
+| auth | /api/auth | JWT login, bcrypt, logout, MFA (TOTP), lockout |
+| cases | /api/cases | Case CRUD, autosave, share, status, AI generation |
+| vt | /api/vt | VirusTotal v3 + history (10/min rate limit) |
 | email_router | /api/email | Email forensics (SPF/DKIM/DMARC) |
 | ioc | /api/ioc | IOC extraction + cross-case correlation |
 | terminal_lab | /api/terminal | Terminal Lab sessions + command runner |
-| reports | /api/reports | PDF/DOCX/DORA/DPDPA report generation |
+| reports | /api/reports | PDF/DOCX/DORA/DPDPA/Regulatory Package generation |
 | public | /api/public | Public case gallery, demo-analyse |
-| portfolio | /api/portfolio | Stats for public portfolio page |
-| webhooks | /api/webhooks | Slack-compatible HMAC webhooks |
-| hunt | /api/hunt | Threat hunt: cross-case IOC correlation + DuckDB SQL console over telemetry |
+| webhooks | /api/webhooks | Slack-compatible HMAC webhooks (SSRF-protected) |
+| hunt | /api/hunt | Threat hunt: IOC correlation + DuckDB SQL console |
 | audit | /api/audit | Audit log (all actions) |
-| ingest | /api/ingest | Agent telemetry ingestion + command channel |
-| enrichment | /api/enrichment | Multi-source IOC enrichment — Shodan, GreyNoise, IPInfo, URLhaus, ThreatFox, MalwareBazaar, NVD, CISA KEV, Feodo Tracker C2 (rate limited: 20/min) |
-| edr | /api/edr | EDR integrations (CS/SentinelOne/CB) |
+| ingest | /api/ingest | Agent telemetry, HMAC-signed, command channel, stream SSE |
+| enrichment | /api/enrichment | 7-source IOC enrichment (20/min rate limit) |
+| edr | /api/edr | EDR integrations (CrowdStrike/SentinelOne/CarbonBlack) |
 | pcap | /api/pcap | PCAP file analysis |
-| feeds | /api/feeds | Live threat feeds (CISA/URLhaus/etc.) |
-| identity | /api/identity | Identity Graph nodes + edges |
-| provenance | /api/provenance | Provenance Ledger + Trust Events |
-| analytics | /api/analytics | Aggregated stats (severity, SLA, etc.) |
-| comments | /api/cases/{id}/comments | Case comments CRUD |
+| feeds | /api/feeds | Live threat feeds (CISA/URLhaus/ThreatFox/MalwareBazaar) |
+| identity | /api/identity | Identity Graph nodes + edges + attack-path BFS |
+| provenance | /api/provenance | Provenance Ledger (hash-chained) + Trust Events |
+| analytics | /api/analytics | Severity, SLA (MTTD/MTTR/MTTC), cost intelligence |
 | policies | /api/policies | Access control policy engine |
-| itdr | /api/itdr | Identity Threat Detection & Response (6 detectors) |
+| itdr | /api/itdr | ITDR: 6 detectors + alerts + analytics |
 | agent_security | /api/agent-security | AI action approval queue |
-| schedule_reports | — | Scheduled email reports (SendGrid) |
-| malware | /api/malware | Base64/hash/defang utilities |
-| hardware_tools | /api/hardware | Hardware attack tool log analysis |
-| connectors | /api/connectors | Identity provider OAuth + sync (v4.3) |
-| nhi | /api/nhi | NHI health, sprawl scores, trust decay (v4.3) |
-| health | /api/health | Platform health check — no auth (v4.3) |
-| defense | /api/defense | AI Defense Engine — fingerprinting, honeypots, Groq triage, HITL review (v5.3) |
-| demo | /api/demo | Demo data seeder — seeds Identity, ITDR, Shadow AI, Defense, Agent Security (v5.5) |
-| semantic | /api/semantic + /api/ingest/normalize | NVIDIA Phase 2+5: similar-case search, case embedding, alert normalization (v7.0) |
-| vision | /api/vision | NVIDIA Phase 8: screenshot analysis via Llama 3.2 Vision 11B — verdict, IOCs, MITRE, recommended actions (v8.0) |
-| rules | /api/rules | NVIDIA Phase 9: detection rule generation via Codestral 22B — YARA, Sigma, KQL, Splunk SPL (v8.0) |
-| defense (v11.0) | /api/defense | D3FEND countermeasure mapping: GET /mapping/{technique_id}, POST /recommend, GET /recommendations/{case_id}, PATCH /recommendations/{rec_id}/status |
-| response_tiers (v11.0) | /api/response-tiers | Approval tiers: GET /pending, POST /execute/{id}, POST /veto/{id} |
-| knowledge (v11.0) | /api/knowledge | Case knowledge: GET / (list), GET /relevant?case_id= (top 3 similar), auto-extracts on case close |
-| analytics (v11.0) | /api/analytics/sla | SLA metrics: MTTD/MTTR/MTTC in minutes, 30-day trend deltas |
-| analytics (v11.0) | /api/analytics/cost | Cost intelligence: total_cost_30d, cost_per_case, cost_per_alert, breakdown_by_operation |
-| reports (v11.0) | /api/reports/compliance-evidence | Compliance evidence export: SOC2/ISO27001/NIST CSF, JSON + PDF formats |
+| defense | /api/defense | Defense Engine: fingerprinting, honeypots, D3FEND mapping, HITL |
+| semantic | /api/semantic | Similar-case search, case embedding, alert normalization |
+| vision | /api/vision | Llama 3.2 Vision 11B — screenshot analysis |
+| rules | /api/rules | Codestral 22B — YARA/Sigma/KQL/Splunk rule generation |
+| simulation | /api/simulation | MITRE ATT&CK simulation engine (5 techniques) |
+| orchestration | /api/orchestration | SOAR Playbook Engine — evaluate, execute, approve |
+| graph | /api/graph | Temporal Linker — reconstruct attack chain |
+| delegation | /api/delegation | Agent Delegation Tokens (OIDC-like, 11 capabilities) |
+| response_tiers | /api/response-tiers | D3FEND tier approval: pending/execute/veto |
+| knowledge | /api/knowledge | Case knowledge base: list, relevant, auto-extract |
+| connectors | /api/connectors | Identity provider connections + approved AI services |
+| nhi | /api/nhi | NHI lifecycle health + sprawl scores + trust decay |
+| demo | /api/demo | Demo data seeder (idempotent) |
+| health | /api/health | Platform health check (no auth) |
+| memory | /api/memory | Volatility 3 memory dump analysis |
 
 ---
 
-## DATABASE MODELS (backend/models.py)
+## DATABASE MODELS
 
-**Core:** `User`, `Case`, `IOCCorrelation`, `TimelineEvent`, `VTHistory`, `AuditLog`, `WebhookConfig`, `Endpoint`, `LogBatch`
+All in `backend/models.py`. New tables auto-created by `create_db_and_tables()` on startup.
 
-**v3.0 additions:** `TerminalSession`, `TerminalCommand`, `IdentityNode`, `IdentityEdge`, `TrustEvent`, `ProvenanceLedger`, `CaseComment`, `InvestigationTemplate`, `AgentAction`
+**Core:** `User`, `Case`, `IOCCorrelation`, `TimelineEvent`, `VTHistory`, `AuditLog`, `WebhookConfig`, `Endpoint`, `LogBatch`, `RawLogEvent`
 
-**v4.3 additions:** `IdentityConnector`, `ApprovedAIService`, `ShadowAIEvent`, `TokenBlocklist`, `AgentCommand`, `ITDRAlert`
+**v3.0:** `TerminalSession` (+ `created_by_id` FK), `TerminalCommand`, `IdentityNode`, `IdentityEdge`, `TrustEvent`, `ProvenanceLedger` (+ `prev_hash`/`entry_hash` chain), `CaseComment`, `InvestigationTemplate`, `AgentAction`
 
-**v5.3 additions:** `DefenseEvent` — attacker_ip, attack_type, threat_source, endpoint_hit, request_count, user_agent, request_pattern (JSON), ai_threat_type, ai_confidence, ai_reasoning, ai_recommended_action, ai_model_used, status (detecting|pending_review|auto_handled|approved|dismissed), response_action, reviewed_by, review_notes, severity, detected_at, reviewed_at
+**v4.3:** `IdentityConnector`, `ApprovedAIService`, `ShadowAIEvent`, `TokenBlocklist`, `AgentCommand`, `ITDRAlert`, `IdentityAnomaly`
 
-**v7.0 additions:** `CaseEmbedding` — case_id (FK), embedding (JSON Text, 1024-dim NV-EmbedQA vector), summary_text (Text), created_at, updated_at
+**v5.3:** `DefenseEvent` — attacker_ip, attack_type, ai_confidence, ai_reasoning, ai_recommended_action, status, severity
 
-**v11.0 additions:**
-- `DefenseRecommendation` — id, case_id (FK), technique_id, technique_name, d3fend_id, countermeasure_name, description, tier (observe/recommend/auto-safe/auto-veto/human-required), blast_radius (low/medium/high), status (pending/approved/rejected/executed), created_at
-- `CaseKnowledge` — id, case_id (FK), title, threat_pattern, identity_type (user/service_account/api_key/machine), root_cause, resolution_steps (JSON Text), tags (JSON Text), times_referenced (int default 0), created_at
-- `AIUsageLog` — id, case_id (nullable FK), operation, model, input_tokens, output_tokens, cost_usd (float), created_at
+**v5.2:** `SimulationRun` — technique_id, result, confidence, evidence, events_injected
 
-**v11.0 Case model new fields:** `response_tier` (default "recommend"), `closed_at` (TIMESTAMP), `first_event_at` (TIMESTAMP), `org_id` (int default 1), `playbook_state` (JSON Text)
+**v7.0:** `CaseEmbedding` — case_id FK, embedding JSON, summary_text, timestamps
 
-**v5.5 field updates:** `TerminalSession` — added `created_by_id` (FK user.id) for session ownership enforcement
+**v8.0:** `DetectionRule` — rule_name, mitre_technique, yara/sigma/kql/splunk_spl, status, generated_by
 
-**Key model fields:**
-- `ProvenanceLedger`: `action_type`, `model_used`, `actor`, `confidence_score`, `approval_status` (auto|pending|approved|rejected), `approved_by`, `evidence_used`, `reasoning`, `case_id`, `timestamp`
-- `Case`: `title`, `description`, `findings`, `severity`, `status`, `iocs` (JSON), `mitre_techniques` (JSON), `ai_executive_summary`, `recommendations`, `closure_notes`, `analyst_name`, `case_number`, `is_public`, `share_token`, `incident_type`
-- `IdentityNode` (updated v4.3): `label`, `node_type` (user|service_account|api_key|token|device|agent|prompt), `risk_score`, `is_compromised`, `metadata_json`, `last_active`, `expiry_date`, `privilege_level` (low|medium|high|admin), `is_orphaned`, `credential_sprawl_score`, `trust_score_history` (JSON), `anomaly_count_7d`, `source_connector`
-- `IdentityConnector`: `id`, `org_name`, `connector_type` (azure_ad|okta|google|csv|scim), `client_id`, `encrypted_token`, `tenant_id`, `domain`, `last_sync`, `sync_status`, `identities_discovered`, `last_error`, `created_by`, `is_active`
-- `ApprovedAIService`: `id`, `service_name`, `api_domain`, `is_approved`, `added_by`, `added_at`
-- `ShadowAIEvent`: `id`, `agent_id` (FK Endpoint), `process_name`, `process_pid`, `destination_domain`, `destination_ip`, `detected_at`, `is_reviewed`, `reviewed_by`, `case_id`
-- `TokenBlocklist`: `id`, `token_jti` (unique, indexed), `blocked_at`, `expires_at`, `user_id`
-- `ITDRAlert`: `id`, `alert_type`, `severity`, `identity_label`, `node_id`, `description`, `evidence` (JSON), `status`, `resolved_by`, `case_id`, `detected_at`
+**v9.0:** `IdentityRiskHistory` — node_id FK, risk_score, trust_score, anomaly_count, recorded_at
+
+**v10.5:** `MemoryDump` — agent_id, status, analysis_result JSON, malfind_hits, injections_found
+
+**v10.6:** `AgentDelegationToken` — token_id UUID, authorized_by, capabilities[], not_before/not_after, is_revoked, signature
+
+**v11.0:** `DefenseRecommendation`, `CaseKnowledge`, `AIUsageLog`, `AdaptiveThresholdLog`
+- `Case` new fields: `response_tier`, `closed_at`, `first_event_at`, `org_id`, `playbook_state`
+- `Playbook` + `PlaybookRun` — SOAR engine models
+
+**Key field notes:**
+- `ProvenanceLedger`: `approval_status` ∈ {auto|pending|approved|rejected}, `prev_hash`/`entry_hash` (SHA-256 hash chain)
+- `IdentityNode`: `node_type` ∈ {user|service_account|api_key|token|device|agent|prompt}, `privilege_level` ∈ {low|medium|high|admin}
+- All tables with user data scoped by `org_id: int = Field(default=1)` — 17+ tables have this column
 
 ---
 
-## FRONTEND PAGES
+## FRONTEND
 
-### Public (no auth)
+### Public Pages (no auth)
+
 | Route | File | Purpose |
 |-------|------|---------|
-| / | Landing.jsx | Accountability Infrastructure landing — scroll-driven hero (fade/blur, no dolly zoom), 12-module grid, comparison table |
-| /mission | Mission.jsx | Three Convictions, SOC analyst origin story, 5-phase roadmap |
-| /portfolio | Portfolio.jsx | Prasanna's portfolio — flythrough stats, rack focus tool cards |
-| /platform | Platform.jsx | Deep-dive: capability matrix, ASCII architecture, AI models, terminal demo |
-| /tools | Tools.jsx | 5 PyPI offensive tools — mcp-aegis/mcp-sploit/prompt-fuzz/nhi-hunter/shadow-sniffer |
-| /features | Features.jsx | 12-module detail page with sticky quick-jump nav |
-| /agent-setup | AgentSetup.jsx | Docs-style setup guide for endpoint agent |
+| / | Landing.jsx | Accountability Infrastructure hero, 12-module grid, comparison table |
+| /mission | Mission.jsx | Three Convictions, SOC analyst origin, 5-phase roadmap |
+| /portfolio | Portfolio.jsx | Prasanna's portfolio — stats, tool cards |
+| /platform | Platform.jsx | Deep dive: capability matrix, ASCII architecture, AI models |
+| /tools | Tools.jsx | 5 PyPI companion tools |
+| /features | Features.jsx | 12-module detail with sticky nav |
+| /agent-setup | AgentSetup.jsx | Endpoint agent setup guide |
 | /public | PublicGallery.jsx | Browse public cases |
 | /public/:token | PublicCaseDetail.jsx | Story-format public case narrative |
-| /app/login | Login.jsx | Split-screen: atmospheric left panel + JWT auth form (spring mouse parallax) |
+| /app/login | Login.jsx | Split-screen: Iris Scanner animation + JWT auth + MFA step |
 
-### App (auth required, inside AppShell)
-**Shell:** Sentinel-style topbar (blue gradient `#0A1628→#0A4DA6`) + dark navy sidebar (collapsible groups, Lucide icons, active `#2563EB` left border)
+**Shared on all public routes:** `<InfiniteMenu/>` (3D rotating cylinder background via `App.jsx PublicLayout`), `<PillNav/>` (frosted-glass fixed header)
+
+### App Pages (auth required, inside AppShell)
+
+**Shell:** Sentinel-style topbar (blue gradient `#0A1628→#0A4DA6`) + cream sidebar (collapsible groups, Lucide icons)
 
 | Route | Component | Purpose |
 |-------|-----------|---------|
-| /app/dashboard | Dashboard.jsx | QRadar/Sentinel hybrid: KPI strip, alert stream table, SVG donut chart, AI approval queue, ITDR bar chart |
-| /app/cases | CaseList.jsx | Case list with SLA badges, templates, quick filters |
-| /app/cases/:id | CaseDetail/ | 15-tab investigation workspace (added vision + rules tabs in v8.0) |
-| /app/hunt | ThreatHunt.jsx | Cross-case IOC correlation + MITRE heatmap + SQL Console (DuckDB) |
-| /app/endpoints | Endpoints.jsx | Endpoint agent management + log viewer + Vulns tab |
-| /app/vt-lookup | VTLookup.jsx | VirusTotal v3 with history |
+| /app/dashboard | Dashboard.jsx | KPI strip, alert stream, severity donut, approval queue, ITDR bars |
+| /app/cases | CaseList.jsx | Case list, SLA badges, templates, filters |
+| /app/cases/:id | CaseDetail/ | 15-tab investigation workspace |
+| /app/hunt | ThreatHunt.jsx | Cross-case IOC correlation + MITRE heatmap + DuckDB SQL console |
+| /app/endpoints | Endpoints.jsx | Endpoint agent console (6 tabs: Overview/Logs/Processes/Network/Alerts/Response) |
 | /app/email | EmailAnalysis.jsx | Email header forensics + SPF/DKIM/DMARC |
 | /app/pcap | PcapAnalysis.jsx | PCAP packet analysis |
 | /app/feeds | ThreatFeeds.jsx | Live CISA/URLhaus/ThreatFox/MalwareBazaar feeds |
 | /app/tools | ToolsHub.jsx | External tool links + IOC extractor + defang |
 | /app/hardware/tools | HardwareTools.jsx | 18 hardware attack tool parsers (AI-powered) |
-| /app/terminal-lab | TerminalLab.jsx | Full Linux-style analyst lab with session management |
-| /app/identity-graph | IdentityGraph.jsx | Force-directed canvas + click panel + risk sparkline + filter slider + type pills (v10.2) |
-| /app/itdr | ITDRPage.jsx | ITDR: 6 detectors, 3 tabs (Detection/Alerts/Analytics) |
+| /app/terminal-lab | TerminalLab.jsx | Named sessions, 20+ Linux commands, IOC push-to-case |
+| /app/identity-graph | IdentityGraph.jsx | Force-directed canvas, click panel, risk sparkline, filter slider |
+| /app/itdr | ITDRPage.jsx | 3 tabs: Detection / Alerts / Analytics; 6 detectors |
 | /app/nhi-health | NHIHealth.jsx | NHI lifecycle health dashboard |
 | /app/connectors | ConnectorHub.jsx | Identity provider connections + approved AI services |
-| /app/analytics | Analytics.jsx | Severity/SLA/throughput analytics |
+| /app/analytics | Analytics.jsx | Severity/SLA/throughput/cost analytics |
 | /app/policies | Policies.jsx | Access control policy engine |
-| /app/agent-security | AgentSecurity.jsx | AI action approval queue + OWASP Agentic coverage |
+| /app/agent-security | AgentSecurity.jsx | AI action approval queue + Delegation Tokens |
 | /app/audit | AuditLog.jsx | Full platform audit trail |
-| /app/admin | Admin.jsx | User management, webhooks, EDR integrations |
-| /app/defense-console | DefenseConsole.jsx | AI Defense Engine — live attack feed, HITL approve/block/escalate/dismiss (v5.3) |
+| /app/admin | Admin.jsx | User management, MFA, webhooks, EDR integrations |
+| /app/defense-console | DefenseConsole.jsx | Defense Engine — live attack feed, HITL approve/block/escalate |
+| /app/control-plane | ControlPlane.jsx | Live: identity trust scores, agent actions, policy violations, heartbeats |
+| /app/simulation | SimulationHub.jsx | MITRE ATT&CK simulation engine (5 techniques) |
+| /app/playbooks | Playbooks.jsx | SOAR Playbook Engine — build, test, run history |
+| /app/deploy | DeploymentHub.jsx | Endpoint Agent + Falco install guide, live endpoint status |
+| /app/shadow-ai | ShadowAI.jsx | Shadow AI detection dashboard |
+| /app/vt-lookup | VTLookup.jsx | VirusTotal v3 with history |
 
-**Removed in v4.2 cleanup** (all redirect to better alternatives):
-- `/app/logs` → redirects to `/app/terminal-lab`
-- `/app/malware` → redirects to `/app/terminal-lab`
-- `/app/edr/:caseId` → removed (EDR tab inside CaseDetail is sufficient)
-- ToolResult.jsx → removed (inline results in HardwareTools)
+### CaseDetail Tabs (15 total)
 
-### CaseDetail Tabs (15 total — v8.0)
 `overview` · `investigation` · `iocs` · `terminal` · `timeline` · `trust-timeline` · `playbook` · `ai-analysis` · `ai-chat` · `vision` · `rules` · `comments` · `provenance` · `report` · `edr`
 
-**v8.0 new tabs:**
-- `vision` — VisionTab.jsx: screenshot upload → Llama 3.2 Vision 11B analysis → verdict, IOCs, MITRE, recommended actions
-- `rules` — RulesTab.jsx: Generate Rules button → Codestral 22B → YARA + Sigma + KQL + Splunk SPL with copy buttons
+Notable tabs:
+- **vision** — VisionTab.jsx: screenshot upload → Llama 3.2 Vision 11B → verdict, IOCs, MITRE, actions
+- **rules** — RulesTab.jsx: Codestral 22B → YARA + Sigma + KQL + Splunk SPL with copy buttons
+- **provenance** — hash-chain integrity banner, Export Trust Certificate, entry hashes
+- **edr** — EDR tab (inline, navigates to /app/edr)
 
-### Frontend gotchas (non-obvious — read before editing)
-- `caseData.iocs` and `caseData.mitre_techniques` are **JSON strings**, not arrays/objects — always `JSON.parse(caseData.iocs || '[]')`
-- `PlaybookTab` (case-level playbook checklist, not the SOAR `Playbook` model) reads its state from `caseData.playbook_state` on mount and saves via `updateCase`
-- `useParams()` returns the case ID as a **string**; the backend expects an int — Axios converts automatically for path params, but `parseInt(id)` if comparing client-side
-- Report/file downloads need `{ responseType: 'blob' }` in the Axios config
-- `addToast` from `useStore()` supports types `'success' | 'error' | 'warning'` — there is no separate "info" style
+### Reusable Components
+
+| Component | Purpose |
+|-----------|---------|
+| `Sidebar.jsx` | Collapsible groups, Lucide icons, active `#2563EB` left border |
+| `PillNav.jsx` | Frosted-glass header, framer-motion sliding active pill, all public pages |
+| `InfiniteMenu.jsx` | 3D CSS cylinder, 12 module cards, 0.10°/frame, fixed background all public routes |
+| `PageTransition.jsx` | Navy curtain on route change |
+| `Toast.jsx` | Bottom-right slide-up, auto-dismiss, type-aware persistence |
+| `CommandPalette.jsx` | Cmd+K keyboard palette |
+| `LoadingScreen.jsx` | MetallicPaint logo + letter-stagger — first visit only (`localStorage at_visited=1`) |
+| `MetallicPaint.jsx` | Canvas per-pixel metallic: fbm noise, 7-stop palette, sweeping specular band |
+| `AppLogo.jsx` | `variant='icon'` (PNG) or `'seal'` (emblem) |
+| `ApprovalQueue.jsx` | Swipeable card stack — drag x>100px=approve, x<-100px=dismiss |
+| `SceneController.jsx` | `useSceneCamera`, `PinnedScene`, `RackFocus`, `ScrollProgressBar` |
+| `Dock.jsx` | macOS-style floating dock (neutral gray, 1.45x magnification) |
+| `MagicRings.jsx` | Orbital ring animation (AppShell background) |
+| `BorderGlow.jsx` | Spinning conic-gradient severity border (critical=red, high=amber, normal=blue) |
+| `ThreatStream.jsx` | Live threat event stream |
+| `InvestigationTemplates.jsx` | 6 pre-built case scaffolds |
+
+### Frontend Gotchas (non-obvious)
+
+- `caseData.iocs` and `caseData.mitre_techniques` are **JSON strings** — always `JSON.parse(caseData.iocs || '[]')`
+- `useParams()` returns case ID as **string** — `parseInt(id)` if comparing client-side
+- Report/file downloads need `{ responseType: 'blob' }` in Axios config
+- `addToast` from `useStore()` — types: `'success' | 'error' | 'warning'` (no 'info')
 - Admin-only UI: gate on `user?.role === 'admin'`
-- `case.is_public: bool` controls public-share visibility — use it to show/hide public-related UI
+- `case.is_public: bool` controls public-share visibility
+
+**Frontend dependencies:** `react`, `react-dom`, `react-router-dom`, `axios`, `zustand`, `lucide-react`, `react-scripts`, `framer-motion`, `gsap`, `three`, `@studio-freight/lenis`
 
 ---
 
-## KEY FEATURES (current v4.3)
+## KEY FEATURES
 
-### 1. Case Management
-- 13-tab lifecycle with autosave
-- MITRE ATT&CK technique mapping
-- SLA breach detection (Critical=4h, High=8h, Medium=48h, Low=168h)
-- Investigation templates: 6 pre-built scaffolds (phishing, brute force, malware, exfiltration, suspicious login, endpoint compromise)
-- Report completeness preview: 7-section checklist before export
-- PDF / DOCX / DORA Article 19 export
+1. **Case Management** — 15-tab lifecycle, MITRE ATT&CK mapping, SLA breach detection (Critical=4h, High=8h, Medium=48h, Low=168h), 6 investigation templates, report completeness preview, PDF/DOCX/DORA/DPDPA export
 
-### 2. ITDR — Identity Threat Detection & Response
-Four real-time detectors:
-- **Credential stuffing**: 5+ failed logins from same source
-- **Impossible travel**: same account, different continents < 4 hours
-- **New device login**: first-time device detected for known user
-- **Privilege escalation**: unapproved role/permission elevation
+2. **ITDR — Identity Threat Detection & Response** — 6 real-time detectors: credential stuffing (multi-window 10min/1h/24h), impossible travel (MaxMind GeoLite2 offline), new device login, privilege escalation, token theft, shadow AI usage. ITDR analytics page with 3 tabs.
 
-### 3. Identity Graph + Risk Engine
-- Force-directed HTML Canvas graph (no D3/React-Flow — custom simulation)
-- Node types: User, Service Account, API Key, Token, Device, AI Agent, Prompt
-- Pluggable risk detector architecture: `AnomalyCountDetector`, `LastSeenDetector`, `CompromisedFlagDetector`
-- Every risk recalculation logged to audit trail
+3. **Identity Graph + Risk Engine** — Force-directed HTML Canvas (no D3), node types: User/Service Account/API Key/Token/Device/AI Agent/Prompt. Pluggable risk detectors. Click any node → detail overlay + 30-day risk sparkline. Risk filter slider, type filter pills.
 
-### 4. Trust Timeline + Provenance Ledger
-- Trust Timeline: every login, token use, privilege change, agent action per case
-- Provenance Ledger: every AI output with actor, model, confidence, evidence, approval status
-- Full reversible audit — nothing executes without a ledger entry
+4. **Trust Timeline + Provenance Ledger** — SHA-256 hash chain on all AI decisions. Chain integrity verification. Trust Certificate export (JSON). Delegation Tokens (11 capabilities, OIDC-like). Regulatory Evidence Package (EU AI Act/DORA/DPDPA one-click export).
 
-### 5. Explainable AI (Groq + NVIDIA NIM — all free)
-**Groq multi-model routing** (ai_router.py):
-- `llama-3.3-70b-versatile` → case analysis, executive reports, chat
-- `llama-3.1-70b-versatile` → email forensics, phishing classification
-- `llama-3.1-8b-instant` → fast IOC extraction, JSON parsing, demo
+5. **Explainable AI (Groq + NVIDIA NIM)** — Groq: `llama-3.3-70b-versatile` (analysis/reports), `llama-3.1-70b-versatile` (email/phishing), `llama-3.1-8b-instant` (fast IOC). NVIDIA: Hermes-3 70B (triage agent), Nemotron-70B (coordinator), NV-EmbedQA-E5-v5 (embeddings), Llama Guard 3 (safety), Codestral 22B (rule gen), Llama 3.2 Vision 11B (screenshots). All degrade gracefully to Groq if NVIDIA key absent.
 
-**NVIDIA NIM routing** (nvidia_client.py — v7.0, graceful fallback to Groq if key absent):
-- `nvidia/llama-3.1-nemotron-70b-instruct` → triage agent coordinator, final synthesis
-- `nvidia/nv-embedqa-e5-v5` → 1024-dim case embeddings for semantic similarity
-- `meta/llama-guard-3-8b` → safety classifier on all chat inputs
-- `meta/llama-3.1-70b-instruct` → alert normalization (Phase 5)
+6. **AI Agent Security** — Human approval queue for all AI actions. Actions above 85% confidence auto-approve. Delegation Tokens with 11 scoped capabilities. Full ProvenanceLedger audit trail. OWASP Agentic coverage page.
 
-Every verdict shows: evidence used · reasoning steps · what could be wrong · confidence score
+7. **SOAR Playbook Engine** — Visual playbook builder + automated execution: trigger → action sequence → approval gate. 5 action types (isolate, create case, webhook, page oncall, enrich IOC, generate rules). Pre-built "Critical MCP Block → Contain" seed playbook.
 
-### 6. AI Agent Security (v4.2 — new)
-- Human approval queue for all AI-generated actions
-- Actions above confidence threshold auto-approve (default: 85%)
-- Configurable: always require approval for case_close, report_generate, auto_enrich
-- Accept / Reject with reason
-- Full audit trail in Provenance Ledger
-- Page: `/app/agent-security`
+8. **Adaptive Detection** — Background agent runs every 4h, computes FP/FN rates, asks Nemotron for threshold adjustments within hardcoded bounds, applies at runtime. Safety: agent can ONLY adjust 3 numeric thresholds, never disable detectors or change permissions.
 
-### 7. Hardware Attack Tools (18 parsers)
-WiFi: Probe Request Analyser, Evil Twin Detector, Deauth Attack Timeline, Handshake Inspector  
-RF/Radio: Spectrum Analyser, Replay Attack Detector, Jamming Detector  
-USB/HID: Keystroke Injection Analyser, Payload Decoder, Encoded Command Decoder  
-Network: Suricata IDS Parser, ARP Poison Detector, DNS Query Analyser, Lateral Movement Tracer  
-RFID/NFC: Card Clone Detector, RFID Brute Force Detector  
-Endpoint: Sysmon Event Parser, Process Tree Analyser  
-Universal: AI Universal Parser (any format)
+9. **Endpoint Agent v6.1** (~3700 lines, zero external AI deps) — Honey Token Trap, DNS/DGA detection, YARA-lite (40 rules), Auto-Block Engine (iptables/pfctl/netsh), USB detector, Windows Registry Monitor, FIM (SHA-256 + mtime + size), Behavioural Baseline, Guardian Process, Multi-backend failover, HMAC-signed telemetry, PersistenceMonitor, VulnerabilityScanner, Falco companion (eBPF Layer 3), Memory Forensics (Volatility 3 Layer 4).
 
-### 8. 7-Source IOC Enrichment
-VirusTotal v3 · Shodan · MalwareBazaar · URLhaus · ThreatFox · GreyNoise · IPInfo  
-All queried in parallel. Results saved + correlated cross-case for campaign detection.
+10. **7-Source IOC Enrichment** — VirusTotal v3 · Shodan · MalwareBazaar · URLhaus · ThreatFox · GreyNoise · IPInfo. All in parallel, cross-case campaign detection.
 
-### 9. Email Forensics
-Full RFC header parsing · SPF/DKIM/DMARC validation · routing hop extraction · AI phishing verdict · MITRE ATT&CK mapping
+11. **Hardware Attack Tools** — 18 parsers: WiFi (Evil Twin, Deauth, Probe), RF/Radio (Replay, Jamming), USB/HID (Keystroke Injection, Payload Decoder), Network (Suricata, ARP, DNS, Lateral Movement), RFID/NFC, Endpoint (Sysmon, Process Tree), AI Universal Parser.
 
-### 10. Terminal Lab
-- Named sessions with save-to-case
-- 20+ simulated Linux commands (whois, dig, nmap, strings, sha256sum, ps, etc.)
-- AI parses every output: extracts IOCs, maps to MITRE, recommends next steps
-- Push IOCs directly to case
-
-### 11. Public Case Narrative
-Story-format public page: Trigger → Investigation Steps → Findings → Outcome → Lessons Learned  
-Shareable via token, PDF downloadable, AI summary callout at top
-
-### 12. Dashboard Analytics
-- Severity breakdown CSS bar chart (Critical/High/Medium/Low/Info counts)
-- SLA status panel (Breached/At Risk/On Track with live counts)
-- Live refresh every 30 seconds
-- Fetches 25 most recent cases (optimised from 100)
-
----
-
-## CHANGELOG
-
-> **Current version: v11.1** — Newest entries at the top. All listed items are ✅ complete unless marked [ ].
-
----
-
-### v11.1 Completed (June 2026 — Cream Theme + Security Hardening)
-
-**Anthropic Warm Cream Theme — Complete App Overhaul (2 passes, 57 files)**
-- [x] Round 1 (prior session): Replaced pure-black/dark hex values (`#000`, `#0A0A0A`, `#0E0E16`) with cream CSS vars across 55 files; fixed JSX unquoted CSS-variable syntax (`background: var(--surface)` → `background: 'var(--surface)'`)
-- [x] Round 2 (this session): Eliminated ALL remaining dark rgba patterns — `rgba(8,8,8,0.7)` card overlays → cream, `rgba(148,163,184,...)` slate borders → dark-on-cream (`rgba(26,22,18,...)`), `rgba(90,138,159,...)` steel-blue accents → neutral, `rgba(74,126,200,...)` / `rgba(77,163,255,...)` blue-on-dark → neutral; legacy dark text colors `#7A9DB8`, `#BDD4E8`, `#787878`, `#888888` → warm `rgba(26,22,18,X)` variants; blue accent text `#4A7EC8`/`#4DA3FF` → readable `#2563EB`; AuditLog heatmap bar → coral `rgba(204,120,92,...)`
-- [x] All 11 reported pages now fully cream: Analytics, Cases, Threat Hunt, Email Analysis, ITDR, Playbook Engine, Simulation, Admin, Policies, Agent Security, Audit Log — plus all shared components
-- [x] Active cream palette: `--bg: #F5F0E8` · `--surface: #EDE7DC` · `--card: #E8E0D4` · `--text: #1A1612` · `--accent: #CC785C`
-
-**Security Hardening — /cso Red Team Audit (4 confirmed vulnerabilities fixed)**
-- [x] **X-Forwarded-For IP spoofing** (`auth.py`): `_get_real_ip()` was using `XFF.split(",")[0]` (attacker-controlled). Fixed to use `X-Real-IP` header (nginx `$remote_addr`, cannot be forged). Falls back to `XFF.split(",")[-1].strip()` (rightmost, network-set) if absent.
-- [x] **INGEST_API_KEY auth bypass** (`routers/ingest.py`): `except HTTPException as e: if e.status_code == 503: pass` silently removed auth when `INGEST_API_KEY` was unset. Fixed: hard-fail 503 if key unset; always enforce `X-Agent-Token` header + HMAC comparison.
-- [x] **Plaintext TOTP secrets** (`routers/auth.py`): `mfa_secret` stored plaintext in DB. Fixed: `mfa_setup()` encrypts with `core.encryption.enc.encrypt()`; all reads decrypt first. Legacy-plaintext fallback in `FieldEncryption.decrypt()` = zero-downtime upgrade for existing MFA users.
-- [x] **Missing nginx security headers** (VPS `/etc/nginx/sites-enabled/aegistrace`): Added `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=()`, full `Content-Security-Policy`.
-- [x] `.gitignore`: added `.gstack/` to prevent security audit reports from being committed
-
-**Infrastructure**
-- [x] **Permanent Docker port fix**: Removed `aegistrace.service` systemd unit (was running uvicorn directly on port 8000 outside Docker, causing `address already in use` on every restart). Created `aegistrace-docker.service` (`WantedBy=multi-user.target`, `ExecStart=docker compose up -d --remove-orphans`) — Docker Compose now owns startup/shutdown; no more port 8000 conflicts
-- [x] VPS `.env` corrections: `ADMIN_PIN` typo fixed (`Surenndran` → `Surendran@2703`); `PUBLIC_URL` corrected from stale Render URL to `https://aegistrace.uk`
-
----
-
-### v11.0 Completed (June 2026 VPS deployment session)
-
-**Infrastructure**
-- [x] Migrated database from SQLite → PostgreSQL (psycopg2-binary, pool_size=10, max_overflow=20, pool_pre_ping, pool_recycle=1800)
-- [x] systemd service `/etc/systemd/system/aegistrace.service` — EnvironmentFile, Restart=always, restarts on reboot
-- [x] Fixed nginx config: static file serving for React SPA + proxy only `/api/` and `/ws/` to backend port 8000
-- [x] Fixed migration.py: `DATETIME` → `TIMESTAMP`, `ADD COLUMN IF NOT EXISTS` throughout for idempotent PostgreSQL migrations
-- [x] Password reset via bcrypt Python script (user: prasanna80564@gmail.com)
-- [x] Node.js 20.x installed via nodesource, React app built for production
-
-**8 New ITDR Features**
-- [x] D3FEND Countermeasures — maps MITRE ATT&CK techniques to D3FEND mitigations, 5 response tiers (Observe/Recommend/Auto-Safe/Auto-Veto/Human-Required), `DefenseRecommendation` model
-- [x] Approval Tiers — human-in-the-loop gate for Auto-Veto/Human-Required tier actions, `/api/response-tiers/pending`, execute/veto endpoints
-- [x] Case Knowledge Base — auto-extracts threat patterns on case close, semantic search similar cases, `CaseKnowledge` model, `/api/knowledge/relevant?case_id=`
-- [x] SLA Intelligence — MTTD/MTTR/MTTC tracking in minutes, 30-day trend deltas, `/api/analytics/sla`
-- [x] Cost Intelligence — per-operation AI cost tracking, `AIUsageLog` model, `/api/analytics/cost` with breakdown_by_operation
-- [x] Prompt Shield hardening — `backend/core/prompt_shield.py` blocks injection attempts before all Groq calls
-- [x] YAML Connector Config — connectors configurable via YAML files, `backend/routers/connectors.py` updated
-- [x] Compliance Evidence — `/api/reports/compliance-evidence` exports SOC2/ISO27001/NIST CSF evidence packages
-
-**Frontend UX Fixes**
-- [x] DeploymentHub: complete rewrite, mount-based framer-motion animations (fixes black screen on dock Deploy click caused by useInView failing inside overflow:auto container)
-- [x] LoadingScreen: first-visit only via `localStorage` flag `at_visited=1` — no replay on route changes
-- [x] Dock (`frontend/src/components/Dock.jsx`): neutral gray professional palette, MAX_SCALE 1.75→1.45
-- [x] Logo click inside app (AppShell.jsx): `navigate('/')` → `navigate('/app/dashboard')`
-- [x] EDR tab in CaseDetail: removed `window.open()` to broken URL, now inline tab with navigate button to `/app/edr`
-- [x] Public pages: all "Enter Platform / Sign In" CTAs use `<a target="_blank">` to open app in new tab (Landing, Platform, Features, Mission, Tools, Portfolio)
-- [x] AI features root cause: `GROQ_API_KEY` must be set in VPS `/opt/aegistrace/backend/.env` for chat/analysis to work
-
-**VPS Deploy Commands (run when ready)**
-```bash
-cd /opt/aegistrace && git pull
-cd frontend && npm run build
-systemctl restart aegistrace
-# To enable AI features:
-echo 'GROQ_API_KEY=gsk_...' >> /opt/aegistrace/backend/.env && systemctl restart aegistrace
-```
-
----
-
-### v4.3 Completed (this session)
-- [x] bcrypt password hashing + transparent SHA-256 upgrade
-- [x] sessionStorage swap (all localStorage → sessionStorage)
-- [x] Rate limiting: VT 10/min, enrichment 20/min, global 200/min (slowapi)
-- [x] JWT server-side invalidation (TokenBlocklist)
-- [x] SQLite WAL mode + connection PRAGMAs
-- [x] New models: IdentityConnector, ApprovedAIService, ShadowAIEvent, TokenBlocklist, AgentCommand, ITDRAlert + IdentityNode v4.3 fields
-- [x] TTL cache (core/cache.py) + Internal event bus (core/events.py)
-- [x] Connector plugin architecture (base.py + azure_ad.py + okta.py + csv_import.py)
-- [x] Connectors router (/api/connectors) + NHI router (/api/nhi) + Health check (/api/health)
-- [x] Ingest router: new structured telemetry endpoint + command channel endpoints
-- [x] Endpoint Agent v3.0 — psutil, Shadow AI detection, Behavioural Baseline, Process Lineage Tree, FIM, Privilege Escalation Detector, Local Anomaly Scorer, Command Channel, Watchdog, Service registration
-- [x] install.sh — one-command installer
-- [x] ITDR hardened: multi-window credential stuffing (10min/1h/24h), distributed attack detection, token theft detector, shadow AI ITDR detector
-- [x] Frontend store split: useAuthStore, useCaseStore, useUIStore, useIdentityStore, useConnectorStore
-- [x] React.lazy() code splitting on all routes (~40% bundle reduction)
-- [x] API request deduplication in client.js
-- [x] ConnectorHub.jsx (/app/connectors)
-- [x] NHIHealth.jsx (/app/nhi-health)
-- [x] Sidebar: Connectors + NHI Health nav items
-- [x] Landing: 144:1 stat, Identity Auto-Discovery bento, NHI Health Monitor bento, v4.3 badge
-
-### v5.0 Completed (June 2026 session)
-
-**Endpoint Agent v5.0** (agent/aegistrace_agent.py — 2432 lines)
-- [x] 🍯 Honey Token Trap — canary .aws/credentials, .honey_env, .honey_vault, honey_passwords.txt; CRITICAL alert when any process reads them; zero false positives
-- [x] DNS/DGA Detection — Shannon entropy + vowel ratio + digit ratio scoring; DNS tunnelling (subdomain > 50 chars); hooks system syslog/mdnsresponder
-- [x] Auto-Block Engine — iptables/pfctl/netsh DROP rules; device isolation mode (cuts all outbound except AegisTrace); kill_process; configurable via AEGISTRACE_AUTO_BLOCK=off|alert|block
-- [x] USB/Removable Media Detector — /proc/mounts (Linux), diskutil (macOS), WMI (Windows); one alert per device per session
-- [x] Windows Registry Monitor — Run/RunOnce/Winlogon/Services persistence keys; hash-based change detection
-- [x] YARA-lite Engine — 16 string signatures: reverse shells, Mimikatz, encoded PowerShell, certutil, LOLBin patterns, net user /add
-- [x] Guardian Process — multiprocessing.Process (not just a thread) monitors main agent PID; restarts on SIGKILL
-- [x] Multi-backend failover — AEGISTRACE_SERVER=url1,url2,url3; automatic failover without data loss
-- [x] Enhanced FIM v5.0 — mtime + size + hash; directory listing monitor; 5-min re-alert suppression
-- [x] Network isolation command — isolate_device / unisolate_device from command channel
-- [x] New command channel commands: block_ip, unblock_ip, isolate_device, unisolate_device, honey_status, fim_check_now, get_blocked_ips
-- [x] install.sh updated — includes AEGISTRACE_AUTO_BLOCK + AEGISTRACE_HONEY_TOKENS env vars
-- [x] GitHub push protection fix — replaced Stripe key patterns in honey token content with non-matching fakes
-
-**Frontend UI (June 2026 session)**
-- [x] Login.jsx — complete rewrite with orbital Trust Field canvas animation (16 identity nodes on 3 orbital rings, trust bond connections, threat/resolve events, center pulsing core); no WireframeBackground
-- [x] Sidebar.jsx — logo click navigates to / (home page); hover effect added
-- [x] AppShell.jsx — user name/avatar in header is now a clickable dropdown: Home, Settings, Sign Out (with animation + click-outside close)
-- [x] Landing.jsx — Endpoint Agent feature updated to v5.0 with Honey Token Trap mention
-- [x] Portfolio.jsx — AegisTrace project updated to v5.0, terminal animation updated
-- [x] AgentSetup.jsx — updated to v5.0: new description, 6 feature highlights, updated quick start (env var pattern), new config table with all AEGISTRACE_* vars, download link live
-
-### v5.1 Completed (this session — June 2026)
-
-**UI / Animations**
-- [x] Login.jsx — replaced Trust Verification animation with **Iris Scanner**: biometric iris starburst (4 counter-rotating petal layers), cipher text rings, tick-mark dial, scan beam, targeting brackets, periodic "● BIOMETRIC VERIFIED" flash. Black canvas background.
-- [x] Landing.jsx — replaced Identity Constellation animation with **Hex Fortress**: full-screen tessellated hex grid, defense pulse waves, edge attack events, mouse proximity glow. No dots/lines.
-- [x] **Pure black theme** applied across entire project (55 files): CSS vars shifted from blue-tinted navy to true black hierarchy (#000000 → #080808 → #101010 → #1A1A1A). Subtle typography: headings #EBEBEB, body #A8A8A8, labels #686868.
-
-**ITDR Analytics (Priority 2 — completed)**
-- [x] `GET /api/itdr/analytics?days=N` — returns detector fire rates, top targeted identities, 30-day trend, severity distribution, status breakdown, FP rate. Queries both IdentityAnomaly + ITDRAlert.
-- [x] ITDRPage.jsx — rebuilt as 3-tab layout: **Detection** (auth events + anomaly panel), **Alerts** (full alert management with status actions: Investigate / False Positive / Resolve), **Analytics** (KPI cards, detector fire rate bars, severity stacked bar, status breakdown, 30-day bar chart, top targeted identities ranked list). All 6 detectors now in DETECTOR_META (was 4).
-
-**2FA / TOTP Security (Priority 6 — completed)**
-- [x] `User` model: added `mfa_enabled: bool`, `mfa_secret: Optional[str]`
-- [x] `requirements.txt`: added `pyotp==2.9.0`
-- [x] `create_token()`: added optional `ttl` parameter
-- [x] Login flow: `POST /api/auth/login` now returns `{mfa_required: true, pending_token}` when MFA enabled
-- [x] `POST /api/auth/mfa/setup` — generates TOTP secret + otpauth:// URI
-- [x] `POST /api/auth/mfa/verify` — verifies first code, activates 2FA (±30s drift tolerance)
-- [x] `POST /api/auth/login/mfa` — validates pending token + TOTP code, issues full JWT
-- [x] `POST /api/auth/mfa/disable` — requires current TOTP code to confirm
-- [x] `GET /api/auth/mfa/status` — returns current MFA state
-- [x] Login.jsx — MFA challenge step: after password success, shows 6-digit TOTP code input. "Back to login" resets state.
-- [x] Admin.jsx — `<MFAPanel>` component in "Your Account" card: shows enabled/disabled state, setup flow (secret display + copy + otpauth URI), verify code to activate, disable flow with code confirmation.
-
-**Application Security Hardening (v5.1)**
-- [x] `database.py`: `_harden_db_file_permissions()` — sets SQLite file to 0o600 (owner read/write only) on every startup. No-ops gracefully on Windows/read-only filesystems.
-- [x] `auth.py`: UA fingerprinting — `_ua_hash()` computes SHA-256[:16] of User-Agent at login, embeds as `ua_hash` claim in JWT. `get_current_user` detects UA mismatches and logs to AuditLog as `session_ua_mismatch` (non-blocking ITDR signal — detection only, no lockout). Accept-Language intentionally excluded to avoid false positives from Render's proxy layer.
-- [x] SQL injection: confirmed safe throughout — all queries use SQLModel ORM parameterized selectors. No raw string interpolation anywhere in the codebase.
-- [x] Rate limiting: confirmed already live — VT 10/min, enrichment 20/min, global 200/min (slowapi v4.3). No changes needed.
-
-### v4.3 Remaining
-- [x] Shadow AI Detection dashboard UI — `/app/shadow-ai` — stats, filter tabs (All/Unreviewed/Reviewed), event rows with expand detail, Mark Reviewed + Create Case actions, AI service labels, explainer panel
-- [x] ITDR analytics page — completed in v5.1 above
-- [ ] DPDPA Compliance Report — India market accelerator (still pending)
-
-### v7.0 Completed (June 2026 session — NVIDIA NIM Integration)
-
-**NVIDIA 5-Phase Agentic Integration**
-
-New files created:
-- [x] `backend/nvidia_client.py` — NVIDIA NIM OpenAI-compatible singleton client; model constants (NEMOTRON_70B, EMBED_MODEL, GUARD_MODEL, LLAMA_70B); graceful None return if NVIDIA_API_KEY absent
-- [x] `backend/embeddings.py` — NV-EmbedQA-E5-v5 1024-dim embedding service; pure-Python cosine similarity; `store_case_embedding()` + `find_similar_cases()` with min_score threshold
-- [x] `backend/guardrails.py` — Llama Guard 3 safety classifier; 14 harm categories; `safety_check()` + `assert_safe()` helpers; disabled gracefully if NVIDIA unavailable
-- [x] `backend/ingest_normalizer.py` — Llama-70B alert normalizer; converts any source format (Wazuh/osquery/Falco/Sysmon/CEF/custom) into AegisTrace case schema; `normalize_alert()` + `normalize_batch()`
-- [x] `backend/agents/__init__.py`
-- [x] `backend/agents/tools.py` — 5 OpenAI function-calling tool definitions: `enrich_ioc`, `get_case_timeline`, `get_endpoint_data`, `get_ioc_correlations`, `search_similar_cases`; shared `execute_tool()` dispatcher
-- [x] `backend/agents/triage_agent.py` — Nemotron-70B function-calling agent loop (max 6 iterations); autonomous IOC enrichment + endpoint lookup + similar-case search; Groq fallback
-- [x] `backend/agents/specialist.py` — EmailAgent, EndpointAgent, IOCAgent, IdentityAgent, ReportAgent; each returns structured dict; NVIDIA or Groq fallback
-- [x] `backend/agents/coordinator.py` — `asyncio.gather` parallel specialist execution; Nemotron synthesis; DORA Article 19 draft auto-generated; elapsed_ms tracking
-- [x] `backend/routers/semantic.py` — `/api/semantic/cases/{id}/similar`, `/api/semantic/cases/{id}/embed`, `/api/semantic/search`, `/api/ingest/normalize`, `/api/ingest/normalize/batch`
-
-Modified files:
-- [x] `backend/models.py` — Added `CaseEmbedding` model (case_id FK, embedding Text, summary_text Text, created_at, updated_at)
-- [x] `backend/migration.py` — Migration 10: CaseEmbedding table note (handled by create_all)
-- [x] `backend/routers/cases.py` — `generate_ai()` routes through triage agent (default) or coordinator (mode=coordinator); Llama Guard check in `case_chat()`; similar-case context injection in chat; embedding stored after each analysis
-- [x] `backend/main.py` — `semantic_router` imported and registered
-- [x] `backend/requirements.txt` — Added `openai>=1.30.0` (for NVIDIA NIM OpenAI-compatible client)
-- [x] `render.yaml` — Added `NVIDIA_API_KEY` (sync: false) + `NVIDIA_GUARDRAILS=true`
-
-Key design decisions:
-- All 5 phases degrade gracefully to Groq if NVIDIA_API_KEY is absent — zero regression risk
-- CaseEmbedding stored as JSON text array in SQLite — no vector DB required
-- Agents use asyncio: specialist agents run in parallel, coordinator runs sequentially after
-- ProvenanceLedger human-in-loop unchanged — NVIDIA agents still require approval for actions
-
-**NVIDIA API key:** Set in `.env` locally (already gitignored) and must be set in Render dashboard as `NVIDIA_API_KEY`
-
-### v6.0 Completed (June 2026 session)
-
-**Endpoint Agent v6.0** (agent/aegistrace_agent.py — ~3650 lines)
-- [x] **VulnerabilityScanner** — active security scanner runs every 5 minutes independently of the 30s telemetry cycle
-  - SSH config audit: PermitRootLogin, PasswordAuthentication, PermitEmptyPasswords, X11Forwarding, MaxAuthTries
-  - Open port survey: 25+ dangerous services flagged (FTP/Telnet/SMB/RDP/Redis/MongoDB/Elasticsearch/Meterpreter default ports etc.) on all-interface listeners
-  - Firewall status: ufw/iptables (Linux), pfctl (macOS), netsh (Windows) — alerts if no firewall active
-  - User account audit: UID-0 non-root accounts, empty-password accounts (Linux/macOS + Windows)
-  - SUID/SGID binary scan: finds executables with elevated bits outside known-safe whitelist
-  - World-writable files in /etc, /usr/bin, /bin, /sbin
-  - Cron job inspection: curl/wget/base64/reverse-shell patterns in all cron locations
-  - Linux security config: /tmp noexec, core dump policy, /etc/passwd world-write
-  - Kernel version: alerts on pre-4.0 (CRITICAL), pre-4.15 (MEDIUM)
-  - Package CVE cross-reference: dpkg (Debian/Ubuntu) + rpm (RHEL/CentOS) against 8 known-vulnerable signatures (OpenSSL, OpenSSH, bash/ShellShock, Python 2.x, curl, Apache 2.2)
-  - Windows: Defender status, UAC enabled, accounts without password requirement
-- [x] Each finding: `id`, `type`, `severity` (CRITICAL/HIGH/MEDIUM/LOW/INFO), `title`, `description`, `remediation`, `category`, `detected_at`
-- [x] `vuln_findings` included in every telemetry payload (empty list if no scan due)
-- [x] New command: `vuln_scan_now` — triggers immediate full scan + ships results
-
-**Backend (June 2026)**
-- [x] `Endpoint` model: `vuln_findings` (JSON Text) + `last_vuln_scan` (DateTime) columns added
-- [x] Migration 9: auto-adds both columns to existing endpoint table on startup
-- [x] Ingest handler: stores `vuln_findings` + sets `last_vuln_scan` timestamp when payload includes findings
-- [x] `GET /api/ingest/vulns/{ep_id}` — returns findings + severity counts + last_scan timestamp
-- [x] `POST /api/ingest/vulns/{ep_id}/scan` — queues `vuln_scan_now` agent command
-
-**Frontend — Endpoints.jsx (June 2026)**
-- [x] New **Vulns** tab in endpoint detail panel (shown between Overview and Live Logs)
-- [x] Tab label shows count of critical+high findings: `Vulns (3)`
-- [x] Severity summary bar (CRITICAL / HIGH / MEDIUM / LOW counts)
-- [x] Per-finding cards: color-coded severity border, category icon, title, description, remediation block
-- [x] Refresh button + Scan Now button (queues on-demand scan with feedback toast)
-- [x] Empty states: "No findings" when clean, "Scan pending" when no scan has run yet
-
-**Real-time SSE (June 2026 session — earlier)**
-- [x] `useSSE.js` — fetch-based SSE hook (Authorization header support, exponential backoff 1.5s→12s)
-- [x] `/api/ingest/stream/{ep_id}` — streams logs, alerts, status snapshots every 2s
-- [x] `/api/ingest/stream/global-alerts` — streams critical/high/medium ITDR alerts across all endpoints
-- [x] Endpoints.jsx — LIVE indicator (pulsing Radio icon when SSE connected)
-- [x] AppShell.jsx — notification bell with unread count, dropdown panel (max 20 alerts)
-
-**UX improvements (June 2026 session — earlier)**
-- [x] All `window.confirm()` replaced with keyboard-accessible ConfirmModal component
-- [x] Skeleton loading on CaseDetail (header + tab bar + 2-col grid)
-- [x] Toast: type-aware persistence (error/warning hold until dismissed, success/info 5s), dedup, cap at 5
-- [x] Dashboard: "Updated Xs ago" refresh counter
-- [x] Document titles per page (Cases | AegisTrace, Dashboard | AegisTrace, etc.)
-- [x] Sortable table columns for processes and network connections
-
-**Deployment fixes (June 2026 session)**
-- [x] HEAD method support on SPA catch-all route (fixed 405 from Render load balancer)
-- [x] Mission.jsx apostrophe syntax fix (wasn't in single-quoted string broke React build)
-- [x] render.yaml: ADMIN_PIN + INGEST_API_KEY set to sync:false (secrets not committed)
-
-### v6.1 Completed (June 2026 session)
-
-**Endpoint Agent v6.1** (agent/aegistrace_agent.py — hardening pass, zero new dependencies)
-- [x] **PersistenceMonitor** (§12A) — baseline-diff detector for boot/login persistence mechanisms
-  - Snapshots cron (`/etc/cron*`, `/var/spool/cron`), systemd user/system units, macOS LaunchAgents/LaunchDaemons, Windows Startup folder + Scheduled Tasks, and shell rc-file hashes (`.bashrc`, `.zshrc`, `.profile`, etc.) at agent startup
-  - Re-snapshots every 5 minutes (`run_if_due()`, same cadence as VulnerabilityScanner) and diffs against baseline
-  - New entries → `persistence_change` / `added` (HIGH); modified rc/cron file hashes → `persistence_change` / `modified` (HIGH)
-  - Wired into `_run_collection_cycle()` alongside the vuln scan
-- [x] **Expanded YARA-lite engine** — `YARA_PATTERNS` grown from ~16 to ~40 regexes, adding:
-  - Reverse shells: bash/zsh `/dev/tcp`, fd-196, python3, PHP `fsockopen`, `socat`, `ncat`/`nc -e`, `mkfifo` pipes, `ssh -R`
-  - LOLBins: `mshta`, `rundll32`, `regsvr32`, `wmic`, `cscript`, encoded/hidden PowerShell, `IEX`/`Invoke-Expression`/`Invoke-WebRequest`, BITS, `certutil`/`bitsadmin` downloaders
-  - Pipe-to-shell: `... | bash`, `... | sh`, `base64 -d | bash`, `openssl s_client -connect`
-- [x] **DNS tunnelling — volume detection** — `DNSDGADetector` now tracks distinct subdomains per base domain (last 2 labels) in a 120s sliding window (`DNS_TUNNEL_VOLUME_WINDOW`); ≥30 distinct subdomains (`DNS_TUNNEL_VOLUME_THRESHOLD`) to the same parent domain raises `dns_tunneling_volume` (HIGH) — complements the existing single-query entropy/length DGA heuristic
-- [x] **HMAC-signed telemetry** — every outbound request now carries `X-Agent-Timestamp` / `X-Agent-Nonce` / `X-Agent-Signature`, where signature = `HMAC-SHA256(agent_token, f"{timestamp}.{nonce}.".encode() + body)`
-- [x] `AGENT_VERSION` bumped `5.0.0` → `6.1.0`
-
-**Backend (June 2026)**
-- [x] `backend/routers/ingest.py` — new `_verify_agent_signature()` helper, applied to `POST /api/ingest/{agent_id}`, `GET /api/ingest/agent/commands/{agent_id}`, and `POST /api/ingest/agent/commands/{agent_id}/result`
-  - Verifies timestamp freshness (±300s), HMAC signature, and nonce-replay (in-memory cache, pruned per request)
-  - **Additive and backward-compatible**: if the signature headers are absent (pre-v6.1 agents), the existing `X-Agent-Token` check alone still authorizes the request
-
-### v6.2 Completed (June 2026 session)
-
-**mcp-aegis v0.2.1 — security + bug fixes** (`~/Documents/Claude/Projects/aegistrace-mcp-gateway/`)
-- [x] **Closed `tools/call` credential-read bypass (CRITICAL)** — `block_credential_reads` and other `resource_patterns` rules previously only checked `request.resource_uri`, which is `None` for `tools/call` requests. A call like `tools/call read_file path=~/.ssh/id_rsa` therefore sailed through as `default_allow`.
-  - `src/mcp_aegis/policy.py`: new `_tool_call_resource_candidates()` extracts string values from `params.arguments` for path/URI-like keys (`path`, `file`, `filepath`, `file_path`, `filename`, `uri`, `url`, `command`, `cmd`, `source`, `destination`), expands `~` and converts absolute paths to `file://` form; `_rule_matches()` now checks these candidates against `resource_patterns` whenever `resource_uri` itself doesn't match.
-  - Verified: `tools/call read_file path=~/.ssh/id_rsa` → `BLOCK` / `block_credential_reads`; `tools/call read_file path=/tmp/notes.txt` → `default_allow` (no false positive); existing `resources/read file:///.../.ssh/id_rsa` still blocks.
-- [x] **Fixed `mcp-aegis logs` crash** — `_print_table()` called `row.get(...)` as a `getattr` default on `AuditEvent` dataclass rows (eagerly evaluated, so it crashed before `getattr` even ran) and referenced non-existent `tool`/`rule` attributes. Rewrote to read `AuditEvent` fields directly (`tool_name`/`resource_uri` → subject column, `rule_name`, `decision.value`). Verified against a real SQLite audit DB — `mcp-aegis logs --limit 5 --db <path>` now renders correctly.
-- Not yet bumped/republished to PyPI — code fixes are committed locally in the `aegistrace-mcp-gateway` repo; version bump + `git push` + PyPI release still pending a separate explicit request.
-
-**ITDR — MaxMind GeoLite2 offline geo lookups** (`backend/geoip.py`, new)
-- [x] New `backend/geoip.py`: lazy `geoip2.database.Reader` over `GeoLite2-Country.mmdb`. On first use (and at startup), downloads the DB from MaxMind via `MAXMIND_LICENSE_KEY` env var into `/var/data/GeoLite2-Country.mmdb` (already gitignored), re-downloading if the cached copy is >35 days old. Fully optional/additive — with no license key set, `lookup_country()` returns `None` and behavior is unchanged from before.
-- [x] `backend/main.py` startup — calls `geoip.init()`, logs whether GeoLite2 is ready or needs `MAXMIND_LICENSE_KEY`.
-- [x] `backend/routers/itdr.py` — `create_auth_event` and `create_bulk_events` now auto-fill `AuthEvent.country` via `lookup_country(source_ip)` whenever the caller doesn't supply a `country` (covers raw IP-only log lines from `/events/parse` or manual entry), feeding `_detect_impossible_travel` with real data instead of relying solely on AI-guessed country codes.
-- [x] `backend/requirements.txt` — added `geoip2==4.8.0`.
-- **Deployment note:** requires a free MaxMind account + license key (https://www.maxmind.com/en/geolite2/signup) set as `MAXMIND_LICENSE_KEY` on the VPS. Without it, the feature is a no-op — no breakage, just no auto-geo.
-
-### v5.0 / Future Planned
-- [ ] SCIM endpoint (/api/scim/v2) — enterprise push-based identity sync
-- [ ] Least Agency enforcement — per-agent scope definition + auto-reject
-- [ ] MCP Security Gateway — monitor MCP server connections, flag unapproved (Python httpx proxy, not Go)
-- [ ] Agent Supervision Console — per-AI-agent kill switches + task scope enforcement
-- [ ] Attacker Path Reconstruction — visual kill-chain across human + machine actors
-- [ ] Control Plane View `/app/control-plane` — live: identity trust scores, active agent actions, policy violations, endpoint heartbeats
-- [ ] SOAR Playbooks engine — builder UI + automated execution: trigger → action → approval gate
-- [ ] Endpoint Agent Layer 3 (eBPF/Falco) — kernel-level visibility on Linux
-- [ ] Endpoint Agent Layer 4 (Memory Forensics) — Volatility 3 integration
-
-### Phase 1 Completed (June 2026 — this session)
-
-**1. Auto-Rule Generation Trigger** ✅
-- `DetectionRule` model: rule_name, trigger_technique, trigger_case_ids, status (pending_review|approved|rejected|deployed), yara/sigma/kql/splunk_spl, ai_confidence, reviewed_by
-- `check_rule_generation_triggers(org_id, session)`: scans last 7 days, finds MITRE techniques in 3+ cases, generates via Codestral 22B, queues as pending_review
-- Wired into `PATCH /api/cases/{id}` (when mitre_techniques in payload) and `POST /api/cases/{id}/generate-ai`
-- `GET /api/rules/pending`, `GET /api/rules/pending/{id}`, `POST /api/rules/pending/{id}/approve`, `POST /api/rules/pending/{id}/reject`
-
-**2. Trust Score Trending** ✅
-- `IdentityRiskHistory` model: node_id FK, risk_score, trust_score, anomaly_count, recorded_at
-- `_record_risk_history()` wired into create_node_anomaly, resolve_anomaly, recalculate_node_risk
-- `GET /api/identity/nodes/{id}/history?days=30` — 30-day time-series trend
-
-**3. Identity Graph Enhancements** ✅
-- Click any node → NodeDetailOverlay slide panel (340px right): type badge, animated risk bar, metadata (privilege/last_active/anomaly_count/device IP+OS), 30-day RiskSparkline SVG, "Open Case" CTA
-- Risk filter slider (0–90, step 5): dims nodes below threshold to 0.15 opacity
-- Node type filter pills: shows only types present in graph, toggles type isolation
-
-**4. DPDPA Compliance Report** ✅
-- `GET /api/reports/dpdpa/{case_id}`: 5 DPDPA 2023 obligations mapped (Sections 5, 8(5), 8(6), 10, 77), AI executive summary, 72h notification deadline
-- ReportTab.jsx: DPDPA 2023 generate button + obligations table + status badges
-
-**5. ITDR Email Notifications** ✅
-- `_notify_itdr_alert(alert, org_id, session)`: HTML email to admin/analyst users for CRITICAL/HIGH alerts via SendGrid or SMTP; silent no-op if unconfigured
-- Wired into agent telemetry ingest loop (routers/ingest.py)
-- Admin.jsx: ITDR Email Notifications setup card
-
-### Phase 2 Completed (June 2026 — v10.3)
-
-**Phase 2.1 — SHA-256 Hash Chain on ProvenanceLedger** ✅
-- `ProvenanceLedger` model: added `prev_hash` (str, "GENESIS" for first entry) + `entry_hash` (SHA-256)
-- `_compute_entry_hash()`: deterministic SHA-256 over action_type|actor|timestamp|output_summary|prev_hash
-- `_get_chain_tail()`: fetches latest entry_hash to use as prev_hash for next write
-- `POST /api/provenance/` (`log_provenance`): stamps prev_hash + entry_hash on every write
-- `GET /api/provenance/verify`: walks chain asc, skips pre-v10.3 entries (legacy_skipped), returns { valid, entries_checked, broken_at, message }
-- `GET /api/provenance/certificate/{case_id}`: Trust Certificate JSON — case metadata, per-entry hashes, chain_fingerprint (SHA-256 of all entry_hashes), DORA Article 19 regulatory note
-- `ProvenanceTab.jsx`: chain integrity banner (🔒/⚠️), Export Trust Certificate button (downloads trust-certificate-{id}.json), truncated hash per entry
-
-**Phase 2.2 — AFSL File Security Layer** ✅
-- `backend/core/file_security.py`: FileIdentityVerifier (magic bytes: pcap/pdf/zip/gzip, size limits, decompression bomb: 512MB/50:1 ratio), FilenameSanitiser (UUID prefix, strip path traversal)
-- `backend/core/file_store.py`: SecureFileStore (ChaCha20-Poly1305 AEAD, key via HKDF-SHA256 from FERNET_KEY, {uuid}.enc + {uuid}.meta.json, cryptographic shredding on delete)
-- `backend/core/file_sandbox.py`: FileSandbox.run_analysis() (subprocess, stripped env, 30s timeout, SIGKILL)
-- Wired into: `routers/pcap.py` + `routers/email_router.py` — malicious files rejected before processing
-- `main.py`: file store init in startup handler
-
-### Phase 2.5 Completed (June 2026 — v10.4)
-
-**ATSP Stage A — Formally Verifiable Secure Telemetry Protocol** ✅
-- `ATSP_SPEC.md` (repo root) — RFC-style spec: 74-byte header diagram, 11 packet types, Noise_XX handshake, 3-layer replay protection, traffic obfuscation, ProVerif reference, "Why Not TLS?" table. Ready for HN/r/netsec.
-- `backend/atsp/crypto.py` — `generate_keypair()` (X25519 ephemeral), `derive_session_key()` (HKDF-SHA256, salt=nonce_a‖nonce_s, info=b"aegistrace-atsp-v1"), `ATSPCrypto` (ChaCha20-Poly1305 + HMAC-SHA256 constant-time)
-- `backend/atsp/packet.py` — 74-byte fixed header struct, `PacketType` IntEnum (11 types incl. CHAFF 0x99), `ATSPPacket.build()` / `ATSPPacket.parse()`
-- `backend/atsp/session.py` — `ATSPSession` with 3-layer replay: ±30s timestamp, monotonic SeqNum, 1000-nonce deque cache; `ReplayError`
-- `backend/atsp/handshake.py` — `ATSPHandshake` Noise_XX (agent + server sides); forward secrecy, mutual auth, transcript binding
-- `backend/atsp/obfuscator.py` — 64-byte padding blocks, 12% chaff injection probability
-- `verification/atsp_model.pv` — ProVerif ≥2.04 model: 4 queries (session key secrecy, payload secrecy, mutual auth inj-event correspondence, forward secrecy)
-- `verification/test_vectors.json` — 4 real computed vectors (TV-01 X25519, TV-02 HKDF, TV-03 ChaCha20, TV-04 HMAC) against deterministic seeds
-- `backend/atsp/tests/test_atsp.py` — 17 unit tests, 0 external deps — **all 17 PASS**
-- Zero new dependencies — `cryptography` (already installed) + stdlib only
-
-### Priority B — Deep Forensics & Visibility (June 2026 — v10.5)
-
-**Falco Layer 3 — eBPF / Kernel Visibility (Agent v6.2)** ✅
-- `FalcoCompanion` class: tails `/var/log/falco.log`, 10-min dedup, 22 rules→MITRE, CRITICAL events promoted to priority lane
-- Backend: `falco_events[]` processed → `ITDRAlert` records with `alert_type: "falco_{rule}"`
-- Frontend: ITDRPage shows purple `Falco eBPF` badge on Falco alerts
-- VPS kernel 6.8 confirmed eBPF-capable. Install Falco: `apt install falco`
-
-**Memory Forensics Layer 4 — Volatility 3 (Agent v6.2)** ✅
-- `MemoryForensicsModule`: on CRITICAL + yara_match/honey_token, reads `/proc/{pid}/mem` heap+stack+exec segments (max 128MB), gzip, ships async via `send_direct()`
-- `MemoryDump` model: status (received→analysing→done), analysis_result JSON, malfind_hits, injections_found
-- `POST /api/ingest/memory-dump/{agent_id}`: receives dump → stores → runs Volatility 3 (linux.malfind, pslist, netstat) in asyncio background task
-- `backend/routers/memory.py`: `GET /api/memory/dumps?hostname=X`, `GET /api/memory/dumps/{id}`
-- Frontend: Endpoints.jsx → "Memory" tab with dump cards, injection badges, expandable Volatility output
-- Volatility 3 install: `pip install volatility3` (graceful placeholder if absent)
-
-**Attacker Path Reconstruction** ✅
-- `GET /api/identity/attack-path?case_id=X&node_id=Y`: BFS walks `IdentityEdge` graph from compromised nodes, enriches hops with ITDR alerts, maps 9 relationship types → MITRE ATT&CK
-- `CaseDetail/AttackGraphTab.jsx`: "Attack Path" tab alongside "Timeline" — SVG kill-chain with depth lanes, dashed edges + MITRE IDs, node cards with type icons/risk bars
-- `IdentityGraph.jsx`: "Reconstruct Attack Path" purple button on node detail panel
-
-**Enterprise UI Overhaul (Aether Seal brand)** ✅
-- Logo: Aether Seal orbital knot — truly transparent PNG (real alpha, 84% pixels transparent from design handoff)
-- All public pages, AppShell, Sidebar: Aether Seal icon + AEGISTRACE wordmark
-- LoadingScreen: rotating orbital seal + letter-stagger + blue progress bar (Remotion-inspired animation)
-- Theme: #050505 black, #4A7EC8 electric steel blue, #BDD4E8 steel white
-- Browser tab favicon: aegistrace-icon-transparent.png (shows in all browsers after hard-refresh)
-- `/app/deploy` (DeploymentHub): Endpoint Agent + Falco Layer 3 install guide with OS tabs, code blocks, copy buttons, live endpoint status strip
-- Sidebar: collapsible groups, Lucide icons, "Deploy & Setup" in Platform group
-
-**Bug fixes this session** ✅
-- DeploymentHub black screen: `api.get('/api/admin/config')` removed (route caught by honeypot)
-- All external `aegistrace-7qvn.onrender.com` links → `<Link to="/app/login">`
-- Lenis smooth scroll removed from all pages (Landing, Mission, Portfolio, Tools) → native scroll
-- mix-blend-mode: screen workaround removed after transparent PNG asset delivered
-
-### ATSP Standard Completion — Agent Identity Attestation + Regulatory Package (June 2026 — v10.6)
-
-**Agent Identity Attestation — Delegation Tokens** ✅
-- `AgentDelegationToken` model: `token_id` (UUID), `authorized_by`, `capabilities[]`, `not_before/not_after`, `is_revoked`, `signature` (HMAC-SHA256 using JWT_SECRET — proves platform issuance)
-- 11 defined capabilities: read_cases, enrich_ioc, add_case_comment, triage_alert, generate_report, close_case, isolate_endpoint, query_identity_graph, run_playbook, generate_rule, access_provenance
-- `backend/routers/delegation.py`: POST issue, GET list/verify/active, POST revoke
-- `AgentSecurity.jsx`: "Delegation Tokens" tab — issue form with capability checkboxes + expiry slider, active token cards with countdown + revoke
-- **Accountability chain complete**: Human → DelegationToken (signed) → AgentAction → ProvenanceLedger (hash-chained)
-
-**Regulatory Evidence Package** ✅
-- `GET /api/reports/regulatory-package/{case_id}?regulation=all|eu_ai_act|dora|dpdpa`
-- Bundles: chain integrity proof (chain_fingerprint), AI decisions with entry_hash, human approvals, delegation tokens, ITDR alerts, incident timeline
-- Regulatory mapping: EU AI Act Articles 9/12/13/14/17/26 + DORA Articles 17/19/28 + DPDPA Sections 8(6)/10 — each evaluated as Evidenced ✓ or Gap ⚠
-- Evidence completeness score 0-100% (8 boolean checks)
-- Notification deadlines: 72h (AI Act), 4h (DORA), 72h (DPDPA)
-- `ReportTab.jsx`: scope selector, completeness badges, chain integrity banner, article mapping tables, Download JSON
-
-**Strategic context**: These two features complete the "OIDC for AI Agents" positioning. The accountability chain is now: Human (authorized) → DelegationToken (signed credential) → AgentAction (logged) → ProvenanceLedger (hash-chained) → RegulatoryPackage (one-click export). This is what the EU AI Act requires and nobody else has built end-to-end.
-
-### Next Session Plan (Phase 3 — Platform Independence)
-1. **Ollama local AI integration** (~1 week) — `backend/core/ollama_client.py`, fallback chain Ollama → Groq → NVIDIA NIM. Enables genuine air-gap claim for regulated industries. `llama3.1:8b` runs on 4GB RAM VPS.
-2. **Agent Verified Boot Chain** (~2 days) — agent hashes own binary at startup via `GET /api/ingest/agent-manifest`, refuses to run if tampered, sends CRITICAL ITDRAlert.
-3. **Native Python Embedding Engine** (~3 days) — replace NVIDIA NV-EmbedQA with TF-IDF + cosine similarity. Makes semantic case search work air-gapped.
-4. **Adaptive Thresholds dashboard** (~1 day) — `/app/adaptive` page surfacing `AdaptiveThresholdLog`: threshold time-series, FP/FN trending, manual lock/override.
-5. **SQL Console saved queries + export** (~0.5 day) — `SavedHuntQuery` model, CSV/JSON export from ThreatHunt SQL Console.
-
-### Frontend Visual Overhaul (June 2026 — v10.7)
-
-**Dolly Zoom Removed** ✅
-- `SceneController.jsx`: `DollyZoom` component removed entirely (was Hitchcock/vertigo scale effect)
-- `Landing.jsx` hero: Beat 1 scale(1→3) removed → pure opacity+blur fade. Beat 2 scale(0.4→1) removed → replaced with y-translate(28→0) rise.
-- `Portfolio.jsx` hero: `bgDollyScale` background rush removed → static gradient. Beat 1/2 scale removed → fade + y rise.
-- `Mission.jsx` hero: Same treatment — `bgDollyScale`, `b1Scale`, `b2Scale` all removed.
-
-**MetallicPaint Logo Animation (LoadingScreen)** ✅
-- `frontend/src/components/MetallicPaint.jsx`: New canvas component — fbm noise (4-octave hash-based), 7-stop metallic palette (deep navy→steel blue→aegis blue→sky silver→bright silver→electric blue→gold flash), sweeping specular highlight band. Works with both transparent PNG and black-bg PNG logos via luminance×alpha masking. Respects `prefers-reduced-motion`.
-- `LoadingScreen.jsx`: Rotating `<motion.img>` replaced with `<MetallicPaint imageUrl="/assets/brand/aegistrace-icon-transparent.png" size={120}/>` + orbital ring + dashed rotation ring.
-
-**PillNav — Shared Navigation** ✅
-- `frontend/src/components/PillNav.jsx`: New shared nav component — frosted glass header (backdrop-filter blur/saturate), framer-motion `layoutId="pill-indicator"` for smooth active-item sliding, links: Platform/Mission/Features/Tools/Portfolio, CTA: "Book a Demo" → `/app/login`.
-- Replaces all 6 inline `Nav()` functions: Landing, Mission, Portfolio, Features, Platform, Tools — all now import and use `<PillNav/>`.
-
-**InfiniteMenu 3D Background** ✅
-- `frontend/src/components/InfiniteMenu.jsx`: CSS 3D cylinder — 12 AegisTrace module cards (Identity Threat, Zero Trust, Agent Security, Memory Forensics, MITRE ATT&CK, Behavioural AI, Non-Human Identity, Prompt Shield, Shadow AI, Regulatory Pack, Attack Graph, Trust Timeline), 440px cylinder radius, 0.10°/frame auto-rotation. Global opacity 0.065, pointer-events: none. Respects `prefers-reduced-motion`.
-- `App.jsx`: `PublicLayout` component wraps all public routes (`/`, `/platform`, `/tools`, `/mission`, `/portfolio`, `/public`, `/agent-setup`, `/features`, `/app/login`) — renders `<InfiniteMenu/>` fixed behind `<Outlet/>`. App routes unchanged.
-
-### New files to know about (v10.3–v10.4)
-| File | Purpose |
-|------|---------|
-| `backend/atsp/` | ATSP protocol library — Stage A (pure library, not wired to agent yet) |
-| `backend/atsp/tests/test_atsp.py` | Run: `python3 backend/atsp/tests/test_atsp.py` |
-| `verification/atsp_model.pv` | ProVerif formal model — `proverif verification/atsp_model.pv` |
-| `verification/test_vectors.json` | Real computed crypto test vectors |
-| `ATSP_SPEC.md` | RFC-style protocol spec — publish to HN when ready |
-| `backend/core/file_security.py` | FileIdentityVerifier + FilenameSanitiser |
-| `backend/core/file_store.py` | SecureFileStore (ChaCha20-Poly1305 per file) |
-| `backend/core/file_sandbox.py` | FileSandbox (subprocess isolation, 30s timeout) |
+12. **DuckDB SQL Hunting Console** — Read-only SQL over live telemetry DB. Org-scoped views for `cases`, `itdr_alerts`, `audit_logs`. Keyword blocklist (DDL/DML/catalog introspection). 10s timeout, 1000-row cap. `raw_log_events`, `endpoints`, `agent_actions`, `defense_events`, `hardware_alerts` views.
 
 ---
 
 ## DEPLOYMENT
 
-**Live URL:** https://aegistrace.uk  
-**Server:** Hostinger KVM 2 VPS — Ubuntu Linux  
-**Deploy:** `git push origin main` → SSH into VPS → `git pull` → `docker compose up -d --build`  
-**DB:** SQLite at `/var/data/aegistrace.db` (persistent volume on VPS)  
-**New tables:** Created automatically by `create_db_and_tables()` on startup — no migrations needed  
-**Uptime:** Always-on — no cold starts (was Render free tier, now VPS)  
-**Docker:** Full Docker available — Docker-in-Docker possible, enables ATPU Parallel Universe feature  
+**Live URL:** https://aegistrace.uk
+**Server:** Hostinger KVM 2 VPS, Ubuntu 24.04, IP `2.24.131.243`
+**Startup:** `aegistrace-docker.service` systemd unit → `docker compose up -d` on boot
 
-### Required environment variables (set in .env on VPS)
-```
-GROQ_API_KEY          # Free at console.groq.com
-VIRUSTOTAL_API_KEY    # Free at virustotal.com
-ADMIN_PIN             # Set on first deploy
-JWT_SECRET            # Auto-generated
-PUBLIC_URL            # https://aegistrace.uk
-NVIDIA_API_KEY        # Free at build.nvidia.com — enables all 5 NVIDIA phases
-NVIDIA_GUARDRAILS     # true (default) — enables Llama Guard safety layer
+### Deploy Commands
+
+```bash
+# From local machine
+git push origin main
+
+# On VPS
+ssh root@2.24.131.243
+cd /opt/aegistrace
+git pull origin main
+docker compose build --no-cache
+docker compose down && docker compose up -d
+sleep 30 && curl http://localhost:8000/api/health
 ```
 
-### Optional (for EDR integrations)
+### Required Environment Variables (VPS `/opt/aegistrace/.env`)
+
+```
+DATABASE_URL        postgresql://aegistrace:<pw>@localhost/aegistrace_db
+GROQ_API_KEY        Free at console.groq.com
+VIRUSTOTAL_API_KEY  Free at virustotal.com
+ADMIN_PIN           Surendran@2703
+JWT_SECRET          Auto-generated on startup if unset (warn: rotates sessions)
+FERNET_KEY          Base64url 32-byte key: python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+INGEST_API_KEY      Auto-generated on startup if unset
+PUBLIC_URL          https://aegistrace.uk
+NVIDIA_API_KEY      Free at build.nvidia.com — enables all 9 NVIDIA phases
+NVIDIA_GUARDRAILS   true — enables Llama Guard safety layer
+```
+
+### Optional (EDR integrations)
+
 ```
 CROWDSTRIKE_CLIENT_ID / CROWDSTRIKE_CLIENT_SECRET
 SENTINELONE_BASE_URL / SENTINELONE_API_TOKEN
 CARBONBLACK_ORG_KEY / CARBONBLACK_API_ID / CARBONBLACK_API_SECRET
+MAXMIND_LICENSE_KEY     # Free MaxMind account — enables offline geo for impossible travel
+SENDGRID_API_KEY        # ITDR email notifications
 ```
 
 ### Local Development
+
 ```bash
 # Backend
-cd backend
-pip install -r requirements.txt
-DATABASE_URL=sqlite:///./dev.db GROQ_API_KEY=your_key VIRUSTOTAL_API_KEY=your_key ADMIN_PIN=aegis2025 uvicorn main:app --reload --port 8000
+cd backend && pip install -r requirements.txt
+DATABASE_URL=sqlite:///./dev.db GROQ_API_KEY=... ADMIN_PIN=aegis2025 uvicorn main:app --reload --port 8000
 
 # Frontend
-cd frontend
-npm install
-npm start   # runs on :3000, proxies API to :8000
+cd frontend && npm install && npm start   # :3000, proxies /api to :8000
 ```
 
-### Docker
-```bash
-docker build -t aegistrace .
-docker run -p 8000:8000 \
-  -e GROQ_API_KEY=your_groq_key_here \
-  -e VIRUSTOTAL_API_KEY=your_vt_key_here \
-  -e ADMIN_PIN=aegis2025 \
-  -v aegistrace_data:/var/data \
-  aegistrace
-# App available at http://localhost:8000
-```
-
-**Default admin login:** `prasanna80564@gmail.com` / password = `ADMIN_PIN` (default `aegis2025` if unset). Change immediately after first login via Admin → Your Account → Change Password.
+**Default admin login:** `prasanna80564@gmail.com` / `ADMIN_PIN` value
 
 ---
 
-## FRONTEND DEPENDENCIES (package.json)
-```json
-react, react-dom, react-router-dom, axios, zustand, lucide-react, react-scripts,
-framer-motion, gsap, three, @studio-freight/lenis
-```
-**Removed in v4.2:** react-hook-form, @hookform/resolvers, zod (were unused, ~60KB saved)
+## SECURITY
 
-## REUSABLE COMPONENTS (current — v10.7)
+### All Security Fixes Completed
 
-### UI Shell & Navigation
-| File | Purpose |
-|------|---------|
-| `src/components/Sidebar.jsx` | Collapsible groups (click header to expand), Lucide icons, active #2563EB left border, 56px collapse |
-| `src/components/PillNav.jsx` | **NEW v10.7** — Frosted-glass fixed header, framer-motion `layoutId="pill-indicator"` sliding active pill, links: Platform/Mission/Features/Tools/Portfolio, CTA → /app/login. Used by ALL public pages. |
-| `src/components/InfiniteMenu.jsx` | **NEW v10.7** — 3D rotating cylinder (CSS perspective + `transform-style: preserve-3d`), 12 AegisTrace module cards, 440px radius, 0.10°/frame auto-rotation. Fixed z-index:0, opacity:0.065, pointer-events:none. Background for all public routes via App.jsx PublicLayout. |
-| `src/components/PageTransition.jsx` | Navy #0A1628 curtain on every route change, 0.52s ease-out |
-| `src/components/Toast.jsx` | Bottom-right slide-up, auto-dismiss countdown bar (scaleX 1→0), stacked with AnimatePresence |
-| `src/components/CommandPalette.jsx` | Keyboard command palette (Cmd+K) |
+| Version | Category | What was fixed |
+|---------|----------|----------------|
+| v4.3 | Auth | bcrypt passwords, sessionStorage, rate limiting, JWT server-side invalidation |
+| v5.4 | IDOR + Auth | 15 issues: auth-less case endpoints, no-auth terminal sessions, no-auth case chat, SSRF webhooks, MFA token replay, login rate limit bypass, PCAP validation, public case data leaks |
+| v5.5 | Hardening | PyJWT library, progressive lockout (5→60s/10→15min/20→1hr), admin 2FA enforcement, Fernet connector encryption, prompt injection shield, 10MB body limit |
+| v10.1 | IDOR + CVEs | 17+ tables multi-tenancy org-scoped, JWT lib swap to PyJWT, install-token hardening, CORS/CSP tightening, 11 new `org_id` columns, portfolio endpoint auth added |
+| v10.2 | SSRF + Auth | Okta SSRF via shared `ssrf_guard.py`, webhook redirect hardening, agent-command dispatch role-gating + allowlist, NVIDIA NIM prompt path now through PromptShield, provenance enum validation, frontend CVE (form-data CRLF) |
+| v11.1 | Red Team | X-Forwarded-For spoofing, ingest auth bypass, plaintext TOTP secrets, missing nginx security headers (see detail below) |
 
-### Loading & Branding
-| File | Purpose |
-|------|---------|
-| `src/components/LoadingScreen.jsx` | **v10.7**: MetallicPaint logo animation + letter-stagger AEGISTRACE reveal + blue progress bar on first load. Replaced rotating logo with MetallicPaint canvas. |
-| `src/components/MetallicPaint.jsx` | **NEW v10.7** — Canvas per-pixel metallic animation: fbm noise (4-octave hash-based), 7-stop palette (deep navy→electric blue→gold flash), sweeping specular band. Works with transparent PNG and black-bg PNG. Respects `prefers-reduced-motion`. |
-| `src/components/AppLogo.jsx` | variant='icon' (orbital knot PNG) or 'seal' (full emblem in dark circle). Use this in app shell. |
-| `src/components/Logo.jsx` | Legacy SVG logo — network graph nodes. Used in sidebar only. |
+### Security Audit v11.1 — Red Team Findings
 
-### Scroll & Scene Animations (public pages)
-| File | Purpose |
-|------|---------|
-| `src/components/SceneController.jsx` | `useSceneCamera`, `PinnedScene`, `RackFocus`, `DepthLayer`, `useSectionParallax`, `ScrollProgressBar` — **DollyZoom REMOVED v10.7** |
-| `src/components/ParticleCanvas.jsx` | Canvas particle system for ambient backgrounds |
-| `src/components/WireframeBackground.jsx` | Wireframe mesh background |
+**(a) X-Forwarded-For IP spoofing (`auth.py`):**
+`_get_real_ip()` used `XFF.split(",")[0]` — attacker-controlled, trivially bypasses rate limits and lockout. Fixed: use `X-Real-IP` (nginx `$remote_addr`). Falls back to `XFF.split(",")[-1].strip()` (rightmost, network-set) if absent.
 
-### App Features
-| File | Purpose |
-|------|---------|
-| `src/components/ApprovalQueue.jsx` | Swipeable card stack — drag x>100px=approve (green), x<-100px=dismiss (red), 3-card depth |
-| `src/components/FocusRing.css` | Enterprise focus rings — 2px #2563EB + 4px glow on :focus-visible |
-| `src/components/ThreatStream.jsx` | Live threat event stream component |
-| `src/components/SeverityBadge.jsx` | Severity badge (critical/high/medium/low) |
-| `src/components/InvestigationTemplates.jsx` | 6 pre-built case scaffolds |
-| `src/components/Dock.jsx` | macOS-style dock |
-| `src/components/MagicRings.jsx` | Orbital ring animation |
+**(b) INGEST_API_KEY auth bypass (`routers/ingest.py`):**
+`except HTTPException as e: if e.status_code == 503: pass` silently removed auth when key unset. Fixed: hard-fail 503 if key not configured; always enforce `X-Agent-Token` + HMAC comparison.
 
-### Design Tokens
-| File | Purpose |
-|------|---------|
-| `src/styles/tokens.css` | Design tokens: QRadar navy palette, IBM Plex Sans/Plus Jakarta Sans, z-index scale, motion easings. Import first in any new component. |
+**(c) Plaintext TOTP secrets (`routers/auth.py`):**
+`User.mfa_secret` stored plaintext. Fixed: `mfa_setup()` calls `_enc.encrypt()`, all reads call `_enc.decrypt()`. Existing `FieldEncryption.decrypt()` has legacy-plaintext fallback — zero-downtime upgrade.
 
-## SKILLS INSTALLED
-- **gstack** at `~/.claude/skills/gstack` — /review, /cso, /ship, /qa, /autoplan, /office-hours and 30+ more
-- **remotion-best-practices** at `.agents/skills/remotion-best-practices` — Remotion video creation rules
-- **PRODUCT.md** at repo root — brand/register/positioning for impeccable skill
+**(d) Missing nginx security headers (VPS `/etc/nginx/sites-enabled/aegistrace`):**
+Added: `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=()`, full `Content-Security-Policy`.
+
+### Security Audit v10.2 — Notable Fixes
+
+- **`backend/core/ssrf_guard.py`** (new shared module): `validate_external_host()` + `resolve_and_check()` (DNS-rebind recheck at send time). Used by Okta connector, webhooks.
+- **`POST /agent/command/dispatch`**: Added `_VALID_AGENT_COMMANDS` allowlist (17 commands) + `role not in ("admin","analyst") → 403`.
+- **NVIDIA NIM prompt path**: `triage_agent.py`, `specialist.py`, `coordinator.py` all now sanitise user-derived fields through `PromptShield` + append `AI_HARDENING_SUFFIX` to system prompts.
+- **Provenance enums**: `approval_status`, `actor_type`, `trust_level` now validated against allowlists (400 on unknown value).
+
+### SOC Mitigation Plan — Deferred Items
+
+1. **`Endpoint.org_id` (HIGH)** — `Endpoint` model has no `org_id`. Admin/analyst in org B can target org A's endpoints by ID. Role-gating closes the "any viewer" hole; cross-org gap needs `org_id` column + agent-enrollment flow update.
+2. **Default-secret hardening (HIGH)** — `JWT_SECRET`/`ADMIN_PIN`/`FERNET_KEY` fall back to hardcoded defaults when unset. Fix: hard-fail at startup if `ENV=production` and vars unset. Note: `FERNET_KEY` rotation requires a re-encryption migration for existing connector tokens.
+3. **Dockerfile non-root user (MEDIUM)** — Containers run as root. Needs `USER` directive + `chown` on VPS volume data during maintenance window.
+4. **starlette CVE PYSEC-2026-161 (MEDIUM)** — Host-header path mismatch can evade path-based middleware. Fix: bump `fastapi>=0.133.0` + `starlette>=1.0.1`. Needs regression testing (no test suite currently exists).
+5. **CRA → Vite migration (LOW/long-term)** — 41 `npm audit` findings in CRA build toolchain (dev-only). Clearing them requires migrating to Vite.
+6. **AWS IAM connector SSRF (LOW/forward-looking)** — When `aws_iam.py` connector is built, use `ssrf_guard.py` from day one.
 
 ---
 
-## CURRENT WEBSITE NARRATIVE (v10.2 — June 2026)
+## FUTURE WORK
 
-- **Landing hero:** "Your AI agents operate autonomously. Your security should too — with accountability."
-- **Landing positioning:** "Accountability Infrastructure for the AI-agent era" (NOT "Trust Operating System" — retired)
-- **Landing problem:** "Autonomous AI Has No Audit Trail. Until Now." — 78% can't explain AI decisions, 144:1 NHI ratio, €2.4M breach cost
-- **Landing CTA:** "Book a Private Demo" → /app/login
-- **Mission hero:** "Autonomous systems deserve accountable security."
-- **Three Convictions:** Identity as first-class entity / Black-box AI unacceptable / Autonomous ≠ Unaccountable
-- **Roadmap:** 5 phases from "Foundation (now)" to "Industry Standard (2029+)"
-- **New pages:** /platform (deep dive), /tools (5 PyPI tools), /features (12-module detail)
-- **Nav links:** Platform / Mission / Features / Tools / "Book a Demo" → /app/login
+### IMMEDIATE — AI-Speed Threat Frontier (Priority 0.5)
 
----
+**The problem:** AegisTrace is built for human-speed security in a world about to be attacked at machine speed. ApprovalQueue swipe cards and 30-second telemetry cycles assume AI agents act slowly enough for humans to intervene. **The strategic pivot:** "AI immune system for AI infrastructure" — defensive AI outpaces attacker AI, humans review the scoreboard.
 
-## SECURITY FIXES (ALL COMPLETED through v5.5)
-
-**v4.3 original fixes:**
-- [x] bcrypt password hashing, sessionStorage swap, rate limiting, JWT server-side invalidation
-
-**v5.4 audit fixes (13 issues):**
-- [x] IDOR: evidence/timeline endpoints had no auth
-- [x] IDOR: reports PDF/DOCX/DORA had no org_id check
-- [x] IDOR: case comments had no org_id check
-- [x] Zero-day: case_chat had NO authentication
-- [x] Zero-day: terminal sessions had no ownership (added created_by_id)
-- [x] Zero-day: case chat had no rate limit
-- [x] SSRF via webhooks (blocklist added)
-- [x] MFA pending token replayable (added to TokenBlocklist on use)
-- [x] /login/mfa had no rate limit (5/min enforced)
-- [x] Login rate limiter blind behind proxy (real IP via X-Forwarded-For)
-- [x] commands_run in public endpoint (removed)
-- [x] No password minimum length (8 chars enforced)
-- [x] PCAP magic byte validation
-- [x] customer_name + analyst_name in public cases (redacted)
-- [x] Health endpoint exposing internals (stripped)
-
-**v5.5 hardening:**
-- [x] JWT replaced with python-jose (battle-tested library)
-- [x] Progressive account lockout (5→60s, 10→15min, 20→1hr)
-- [x] Admin 2FA enforcement (mfa_setup_required flag on login)
-- [x] Connector tokens encrypted at rest (Fernet via core/encryption.py)
-- [x] Auto-generate INGEST_API_KEY on startup
-- [x] Per-user Groq rate limiting (100/hr per user)
-- [x] Prompt injection shield on ALL Groq calls (core/prompt_shield.py)
-- [x] Request body size limit 10MB
-- [x] Full security headers (HSTS, CSP, Server header removal)
-
----
-
-## SECURITY AUDIT v10.1 (June 2026) — Dependency CVEs + Multi-Tenancy IDOR Sweep
-
-A full pass over the backend: dependency CVE remediation, then a systematic
-search for logic bugs, auth bypasses, injection, SSRF, and cross-org IDOR
-(every current user defaults to `org_id=1`, but the org-scoping bugs below
-would let any tenant read/modify/delete another tenant's data the moment a
-second org exists — so they were fixed now rather than left as landmines).
-
-**Dependency CVE remediation (`backend/requirements.txt`):**
-- [x] `fastapi` 0.111.0 → 0.121.0, pinned `starlette>=0.49.1,<0.50.0` (multipart DoS / form-parsing CVEs)
-- [x] `python-multipart` 0.0.20 → 0.0.27
-- [x] `scapy` 2.5.0 → 2.7.0
-- [x] `cryptography` 42.0.8 → 46.0.7
-- [x] **JWT library swapped again: `python-jose` → `PyJWT==2.13.0`** — python-jose's pinned `cryptography` had unresolved CVEs and the project is unmaintained. `auth.py` now does `import jwt` (PyJWT), `jwt.decode(...)`, catches `jwt.PyJWTError`. **Rule for future sessions: PyJWT is now the standard — do not reintroduce python-jose.**
-- [x] All existing sessions invalidated again on this deploy (JWT lib swap = signing format compatible, but treat as a clean break)
-
-**Install-token hardening (Task #36 — `main.py` + `ingest.py`):**
-- [x] `GET /api/install/{token}` was previously unauthenticated and the `token` placed directly into the generated bootstrap script became the long-lived `INGEST_API_KEY` itself — anyone who saw the URL (browser history, proxy logs, shoulder-surfing) got a permanent ingest credential.
-- [x] Fixed: `GET /api/ingest/install-token` (requires login) issues a short-lived (15 min) signed `type=install_bootstrap` JWT. `/api/install/{token}` now verifies that JWT, then looks up the real `INGEST_API_KEY` server-side via `_get_ingest_key()` and embeds *that* in the script — the long-lived key never appears in a URL.
-
-**CORS + CSP hardening (Tasks #37–38 — `main.py`):**
-- [x] `CORSMiddleware`: `allow_methods=["*"]` / `allow_headers=["*"]` → explicit allow-lists: `GET, POST, PATCH, DELETE, OPTIONS` and `Authorization, Content-Type, X-AegisTrace-Key, X-Agent-Token, X-Agent-Version`.
-- [x] CSP `script-src`: removed `'unsafe-inline'` → `script-src 'self'` only (style-src still allows `'unsafe-inline'` for Google Fonts CSS, which is low-risk).
-
-**Multi-tenancy org-scoping IDOR sweep (Task #40 — the bulk of this audit):**
-
-New `org_id: int = Field(default=1)` columns added to 11 tables that predated
-the org_id pattern (migration auto-adds the column on startup, default `1`,
-zero-downtime): `vthistory`, `emailanalysisrecord`, `pcapanalysis`, `policy`,
-`webhookconfig`, `identityconnector`, `approvedaiservice`, `authevent`,
-`identityanomaly`, `itdralert`, `ioccorrelation`.
-
-Two reusable scoping patterns were established and applied everywhere a model
-has no `org_id` of its own but links (nullably) to `Case` or `User`:
-- `_org_case_ids(session, user)` → `set` of Case IDs in the caller's org; rows are included if `Model.case_id IS NULL OR Model.case_id IN org_case_ids` (via `sqlalchemy.or_`).
-- `_org_user_ids(session, user)` → `set` of User IDs in the caller's org; used for `AuditLog` (no org_id, but has `user_id`).
-
-Per-file fixes:
-- [x] **`identity.py`** — every IdentityNode/edge lookup now checks `node.org_id == user.org_id` (404 if not), including the graph-edge endpoint (both source AND target node must be in-org).
-- [x] **`cases.py`, `comments.py`** — case + case-comment endpoints re-verified for `case.org_id == user.org_id` 404 checks (closing gaps from the v5.4 pass).
-- [x] **`email_router.py`, `pcap.py`, `vt.py`** — `EmailAnalysisRecord` / `PcapAnalysis` / `VTHistory` now stamped with `org_id=user.org_id` on create, list endpoints filter by `org_id`, and single-record GETs 404 on org mismatch. Optional `case_id` on create validated against the caller's org.
-- [x] **`hunt.py`** — IOC/threat-hunting queries scoped to `Case.org_id == user.org_id`; per-case lookups use `org_id`-validated case sets via walrus-operator filtering.
-- [x] **`provenance.py`** (ProvenanceLedger + TrustEvent, both nullable `case_id`, no `org_id`) — `_org_case_ids` applied to `list_provenance` / `list_trust_events`; `get_provenance_for_case` / `get_trust_events_for_case` / `log_provenance` / `create_trust_event` / `approve_action` all validate `case.org_id == user.org_id` before reading/writing.
-- [x] **`agent_security.py`** — `list_agent_actions`, `agent_security_stats`, `approve_action`, `reject_action` all org-scoped via `_org_case_ids` + per-record case-org check.
-- [x] **`edr.py`** — added `_require_responder(user)` (analyst/admin only) on `isolate_endpoint` / `un_isolate_endpoint` / `kill_process` / `run_command` — previously ANY authenticated user (incl. viewers) could isolate hosts, kill processes, or run arbitrary commands on production endpoints via CrowdStrike/SentinelOne/CarbonBlack. Also added `_check_case_org` + `_org_case_ids` to scope `/history` and `/history/recent`.
-- [x] **`audit.py`** — AuditLog has no `org_id` but `user_id` → `User.org_id`; `_org_user_ids` + `_org_scope` (rows where `user_id IN org_user_ids OR user_id IS NULL`) applied to `list_audit`, `audit_since`, `audit_stats` (incl. the daily-trend loop and `total_cases`), and the `/stream` SSE generator (recomputed each poll).
-- [x] **`itdr.py`** — `AuthEvent`, `IdentityAnomaly`, `ITDRAlert` now all org-scoped end-to-end: all 5 non-shadow-AI detector functions (`_detect_credential_stuffing`, `_detect_impossible_travel`, `_detect_new_device`, `_detect_privilege_escalation`, `_detect_token_theft`) take an `org_id` param and filter `AuthEvent.org_id`; `_create_anomaly` stamps `org_id`; `list_auth_events`/`create_auth_event`/`create_bulk_events`/`list_itdr_anomalies`/`list_itdr_alerts`/`get_itdr_analytics`/`update_itdr_alert` all filter or validate by `org_id`. `run_itdr_detectors` now 404s if the target `IdentityNode` isn't in the caller's org. Also removed a dead duplicate `_create_anomaly` definition that was shadowing the real one. **Residual (accepted, low-risk):** `_detect_shadow_ai_usage` queries `ShadowAIEvent`/`Endpoint`, neither of which has `org_id` — out of scope until those tables get org_id too.
-- [x] **`webhooks.py`** — `WebhookConfig` CRUD fully org-scoped + `require_admin`. **New SSRF defense-in-depth layer**: existing save-time `_validate_webhook_url()` (hostname/IP regex + port allow-list) is now joined by send-time `_resolve_and_check()` — resolves the hostname via `socket.getaddrinfo` at send time and rejects if any resolved address is private/loopback/link-local/reserved/multicast/unspecified (handles IPv4-mapped IPv6 too via `ip.ipv4_mapped`). Defends against **DNS rebinding** (hostname is public at save time, resolves to `127.0.0.1`/`169.254.169.254`/internal IP at send time).
-- [x] **`connectors.py`** — all connector CRUD + `ApprovedAIService` list/status/delete org-scoped. **Critical fix**: `POST /api/connectors/approved-ai` (`save_approved_ai`) previously deleted **ALL** `ApprovedAIService` rows globally (across every org) on every save by ANY authenticated user — now scoped to `org_id == admin.org_id` and gated behind `require_admin`.
-- [x] **`policies.py`** — `Policy` CRUD (`list`/`create`/`update`/`delete`) all org-scoped; create/update/delete now `require_admin` (previously any authenticated user could edit/delete any org's access-control policies). `POST /validate`: policy lookup scoped to `Policy.org_id`, and the target `IdentityNode` is treated as not-found (no `node_risk_score` leak) if it belongs to another org.
-- [x] **`orchestration.py`** (SOAR playbooks) — `evaluate_playbooks()` and `execute_approved_playbook_action()` now take an `org_id` param: the `Playbook` query is filtered by `org_id` (previously ANY org's playbooks fired for ANY org's events), and any `case_id` pulled from attacker-influenced `event_data` is verified against `org_id` before a case is attached to an action (`POST /api/orchestration/evaluate` passes `user.org_id`; telemetry callers in `ingest.py` default to `org_id=1`).
-- [x] **`portfolio.py`** — `GET /api/portfolio/stats` was **fully unauthenticated** and returned platform-wide aggregate counts (cases, IOCs, VT lookups, email analyses) across ALL orgs. Now requires `get_current_user` and every query is scoped to `Case.org_id` / `VTHistory.org_id` / `EmailAnalysisRecord.org_id == user.org_id`.
-- [x] **`terminal.py`** — `POST /api/terminal/analyse` validates an optional `case_id` against the caller's org before creating a `ToolRun`; `GET /api/terminal/history` either validates a single `case_id` against the org or, with no filter, uses `_org_case_ids` (`case_id IS NULL OR case_id IN org_case_ids`) instead of returning every org's tool runs.
-- [x] **`analytics.py`** — `GET /api/analytics/ioc-types` now filters `IOCCorrelation.org_id == user.org_id` (new column + `ingest.py`'s `_correlate()` now takes/stamps `org_id`, default 1 for the shared-key telemetry pipeline).
-
-**Net effect:** with the current single-org deployment (`org_id=1` for everyone) none of this changes runtime behavior. The value is structural — when a second tenant is provisioned, none of the above endpoints leak or allow cross-tenant tampering. All edited files re-verified with `ast.parse()`; no test suite exists yet for this backend (manual/agent-driven verification only).
-
----
-
-## SECURITY AUDIT v10.2 (June 2026) — Pentest / SOC Hardening Pass
-
-A second full pass (senior-pentester / senior-architect / SOC-engineer lens) over
-both the `aegistrace` backend and the `aegistrace-mcp-gateway` repo (the gateway
-was fully remediated in a prior session). This pass focused on SSRF via outbound
-connectors, authorization gaps on agent-command dispatch, the NVIDIA NIM prompt
-path bypassing the existing Groq prompt-injection shield, provenance/trust-ledger
-input validation, and dependency CVEs. Everything below is committed but **not
-yet deployed** — see `HOW TO RESUME BUILDING` for the deploy step.
-
-**(a) Okta connector SSRF — new shared `backend/core/ssrf_guard.py` module:**
-- [x] New module `backend/core/ssrf_guard.py` — `validate_external_host(host)` (strips scheme, rejects hosts containing `/ @ space \`, blocks `localhost/127./10./172.16-31./192.168./169.254./::1/fc00:/fe80:/0.0.0.0` + `metadata.google.internal` + known cloud-metadata IPs via regex `_SSRF_BLOCK` + `_BLOCKED_HOSTS`), `is_blocked_ip(ip_str)` (ipaddress-based: private/loopback/link-local/reserved/multicast/unspecified, incl. IPv4-mapped IPv6), `resolve_and_check(host)` (DNS-rebind recheck via `socket.getaddrinfo` at send time), and `SSRFBlockedError`.
-- [x] `backend/routers/connectors.py` — `okta_connect()` now calls `validate_external_host(okta_domain)` immediately after extracting the field from the request body, before the connector is even constructed; raises `400` on a blocked host.
-- [x] `backend/core/connectors/okta.py` — `_get()` now validates the stored `okta_domain` on **every outbound call** (`validate_external_host` + `resolve_and_check`), not just at save time — closes the DNS-rebinding gap where a domain resolves to a public IP at connector-setup time but to `169.254.169.254`/`127.0.0.1`/internal RFC1918 space later. `httpx.AsyncClient` already used `follow_redirects` default (False); explicit `timeout=30` retained.
-- This is the same defense-in-depth pattern (`_validate_webhook_url` + `_resolve_and_check`) already applied to `webhooks.py` in v10.1 — `ssrf_guard.py` now factors that logic into one shared module so future connectors (AWS IAM, etc. — see backlog) get it for free.
-
-**(b) Webhook outbound redirect hardening (`backend/routers/webhooks.py`):**
-- [x] `_send_webhook()`: `httpx.Client(timeout=8)` → `httpx.Client(timeout=8, follow_redirects=False)`. Previously a webhook URL that passed `_validate_webhook_url()` + `_resolve_and_check()` at send time could still issue a request that gets **redirected** (3xx) to an internal address — `httpx` follows redirects by default, which would silently bypass both SSRF checks. Now any redirect response is returned as-is (not followed), so the destination the checks validated is the only one ever contacted.
-
-**(c) Agent-command dispatch authorization + allowlist (`backend/routers/ingest.py`):**
-- [x] `POST /agent/command/dispatch` previously allowed **any authenticated user** (including `role="viewer"`, the default) to send `kill_process`, `isolate_device`, `unisolate_device`, `block_ip`/`unblock_ip`, `uninstall_agent`, `stop_agent`, etc. to any real endpoint agent — full remote control of production hosts with zero authorization check, same severity class as the `edr.py` issue fixed in v10.1.
-- [x] Fixed: added `_VALID_AGENT_COMMANDS` allowlist (17 commands, mirrors the `command_type` elif-chain in `agent/aegistrace_agent.py`) and a role check (`user.role not in ("admin","analyst")` → `403`), matching the `_require_responder()` bar already established for EDR isolate/kill-process/run-command in v10.1. Unknown/typo'd `command_type` values are now rejected with `400` at dispatch time instead of silently queuing a command the agent will reject anyway.
-- **Known residual gap (deferred — see SOC backlog item 1 below):** the `Endpoint` model (`backend/models.py:30-51`) has **no `org_id` column at all** — `dispatch_command`'s endpoint lookup (`session.get(Endpoint, ...)` / hostname match) is global across every org. An admin/analyst in org B can currently target org A's endpoint by ID/hostname. Role-gating closes the "any viewer" hole immediately; the cross-org gap needs the broader `Endpoint.org_id` migration tracked below.
-
-**(d) PromptShield coverage for the NVIDIA NIM path (the largest item this session):**
-
-Background: `ai_router.call_ai()` (Groq path) automatically runs every prompt
-through `PromptShield.sanitise()` and appends a "SECURITY:" system-prompt
-hardening suffix. `nvidia_chat()` (NVIDIA NIM — the *primary* path for
-Hermes-3 triage, Nemotron-70B coordinator synthesis, and Llama-70B specialist
-agents) is a **raw wrapper with neither protection**. Any case field
-(title/description/findings/affected_systems), endpoint vision-context, or IOC
-list that flows into an NVIDIA prompt was reaching the model unsanitised — a
-classic second-order prompt-injection path (e.g. a phishing-email body or a
-log line crafted with "ignore previous instructions / you are now..." that
-gets pulled into a case's `findings` field and then handed verbatim to
-Hermes-3/Nemotron).
-
-- [x] `backend/core/prompt_shield.py` — added exported `AI_HARDENING_SUFFIX`, a system-prompt-hardening string (mirrors the suffix `ai_router.call_ai` already appends) for any agent system prompt that will see user-controlled text via `nvidia_chat()`.
-- [x] `backend/agents/triage_agent.py` — `_TRIAGE_SYSTEM` now ends with `+ AI_HARDENING_SUFFIX`; `run_triage_agent()` sanitises `case.title` (`case_title`), `case.affected_systems` (`generic`), `case.description[:800]` (`case_description`), `case.findings[:600]` (`case_findings`) before building the Hermes-3 `user_message`.
-- [x] `backend/agents/specialist.py` — `_nvidia_or_groq_json()` (shared by the email/IOC/identity/report agents and the endpoint agent's Groq fallback) sanitises `prompt` with `max_len=4000` before any NVIDIA/Groq call; `_ENDPOINT_SYSTEM` gets `+ AI_HARDENING_SUFFIX`; `_run_endpoint_agent_loop()` sanitises `case.title`/`affected_systems`/`description`/`findings`/`vision_context` before building its `user_message`; `_generate_endpoint_sigma()` sanitises `case.title` and `top_threat` before Codestral rule-gen.
-- [x] `backend/agents/coordinator.py` — `_COORDINATOR_SYSTEM` gets `+ AI_HARDENING_SUFFIX`; `run_coordinator()`'s `synthesis_prompt` (specialist JSON results, which themselves embed case/log-derived text) is sanitised with `max_len=8000` before the Nemotron-70B call — `max_len` raised above the `case_findings` default (3000) specifically so the JSON-schema instructions appended after `specialist_context[:4000]` are never truncated mid-schema (would have broken the coordinator's JSON output parsing).
-- [x] Assessed `backend/adaptive_agent.py` — **no change needed**. Its prompt is built entirely from internal numeric telemetry (FP/FN rates, confidence averages, threshold bounds); there is no free-text user/case input in its context, so there's no injection surface to sanitise.
-- All five edited files re-verified with `ast.parse()` (no project venv with `groq`/`nvidia` deps available to import-test live — same pre-existing environment limitation noted in v10.1).
-
-**(e) Provenance / Trust-ledger enum validation (`backend/routers/provenance.py`):**
-- [x] `ProvenanceLedger.approval_status` and `TrustEvent.actor_type`/`trust_level` are documented enum-like fields that drive approval-workflow logic and DORA Article-19 compliance reporting, but `log_provenance()` / `create_trust_event()` previously accepted **any string** from the request body verbatim.
-- [x] Added `_VALID_APPROVAL_STATUSES = {"auto","pending","approved","rejected"}`, `_VALID_ACTOR_TYPES = {"human","ai","agent","system"}`, `_VALID_TRUST_LEVELS = {"verified","unverified","suspicious","revoked"}`; both endpoints now `400` on an unrecognized value instead of persisting it (which would silently break compliance-report filters and the `agent_security.py` approval-queue logic that branches on `approval_status`).
-
-**(f) Dependency CVE remediation (frontend):**
-- [x] `npm audit fix` (non-`--force`) bumped `form-data` 4.0.5 → 4.0.6 in `frontend/package-lock.json` (axios's transitive dependency) — fixes GHSA-hmw2-7cc7-3qxx (CRLF injection in multipart form boundary generation, CVSS 7.5). Lockfile-only change; `package.json` untouched, no version-range changes.
-
-**Items investigated and intentionally left unchanged:**
-- [x] **`backend/routers/enrichment.py`** — reviewed for the same class of IOC-driven SSRF as the Okta connector. Ruled **not an issue**: IOC inputs are gated by existing type-detection regexes (IP/domain/hash/URL) before any outbound call, and the enrichment targets are fixed third-party TI APIs (VirusTotal etc.), not user-supplied hostnames reachable via path/query substitution — no code change made.
-- [x] **`backend/adaptive_agent.py`** — see (d) above; no user-text injection surface, no change made.
-
----
-
-## SOC MITIGATION PLAN — Deferred Items (from v10.2 audit)
-
-Items below were identified during the v10.2 pass but are **architectural,
-require coordination (secret rotation / VPS changes), or need a larger
-regression-tested dependency bump** — too risky to push as part of a same-day
-patch set. Ordered by priority for the next dedicated session.
-
-1. **`Endpoint.org_id` multi-tenancy gap (HIGH — architectural).** `backend/models.py:30-51`'s `Endpoint` model has no `org_id` at all, unlike the 17+ other tables that default to `org_id=1`. This affects every endpoint/agent-targeting query across the codebase (`ingest.py` dispatch + telemetry, `edr.py`, `itdr.py`'s `_detect_shadow_ai_usage`, `hunt.py`'s `endpoints` view, the Control Plane endpoint-heartbeat panel, etc. — roughly 17 call sites by the v10.1 sweep's count). **Remediation:** add `org_id: int = Field(default=1)` via the same zero-downtime startup-migration pattern used for the 11 tables in v10.1, then thread `org_id` through every `Endpoint` query and the agent-enrollment flow (agents must be told which org they belong to at install-token time — ties into the install-token work from v10.1). Until fixed, (c) above (`dispatch_command` role-gating) is the only mitigation — any admin/analyst can still target another org's endpoints by ID/hostname.
-
-2. **Default-secret hardening: `JWT_SECRET` / `ADMIN_PIN` / `FERNET_KEY` (HIGH — needs rotation coordination).** If these env vars are unset, the app currently falls back to a hardcoded default (verify exact fallback values in `backend/main.py` / `backend/core/encryption.py` / `backend/routers/auth.py` before the next session — not re-verified in v10.2). **Remediation plan:**
-   - Make all three **hard-fail at startup** if unset in production (`ENV=production` check), rather than silently using an insecure default.
-   - **`JWT_SECRET` rotation impact:** rotating it logs out every active session (same blast radius as the v10.1 JWT-library swap — acceptable, just needs a maintenance-window heads-up).
-   - **`FERNET_KEY` rotation impact:** rotating it breaks decryption of every `IdentityConnector`/`ApprovedAIService` token currently encrypted at rest (`core/encryption.py`, added v5.5). Needs a one-time re-encryption migration (decrypt with old key, re-encrypt with new key) run *before* the env var is swapped, or all connector credentials must be re-entered manually post-rotation.
-   - **`ADMIN_PIN`** — lower risk, can rotate immediately; just needs the admin to be told the new value out-of-band.
-
-3. **Dockerfile non-root user + `.dockerignore` (MEDIUM — needs VPS volume-permission coordination).** Backend/frontend containers currently run as root (verify in `backend/Dockerfile` / `frontend/Dockerfile`). **Remediation:** add a non-root `USER` directive + matching `UID`/`GID` that align with the bind-mounted volume ownership on the Hostinger VPS (2.24.131.243) — needs a `chown` pass on existing volume data during a maintenance window so the new non-root UID can still read/write the SQLite DB and uploaded evidence files. Also add a `.dockerignore` (currently missing) to keep `.env`, `node_modules`, `__pycache__`, and `.git` out of build contexts.
-
-4. **`starlette`/`fastapi` CVE PYSEC-2026-161 (MEDIUM — needs regression-tested bump).** Current pins: `fastapi==0.121.0`, `starlette>=0.49.1,<0.50.0`. The CVE is a Host-header → `request.url.path` mismatch enabling path-based-middleware evasion. **Concrete impact in this codebase:** `backend/main.py`'s `SecurityHeadersMiddleware` (gates on `request.url.path.startswith("/api/")`) and `DefenseFingerprintMiddleware` (reads `request.url.path` for fingerprinting) could both be evaded with a malformed `Host` header — NOT a full auth bypass (route dispatch itself uses the real ASGI scope path, so authorization checks on routes are unaffected), but defense-fingerprinting/security-header application could be skipped for crafted requests. **Remediation:** bump to `fastapi>=0.133.0` (which requires `starlette>=1.0.1`) — this is a large jump from 0.121.0 and needs full regression testing (no test suite currently exists for this backend — writing at least smoke tests for auth/cases/ingest should precede this bump).
-
-5. **`react-scripts`/CRA toolchain — 41 remaining `npm audit` findings (LOW/MEDIUM, long-term).** The form-data fix in (f) above was the only safely-fixable item without `--force`. The remaining findings are all in the Create React App build toolchain (webpack-dev-server, svgo, postcss, etc. — dev-only, not shipped to production bundles) and require breaking version bumps that CRA itself doesn't support. **Remediation:** CRA → Vite migration (tracked as a separate long-term project; not a security-urgent item since these are build-time-only dependencies, but blocks ever clearing `npm audit` cleanly).
-
-6. **AWS IAM connector SSRF coverage (LOW — forward-looking).** When `backend/core/connectors/aws_iam.py` is built (tracked in `FULL FUTURE WORK BACKLOG` → NHI Guard), it should use `core/ssrf_guard.py` (`validate_external_host` + `resolve_and_check`) from day one — the module was factored out in (a) specifically so new connectors get this for free.
-
----
-
-## SECURITY AUDIT v11.1 (June 2026) — /cso Red Team Pass
-
-Four confirmed vulnerabilities found and fixed in a senior-engineer / red-team audit pass:
-
-**(a) X-Forwarded-For IP spoofing — `backend/routers/auth.py`:**
-- [x] `_get_real_ip()` took `X-Forwarded-For.split(",")[0]` — leftmost entry is **attacker-controlled** (any client can forge it, so rate limits and lockout rules were trivially bypassed). Fixed: use `X-Real-IP` (nginx `$remote_addr` via `proxy_set_header X-Real-IP $remote_addr`, cannot be forged by client). Falls back to `XFF.split(",")[-1].strip()` (network-controlled rightmost hop) only if `X-Real-IP` absent.
-
-**(b) INGEST_API_KEY auth bypass — `backend/routers/ingest.py`:**
-- [x] Memory dump endpoint's auth block had `except HTTPException as e: if e.status_code == 503: pass` — when `INGEST_API_KEY` unset, `_get_ingest_key()` raised `HTTPException(503)`, the `pass` silently swallowed it and removed the auth check. Any request succeeded. Fixed: hard-fail 503 if key not configured; always enforce `X-Agent-Token` required + HMAC constant-time comparison.
-
-**(c) Plaintext TOTP secrets — `backend/routers/auth.py`:**
-- [x] `User.mfa_secret` stored plaintext. If DB is dumped, attacker gets live TOTP codes. Fixed: `mfa_setup()` writes `_enc.encrypt(secret)` via `core.encryption.FieldEncryption`; `mfa_verify()`, `login_mfa()`, `mfa_disable()` all call `_enc.decrypt(user.mfa_secret)` before `pyotp.TOTP()`. The existing `FieldEncryption.decrypt()` falls back to returning plaintext for pre-fix secrets — zero-downtime upgrade for existing enrolled users.
-
-**(d) Missing nginx security headers — VPS `/etc/nginx/sites-enabled/aegistrace`:**
-- [x] Added all missing security headers to the nginx config: `X-Frame-Options: SAMEORIGIN` (clickjacking), `X-Content-Type-Options: nosniff` (MIME sniffing), `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=()`, and a full `Content-Security-Policy` directive. `Strict-Transport-Security` was already present from v5.4.
-
-**Note:** The 6 SOC Mitigation Plan items from v10.2 remain open (see `## SOC MITIGATION PLAN` section above).
-
----
-
-## FULL FUTURE WORK BACKLOG
-
-### Priority 0.5 — AI-Speed Threat Frontier (Strategic Roadmap — June 2026)
-
-**The core problem:** AegisTrace is built for human-speed security in a world about to be attacked at machine speed. Current architecture (30-second telemetry cycles, HITL approval queues, human-analyst review gates) assumes AI agents act slowly enough for humans to intervene. That assumption breaks when attacker AI operates at sub-second speed.
-
-**The strategic pivot:** Stop positioning AegisTrace as "human approval for AI actions." Start positioning it as **"AI immune system for AI infrastructure."** Humans review the scoreboard after the match, not each move during it.
-
-**Recommended build order:**
-
-#### 1. RAG / Qdrant Poisoning Protection (build FIRST — live vulnerability)
-- **Problem:** Any case submitted today can poison future investigations via crafted description text stored in Qdrant. An attacker submits a case with carefully crafted `description`/`findings` text → your embedding model stores it in Qdrant → future case investigations retrieve this poisoned embedding and get attacker-controlled "similar cases" injected into the triage prompt.
-- **Fix:** (a) Sanitise every Qdrant retrieval through `prompt_shield.py` before it reaches the triage agent prompt. (b) Store cryptographic hashes on embeddings at write time; detect outlier embeddings that don't match their source text on retrieval.
-- **Files:** `backend/qdrant_store.py` (sanitise at `search_similar` retrieval), `backend/embeddings.py` (hash on `store_case_embedding`).
+#### 1. RAG / Qdrant Poisoning Protection ← BUILD FIRST (live vulnerability)
+Any case submitted today can poison future investigations. An attacker crafts `description`/`findings` text → embedding stored in Qdrant → future triage retrieves attacker-controlled "similar cases."
+- **Fix:** (a) Sanitise every `search_similar()` result through `prompt_shield.py` before injecting into triage context. (b) Store SHA-256 hash of source text alongside each embedding; detect outlier embeddings at retrieval.
+- **Files:** `backend/qdrant_store.py`, `backend/embeddings.py`
 - **Effort:** 1–2 weeks
 
 #### 2. DefenseAgent — Autonomous Sub-Second Response (HOTL model)
-- **Problem:** Current model is HITL (human-in-the-loop): every detection waits for human approval. An attacker AI exfiltrates data in 3 seconds; the breach is over before the approval card is swiped. ApprovalQueue.jsx with swipe cards is useless at machine speed.
-- **What to build:** `AUTO_RESPOND = True` mode in the endpoint agent with 10 **pre-approved kill rules** (no backend round-trip, no human approval required for these):
-  - `honey_token_accessed` → immediate isolate + SIGKILL
-  - `YARA_match(reverse_shell)` → SIGKILL + block outbound iptables
-  - `DNS_DGA_score > 92` → iptables DROP + async backend log
-  - `FIM_change(critical_binary)` → snapshot + CRITICAL alert
-  - (define remaining 6 for v1)
-- Actions still write to ProvenanceLedger **asynchronously** (not blocking the response).
-- Human reviews in Defense Console with "undo" capability — HOTL (human-on-the-loop).
-- **Files:** `agent/aegistrace_agent.py` (AUTO_RESPOND flag, `_auto_respond()` dispatcher), `backend/routers/defense.py` (async provenance write path).
-- **Effort:** 2 weeks (reuses existing YARA-lite, FIM, honey token, auto-block infrastructure)
+Convert from HITL to HOTL. On-device agent acts on 10 pre-approved rules without backend round-trip:
+- `honey_token_accessed` → isolate + SIGKILL
+- `YARA_match(reverse_shell)` → SIGKILL + iptables block outbound
+- `DNS_DGA_score > 92` → iptables DROP + async log
+- `FIM_change(critical_binary)` → snapshot + CRITICAL alert
 
-#### 3. Model Attestation (high enterprise-sales value, low effort)
-- **Problem:** AegisTrace routes to Groq/NVIDIA models but doesn't verify: (a) which model weights were actually loaded, (b) whether a fine-tuned model was tampered with, (c) whether the API is serving a different model than advertised (model substitution attack).
-- **What to build:** Per-model baseline fingerprint (perplexity distribution, token-length distribution, response-time distribution) recorded on first use. Every subsequent `nvidia_chat()` / `call_ai()` optionally samples response against baseline. If statistical divergence > 2σ → raise `ModelSubstitutionAlert` to Defense Console. Include signed inference metadata (model version claim + timestamp) in ProvenanceLedger entries.
+`AUTO_RESPOND = True` flag in agent. Actions write ProvenanceLedger **asynchronously**. Human reviews in Defense Console with "undo" capability.
+- **Files:** `agent/aegistrace_agent.py`, `backend/routers/defense.py`
+- **Effort:** 2 weeks (reuses YARA-lite, FIM, honey token, auto-block infrastructure)
+
+#### 3. Model Attestation (high sales value, low effort)
+Detect model substitution attacks. Build per-model baseline fingerprint (perplexity, token-length distribution). Every AI call optionally checks response against baseline — divergence > 2σ → `ModelSubstitutionAlert`. Sign inference metadata (model version + timestamp) into ProvenanceLedger entries.
 - **Effort:** 1–2 weeks
 
-#### 4. Inter-Agent MCP Communication Monitor (platform play — defer until platform path confirmed)
-- **Problem:** `prompt_shield.py` checks one prompt at a time. Multi-agent swarms of 50+ agents can chain benign-looking interactions into a kill chain. Agent A reads a file, returns a "benign" summary to Agent B — but the summary contains a steganographic payload that hijacks Agent B's next tool call.
-- **What to build:** MCP proxy layer (extends `mcp-aegis`) that analyses *patterns across agent conversation chains*, not individual prompts. Track agent trust decay: if Agent A's outputs correlate with subsequent bad actions by Agent B → downgrade Agent A's trust score.
-- **Effort:** 4–6 weeks. Only build this on the platform path (enterprises routing all AI traffic through AegisTrace MCP proxy).
+#### 4. Inter-Agent MCP Communication Monitor (platform path only)
+Detect "slow poison" attacks: N benign agent interactions → one malicious action. Track agent trust decay (Agent A's outputs correlate with Agent B's bad actions → downgrade Agent A). Extends `mcp-aegis` with cross-session MCP call chain analysis.
+- **Effort:** 4–6 weeks
+- **Defer until:** Platform vs Product path decision made
 
-#### 5. Dynamic AI Honeypots (deception-as-a-service — defer until DefenseAgent done)
-- **Problem:** Current honeypot endpoints (`/api/v1/admin/export` etc.) are static. A smart attacker AI fingerprints and ignores them in seconds.
-- **What to build:** Background agent that analyses real API patterns and generates fake endpoints statistically indistinguishable from real ones. When attacker AI hits a honeypot, the deception AI responds with fake data + poisoned IOCs to waste attacker compute cycles.
-- **Effort:** 3–4 weeks (NVIDIA NIM generative model)
+#### 5. Dynamic AI Honeypots (defer until DefenseAgent done)
+Background agent generates fake endpoints statistically indistinguishable from real ones. When attacker AI hits honeypot, deception AI responds with fake data + poisoned IOCs.
+- **Effort:** 3–4 weeks
 
-#### 6. Browser/LLM Runtime Visibility (future product surface — long-term)
-- **Problem:** Endpoint agent monitors processes/network/files but is blind to AI agents running in browser extensions (ChatGPT sidebar, Copilot, Claude Desktop, Slack/Teams AI bots) — these have network + file + credential access.
-- **What to build:** Browser extension companion to `mcp-aegis`; intercept AI tool calls in browser context; monitor clipboard/file upload events; cross-tab data exfiltration detection.
-- **Effort:** 3–4 weeks (separate product surface — different distribution + trust model)
-- **Defer:** Treat as a 2027 product line; don't let it block core platform work.
+#### 6. Browser / LLM Runtime Visibility (2027 product line)
+Browser extension for ChatGPT sidebar, Copilot, Claude Desktop — intercepts AI tool calls, monitors clipboard/file upload/cross-tab exfiltration. Separate product surface (different distribution model).
+- **Defer:** Not a core platform addition for current version
 
-**Key decision required before building item 4:** Platform vs Product path. Platform = expose rule engine via API, enterprises route all AI traffic through AegisTrace. Product = 10 opinionated rules, sell as a complete solution. Items 2+3 are valid on either path; item 4 requires the platform path.
+### Active Sprint (Priority 0)
+
+- [ ] **Auto-Rule Generation Trigger** — nightly job: 3+ cases with same MITRE technique in 7 days → auto-generate `DetectionRule` (pending_review). Files: `models.py` (DetectionRule exists), `backend/routers/rules.py` (add pending/approve/reject endpoints), scheduler.
+- [ ] **Adaptive Thresholds Dashboard** — `/app/adaptive` page showing `AdaptiveThresholdLog`: threshold time-series, FP/FN trending, manual lock/override. (Priority 3.5 carry-over)
+- [ ] **SQL Console saved queries + export** — `SavedHuntQuery` model, CSV/JSON export from ThreatHunt SQL Console.
+
+### Backlog (Priorities 1–8)
+
+**Platform independence:**
+- [ ] Ollama local AI — `backend/core/ollama_client.py`, fallback chain: Ollama → Groq → NVIDIA NIM. Enables air-gap claim.
+- [ ] Agent Verified Boot Chain — agent hashes own binary on startup, refuses if tampered, fires CRITICAL ITDRAlert.
+- [ ] Native Python Embedding Engine — TF-IDF + cosine replacing NV-EmbedQA. Air-gapped semantic search.
+
+**Identity & ITDR:**
+- [ ] SCIM endpoint `/api/scim/v2` — enterprise push-based identity sync
+- [ ] Least Agency enforcement — per-agent scope definition, auto-reject out-of-scope
+- [ ] `Endpoint.org_id` migration — see SOC Mitigation Plan item 1 (HIGH priority security item)
+- [ ] Device node detail panel in Identity Graph
+
+**Compliance:**
+- [ ] DPDPA Compliance Report (India market accelerator — last remaining v4.3 item)
+- [ ] RBI Cybersecurity Framework mapping
+
+**AI (NVIDIA):**
+- [ ] Phase 10: NVIDIA Morpheus — GPU DGA detection, log anomaly scoring, network flow analysis (requires GPU + Kafka, post free-tier)
+
+**Deferred / out of scope for now:** PIPROXY, NeMo fine-tuning, mcp-verify static analysis CLI, SBC Edge Agent, NVIDIA RAPIDS cuGraph.
 
 ---
 
-### Priority 0 — v10.0 Session Plan (ACTIVE — June 2026)
+## COMPANION PROJECTS
 
-**Full plan:** `AEGISTRACE_SESSION_PLAN_V10.md` (repo root). This is the current source of truth for what to build next, ahead of the priorities below. The gap it closes: AegisTrace detects everything but correlates nothing automatically, responds manually to alerts, and doesn't adapt its own detection over time.
+All four are published to PyPI and feed AegisTrace's `/app/agent-security` dashboard via `/api/ingest/<tool>-event`.
 
-- [x] **Priority 1 — Temporal Linker + Attack Graph Tab** (DONE — June 2026)
-  - Correlates events from `RawLogEvent`, `ITDRAlert`, `DefenseEvent`, `AgentAction`, `ShadowAIEvent`, `HardwareAlert` on the same host within ±5s windows, clusters into "steps", sends to Nemotron-70B (Groq `call_ai_json` fallback) for a JSON attack narrative (`steps`, `narrative`, `mitre_chain`, `confidence`, `suggested_title`).
-  - **Files shipped:** `backend/linker.py` (new — `reconstruct_chain(case_id, session)`: gathers anchor events via `case_id` FK from `AgentAction`/`ITDRAlert`/`ShadowAIEvent`/`HardwareAlert`, resolves hostnames (incl. `ShadowAIEvent.agent_id` → `Endpoint.hostname`), enriches with `RawLogEvent` for those hostnames within a ±10min window, adds `DefenseEvent` rows whose `attacker_ip` matches an `ip`-type case IOC within ±1h, sorts chronologically, clusters into steps using a 5s gap threshold, then calls Nemotron-70B / Groq fallback for the narrative); `backend/routers/graph.py` (new — `GET /api/graph/reconstruct?case_id=X`, org-scoped); registered in `backend/main.py` router list; `frontend/src/pages/app/CaseDetail/AttackGraphTab.jsx` (new — narrative box, MITRE chain chips, confidence, "Apply to Case" button that merges `mitre_chain` into `case.mitre_techniques` and appends the narrative to `case.description`, step timeline, collapsible correlated-events list); registered as the "🕸 Attack Graph" tab in `CaseDetail/index.jsx`.
-  - **Verified:** query/clustering logic tested against an in-memory SQLite DB seeded with a `Case` + `Endpoint` + one event from each of the 6 sources (incl. an IP-matched `DefenseEvent`) — correctly produced 7 events grouped into 2 clusters (6 events within 5s of each other, 1 separate step 5 min later) and built a valid Nemotron prompt; `reconstruct_chain()` end-to-end (with mocked AI call) returned all expected keys. Frontend: `npm run build` compiles cleanly with the new tab and component.
-  - **Not yet done:** no live test against the production NVIDIA/Groq keys (none configured in this session's environment) — the AI call path uses the same try-NVIDIA/fallback-to-Groq pattern as `routers/rules.py`, which is already proven in production.
-- [x] **Priority 2 — Playbook Engine (SOAR)** (DONE — June 2026)
-  - New models `Playbook` (trigger_event_type, trigger_conditions JSON, actions JSON array, is_active, requires_approval global gate, run_count, last_run_at) and `PlaybookRun` (playbook_id, trigger_event_type, trigger_event_id, actions_taken/actions_pending JSON, status, result_summary, run_at, completed_at) in `backend/models.py`. Rule engine evaluates `min_*`/`max_*` numeric-threshold conditions plus exact/case-insensitive string matches against incoming event data, then runs each action immediately or queues it to the `/app/agent-security` approval queue (`ProvenanceLedger`, `action_type="playbook_action"`) depending on the per-action × per-playbook approval gate (`requires_approval = action_default AND playbook.requires_approval` — the playbook flag can only relax approval, never add it).
-  - **Files shipped:** `backend/routers/orchestration.py` (new, ~400 lines — `ACTION_TYPES` default-approval map, `SEED_PLAYBOOK`, `_conditions_match()`, action handlers `_action_isolate_endpoint`/`_action_create_case`/`_action_send_webhook`/`_action_page_oncall`/`_action_add_case_comment`/`_action_enrich_ioc`/`_action_generate_rules`, `_execute_action()` dispatcher, `execute_approved_playbook_action()` approval-execution closure, `evaluate_playbooks()` core evaluator + `PlaybookRun` audit trail, `seed_builtin_playbooks()`, full CRUD + `/api/orchestration/evaluate` (dry-run) + `/api/orchestration/seed` REST endpoints); `backend/main.py` (router registration + startup seed of the built-in "Critical MCP Block → Contain" playbook); `backend/routers/ingest.py` (`evaluate_playbooks()` hooked into `ingest_telemetry` for new `ITDRAlert`/`ShadowAIEvent` rows and into `ingest_mcp_event` for blocked/flagged MCP tool calls); `backend/routers/agent_security.py` (`approve_action` is now async and, for `action_type="playbook_action"` records, calls `execute_approved_playbook_action()` to run the deferred action e.g. endpoint isolation); `frontend/src/pages/app/Playbooks.jsx` (new — full CRUD UI with dynamic condition/action editors, run history, dry-run "Test" modal); `frontend/src/App.jsx` + `frontend/src/components/Sidebar.jsx` (route + "Playbooks" nav item under "Control", Workflow icon); public pages `frontend/src/pages/Landing.jsx` (new "Attack Graph Reconstruction" + "Playbook Engine (SOAR)" entries in `MODULES`), `frontend/src/pages/Mission.jsx` (Temporal Linker + SOAR Playbook Engine moved to V1 "Foundation — Shipped"; V2 "SOAR Playbook Engine" replaced with "Adaptive Thresholds Agent" for Priority 3), `frontend/src/pages/Portfolio.jsx` (flagship project description updated to mention the Temporal Linker and SOAR playbook engine).
-  - **Verified:** end-to-end tested in a throwaway venv (`DATABASE_URL=sqlite:////tmp/testdb.db`) — seed idempotency, dry-run match/no-match via `/api/orchestration/evaluate`, a real run creating a `Case` + `ProvenanceLedger` (pending approval) + `PlaybookRun`, and the approval-execution closure creating an `AgentCommand` for endpoint isolation after approval. Frontend: `npm run build` compiles cleanly with the new Playbooks page, routes, sidebar entry, and updated public pages.
-- [x] **Priority 3 — Adaptive Thresholds Agent** — DONE (June 2026, "it improves itself")
-  - **What it does:** background agent runs every 4 hours, computes FP/FN rates and avg detection confidence from the last 24h, asks Nemotron-70B (Groq fallback) for threshold adjustments within hardcoded bounds, applies them at runtime (no restart), logs every change to `AdaptiveThresholdLog`.
-  - **New model** `AdaptiveThresholdLog` in `backend/models.py`: `threshold_name`, `old_value`/`new_value` (float), `reason` (Text), `fp_rate_24h`, `fn_rate_24h`, `agent_model`, `org_id`, `applied_at`.
-  - **`backend/adaptive_config.py`** — in-memory runtime config singleton (thread-safe via `threading.Lock`), `get()`/`get_all()`/`set_value()` (clamps to bounds):
-    ```python
-    _config = {
-        "anomaly_score_threshold": 70,
-        "behavioral_similarity_threshold": 0.85,
-        "itdr_confidence_threshold": 0.75,
-        "defense_fp_tolerance": 0.05,
-    }
-    ADJUSTMENT_BOUNDS = {  # agent can only move within ~+/-20% of defaults
-        "anomaly_score_threshold":         (56, 84),
-        "behavioral_similarity_threshold": (0.68, 1.0),
-        "itdr_confidence_threshold":       (0.60, 0.90),
-    }
-    ```
-    `defense_fp_tolerance` has no bounds entry — it's a fixed target the agent reasons about, not an adjustable output (the agent can only return adjustments for the three bounded keys; anything else is ignored).
-  - **`backend/adaptive_agent.py`** — `adaptive_agent_cycle()`: computes `fp_rate` (DefenseEvent `dismissed`/total, last 24h, global — DefenseEvent predates multi-tenancy and is IP-fingerprint based), `fn_rate` (ITDRAlert `false_positive`/total, last 24h, scoped by `org_id`), `avg_confidence` (mean `DefenseEvent.ai_confidence`); builds a prompt with current thresholds + bounds + targets (FP<5%/FN<2%/confidence>75%); follows the `_call_linker_ai` pattern (Nemotron-70B via `nvidia_chat` if available, else `call_ai_json` Groq fallback) returning `(dict, model_name)`; clamps each returned adjustment to `ADJUSTMENT_BOUNDS`, writes `AdaptiveThresholdLog` only if the clamped value actually changed, and updates `_config`. `start_adaptive_agent(engine)` runs this as a daemon thread, sleeping `4 * 3600`s between cycles, started in `main.py`'s `startup()` after `start_scheduler()`.
-  - **Hardcoded safety prompt (verbatim, in `_ADAPTIVE_SYSTEM`):** "You may ONLY adjust the numeric thresholds listed. You may NEVER disable detectors, change user permissions, delete data, or modify authentication settings. All adjustments must stay within the provided bounds."
-  - **Threshold -> real codepath mapping (decided during implementation):**
-    - `anomaly_score_threshold` (0-100, default 70) -> `routers/identity.py` `/api/identity/graph` `high_risk` count: `IdentityNode.risk_score >= adaptive_config.get("anomaly_score_threshold")` (was hardcoded `>= 70`).
-    - `itdr_confidence_threshold` (0-1, default 0.75) -> two consumers: (1) `routers/itdr.py` `run_itdr_detectors()` now gates `_create_anomaly()` — a detector hit only creates an `IdentityAnomaly`/fires `ITDR_ALERT_FIRED` if `result["confidence"] >= itdr_confidence_threshold` (previously every detector hit created an anomaly unconditionally); (2) `routers/defense.py` `_detect_and_triage()` — replaces the old hardcoded `HITL_CONF = 0.70` (confidence above this -> `pending_review` for Defense Console).
-    - `behavioral_similarity_threshold` (0-1, default 0.85) -> `routers/defense.py` `_detect_and_triage()` — replaces the old hardcoded `AUTO_BLOCK_CONF = 0.92` (confidence above this -> `auto_handled` + watchlist).
-    - `defense_fp_tolerance` (default 0.05) -> not a runtime gate; used only inside the agent's own prompt as the FP-rate target it tunes toward.
-  - **`GET /api/analytics/adaptive-thresholds`** (in `routers/analytics.py`) — returns `{current, bounds, log}` where `log` is the last 30 `AdaptiveThresholdLog` rows for the caller's org.
-  - **Frontend:** `frontend/src/pages/app/DefenseConsole.jsx` — new `AdaptivePanel` component, fetched alongside events/stats on each refresh cycle, shows the 4 current threshold values + their bounds and the most recent change (threshold, old -> new, agent model, reason, time ago).
-- [x] **Priority 3.5 — SQL Hunting Console (DuckDB)** — DONE (June 2026)
-  - **What it does:** read-only SQL query console over the live telemetry DB, added as a "SQL Console" tab on `/app/hunt`. Uses DuckDB's `sqlite_scan()` to query the production SQLite file directly (zero ETL, zero second database, safe under WAL with concurrent app writes). Each request opens a fresh in-memory DuckDB connection, installs/loads the `sqlite` extension, and creates a fixed set of views — `raw_log_events`, `endpoints`, `agent_actions`, `shadow_ai_events`, `defense_events`, `hardware_alerts` (unfiltered, matching existing app-wide exposure for tables that predate multi-tenancy) and `itdr_alerts`, `cases`, `audit_logs` (org-scoped to `user.org_id`; `audit_logs` additionally excludes `entity_type='user_pw'`). The caller's query must be a single `SELECT`/`WITH` statement, is checked against a keyword blocklist (DDL/DML/admin/catalog-introspection incl. `sqlite_master`, `duckdb_*`, `information_schema`, `pragma_*`), then wrapped as `SELECT * FROM (<query>) LIMIT n` — so it can only ever read from the pre-built views. 10s execution timeout (via thread + `con.interrupt()`), 1000-row hard cap (200 default).
-  - **Files shipped:** `backend/routers/hunt.py` (new `_validate_hunt_query`, `_open_hunt_connection`, `_execute_with_timeout`, `_jsonable`, `POST /api/hunt/sql`, `GET /api/hunt/sql/schema`); `backend/requirements.txt` (`duckdb==1.5.3`); `backend/main.py` (startup pre-caches the DuckDB `sqlite` extension so the first user query isn't slow); `frontend/src/pages/app/ThreatHunt.jsx` (new "SQL Console" tab — collapsible schema/columns reference, example-query dropdown (`SQL_EXAMPLES`), query textarea with Cmd/Ctrl+Enter to run, results table with sticky header + truncation indicator).
-  - **Verified:** end-to-end tested in a throwaway venv against a real `models.py`-generated SQLite DB with two orgs — `sqlite_scan` reads live WAL-mode data concurrently with app writes, org-scoped views correctly isolate `cases`/`itdr_alerts`/`audit_logs` between orgs, and the blocklist/validator correctly rejects non-SELECT statements, multi-statement input, and `sqlite_master`/`information_schema`/`pragma_*` introspection attempts. Frontend: `CI=true npm run build` compiles cleanly with no new warnings.
-- [ ] **Priority 4 — Auto-Rule Generation Trigger** (1 day, after Priority 3)
-  - **What it does:** extends the existing `/api/rules/cases/{id}/generate` (Codestral 22B, already built) — a nightly job checks if the same MITRE technique appears across 3+ cases within 7 days and auto-triggers rule generation into a "pending review" queue, without analyst input.
-  - **New model** `DetectionRule` in `backend/models.py`: `rule_name`, `source_case_id` (FK → case.id), `mitre_technique`, `yara`/`sigma`/`kql`/`splunk_spl` (Text), `generated_by` (auto|analyst), `status` (pending_review|approved|rejected|deployed), `reviewed_by`, `reviewed_at`, `org_id`, `created_at`.
-  - **Trigger logic** (nightly via existing scheduler) — `check_rule_generation_triggers()`: for cases created in the last 7 days, group by MITRE technique ID (from `case.mitre_techniques` JSON); for any technique appearing in 3+ cases with no `DetectionRule` already generated this week, call Codestral rule generation for the most recent case and insert a `pending_review` `DetectionRule`.
-  - **Files to modify:** `backend/models.py` (add `DetectionRule`), `backend/routers/rules.py` (add `GET /api/rules/pending`, `POST /api/rules/{id}/approve`, `POST /api/rules/{id}/reject`), scheduler module (add nightly `check_rule_generation_triggers()` call), frontend Rules UI (add a "Pending Review" tab, or create a minimal page if none exists).
+### mcp-aegis (v0.2.1)
+**Repo:** `~/Documents/Claude/Projects/aegistrace-mcp-gateway/` · GitHub: `Prasanna-27eng/mcp-aegis`
+**Install:** `pip install mcp-aegis`
+**What:** MCP security gateway between any AI agent and any MCP server. Blocks dangerous tool calls, logs to SQLite, 7-rule default TOML policy, stdio transport (Claude Desktop compatible).
 
-**Deferred items (do NOT build yet):** PIPROXY (mitmproxy prompt-injection proxy, month 2+), fine-tuning pipeline (needs PIPROXY data first), MCP Guard full sandbox (scoped down to a future `mcp-verify` CLI: static analysis + VirusTotal + Sigstore — companion to `mcp-aegis`), NHI Guard as separate repo (rejected — extend `/api/nhi` with `AWSConnector` in `backend/core/connectors/aws_iam.py` instead, 2-3 days), Shadow Sentry eBPF (deferred — mitmproxy+JA3 fingerprinting user-space alternative, month 2), SBC Edge Agent (Phase 5+, needs Playbook Engine + Adaptive Thresholds first), NVIDIA Morpheus (post free-tier, needs GPU+Kafka).
+Policy decisions: `BLOCK` (shell execution, credential reads) · `LOG_ONLY` (home dir crawl, network requests, database writes) · `REQUIRE_APPROVAL` (configurable) · `ALLOW`
 
-**The story this builds:** (1) "It correlates everything automatically" — Temporal Linker. (2) "It responds in seconds, not hours" — Playbook Engine. (3) "It adjusts its own detection based on live performance" — Adaptive Thresholds Agent. (4) "Its detection library grows without analyst intervention" — Auto-rule generation.
+Key CLI: `mcp-aegis serve --upstream http://localhost:3000` · `mcp-aegis pending/approve/deny` · `mcp-aegis policy test bash`
 
-### Priority 1 — Endpoint Agent v5.0 (completed June 2026)
-- [x] Shadow AI detection — 14 AI API domains, cross-refs approved list
-- [x] Suspicious process detection — known malicious name matching
-- [x] Suspicious port detection — C2 port flagging
-- [x] New network destination detection — baseline + deviation after 5 cycles
-- [x] Behavioural Baseline Engine — 7-day learning, anomaly detection, cross-session persistence
-- [x] Process Lineage Tree — suspicious parent-child detection (office→cmd, browser→cmd, etc.)
-- [x] File Integrity Monitoring — SHA-256 + mtime + size, recursive dir monitoring, suppress re-alerts
-- [x] Privilege Escalation Detector — root escalation, sudo anomalies
-- [x] Local Anomaly Scorer — pure Python 0-100 composite score (v5.0 extended weights)
-- [x] Command Channel — collect_now, kill_process, block_ip, unblock_ip, isolate_device, get_process_tree, ping, fim_check_now, honey_status, get_blocked_ips
-- [x] Watchdog Thread — heartbeat monitoring, guardian process (separate OS process, v5.0)
-- [x] Service registration — systemd / LaunchAgent / Windows Service (with service recovery)
-- [x] DNS/DGA Detection — Shannon entropy + vowel ratio + digit ratio, tunnelling detection
-- [x] 🍯 Honey Token Trap — canary credential files (.aws/credentials, .honey_env, .honey_vault, honey_passwords.txt), CRITICAL alert on access, zero false positives
-- [x] Auto-Block Engine — iptables / pfctl / netsh blocking, device isolation mode
-- [x] USB/Removable Media Detector — Linux /proc/mounts, macOS diskutil, Windows WMI
-- [x] Windows Registry Monitor — Run/RunOnce/Winlogon/Services persistence keys
-- [x] YARA-lite Engine — 16 string signature rules on process cmdlines (reverse shells, LOLBins, credential access)
-- [x] Multiple Backend Failover — primary → secondary → tertiary, JSONL offline buffer
-- [x] Guardian Process — multiprocessing.Process guardian restarts agent on crash
+v0.2.1 fixed: `tools/call` credential-read bypass (argument path-matching against `resource_patterns`), `mcp-aegis logs` crash.
 
-### Priority 2 — ITDR Hardening (v4.3 completed)
-- [x] Multiple time windows for credential stuffing — 10min/5, 1h/15, 24h/25
-- [x] IP-based distributed attack detection — cross-user from same IP
-- [x] User-agent check for token theft
-- [x] Shadow AI ITDR integration — 3+ hits in 24h → alert
-- [x] ITDR analytics page — completed v5.1: GET /api/itdr/analytics + 3-tab ITDRPage
-- [x] Impossible travel geo-accuracy improvement — MaxMind GeoLite2 (`backend/geoip.py`, v6.2)
+### mcp-sploit (v0.2.0)
+**Repo:** `~/Documents/Claude/Projects/mcp-sploit/` · **Install:** `pip install mcp-sploit`
+**What:** Metasploit-style exploitation framework for MCP servers — purple-team validation for `mcp-aegis`. Speaks real JSON-RPC 2.0.
 
-### Priority 3 — Trust OS Features
-- [x] Shadow AI Detection dashboard — `/app/shadow-ai` — completed v4.3
-- [x] **SOAR Playbooks engine** — builder UI + automated execution: trigger → action sequence → approval gate — completed v10.0, see Priority 2 above
-- [x] **Control Plane View** — `/app/control-plane` — live: 5 KPI cards, high-risk identity panel, AI action queue, ITDR threat feed, endpoint heartbeats, live activity ticker. Auto-refresh 30s. Added to Sidebar as top nav item.
+Modules: `exploit/mcp/file_exfiltration` (T1005) · `exploit/mcp/shell_exec` (T1059) · `exploit/mcp/prompt_injection` (ATLAS AML.T0051) · `exploit/mcp/tool_schema_abuse` (CWE-20) · `auxiliary/scanner/mcp_enum` · `auxiliary/scanner/mcp_auth_bypass` · `auxiliary/scanner/mcp_policy_probe`
 
-### Priority 4 — Identity Graph Enhancements
-- [ ] Click device node → Device Details panel (OS, IP, last seen, risk score, recent activity, create-case button)
-- [ ] Identity risk timeline — line graph per node using existing anomaly data
-- [ ] Filter by risk threshold — slider to show only nodes above risk score X
+### prompt-fuzz (v0.1.0)
+**Repo:** `~/Documents/Claude/Projects/prompt-fuzz/` · **Install:** `pip install prompt-fuzz-cli` (PyPI name; CLI command stays `prompt-fuzz`)
+**What:** Async CLI that fuzzes OpenAI-compatible endpoints with 51 built-in jailbreak/injection payloads across 10 categories. Purple-team test suite for `prompt_shield.py` (same category names). Exits non-zero if any bypass detected — usable as CI gate.
 
-### Priority 5 — Analytics & Reporting
-- [x] ITDR analytics — completed v5.1
-- [ ] Trust score trending — IdentityRiskHistory model, track scores over time
-- [ ] DPDPA Compliance Report — mapped to India DPDPA 2025 obligations (major India sales accelerator)
-- [ ] RBI Cybersecurity Framework mapping panel
+### nhi-hunter (v0.1.0)
+**Repo:** `~/Documents/Claude/Projects/nhi-hunter/` · **Install:** `pip install nhi-hunter`
+**What:** AWS IAM privilege-escalation graph builder. Parses `aws iam get-account-authorization-details` JSON, builds `networkx.MultiDiGraph`, finds shortest path from `--start-role` to any Admin identity via `sts:AssumeRole` + `iam:PassRole+lambda:*` (MITRE T1078.004).
 
-### Priority 6 — Security & Polish (v5.1 completed)
-- [x] 2FA/TOTP for all users — pyotp==2.9.0, mfa_secret + mfa_enabled on User, full setup/verify/disable/login flow, MFAPanel in Admin.jsx, MFA challenge step in Login.jsx
-- [x] DB file permission hardening — SQLite file set to 0o600 on startup via _harden_db_file_permissions()
-- [x] Session UA fingerprinting — ua_hash embedded in JWT at login, mismatch logged as session_ua_mismatch AuditLog entry (non-blocking ITDR signal)
-- [ ] Email notifications on ITDR anomaly — SendGrid template
-- [ ] Portfolio: Trust OS phase roadmap (Phase 1 NOW → Phase 5 2030+)
-
-### Priority 7 — v5.0+ Planned
-- [ ] SCIM endpoint (`/api/scim/v2`) — enterprise push-based identity sync
-- [ ] Least Agency enforcement — per-agent scope definition, auto-reject out-of-scope actions
-- [x] **MCP Security Gateway** — shipped as standalone `mcp-aegis` v0.2.0 package (see below); GitHub: Prasanna-27eng/mcp-aegis
-- [ ] Agent Supervision Console — per-AI-agent kill switches + task scope enforcement
-- [ ] Attacker Path Reconstruction — visual kill-chain across human + machine actors
-- [ ] Endpoint Agent Layer 3 (eBPF) — Falco companion process on Linux
-- [ ] Endpoint Agent Layer 4 (Memory Forensics) — Volatility 3 integration
-
-### mcp-aegis — Companion Project (v0.2.0, June 2026)
-
-**Standalone PyPI package:** `pip install mcp-aegis`  
-**Repo:** `~/Documents/Claude/Projects/aegistrace-mcp-gateway/` · GitHub: `https://github.com/Prasanna-27eng/mcp-aegis`  
-**Description:** MCP security gateway that sits between any AI agent and any MCP server. Blocks dangerous tool calls by default, logs everything to SQLite, ships with a 7-rule default TOML policy.
-
-**Architecture:**
-```
-AI Agent → POST http://localhost:8765/ → mcp-aegis gateway
-                                          │
-                                     PolicyEngine (TOML rules)
-                                          │
-                            BLOCK / ALLOW / LOG_ONLY / REQUIRE_APPROVAL
-                                          │
-                                     AuditLog (SQLite)
-                                     Webhook (optional → any SIEM)
-                                     AegisSender (optional → AegisTrace AgentAction queue)
-```
-
-**Files shipped (v0.2.0):**
-- `src/mcp_aegis/types.py` — Decision enum (ALLOW/BLOCK/LOG_ONLY/REQUIRE_APPROVAL), MCPRequest, PolicyDecision, AuditEvent
-- `src/mcp_aegis/proxy.py` — MCPProxy: intercept JSON-RPC, policy-check, forward or block, add_pending on REQUIRE_APPROVAL
-- `src/mcp_aegis/stdio_transport.py` — NEW v0.2: async stdio proxy; run_stdio_http() + run_stdio_subprocess() (Claude Desktop compatible)
-- `src/mcp_aegis/server.py` — FastAPI app: POST /, GET /sse (streaming passthrough), GET /health
-- `src/mcp_aegis/policy.py` — PolicyEngine: TOML loader, evaluate(), test(), reload(), from_default()
-- `src/mcp_aegis/policy_default.toml` — v2.0: 7 default rules + commented REQUIRE_APPROVAL example
-- `src/mcp_aegis/audit.py` — SQLite WAL-mode: sessions + events + pending_approvals tables; _WebhookSender + _AegisSender; add_pending/resolve_pending/list_pending
-- `src/mcp_aegis/cli.py` — typer CLI: serve (--transport, --upstream-cmd), logs, stats, pending, approve, deny, policy test/show
-- `pyproject.toml` — hatchling build, mcp-aegis 0.2.0, Python ≥ 3.10
-- `README.md` — updated: stdio, REQUIRE_APPROVAL, AegisTrace integration, Claude Desktop config example
-
-**Default policy decisions:**
-| Rule | Decision | Catches |
-|------|----------|---------|
-| block_shell_execution | BLOCK | bash, shell, exec, run_command, *_exec, *_bash |
-| block_credential_reads | BLOCK | ~/.ssh/*, ~/.aws/*, .env, credentials, .netrc, .gnupg/*, gcloud/* |
-| log_home_directory_crawl | LOG_ONLY | *_read, *_list under home paths |
-| log_network_requests | LOG_ONLY | http_request, curl, fetch, *_request, *_fetch |
-| log_git_credential_exposure | LOG_ONLY | .git/config, .gitconfig |
-| log_sampling_calls | LOG_ONLY | sampling/createMessage |
-| log_database_writes | LOG_ONLY | *_write, *_delete, *_drop, execute_sql, query |
-
-**CLI usage (v0.2):**
-```bash
-mcp-aegis serve --upstream http://localhost:3000 --dry-run
-mcp-aegis serve --transport stdio --upstream-cmd "npx -y @modelcontextprotocol/server-filesystem ~/Documents"
-mcp-aegis logs --tail
-mcp-aegis stats
-mcp-aegis pending                  # list REQUIRE_APPROVAL items
-mcp-aegis approve <id>
-mcp-aegis deny <id>
-mcp-aegis policy test bash         # exit 1 = BLOCK
-mcp-aegis policy show
-```
-
-**AegisTrace native integration (v0.2):** Set `AEGISTRACE_URL` + `AEGISTRACE_INGEST_KEY` — BLOCK/REQUIRE_APPROVAL events POST to `/api/ingest/mcp-event`, creating AgentAction entries at `/app/agent-security`.
-
-**AegisTrace backend (v9.1):** `POST /api/ingest/mcp-event` added to `routers/ingest.py` — creates `AgentAction(agent_name="mcp-aegis", action_type="mcp_block"|"mcp_require_approval")`. Same INGEST_API_KEY auth as endpoint agents.
-
-**v0.3 roadmap:** Community policy library, STIX 2.1 export, MITRE ATT&CK tagging, Docker image, true async approval (SSE back-channel).
-
-### mcp-sploit — Companion Project (v0.2.0, June 2026)
-
-**Standalone repo:** `~/Documents/Claude/Projects/mcp-sploit/` · GitHub: `https://github.com/Prasanna-27eng/mcp-sploit`
-**Description:** Metasploit-style exploitation framework for testing MCP servers and `mcp-aegis` itself. Speaks real JSON-RPC 2.0 MCP (`initialize`, `tools/list`, `tools/call`) so it works against a raw MCP server or an `mcp-aegis` gateway with no changes — purple-team validation is just pointing `TARGET` at the gateway URL.
-
-**Architecture:**
-```
-mcp-sploit console (msfconsole-style)
-   │  use / set / show options / check / exploit / back / search
-   ▼
-ModuleRegistry — dynamic-loads modules under msploit/modules/
-   │
-   ▼
-MCPClient (JSON-RPC 2.0 over POST /) ──► TARGET = raw MCP server
-                                      ──► TARGET = mcp-aegis gateway URL
-```
-
-**Files shipped (v0.1.0):**
-- `src/msploit/mcp_client.py` — JSON-RPC 2.0 client (`initialize`, `tools/list`, `tools/call`); raises `MCPError` on JSON-RPC error envelopes (covers both real upstream errors and mcp-aegis BLOCK responses)
-- `src/msploit/base.py` — `Option`, `Module`, `AuxiliaryModule`, `ExploitModule`; option get/set/validate, `show_options()`, `info()`
-- `src/msploit/framework.py` — `ModuleRegistry`: dynamic module discovery via `pkgutil.walk_packages`
-- `src/msploit/cli.py` — `cmd.Cmd`-based REPL: `show modules/exploits/auxiliary/options`, `search`, `use`, `back`, `info`, `set`, `unset`, `check`, `exploit`/`run`, `exit`
-- `src/msploit/modules/auxiliary/scanner/mcp_enum.py` — enumerates tools via `tools/list`, flags high-risk tool names
-- `src/msploit/modules/exploit/mcp/file_exfiltration.py` — reads arbitrary files via an unauthenticated `read_file` tool (`FILE`, `TOOL` options)
-- `src/msploit/modules/exploit/mcp/shell_exec.py` — RCE via an unauthenticated `execute_shell` tool (`CMD`, `TOOL` options)
-- `target_server/app.py` — intentionally vulnerable JSON-RPC 2.0 MCP server (no auth) exposing `read_file` + `execute_shell`, for deterministic sandbox testing
-- `docker-compose.yml` + `Dockerfile`s — isolated `mcp-net` bridge network, `vulnerable-mcp` + `mcp-sploit` services
-- `tests/test_framework.py` — pytest: module loading, option validation, `check()` never sends the exploit payload (5/5 passing)
-
-**New in v0.2.0 — 4 modules + MITRE ATT&CK/ATLAS references:**
-- `src/msploit/modules/exploit/mcp/prompt_injection.py` — calls a tool that returns externally-sourced content (`web_fetch`, `URL` option) and scans the response for embedded attacker instructions (e.g. `<!-- AI-AGENT-INSTRUCTION: ... -->`, "ignore previous instructions"). The MCP-native attack: indirect prompt injection / tool response poisoning. References **MITRE ATLAS AML.T0051 (LLM Prompt Injection)** + AML.T0054 (LLM Jailbreak).
-- `src/msploit/modules/auxiliary/scanner/mcp_auth_bypass.py` — sends `initialize` + `tools/list` with zero credentials; flags target as vulnerable (CWE-306) if the full handshake succeeds unauthenticated.
-- `src/msploit/modules/exploit/mcp/tool_schema_abuse.py` — sends 5 type-confused payloads (int, array, object, 100k-char string, null-byte) for a tool's declared `string` field (`TOOL`/`FIELD` options) and reports ACCEPTED vs REJECTED per payload. CWE-20.
-- `src/msploit/modules/auxiliary/scanner/mcp_policy_probe.py` — fires 8 representative `tools/call` probes mirroring mcp-aegis's default policy categories (shell exec, `~/.ssh/id_rsa`, `.env`, home dir crawl, SSRF-style network request, `.git/config`, SQL write, benign read) and classifies each as `[BLOCKED]` (JSON-RPC -32600), `[ALLOWED-NOOP]`, or `[ALLOWED]` — fingerprints the gateway's effective ruleset in one run, including the known `tools/call` credential-read gap below.
-- Existing modules now carry references too: `file_exfiltration` → ATT&CK T1005 + T1552.001, `shell_exec` → ATT&CK T1059, `mcp_enum` → ATT&CK T1518.
-- `target_server/app.py` — added 4 new mock tools (`list_files`, `http_request`, `execute_sql`, `web_fetch`, `search_logs` — 5 total) so the new scanners/exploits have realistic targets; `tools/call` dispatch now wraps `_call_tool` in try/except and returns a JSON-RPC `-32000` error instead of crashing on type-confused input.
-- `tests/test_framework.py` — 9/9 passing (4 new tests covering the new modules).
-
-**Verified end-to-end (June 2026):**
-- `use exploit/mcp/file_exfiltration` → `check` → `exploit` against `target_server` → retrieved `/etc/passwd` ✅
-- `use exploit/mcp/shell_exec` → `exploit` against `target_server` → ran `id` via `execute_shell` ✅
-- `use exploit/mcp/prompt_injection` → `exploit` against `target_server` (`web_fetch` URL=`https://evil.test/article`) → response contained the injected `AI-AGENT-INSTRUCTION` HTML comment, both injection markers detected ✅
-- `use exploit/mcp/tool_schema_abuse` → `exploit` against `target_server` (`search_logs`/`query`) → 5/5 malformed payloads ACCEPTED (no schema enforcement) ✅
-- `use auxiliary/scanner/mcp_auth_bypass` → `run` against `target_server` → unauthenticated `initialize` + `tools/list` both succeeded, flagged VULNERABLE ✅
-- `use auxiliary/scanner/mcp_policy_probe` → `run` against `target_server` (no gateway) → all 8 probes `[ALLOWED]`/`[ALLOWED-NOOP]` (no policy in front) ✅
-- **Purple team vs mcp-aegis (default policy, port 8766 → upstream 8765):**
-  - `exploit/mcp/shell_exec` → **BLOCKED** by `block_shell_execution` (JSON-RPC error -32600) ✅
-  - `exploit/mcp/file_exfiltration` (FILE=`~/.ssh/id_rsa`, via `tools/call read_file`) → **NOT BLOCKED**, decision=`ALLOW`/`default_allow` ⚠️
-
-**Known gap found via purple-team testing (mcp-aegis, not yet fixed):** `block_credential_reads` and `log_home_directory_crawl` in `policy_default.toml` only match `resource_patterns` against `MCPRequest.resource_uri`, which is populated **only for `method == "resources/read"`**. A `tools/call` to `read_file` with `arguments.path` pointing at `~/.ssh/id_rsa` or `.env` bypasses both rules entirely (falls through to `default_allow`) — `auxiliary/scanner/mcp_policy_probe` surfaces this directly via its `credential_read_ssh`/`credential_read_env` probes. To close this, `policy.py`'s `_rule_matches` would need to also check tool-call argument values (e.g. `path`, `file`, `uri` keys in `params.arguments`) against `resource_patterns` for `tools/call` requests. Separately, `mcp-aegis logs` (non-`--tail`) currently crashes (`AttributeError: 'AuditEvent' object has no attribute 'get'` in `cli.py:226`) — `_print_table` calls `.get()` on a dataclass row.
-
-**Roadmap:** re-run `mcp_policy_probe` against the mcp-aegis gateway (port 8766) once the `tools/call` argument-matching gap above is fixed, to confirm `credential_read_ssh`/`credential_read_env` flip to `[BLOCKED]`; community modules (e.g. `exploit/mcp/sql_injection`); AegisTrace dashboard view for mcp-sploit run history.
-
-**Discoverability/community assets added (June 2026):** `.github/workflows/ci.yml` (pytest matrix on 3.10/3.11/3.12 — created on disk, must be added via GitHub web UI since the local PAT lacks `workflow` scope), `CITATION.cff`, `CONTRIBUTING.md`, README "Why mcp-sploit?" section (positions mcp-sploit as the dynamic/offensive complement to static scanners like `mcp-scan`, links OWASP MCP Top 10 + MITRE ATLAS), `pyproject.toml` keywords/classifiers for PyPI search, `demo.tape` + `demo.gif` (VHS-recorded console walkthrough embedded in README). Package builds clean (`python -m build` + `twine check` pass) and is ready for `twine upload` to PyPI under the unclaimed name `mcp-sploit` — pending the user's PyPI account/API token.
-
-**Published to PyPI (June 2026):** `pip install mcp-sploit` works — v0.2.0 live at https://pypi.org/project/mcp-sploit/0.2.0/.
-
-### prompt-fuzz — Companion Project (v0.1.0, built June 2026)
-
-**Standalone repo:** `~/Documents/Claude/Projects/prompt-fuzz/` · GitHub: `https://github.com/Prasanna-27eng/prompt-fuzz` (pushed, public)
-**Description:** Async CLI that fuzzes OpenAI-compatible chat completion endpoints (`/v1/chat/completions`) with a curated jailbreak/prompt-injection payload library and reports which payloads bypass the target's guardrails. Where `mcp-sploit` attacks the AI's *tools* (MCP layer), `prompt-fuzz` attacks the AI's *brain* (the LLM/system-prompt layer). Second tool in the "Grassroots Expansion Pack" (`mcp-sploit` → `prompt-fuzz` → `nhi-hunter` → `shadow-sniffer`, all feeding the AegisTrace enterprise dashboard).
-
-**Why it's a natural fit for AegisTrace:** AegisTrace already ships a *defensive* prompt-injection layer — `backend/core/prompt_shield.py` (singleton `shield`, 24 regex patterns across 9 categories: `system_override`, `instruction_inject`, `role_hijack`, `jailbreak`, `delimiter_inject`, `role_delimiter`, `exfiltration`, `xml_inject`, `template_inject`, `encoding_bypass`, wired into every `ai_router.py` Groq call). `prompt-fuzz`'s built-in payload library tags each payload with the **same category names**, so it doubles as a literal purple-team test suite for `prompt_shield.py` — the `mcp-sploit`/`mcp-aegis` purple-team pattern, one layer up the stack (LLM guardrails instead of MCP tool policy).
-
-**Files shipped (v0.1.0, Core + Wrapper architecture):**
-- `src/promptfuzz/engine.py` — `FuzzEngine`: async `httpx` executor with bounded concurrency (`asyncio.Semaphore`), posts `[system?, user=payload]` to `/v1/chat/completions`, optional `transport=` override for in-process ASGI testing; `summarize()` computes total/blocked/bypassed + per-category breakdown
-- `src/promptfuzz/payloads.py` — loader for built-in/custom payload JSON, category filtering, `make_canary()` (random `AEGIS-CANARY-<hex>` token per scan) + `make_system_prompt()` (default canary-bearing system prompt)
-- `src/promptfuzz/data/payloads.json` — **51 built-in payloads across 10 categories** (the 9 `prompt_shield` categories + `jailbreak`), each with `id`/`category`/`severity`/`prompt`/optional `success_markers`/MITRE ATLAS or CWE `references`. Includes DAN 6.0, STAN, AIM, Developer Mode, DUDE, grandma exploit, base64/ROT13/fromCharCode encoding bypasses, fake `[SYSTEM]`/`<|im_start|>system`/XML delimiter injections, etc.
-- `src/promptfuzz/detectors.py` — `evaluate()` combines 3 signals into a `Verdict`: canary-leak (token from system prompt appears in response), compliance markers (payload-specific phrases like "DAN Mode enabled"), and refusal-absence (regex bank of refusal phrases — every built-in payload is an attack, so no refusal = bypass)
-- `src/promptfuzz/cli.py` — Typer CLI: `prompt-fuzz scan --target <url> [--api-key --model --concurrency --categories --payloads --no-system-prompt --output --show-responses --aegistrace-url --aegistrace-key]` (rich tables, exits non-zero if any bypass — usable as a CI gate) + `prompt-fuzz list-payloads`
-- `src/promptfuzz/reporter.py` — posts bypassed payloads to AegisTrace's `/api/ingest/promptfuzz-event`
-- `mock_target/app.py` — deliberately weak FastAPI OpenAI-compatible `/v1/chat/completions` mock (complies with DAN/STAN/AIM/`[SYSTEM]`/encoding triggers, refuses everything else) — same role as `mcp-sploit`'s `target_server/`
-- `tests/` — 17/17 passing: payload-library integrity, detector unit tests, engine tests via `httpx.ASGITransport` against `mock_target` (no live server needed), CLI `list-payloads` tests
-- MIT `LICENSE`, `CITATION.cff`, `CONTRIBUTING.md`, `README.md` (quick start, payload table, AegisTrace integration section, companion-projects links), `.github/workflows/ci.yml` (pytest matrix 3.10-3.12 — on disk only, same `workflow`-scope PAT issue as mcp-sploit, needs manual add via GitHub web UI)
-
-**AegisTrace backend (this session):** `POST /api/ingest/promptfuzz-event` added to `routers/ingest.py` (mirrors `/mcp-event`) — creates `AgentAction(agent_name="prompt-fuzz", action_type="prompt_fuzz_bypass")` entries visible in `/app/agent-security`. Same `X-AegisTrace-Key`/`INGEST_API_KEY` auth as mcp-aegis and endpoint agents. No new frontend needed.
-
-**Verified end-to-end (June 2026):** ran `prompt-fuzz scan` against the bundled `mock_target` (live uvicorn on :8090) — 51/51 payloads, 0 errors, 23 bypassed (45.1%), with `jailbreak` and `encoding_bypass` categories at 100% bypass and `exfiltration`/`instruction_inject`/`template_inject` fully blocked by the mock's refusal path. `--output`/JSON results and `--categories` filtering both verified.
-
-**Published to PyPI (June 2026):** `pip install prompt-fuzz-cli` works — v0.1.0 live at https://pypi.org/project/prompt-fuzz-cli/0.1.0/ (PyPI rejected the literal name `prompt-fuzz` as "too similar" to an existing unrelated package `promptfuzz`; CLI command stays `prompt-fuzz`, GitHub repo stays `prompt-fuzz`, only the PyPI distribution name changed).
-
-**Roadmap:** demo GIF for README (same VHS approach as mcp-sploit); `nhi-hunter` (3rd tool in the Grassroots Expansion Pack) — see new section below.
-
-### nhi-hunter — Companion Project (v0.1.0, built June 2026)
-
-**Standalone repo:** `~/Documents/Claude/Projects/nhi-hunter/` · GitHub: `https://github.com/Prasanna-27eng/nhi-hunter` (pushed, public)
-**Description:** Non-Human Identity (NHI) attacker — an AWS IAM privilege-escalation graph builder and pathfinder. Where `mcp-sploit` attacks the AI's *tools* and `prompt-fuzz` attacks the AI's *brain*, `nhi-hunter` attacks the *identity layer* underneath an AI agent's cloud deployment: the IAM roles, trust policies, and permission chains that let a low-privilege role (e.g. a CI/CD OIDC role) pivot to Admin/PowerUser. Third tool in the "Grassroots Expansion Pack" (`mcp-sploit` → `prompt-fuzz` → `nhi-hunter` → `shadow-sniffer`).
-
-**Why it's a natural fit for AegisTrace:** AegisTrace's Identity Graph + Risk Engine (`/app` Identity Graph view) already models identities and relationships; `nhi-hunter` produces the same kind of graph (nodes = IAM roles/users, edges = `sts:AssumeRole`/`iam:PassRole`+`lambda:*` permissions) from a local AWS IAM JSON dump, so its output can feed or cross-validate AegisTrace's Identity Graph Risk Engine — a purple-team check for "can our identity graph actually find this escalation path."
-
-**Files shipped (v0.1.0, Core + Wrapper architecture):**
-- `src/nhi_hunter/parsers.py` — parses a real `aws iam get-account-authorization-details` JSON dump (`RoleDetailList`/`UserDetailList`/`GroupDetailList`/`Policies`) into `Identity` records: name, ARN, kind (role/user), flattened `Allow` statements (inline + attached managed + group policies resolved), trust-policy principals, and an `is_admin` flag (AdministratorAccess/PowerUserAccess attached, a `*`/`*` statement, or "admin"/"poweruser" in the name). Documented V1 limitations: `NotAction`/`NotResource` statements skipped, `Condition` blocks ignored, resource policies (S3/Lambda) not modeled.
-- `src/nhi_hunter/graph_builder.py` — builds a `networkx.MultiDiGraph`: edge `A -> B` = "A can obtain B's permissions" via **`sts:AssumeRole`** (A's policy allows AssumeRole on B's ARN *and* B's trust policy allows A) or **`iam:PassRole + lambda:*`** (A can PassRole to B *and* create/update/invoke Lambda functions). Both techniques tagged with MITRE ATT&CK **T1078.004** (Valid Accounts: Cloud Accounts).
-- `src/nhi_hunter/pathfinder.py` — `find_escalation_paths()` runs `networkx.shortest_path` from `--start-role` to every `is_admin` identity, sorted shortest-first; `EscalationPath.render()` produces the readable attack-tree text.
-- `src/nhi_hunter/cli.py` — Typer CLI: `nhi-hunter scan --input <dump.json> --start-role <name> [--output --aegistrace-url --aegistrace-key]` (rich tables, exits non-zero if any path found — usable as a CI gate) + `nhi-hunter list-identities`.
-- `src/nhi_hunter/reporter.py` — posts discovered paths to AegisTrace's `/api/ingest/nhihunter-event`.
-- `tests/fixtures/vulnerable_iam.json` — 5-identity dump with a 2-hop `sts:AssumeRole` chain (`CIRunner` → `DevRole` → `AdminRole`) and a 1-hop `iam:PassRole`+Lambda chain (`GitHubActionsOIDC` → `LambdaAdminRole`); `tests/fixtures/clean_iam.json` — a `ReadOnlyRole` with zero outgoing escalation edges, demonstrating no false positives.
-- `examples/sample_iam_dump.json` (copy of the vulnerable fixture, for `pip install`-only trying-out without AWS credentials).
-- `tests/` — 24/24 passing: parser, graph-builder, pathfinder, and Typer CLI (`CliRunner`) tests.
-- MIT `LICENSE`, `CITATION.cff`, `CONTRIBUTING.md`, `README.md` (quick start, attack-tree examples, edge-technique table, AegisTrace integration, companion-projects links), `.github/workflows/ci.yml` (pytest matrix 3.10-3.12 — on disk only, same `workflow`-scope PAT issue as mcp-sploit/prompt-fuzz, needs manual add via GitHub web UI).
-
-**AegisTrace backend (this session):** `POST /api/ingest/nhihunter-event` added to `routers/ingest.py` (mirrors `/promptfuzz-event`) — creates `AgentAction(agent_name="nhi-hunter", action_type="iam_privesc_path_found")` entries visible in `/app/agent-security`. Same `X-AegisTrace-Key`/`INGEST_API_KEY` auth. No new frontend needed.
-
-**Verified end-to-end (June 2026):** `nhi-hunter scan --input examples/sample_iam_dump.json --start-role CIRunner` → found the 2-hop `sts:AssumeRole` chain to `AdminRole` and a 3-hop chain to `LambdaAdminRole`, exit code 1; `--start-role GitHubActionsOIDC` → found the 1-hop `iam:PassRole + lambda:*` chain to `LambdaAdminRole` (and a 2-hop chain onward to `AdminRole`, since an AdministratorAccess holder has wildcard permissions over every other identity too); `clean_iam.json` / `ReadOnlyRole` → "No privilege-escalation path found", exit code 0. Clean `pip install` of the built wheel verified in a fresh venv.
-
-**Published to PyPI (June 2026):** `pip install nhi-hunter` works — v0.1.0 live at https://pypi.org/project/nhi-hunter/0.1.0/ (no name collision this time).
-
-**Roadmap:** demo GIF for README; add `shadow-sniffer` (4th and final tool in the Grassroots Expansion Pack) next.
-
-### shadow-sniffer — Companion Project (v0.1.0, built June 2026)
-
-**Standalone repo:** `~/Documents/Claude/Projects/shadow-sniffer/` · GitHub: `https://github.com/Prasanna-27eng/shadow-sniffer` (pushed, public)
-**Description:** Shadow AI detector — scans a local network connection log (JSON or CSV) against a curated catalog of known third-party AI service domains, cross-references matches against an organization's approved-services allowlist, and reports unsanctioned AI usage. Where `mcp-sploit` attacks the AI's *tools*, `prompt-fuzz` attacks its *brain*, and `nhi-hunter` attacks the *identity layer*, `shadow-sniffer` looks at the *data layer* — where is data actually going. Fourth and final tool in the "Grassroots Expansion Pack" (`mcp-sploit` → `prompt-fuzz` → `nhi-hunter` → `shadow-sniffer`).
-
-**Why it's a natural fit for AegisTrace:** AegisTrace's endpoint agent (v3.0+) already ships a live `detect_shadow_ai()` detector (`agent/aegistrace_agent.py`) with a 14-domain `AI_API_DOMAINS` list, an `ApprovedAIService` allowlist model, a `ShadowAIEvent` table, and an `/app/shadow-ai` dashboard — but it requires the endpoint agent to be installed and running. `shadow-sniffer` is the offline/standalone counterpart: point it at an exported connection log (no agent install needed) to do the same cross-reference, expanded to a 39-domain catalog across 8 categories (LLM Chat, LLM API, Code Assistant, Image/Video Generation, Voice & Audio, etc. — vs. the agent's 14 LLM-API-only domains).
-
-**Files shipped (v0.1.0, Core + Wrapper architecture):**
-- `src/shadow_sniffer/catalog.py` — `AI_SERVICE_CATALOG`: 39 `AIService(name, domain, category)` entries across 8 categories; `match_domain()` does case-insensitive suffix matching (e.g. `eu.api.openai.com` matches `api.openai.com`, but `api.openai.com.attacker.net` does not).
-- `src/shadow_sniffer/parsers.py` — `ConnectionRecord` dataclass; `parse_json_log()`/`parse_csv_log()`/`parse_log()` (extension dispatch) with flexible field aliases (`dest_domain`/`destination_domain`/`remote_hostname` all map to `dest_host`, etc., reusing the same field names as the endpoint agent's `connections` list); `load_approved_domains()` reads a JSON `{"approved_domains": [...]}` file or a plain-text one-domain-per-line allowlist.
-- `src/shadow_sniffer/engine.py` — `scan_connections()` matches each connection's `dest_host` against the catalog and flags it as a `ShadowAIFinding` unless covered by the allowlist (suffix-matched, so `openai.com` in the allowlist covers both `api.openai.com` and `chat.openai.com`); tagged **MITRE ATT&CK T1567 (Exfiltration Over Web Service)**. `summarize()` aggregates by category/service/host and total bytes sent. V1 limitation (documented): hostname-based matching only, no DNS/reverse-DNS lookups for IP-only logs.
-- `src/shadow_sniffer/cli.py` — Typer CLI: `shadow-sniffer scan --input <log.json|csv> [--approved <allowlist>] [--output --aegistrace-url --aegistrace-key]` (rich tables, exits non-zero if any shadow AI usage found — usable as a CI gate) + `shadow-sniffer list-services`.
-- `src/shadow_sniffer/reporter.py` — posts findings to AegisTrace's `/api/ingest/shadowsniffer-event`.
-- `tests/fixtures/sample_connections.json` (8 connections: 1 normal, 1 internal, 6 AI-service hits across LLM API/Chat/Code Assistant/Image Generation) + `approved_services.json` (allowlists `api.anthropic.com`) + `clean_connections.json` (3 connections, 0 findings) + `sample_connections.csv` (CSV format variant).
-- `examples/sample_connections.json` + `examples/approved_services.json` (copies of the fixtures, for `pip install`-only trying-out with no setup).
-- `tests/` — 24/24 passing: catalog matching, parser (JSON/CSV/allowlist), engine (scan/summarize/subdomain-allowlist), and Typer CLI (`CliRunner`) tests.
-- MIT `LICENSE`, `CITATION.cff`, `CONTRIBUTING.md`, `README.md` (quick start, connection-log field reference, AegisTrace integration, companion-projects links), `.github/workflows/ci.yml` (pytest matrix 3.10-3.12 — on disk only, same `workflow`-scope PAT issue as the other three tools, needs manual add via GitHub web UI).
-
-**AegisTrace backend (this session):** `POST /api/ingest/shadowsniffer-event` added to `routers/ingest.py` (mirrors `/nhihunter-event`) — creates `AgentAction(agent_name="shadow-sniffer", action_type="shadow_ai_usage_detected")` entries visible in `/app/agent-security`. Same `X-AegisTrace-Key`/`INGEST_API_KEY` auth. No new frontend needed.
-
-**Verified end-to-end (June 2026):** `shadow-sniffer scan --input examples/sample_connections.json --approved examples/approved_services.json` → 8 connections scanned, 5 shadow AI findings (OpenAI API, Claude, ChatGPT, GitHub Copilot, Midjourney — `api.anthropic.com` excluded via allowlist), 623,005 bytes sent to unapproved services, exit code 1; `clean_connections.json` → "No shadow AI usage found", exit code 0; `list-services` → all 39 catalog entries across 8 categories.
-
-**Published to PyPI (June 2026):** `pip install shadow-sniffer` works — v0.1.0 live at https://pypi.org/project/shadow-sniffer/0.1.0/ (no name collision).
-
-**Grassroots Expansion Pack complete:** all four tools (`mcp-sploit` → `prompt-fuzz` → `nhi-hunter` → `shadow-sniffer`) are built, tested, published to PyPI, and feeding the AegisTrace `/app/agent-security` dashboard via `/api/ingest/<tool>-event`.
-
-**Roadmap:** demo GIFs for all four tools.
-
-### Priority 8 — NVIDIA NIM Phases (v7.0–v9.0 built)
-
-**v7.0 Already Built (all free on build.nvidia.com):**
-- [x] Phase 1: Nemotron-70B function-calling triage agent (triage_agent.py)
-- [x] Phase 2: NV-EmbedQA-E5-v5 case memory + semantic search (embeddings.py)
-- [x] Phase 3: Llama Guard 3 safety classifier on chat (guardrails.py)
-- [x] Phase 4: Multi-agent coordinator — Email/Endpoint/IOC/Identity/Report agents in parallel (agents/)
-- [x] Phase 5: Llama-70B alert normalization for any source format (ingest_normalizer.py)
-
-**v8.0 Built (June 2026):**
-- [x] Phase 6: Hermes-3 70B swapped in as triage model — better multi-step tool calling
-- [x] Phase 7: NV-RerankQA-Mistral-4B reranker in embeddings.py + case similar-case search
-- [x] Phase 8: Llama 3.2 Vision 11B — screenshot analysis tab in CaseDetail + /api/vision router
-- [x] Phase 9: Codestral 22B — YARA/Sigma/KQL/SPL rule generation + /api/rules router
-
-**v9.0 Built (June 2026) — Endpoint Agent + NVIDIA Deep Integration:**
-- [x] **EndpointAgent agentic loop**: Upgraded from single-shot prompt to Hermes-3 iterative tool-calling loop (max 5 iterations, Groq fallback) in agents/specialist.py
-- [x] **Live EDR → Agent tool** (`get_live_processes`): New tool in agents/tools.py calls CrowdStrike RTR / SentinelOne / Carbon Black Live Response in real-time to fetch process lists during agent loop. Auto-tries all configured platforms.
-- [x] **NVIDIA embedding process anomaly scoring** (`analyze_process_anomalies`): New tool in agents/tools.py scores process cmdlines against a malicious-pattern centroid using NV-EmbedQA-E5-v5 embeddings + rule-based keyword matching. Returns anomaly scores 0-100 per process.
-- [x] **NV-RerankQA log batch selection**: EndpointAgent now uses `nvidia_rerank` to select the most relevant log batches for its context (was just `batches[:5]` — now semantically ranked by case description).
-- [x] **Llama 3.2 Vision for screenshot evidence**: EndpointAgent checks for screenshot/image log batches and analyzes them with `nvidia_vision` before starting its investigation loop.
-- [x] **Codestral auto-Sigma rule generation**: After EndpointAgent loop, if endpoint_risk is critical/high, Codestral 22B auto-generates a Sigma YAML detection rule from the suspicious process findings.
-- [x] **Llama Guard 3 on EDR high-risk actions**: `isolate_endpoint`, `kill_process`, `run_command` in routers/edr.py now screen parameters through `_guard_edr_action()` (Llama Guard category S14) before executing. Blocks injection attempts in hostname/pid/command parameters.
-
-**v9.1 Built (June 2026) — mcp-aegis v0.2.0:**
-- [x] **mcp-aegis stdio transport**: `--transport stdio` mode; `run_stdio_http()` for HTTP upstream + `run_stdio_subprocess()` to spawn MCP server as child process. Claude Desktop compatible via `claude_desktop_config.json`.
-- [x] **REQUIRE_APPROVAL decision**: 4th policy decision in Decision enum. Blocks call + adds to `pending_approvals` SQLite table. `mcp-aegis pending/approve/deny` CLI workflow.
-- [x] **AegisTrace native integration**: `AEGISTRACE_URL` + `AEGISTRACE_INGEST_KEY` env vars. `_AegisSender` daemon thread POSTs BLOCK/REQUIRE_APPROVAL events to `/api/ingest/mcp-event`.
-- [x] **`POST /api/ingest/mcp-event`** added to `routers/ingest.py`: accepts mcp-aegis payloads, creates `AgentAction(agent_name="mcp-aegis")` entries visible in `/app/agent-security`.
-
-**Still planned:**
-- [ ] Phase 10: NVIDIA Morpheus — GPU-accelerated DGA detection, log anomaly scoring, network flow analysis; replaces Python implementations in endpoint agent; requires Kafka + GPU (post-Render-free-tier)
-
-**NVIDIA Skills Research (suggestions only, not started):**
-- NeMo Curator: curate closed cases into fine-tuning dataset → Hermes-3 fine-tuned on AegisTrace case history
-- NeMo Evaluator: benchmark Nemotron vs Hermes-3 vs Groq on historical cases — evidence-based model selection
-- NVIDIA RAPIDS cuGraph: GPU-accelerated identity graph analysis (PageRank, community detection) — needed when identity graph >1k nodes
-- NVIDIA Riva: speech transcription → analyst dictates case notes → auto-populates case fields
-- NeMo FLARE: federated learning across multiple AegisTrace deployments — privacy-preserving threat intelligence
-- NeMo + AutoGen: group-chat multi-agent debate (3 analyst agents debate severity → judge produces final verdict)
-- NeMo + CrewAI: role-based agent framework on NVIDIA NIM — replace custom coordinator.py
-- NeMo + LangGraph: state machine agent workflows with conditional branching (if IOC score >80 → trigger endpoint deep-dive)
-
-**Free vs Paid on NVIDIA Build:**
-- Free: All NIM hosted model API calls (free credits via build.nvidia.com API key), NeMo Guardrails (open source), AgentIQ (open source), NeMo Curator (open source), NeMo Evaluator (open source), NVIDIA Morpheus (open source but needs GPU to self-host)
-- Needs GPU (not free on Render): RAPIDS cuGraph, Morpheus self-hosted, Riva self-hosted, NeMo Microservices enterprise
-- Paid: DGX Cloud, Fleet Command, NeMo Microservices enterprise tier
+### shadow-sniffer (v0.1.0)
+**Repo:** `~/Documents/Claude/Projects/shadow-sniffer/` · **Install:** `pip install shadow-sniffer`
+**What:** Offline Shadow AI detector. Scans connection logs (JSON or CSV) against 39-domain AI service catalog across 8 categories. Cross-references against approved-services allowlist. Complements the live endpoint agent detector. MITRE T1567.
 
 ---
 
-## HOW TO RESUME BUILDING
+## CHANGELOG
 
-Start a new Claude session and paste this file. Then say:
+> Newest entries at the top. Historical versions are summarized.
 
-> "Read AEGISTRACE_CONTEXT.md — I want to work on [task from backlog above]"
+### v11.1 (June 2026) — Current
 
-**Current version: v11.1** — Highest priority next items:
+**Anthropic Warm Cream Theme — Complete App Overhaul (57 files, 2 passes)**
+- Round 1: Replaced pure-black hex values with cream CSS vars, fixed unquoted JSX CSS-variable syntax
+- Round 2: Eliminated all remaining dark rgba patterns — `rgba(8,8,8,...)` card overlays, `rgba(148,163,184,...)` slate borders, `rgba(90,138,159,...)` steel-blue accents, dark text colors `#7A9DB8`/`#787878`/`#4A7EC8`. All 11 reported pages now fully cream.
+- Active palette: `--bg: #F5F0E8` · `--surface: #EDE7DC` · `--card: #E8E0D4` · `--text: #1A1612` · `--accent: #CC785C`
 
-**Security (build first):**
-1. **RAG/Qdrant poisoning protection** — sanitise every Qdrant retrieval through `prompt_shield.py` + hash embeddings at write time. Live vulnerability. 1–2 weeks. (see Priority 0.5 → item 1)
+**Security Hardening — /cso Red Team Audit (4 fixes)**
+- X-Forwarded-For spoofing → `X-Real-IP` (nginx-set, cannot be forged)
+- INGEST_API_KEY auth bypass (`pass` on 503) → hard-fail + always enforce token
+- Plaintext TOTP secrets → Fernet encrypted via `core.encryption`
+- Missing nginx security headers → X-Frame-Options, CSP, Referrer-Policy, Permissions-Policy added
+
+**Infrastructure**
+- Permanent Docker port fix: removed `aegistrace.service` (was running uvicorn outside Docker on port 8000), created `aegistrace-docker.service` (Docker Compose manages startup)
+- VPS `.env` corrections: ADMIN_PIN typo fixed, PUBLIC_URL corrected to `https://aegistrace.uk`
+
+---
+
+### v11.0 (June 2026) — PostgreSQL + 8 New ITDR Features + Design System
+
+- **PostgreSQL migration** — from SQLite, pool_size=10, max_overflow=20, pool_pre_ping, pool_recycle=1800
+- **`aegistrace-docker.service`** systemd unit (later replaced pure-Docker approach with permanent fix in v11.1)
+- **nginx** static file serving for SPA + proxy to port 8000
+- **8 new ITDR features:** D3FEND Countermeasures (5 tiers), Approval Tiers (HITL gate), Case Knowledge Base (auto-extract on close), SLA Intelligence (MTTD/MTTR/MTTC), Cost Intelligence (per-operation AI cost tracking), Prompt Shield hardening, YAML Connector Config, Compliance Evidence export
+- **Frontend:** DeploymentHub rewrite, LoadingScreen first-visit only, Dock redesign (neutral gray, 1.45x scale), Logo navigates to `/app/dashboard`, EDR tab inline
+- **New models:** `DefenseRecommendation`, `CaseKnowledge`, `AIUsageLog`, new `Case` fields
+
+---
+
+### v10.x Summary (June 2026)
+
+| Version | Key deliverable |
+|---------|----------------|
+| v10.7 | MetallicPaint logo, PillNav (shared public nav), InfiniteMenu 3D cylinder, DollyZoom removed |
+| v10.6 | Agent Delegation Tokens (11 capabilities), Regulatory Evidence Package (EU AI Act/DORA/DPDPA) |
+| v10.5 | Falco eBPF Layer 3, Volatility 3 Memory Forensics Layer 4, Attacker Path Reconstruction, Aether Seal brand overhaul |
+| v10.4 | ATSP Stage A — formally verifiable secure telemetry protocol (ProVerif model, 17 unit tests) |
+| v10.3 | SHA-256 hash chain on ProvenanceLedger, AFSL file security (ChaCha20-Poly1305, magic bytes, sandbox) |
+| v10.2 | Security audit: Okta SSRF, agent-command auth, NVIDIA prompt injection path, provenance enums |
+| v10.1 | Security audit: 17+ tables org-scoped (multi-tenancy IDOR), PyJWT migration, install-token hardening |
+| v10.0 | Temporal Linker (auto attack chain reconstruction), SOAR Playbook Engine, Adaptive Thresholds Agent, DuckDB SQL Console |
+
+---
+
+### Earlier Versions Summary (June 2026)
+
+| Version | Key deliverable |
+|---------|----------------|
+| v9.x | EndpointAgent agentic loop, live EDR tool, NVIDIA embedding anomaly scoring, Llama Guard on EDR actions |
+| v8.0 | Vision tab (Llama 3.2 Vision 11B screenshots), Rules tab (Codestral 22B YARA/Sigma/KQL/SPL) |
+| v7.0 | NVIDIA NIM 5-phase integration: Nemotron-70B triage, NV-EmbedQA embeddings, Llama Guard, multi-agent coordinator, alert normalization |
+| v6.2 | mcp-aegis v0.2.1 (tools/call credential-read fix), MaxMind GeoLite2 offline geo |
+| v6.1 | PersistenceMonitor, YARA-lite expanded to 40 rules, DNS tunnelling volume detection, HMAC-signed telemetry, ingest signature verification |
+| v6.0 | VulnerabilityScanner (10 check categories), SSE real-time streaming, ConfirmModal, Skeleton loading |
+| v5.6 | journalctl realtime follower, comprehensive Linux log collection, 6-tab Endpoints EDR console, ITDR alert dedup |
+| v5.5 | Connector token Fernet encryption, progressive lockout, per-user Groq rate limiting, admin 2FA enforcement, INGEST_API_KEY auto-generate |
+| v5.4 | Deep security audit (15 issues), Prompt Injection Shield (`core/prompt_shield.py`), security headers |
+| v5.3 | AI Defense Engine, DefenseEvent model, Groq triage, HITL console, honeypot endpoints |
+| v5.2 | MITRE ATT&CK Simulation Engine (5 real techniques), SimulationHub |
+| v5.1 | ITDR 3-tab analytics, 2FA/TOTP, DB file permissions, UA fingerprinting |
+| v5.0 | Endpoint Agent v5.0: Honey Token Trap, DNS/DGA, Auto-Block, USB detector, YARA-lite, Guardian Process, multi-backend failover |
+| v4.3 | bcrypt, rate limiting, JWT invalidation, Connectors (Azure/Okta/CSV), NHI Health, ITDR hardening, store split, code splitting |
+
+---
+
+## IN PROGRESS — five repo-sourced improvements (started 2026-07-20)
+
+Full plan saved at `/Users/prasannakumar/.claude/plans/validated-giggling-gadget.md` on the machine this was authored on — read that file for full design detail (SVG risk-ring replication, fcose layout config, exact field mappings, etc). This section is the resumable summary if that plan file isn't available.
+
+**Source:** user asked for GitHub repos useful for AegisTrace, picked 5 concrete adoptions to implement: `semgrep/semgrep`, `auth0/auth0-customer-detections`, `@tanstack/react-table` (react-virtual explicitly dropped — data scale too small to justify it), `cytoscape.js` + `cytoscape-fcose`, and a `GITHUB_LANDSCAPE_REPORT.md` refresh for `beenuar/AiSOC`.
+
+**Execution order:** Semgrep CI → doc update → TanStack Table (CaseList/AuditLog) → auth0 detections import + new DetectionLibrary page → IdentityGraph→Cytoscape rewrite. Sequential in main worktree (not parallel agents) since two steps touch `frontend/package.json`.
+
+### Status
+- [x] **Semgrep CI** — `.github/workflows/semgrep.yml` + `.semgrepignore` added (non-blocking first rollout, `p/security-audit` + `p/owasp-top-ten`). Ran locally once via a scratch venv: **18 findings (7 ERROR / 11 WARNING)** — 6 ERROR are `sqlalchemy.text()` usage in `backend/migration.py` (likely false-positive, fixed DDL strings not user input), 1 is a Dockerfile missing-USER hardening note. No secrets, nothing urgent. Real triage is an explicit follow-up, not done yet.
+- [x] **`GITHUB_LANDSCAPE_REPORT.md`** — `beenuar/AiSOC` entry updated to 1.6k★/v7.6.0 with new features (78 connectors, investigation ledger, Detection-as-Code CI, MCP server, benchmark scoreboard). Gaps-vs-AegisTrace conclusion unchanged.
+- [ ] **TanStack Table** (CaseList.jsx + AuditLog.jsx) — package installed (`@tanstack/react-table`). Component rewrites **not yet done** as of this checkpoint. Key design constraint discovered while reading the actual files: both pages are card-list layouts (`<div className="at-card">`), not literal `<table>` grids, and CaseList's sort is a global dropdown (`newest`/`severity` only — backend doesn't support generic per-column sort) — so the correct integration is TanStack Table in **headless mode** (row/column model only, `getRowModel().rows` mapped into the existing card JSX via `flexRender`), NOT literal `<table>/<tr>/<td>` markup. CaseList keeps `manualSorting: true` (server stays authoritative, existing dropdown unchanged); AuditLog gets a genuinely new client-side `getSortedRowModel()` (no sort control exists there today). Preserve exactly: CaseList's 4 stopPropagation action buttons + whole-row nav-on-click + SeverityBadge/StatusBadge/`at-card` styling; AuditLog's `isNew` per-row highlight + category-colored left border + existing (bug-compatible) client-side category re-filter.
+- [x] **auth0-customer-detections import + DetectionLibrary page** — done. Vendored 33 real Sigma rules to `backend/data/detections/auth0/` (+ LICENSE + NOTICE.md, Apache 2.0). Added `severity` column to `DetectionRule` + migration. `backend/scripts/import_detections.py` tested end-to-end against a scratch SQLite DB (Python 3.11 venv — Python 3.13 can't build this repo's pinned `pydantic-core`/`psycopg2-binary`, use 3.11 for any future local backend testing): idempotent, imports 33/updates 0 on first run, imports 0/updates 33 on re-run, no duplicates. `Organisation` table is an empty multi-tenancy stub in practice (never seeded anywhere) — script falls back to `org_id=1` when it finds no rows there, matching the convention used everywhere else in this codebase. Exposed `severity` field on `GET /api/rules/pending` + `GET /api/rules/pending/{id}` (backend/routers/rules.py) which previously omitted it. New page `frontend/src/pages/app/DetectionLibrary.jsx` (nav entry in AppShell.jsx under the Detection group, route `/app/detections` in App.jsx) — lists rules with status-filter chips, sort control, expand-per-row to view full Sigma body, approve/reject wired to the existing endpoints. `npm run build` clean. Apache 2.0 license confirmed (vendoring OK, needs LICENSE copy + attribution). Vendor to `backend/data/detections/auth0/*.yml`. Add nullable `severity` column to `DetectionRule` (`backend/models.py:841-857`) + additive migration in `backend/migration.py`. Standalone `backend/scripts/import_detections.py` (manual run, not a startup hook), upsert one row per `Organisation`, `status="imported"` (new value, not `"deployed"` — don't bypass the human review gate), `rule_name` prefixed `"[auth0] {title}"` for provenance+idempotency key. New page `frontend/src/pages/app/DetectionLibrary.jsx` surfaces both imported and LLM-generated rules via the **already-built but currently uncalled** `GET /api/rules/pending` + approve/reject endpoints in `backend/routers/rules.py` — nav entry in `AppShell.jsx`, route in `App.jsx`. Also: dedupe the duplicate `pyyaml` line in `backend/requirements.txt` (`==6.0.2` at line 6, stray `>=6.0.0` at line 26) while touching that file.
+- [x] **IdentityGraph.jsx → Cytoscape.js** — done, and genuinely earned its "highest-risk" label: live browser testing (via gstack `/browse`, backend spun up against the scratch SQLite DB with 7 manually-created identity nodes/5 edges) caught two real bugs the build alone never would have:
+  1. **Cytoscape node and edge ids share ONE namespace.** This backend's `IdentityNode`/`IdentityEdge` ids are independent auto-increment sequences both starting at 1, so passing raw ids straight through collided (`cy.add()` threw on the first edge, silently aborting before `cy.layout()` ever ran — symptom was 6/6 nodes added but 0 edges, nodes stuck in a tiny default grid position with the whole viewport zoomed ~3x to "fit" that tiny bounding box, and totally garbled overlapping labels as a result). Fixed by prefixing every element id (`cyNodeId = id => 'n'+id`, `cyEdgeId = id => 'e'+id'`) everywhere an id is read or written in `GraphCanvas`.
+  2. **Two `NODE_TYPES` colors were unusable strings**: `'var(--accent)'` (user/agent) and `'var(--text-muted)'` (prompt) — CSS custom properties that resolve fine in a live DOM `style` attribute but NOT inside a detached `data:image/svg+xml` background-image (no access to page CSS), so those nodes rendered as solid black circles. A third, subtler variant: `api_key`'s color was `'rgba(26,22,18,0.7)'`, and the SVG generator's `${color}22` hex-alpha-suffix trick silently produces an invalid string when concatenated onto an `rgba()` value instead of a hex value — also black. **This exact bug existed in the original canvas code too** (canvas `ctx.fillStyle =` silently no-ops on an invalid string rather than erroring, so it was invisibly broken — likely bleeding the previous node's fillStyle — rather than visibly black). Fixed by converting all four affected `NODE_TYPES`/`riskColor()` entries to flat hex (`user`/`agent` → `#CC785C`, `api_key` → `#1A1612`, `prompt` → `#928E88`, `riskColor`'s mid-tier → `#1A1612`) — resolved the "real" intended colors from `tokens.css`, not an approximation.
+  Everything else matched the plan: risk-ring replicated via per-node SVG data-URI, `fcose` layout (correctly separates disconnected nodes — verified with a deliberately unconnected node), drag/click-select/click-empty-deselect/dim-filter/pan-zoom all manually verified working in-browser, `useIdentityStore.js` left untouched as flagged dead code. **Lesson for next time on this codebase:** don't trust a clean `npm run build` alone for anything touching Cytoscape/canvas/SVG rendering — these bug classes are invisible to the type checker and only show up as actual rendered pixels. Scope is strictly internal to the `GraphCanvas` sub-component (`IdentityGraph.jsx:300-516`) — confirmed nothing else in the repo touches its internals, so the external props contract (`nodes, edges, onNodeClick, selectedId, riskFilter, typeFilter`) must stay identical and none of the other ~800 lines (modals, side panel, sidebar list, attack path viz) need to change. Packages: `cytoscape` + `cytoscape-fcose` (skip `react-cytoscapejs`, manage the instance directly via ref). The one tricky part: today's "risk ring" is an arc drawn *outside* the node border (`r+4`), not a pie-fill — replicate via a per-node generated SVG data-URI as `background-image`. Layout: `fcose` (handles disconnected node clusters natively). Dim-filter via `.dimmed` class toggle, deliberately not touching edge opacity (preserves existing dim-inconsistency, not in scope to fix). Pan/zoom is net-new (today's canvas has none) — ship as a bonus. Leave `frontend/src/store/useIdentityStore.js` untouched (orphaned/unused store, flag as dead code, don't silently delete).
+- [ ] **Final verification** — full `npm run build`, manual pass through all changed pages via dev server, confirm semgrep workflow runs green (non-blocking) on the resulting commit. **Do not commit/push/deploy without explicit user go-ahead** (same discipline as the earlier brag-video work this session).
+
+### Repo state note
+As of this checkpoint there are unrelated pre-existing uncommitted changes in the working tree (modified `AEGISTRACE_CONTEXT.md` itself, several deleted docs, a few untracked scratch files) that predate this task — don't fold those into commits for this workstream, keep `git add` scoped to only the files this plan touches, same discipline used for the earlier brag-video commit.
+
+---
+
+## HOW TO RESUME
+
+Start a new Claude session, paste this file, then say:
+> "Read AEGISTRACE_CONTEXT.md — I want to work on [task]"
+
+### Top Priorities for Next Session
+
+**Security first (live vulnerability):**
+1. RAG/Qdrant poisoning protection — sanitise Qdrant retrievals through `prompt_shield.py` + hash embeddings. 1–2 weeks.
 
 **Strategic features:**
-2. **DefenseAgent** — `AUTO_RESPOND = True` in endpoint agent with 10 pre-approved kill rules. Converts HITL → HOTL. Reuses existing YARA/FIM/honey-token/auto-block. 2 weeks. (see Priority 0.5 → item 2)
-3. **Model attestation** — statistical fingerprinting (perplexity/token distribution) to detect model substitution. Signed inference metadata in ProvenanceLedger. 1–2 weeks. (see Priority 0.5 → item 3)
+2. DefenseAgent — `AUTO_RESPOND = True` with 10 pre-approved kill rules. 2 weeks. Reuses existing YARA/FIM/honey-token/auto-block.
+3. Model attestation — statistical fingerprinting to detect model substitution. 1–2 weeks.
 
-**Backlog items:**
-4. **Auto-Rule Generation Trigger** (Priority 0 item 4) — nightly job auto-generates detection rules when 3+ cases share a MITRE technique within 7 days.
-5. **Ollama local AI integration** — `backend/core/ollama_client.py`, fallback chain: Ollama → Groq → NVIDIA NIM. Enables air-gap claim for regulated industries.
-6. **Agent Verified Boot Chain** — agent hashes own binary on startup, refuses to run if tampered, fires CRITICAL ITDRAlert.
-7. **DPDPA Compliance Report** — India market accelerator (only remaining item from v4.3).
+**Backlog:**
+4. Auto-Rule Generation Trigger (Priority 0 → item 4)
+5. Ollama local AI integration (air-gap claim)
+6. Agent Verified Boot Chain
+7. DPDPA Compliance Report (last remaining v4.3 item)
 
-**Deploy after changes:** `git push origin main` → SSH `root@2.24.131.243` → `cd /opt/aegistrace && bash deploy/update.sh`
+### Skills Installed
 
-### v5.2 Completed (this session)
-
-**MITRE ATT&CK Simulation Engine**
-- [x] `SimulationRun` model added to `models.py` (technique_id, result, confidence, evidence, events_injected, run_by, run_at)
-- [x] `backend/routers/simulation.py` — 5 real technique simulators calling actual ITDR detector functions:
-  - T1110 Brute Force → `_detect_credential_stuffing` (7 failed_login events)
-  - T1078.001 Impossible Travel → `_detect_impossible_travel` (IE + CN logins, 2h apart)
-  - T1078.004 New Device Login → `_detect_new_device` (historical + unknown device)
-  - T1098 Privilege Escalation → `_detect_privilege_escalation` (unapproved priv_change)
-  - T1539 Session Hijacking → `_detect_token_theft` (same device_id, 2 user-agents)
-- [x] All synthetic events use `__sim_<uuid>__@aegistrace.internal` prefix, cleaned up after each run
-- [x] Registered in `main.py`
-- [x] `SimulationHub.jsx` at `/app/simulation` — Void Core UI: KPI row, technique list with LAUNCH buttons, live result with alphanumeric morph animation, evidence panel, run history, demo attack chain explainer
-- [x] Added to Sidebar under Lab group (Swords icon)
-
-### v5.3 Completed (this session)
-
-**AI Defense Engine**
-- [x] `DefenseEvent` model added to `models.py` — attacker_ip, attack_type, ai_confidence, ai_reasoning, ai_recommended_action, status, severity, reviewed_by, review_notes
-- [x] `backend/routers/defense.py` — full defense router:
-  - Request fingerprinting engine (per-IP: req count, unique endpoints, timing)
-  - Honeypot endpoints (8 fake routes: /api/v1/admin/export, /api/v1/users/all, etc.)
-  - Groq triage engine — classifies threat, returns type/confidence/reasoning/action (<1s)
-  - Auto-handles at ≥92% confidence, sends to HITL queue at ≥70%
-  - CRUD: GET /api/defense/events, POST /api/defense/events/{id}/review, GET /api/defense/stats
-  - POST /api/defense/test — dev trigger for manual test events
-- [x] `main.py` — DefenseFingerprintMiddleware (passive, non-blocking), honeypot routes registered, defense_router imported
-- [x] `DefenseConsole.jsx` at `/app/defense-console` — pure black v5.1:
-  - 4 KPI cards: Pending Review, Auto-Handled, Honeypot Hits, AI Agent Scans
-  - Filter tabs: All / Pending Review / Auto-Handled / Approved / Dismissed
-  - EventCard with expand: AI confidence bar, reasoning chain, key indicators, request context
-  - Inline HITL action panel: Block IP / Watchlist / Escalate / Dismiss + notes field
-  - 15s auto-refresh, Test Event button, engine status indicator
-  - All approvals logged to Provenance Ledger
-- [x] Sidebar — Defense Console added as first item in Control group (ShieldAlert icon)
-- [x] App.jsx — route `/app/defense-console` added
-
-**New router registered in main.py:** `defense` → `/api/defense`
-**New page:** `/app/defense-console` → `DefenseConsole.jsx`
-**New sidebar item:** Control group → Defense Console (top position)
-
-### v5.4 Completed (this session)
-
-**Deep Security Audit — 15 additional issues fixed**
-- [x] IDOR: `GET /{case_id}/evidence` had no auth — added `get_current_user` + `org_id` check
-- [x] IDOR: `GET /{case_id}/timeline` had no auth — added `get_current_user` + `org_id` check
-- [x] Zero-day: `case_chat` had NO authentication — fixed with auth + org_id + rate limit + input cap
-- [x] Zero-day: Terminal sessions had no ownership — `created_by_id` added to `TerminalSession` model, enforced on all 4 session endpoints (get/run/save/delete)
-- [x] Zero-day: Case chat no rate limit — 20 msg/min rate limit + 500 char cap
-- [x] IDOR: reports.pdf/docx/dora had no org_id check — fixed all 3
-- [x] IDOR: case comments had no org_id check — fixed get + post
-- [x] Predictable ingest key when default ADMIN_PIN — warning added, derivation hardened
-- [x] SSRF via webhooks — `_validate_webhook_url()` blocklist (localhost, private IPs, cloud metadata)
-- [x] MFA pending token replay — token added to `TokenBlocklist` on successful MFA login
-- [x] `/login/mfa` had no rate limit — 5 attempts/min enforced
-- [x] Login rate limiter blind behind proxy — `_get_real_ip()` reads `X-Forwarded-For`
-- [x] `commands_run` in public case endpoint — removed from `sanitize_case()`
-- [x] No password minimum length — 8-char minimum on create + change
-- [x] PCAP magic byte validation — rejects non-PCAP files before parsing
-
-**Prompt Injection Shield — `backend/core/prompt_shield.py`**
-- [x] 20+ injection pattern categories: system_override, role_hijack, jailbreak, delimiter_inject, role_delimiter, exfiltration, xml_inject, template_inject, encoding_bypass
-- [x] Wired into `ai_router.py` — ALL Groq calls (call_ai + call_ai_json) automatically sanitised
-- [x] System prompt hardening — every Groq call now includes injection resistance instruction
-- [x] Detected injections logged as `DefenseEvent` (attack_type="prompt_injection")
-- [x] History messages sanitised too (prevents injection via chat history)
-- [x] Context-aware length limits: case_description=2000, chat_message=500, terminal_output=5000
-
-**Security hardening — `main.py`**
-- [x] `RequestSizeLimitMiddleware` — 10MB max request body, prevents memory exhaustion
-- [x] `Strict-Transport-Security` header added (HTTPS enforcement)
-- [x] `Content-Security-Policy` header added (XSS mitigation)
-- [x] `Server` and `X-Powered-By` headers cleared (hide server info)
-- [x] `Cache-Control: no-store, no-cache, must-revalidate` on all API routes
-
-**New file:** `backend/core/prompt_shield.py` — singleton `shield` object, importable anywhere
-
-### v5.5 Completed (this session)
-
-**JWT replaced with python-jose**
-- [x] `python-jose[cryptography]==3.3.0` + `cryptography==42.0.8` added to `requirements.txt`
-- [x] `create_token()` and `verify_token()` rewritten using `jose.jwt` HS256 — battle-tested library
-- [x] Pending token decoding in `login/mfa` updated to use python-jose
-- [x] Logout endpoint updated — clean token decoding for blocklist
-- [x] All existing sessions invalidated on deploy (clean break — security upgrade)
-
-**Progressive account lockout**
-- [x] `_record_failure(ip)` / `_check_lockout(ip)` / `_clear_failures(ip)` helpers
-- [x] Thresholds: 5 fails → 60s lockout, 10 fails → 15min, 20 fails → 1hr
-- [x] Lockout checked before credential verification — fails fast for locked IPs
-- [x] Failures cleared on successful login
-
-**Admin 2FA enforcement**
-- [x] Admins without 2FA get a `mfa_setup_required: True` flag in login response
-- [x] Token still issued (so they can access the dashboard) but frontend should redirect to `/app/admin#mfa`
-- [x] Login audited as `login_admin_no_mfa`
-
-**Connector token encryption at rest**
-- [x] `backend/core/encryption.py` — Fernet field encryption singleton (`enc`)
-- [x] `enc.encrypt()` / `enc.decrypt()` — backward-compatible (legacy plaintext falls through)
-- [x] `connectors.py` — Okta token encrypted on store, decrypted on use
-- [x] Key: `FERNET_KEY` env var (preferred) or derived from JWT_SECRET (fallback)
-
-**Auto-generate INGEST_API_KEY on startup**
-- [x] If `INGEST_API_KEY` not set, `secrets.token_hex(32)` generated and logged on startup
-- [x] Security warnings for missing `FERNET_KEY` added to startup
-
-**Per-user Groq rate limiting**
-- [x] `_check_groq_limit(user_id)` in `ai_router.py` — 100 calls/hr per user, 200/hr for anon
-- [x] Prevents single compromised account burning entire Groq quota
-
-**New env vars (add to Render/VPS):**
-- `FERNET_KEY` — base64url-encoded 32-byte key: `python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
-- `INGEST_API_KEY` — random hex string: `python3 -c "import secrets; print(secrets.token_hex(32))"`
-
-### v5.6 Completed (June 2026 — enterprise endpoint agent + red team audit)
-
-**Endpoint Agent v5.1 — Enterprise upgrades**
-- [x] `_journal_realtime_follower()` thread — journalctl -f follower, ships every 3s (1-3s latency vs 30s before)
-- [x] `_collect_linux_logs_comprehensive()` — covers ALL auth sources: SSH, sudo, PAM, su, GUI login, user management, kernel events, package installs, service changes, cron, NetworkManager
-- [x] Log cursor persists across restarts (`~/.aegistrace_log_cursor`) — no re-reading old events
-- [x] `_do_stop_agent()` — 5-step reliable stop: STOP_FILE → kill guardian → stop systemd → notify backend → exit
-- [x] STOP_FILE sentinel (`~/.aegistrace_STOP`) — guardian checks before restarting
-- [x] PID files (`~/.aegistrace.pid`, `~/.aegistrace_guardian.pid`) — written on startup
-- [x] `stop_agent` / `uninstall_agent` commands — work correctly now (previously bypassed by guardian restart)
-- [x] `GET /api/install/{token}` — backend generates personalized Python bootstrap with token embedded
-
-**Endpoints page — complete enterprise rebuild (6-tab EDR console)**
-- [x] Overview: risk gauge (0-100 SVG), CPU/RAM/Disk meters, stat cards, recent alerts + sudo
-- [x] Live Logs: real-time terminal stream (3s auto-refresh), color-coded, category filter
-- [x] Processes: full list with Kill button per row, suspicious highlighted red
-- [x] Network: connections with Block IP per row
-- [x] Alerts: endpoint-specific alerts with evidence + response buttons
-- [x] Response: Collect Now, FIM Scan, Ping, Honey Status, Fast Mode, Stop/Uninstall/Isolate/Delete
-- [x] `DELETE /api/ingest/endpoints/{ep_id}` — queues uninstall, wipes all data after 30s
-- [x] `POST /api/ingest/offline/{agent_id}` — marks offline immediately in DB
-- [x] Dynamic online/offline from `last_seen < 90s`, auto-refreshes every 30s
-
-**New models/endpoints**
-- [x] `RawLogEvent` model — structured log events (category, event_type, source, severity, raw, username, source_ip, ts)
-- [x] New Endpoint columns: last_processes, last_connections, last_system_info, local_risk_score (migration added)
-- [x] `GET /api/ingest/endpoints/{ep_id}/detail` — rich snapshot
-- [x] `GET /api/ingest/raw-logs/{endpoint_id}` — live log stream
-
-**ITDR fixes**
-- [x] DETECTOR_META now includes ALL alert types (honey_token_access, suspicious_process, fim_change, failed_login, yara_match, dga_domain, etc.)
-- [x] Alert dedup covers ALL types with appropriate windows (10-60min)
-- [x] Precise timestamps — `preciseTime()` shows "Jun 7 14:32:01 (3m ago)"
-- [x] Alert detail panel — click to expand evidence + action buttons
-
-**Red team audit fixes**
-- [x] CRITICAL: `_fingerprint` / `_last_flagged` / `SCAN_THRESHOLD_*` never initialized → `DefenseFingerprintMiddleware` NameError fixed
-- [x] CRITICAL: `AuditLog` called with wrong fields in `agent_security.py` (`resource_type`/`resource_id`/`details` don't exist) — fixed to `entity_type`/`entity_id`/`new_value`
-- [x] HIGH: `Bell` icon not imported in `ITDRPage.jsx` → Analytics tab crashed (black screen) — fixed
-- [x] HIGH: `mfa_setup_required` never handled in Login.jsx — admins bypassed MFA redirect — fixed
-- [x] HIGH: `PlainTextResponse` imported inline — moved to top-level
-- [x] MEDIUM: 11 bare `except:` → `except Exception:` across ingest.py + hardware_tools.py
-- [x] MEDIUM: SQLite WAL mode crashes on network drives — wrapped in try/except with fallback
-- [x] LOW: `hardware-tools.css` never imported → entire page layout broken — fixed
-- [x] LOW: `useRef` used as `React.useRef` without import in Endpoints.jsx — fixed
-- [x] LOW: `_last_flagged` defined twice in main.py — duplicate removed
-
-**Rules added for future sessions:**
-- `_fingerprint`, `_last_flagged`, `SCAN_THRESHOLD_*` must be defined before `DefenseFingerprintMiddleware` in main.py
-- `AuditLog` correct fields: `user_id`, `user_email`, `action`, `entity_type`, `entity_id`, `new_value`
-- `current_user` in all routes must be typed `User`, never `dict`
-
-### v5.5 Bug Fixes + Demo System (this session)
-
-**Defense Console critical bug fix**
-- [x] `current_user: dict` → `current_user: User` in ALL defense.py endpoints — was causing silent 500 on every Block/Watchlist/Escalate/Dismiss button click
-- [x] `current_user.get("email")` → `current_user.email` — User object has no `.get()` method
-- [x] Added `User` import to `routers/defense.py`
-- [x] Test event no longer calls Groq live — 4 hardcoded realistic scenarios rotate randomly (AI Agent Scan, Honeypot Trigger, Brute Force, Prompt Injection). No network timeout risk.
-- [x] Toast notifications added to `DefenseConsole.jsx` — success/error feedback on every action
-- [x] "Load Demo" button added to Defense Console header
-
-**Website attack surface hardening (v5.4 additions)**
-- [x] Public cases leaking `customer_name` + `analyst_name` — both redacted in `sanitize_case()`
-- [x] Health endpoint exposing version, connector types, job names — stripped to minimal `{status, timestamp}`
-- [x] Demo endpoint rate limiter blind behind Render proxy — now uses `X-Forwarded-For`
-- [x] Demo endpoint now runs through prompt shield before Groq call
-
-**Demo seed system — `backend/routers/demo.py`**
-- [x] `POST /api/demo/seed` — seeds ALL sections (Identity, ITDR, Shadow AI, Defense, Agent Security) — idempotent
-- [x] `POST /api/demo/seed/defense` — Defense Console only (5 realistic events)
-- [x] `POST /api/demo/seed/identity` — Identity Graph + ITDR (10 nodes, edges, anomalies, 5 alerts)
-- [x] `DELETE /api/demo/clear` — admin only, clears all demo data
-- [x] Registered in `main.py`
-- [x] How to seed: open browser console while logged in and run:
-  ```javascript
-  fetch('/api/demo/seed', { method:'POST', headers:{ 'Authorization':'Bearer '+sessionStorage.getItem('aegis_token'), 'Content-Type':'application/json' }}).then(r=>r.json()).then(console.log)
-  ```
-
-**Security rules added to this file (for future sessions):**
-- JWT now uses `python-jose` — never revert to custom HMAC JWT implementation
-- All passwords minimum 8 characters — enforced in auth.py
-- `current_user` in all routes MUST be typed as `User`, never `dict` — `.get()` does not work on User objects
-- All Groq calls automatically sanitised by `core/prompt_shield.py` — do not bypass
-- Connector tokens stored via `core/encryption.py` `enc.encrypt()` — always decrypt before use
-
-Do NOT give Claude the full codebase — this file is sufficient context for any continuation task.
+- **gstack** at `~/.claude/skills/gstack` — /review, /cso, /ship, /qa, /autoplan, /office-hours and 30+ more
+- **impeccable** at `.claude/skills/impeccable` — production-grade frontend design
+- **PRODUCT.md** at repo root — brand/register/positioning
 
 ---
 
 ## BUILDER PROFILE
 
-**Name:** Prasanna Kumar Surendran  
-**Location:** Dublin, Ireland  
-**Role:** Blue Team SOC Analyst · Security Tooling Developer  
-**Email:** Prasanna80564@gmail.com  
-**GitHub:** https://github.com/Prasanna-27eng  
-**LinkedIn:** https://www.linkedin.com/in/prasannakumarsurendran  
-**Education:** MSc Information Systems & Computing, Dublin Business School (2025)  
+**Name:** Prasanna Kumar Surendran
+**Location:** Dublin, Ireland
+**Role:** Blue Team SOC Analyst · Security Tooling Developer
+**Email:** Prasanna80564@gmail.com
+**GitHub:** https://github.com/Prasanna-27eng
+**LinkedIn:** https://www.linkedin.com/in/prasannakumarsurendran
+**Education:** MSc Information Systems & Computing, Dublin Business School (2025)
 **Certifications:** SC-200 ✓ · Security+ ✓ · TCM PEH ✓ · BTL1 (55%) · eJPT (20%) · SC-300 (15%)
 
 AegisTrace is entirely self-funded, free to use, and open in philosophy. The goal: prove a solo analyst can build SOC tooling that rivals commercial products — and that the next generation of security platforms must be built around identity, trust, and explainability from day one.

@@ -222,4 +222,13 @@ def run_migrations(engine):
                     conn.commit()
                     print(f"[migration] Fixed {constraint} → ON DELETE {action}")
 
+    # ── Vendored detection content — severity on detectionrule ──────────────
+    if "detectionrule" in existing_tables:
+        rule_cols = [c["name"] for c in inspector.get_columns("detectionrule")]
+        if "severity" not in rule_cols:
+            with engine.connect() as conn:
+                conn.execute(text("ALTER TABLE detectionrule ADD COLUMN severity TEXT DEFAULT NULL"))
+                conn.commit()
+            print("[migration] Added severity to detectionrule table")
+
     print("[migration] All migrations complete.")
