@@ -1,11 +1,11 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { motion, useMotionValue, useTransform, useSpring, useInView } from 'framer-motion';
+import { motion, useMotionValue, useTransform, useSpring, useInView, useReducedMotion } from 'framer-motion';
 import CardNav from '../components/CardNav';
 import {
   ArrowRight, Shield, Brain, Eye, Database, CheckCircle,
   Layers, Zap, Github, Network, ShieldCheck, Fingerprint,
   Users, FileText, Lock, Cpu, Radio, Globe, BookOpen,
-  Share2, Download, Crosshair,
+  Share2, Download, Crosshair, SpeakerHigh, SpeakerSlash,
 } from '../components/icons';
 
 /* ─── Design tokens ──────────────────────────────────────────────────────── */
@@ -156,7 +156,17 @@ function StepCard({ num, title, desc, delay = 0 }) {
 export default function Landing() {
   const isMobile = useIsMobile();
   const isTouch  = useIsTouch();
+  const reducedMotion = useReducedMotion();
   const heroRef  = useRef(null);
+  const showcaseVideoRef = useRef(null);
+  const [showcaseMuted, setShowcaseMuted] = useState(true);
+
+  const toggleShowcaseSound = useCallback(() => {
+    const el = showcaseVideoRef.current;
+    if (!el) return;
+    el.muted = !el.muted;
+    setShowcaseMuted(el.muted);
+  }, []);
 
   const rawX = useMotionValue(0);
   const rawY = useMotionValue(0);
@@ -335,6 +345,59 @@ export default function Landing() {
               <Github size={16} /> View on GitHub
             </a>
           </motion.div>
+        </motion.div>
+
+        {/* Product showcase — hero preview panel */}
+        <motion.div
+          initial={{ opacity: 0, y: 32 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.6, ease: T.ease }}
+          style={{
+            position: 'relative', zIndex: 2,
+            width: '100%', maxWidth: 1040, margin: '56px auto 0',
+            borderRadius: 20, overflow: 'hidden',
+            border: `1px solid ${T.border}`,
+            boxShadow: '0 20px 60px rgba(26,22,18,0.16), 0 0 0 1px rgba(26,22,18,0.04)',
+            background: T.card,
+          }}
+        >
+          {reducedMotion ? (
+            <img
+              src="/assets/brag/brag-hero.jpg"
+              alt="AegisTrace platform preview — identity graph, dashboard, and case management"
+              style={{ display: 'block', width: '100%', height: 'auto', aspectRatio: '16 / 9', objectFit: 'cover' }}
+            />
+          ) : (
+            <div style={{ position: 'relative' }}>
+              <video
+                ref={showcaseVideoRef}
+                src="/assets/brag/brag-hero.mp4"
+                poster="/assets/brag/brag-hero.jpg"
+                autoPlay
+                muted
+                loop
+                playsInline
+                style={{ display: 'block', width: '100%', height: 'auto', aspectRatio: '16 / 9', objectFit: 'cover' }}
+              />
+              <button
+                type="button"
+                onClick={toggleShowcaseSound}
+                aria-label={showcaseMuted ? 'Unmute video' : 'Mute video'}
+                style={{
+                  position: 'absolute', bottom: 16, right: 16, zIndex: 3,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 40, height: 40, borderRadius: '50%',
+                  background: 'rgba(26,22,18,0.55)', backdropFilter: 'blur(6px)',
+                  border: '1px solid rgba(245,240,232,0.28)',
+                  color: T.bg, cursor: 'pointer', transition: 'background 0.2s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(26,22,18,0.75)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(26,22,18,0.55)'; }}
+              >
+                {showcaseMuted ? <SpeakerSlash size={18} /> : <SpeakerHigh size={18} />}
+              </button>
+            </div>
+          )}
         </motion.div>
 
         {/* Scroll indicator */}

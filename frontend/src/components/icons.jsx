@@ -14,6 +14,8 @@ import {
   Prohibit         as _Ban,
   Robot            as _Bot,
   Brain            as _Brain,
+  SpeakerHigh      as _SpeakerHigh,
+  SpeakerSlash     as _SpeakerSlash,
   Calendar         as _Calendar,
   Check            as _Check,
   CheckCircle      as _CheckCircle,
@@ -262,6 +264,8 @@ export const Sliders       = duo(_Sliders);
 export const Mic           = duo(_Mic);
 export const Power         = duo(_Power);
 export const DollarSign    = duo(_DollarSign);
+export const SpeakerHigh   = duo(_SpeakerHigh);
+export const SpeakerSlash  = duo(_SpeakerSlash);
 
 // AppShell sidebar + dock
 export const LayoutDashboard = duo(_LayoutDashboard);
