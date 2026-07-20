@@ -10,16 +10,19 @@ set -euo pipefail
 APP_DIR="/opt/aegistrace"
 cd "${APP_DIR}"
 
-echo "[1/4] Pulling latest code..."
+echo "[1/5] Pulling latest code..."
 git pull origin main
 
-echo "[2/4] Building new Docker image..."
+echo "[2/5] Building new Docker image..."
 docker compose build --no-cache
 
-echo "[3/4] Restarting container (replaces running instance)..."
+echo "[3/5] Restarting container (replaces running instance)..."
 docker compose up -d
 
-echo "[4/4] Health check..."
+echo "[4/5] Rebuilding host-side frontend (nginx serves ${APP_DIR}/frontend/build directly)..."
+(cd "${APP_DIR}/frontend" && npm install && CI=true DISABLE_ESLINT_PLUGIN=true npm run build)
+
+echo "[5/5] Health check..."
 sleep 5
 STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/api/health || echo "000")
 if [ "$STATUS" = "200" ]; then
